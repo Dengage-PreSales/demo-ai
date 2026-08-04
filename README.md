@@ -86,6 +86,7 @@ Handoff §2.0.
 | Task | Where |
 |---|---|
 | Bringing the Dengage panel up from scratch | `factory/phase0/README.md`, handoff §2 |
+| What the CI guardrails check, and which three matter | `factory/guard/README.md`, handoff §11 |
 | How a demo is generated | handoff §7 |
 | What the eight creatives may say, and why their CTAs cannot navigate | handoff §2.2a |
 | The five modules that cannot be copied unchanged | handoff §5.3 |

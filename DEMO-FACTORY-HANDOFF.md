@@ -295,6 +295,19 @@ These **are** automatable: `POST https://api.dengage.com/rest/dataspace/tables`,
 bearer token, 30 requests per second per IP. Reference:
 https://dev.dengage.com/reference/createtable
 
+Three details from that reference, confirmed against it while building
+`factory/phase0/create-tables.mjs`:
+
+- **The token needs the `dataSpace.manage` permission.** Without it the call is
+  refused with HTTP 403 and code 10, and the response names the permission it
+  wanted. Worth asking for by name rather than asking for "an API token".
+- **A repeat call answers HTTP 400 with code 1**, "Table with given name
+  already exists!". That is what makes the script idempotent, so re-running
+  after a partial failure finishes the job rather than erroring out.
+- **The accepted column types** are `TEXT`, `INTEGER`, `DATE`, `BOOLEAN`,
+  `EMAIL`, `PHONE` and `DECIMAL`. The two definitions below use only `TEXT`,
+  `INTEGER` and `DECIMAL`, so they are valid as written.
+
 Both tables need a **`contact_key` column of type TEXT, named as the
 `contactKeyColumn`**. The API requires that column to be text, and without it
 the rows cannot be joined to a contact, which is most of what you are
@@ -496,8 +509,8 @@ demo-ai/
   .nojekyll
 
   seed/                         TEMPORARY, see §3.1. Delete at end of phase 1
-    site/                       reference storefront
-    panel-content/              reference creatives, the easy one to forget
+    site/en/                    reference storefront
+    panel-content/en/           reference creatives, the easy one to forget
 
   template/                     the storefront, brand-free, never served
     index.html
@@ -520,14 +533,18 @@ demo-ai/
   assets/
     dengage-push-icon.png       the push badge, 1200x1200, referenced by §2.1
 
-  factory/                      NOTHING HERE EXISTS YET. This is the target
+  factory/
+    sandbox.json                the account id and app guid, the only copy
     phase0/                     the panel bring-up kit, built in Phase 0
       README.md                 the panel checklist, step by step
       create-tables.mjs         §2.3, idempotent, safe to run twice
       probe/                    the page that proves the panel works
       creative/                 a generic card to paste for the Phase 0 check
-    guard/
-      run.sh                    §11, the CI guardrails. Build this early
+    guard/                      §11, the CI guardrails. Build these early
+      run.sh                    the checks
+      test.sh                   the checks, checked against known-bad input
+      fixtures/naive-copy/      that known-bad input
+      README.md                 what each check is for, and which three matter
     scrape/                     §7.1, the three-tier catalogue reader
     theme/                      §7.2, brand token extraction
     art/                        §7.3, placeholder generation
@@ -555,9 +572,13 @@ Salil before this work started:
 
 ```
 seed/
-  site/            = cantu-pneus/en/              the reference storefront
-  panel-content/   = cantu-pneus/panel-content/en/  the reference creatives
+  site/en/           = cantu-pneus/en/                the reference storefront
+  panel-content/en/  = cantu-pneus/panel-content/en/  the reference creatives
 ```
+
+Note the `en/` level on both. An earlier draft of this document wrote them as
+`seed/site/` and `seed/panel-content/`, which is one directory short of where
+the files actually are.
 
 **Both are needed, and the second is the one that is easy to miss.** The eight
 creatives do not live inside the site folder; they live in a sibling directory,
@@ -569,15 +590,15 @@ dismiss control, the `data-dn-form-id` capture mechanism, and the
 visually-hidden class that §12.7 warns against deleting. Writing them from
 prose alone, with those files one directory away and uncopied, is a wasted day.
 
-Ignore `seed/panel-content/ab-testing/`: A/B testing is out of scope (§2.7).
+Ignore `seed/panel-content/en/ab-testing/`: A/B testing is out of scope (§2.7).
 
-**What `seed/site/` already contains**, verified rather than assumed: its own
+**What `seed/site/en/` already contains**, verified rather than assumed: its own
 stylesheet, 25 JavaScript modules, a main script, product artwork, `vendor/`, a
 product feed and a service worker. It references no file outside itself. The
 only external hosts it calls are Google Fonts, the Dengage SDK CDN, and a tag
 manager that must be removed (§12.9).
 
-**One thing in `seed/site/` will break here and must be fixed during the
+**One thing in `seed/site/en/` will break here and must be fixed during the
 de-brand:** six links to `../index.html` and `../product.html`, the language
 switcher pointing at the Portuguese site. There is no parent site in this
 repository, so all six 404. Remove the language switcher entirely; the demos
@@ -653,7 +674,7 @@ Rules:
 
 ## 5. The storefront template
 
-Start from **`seed/site/`** (§3.1), which is a copy of the CantuPneus English
+Start from **`seed/site/en/`** (§3.1), which is a copy of the CantuPneus English
 site, the reference build in the core repository. Strip it to a brand-free
 `template/`. Salil confirmed there is nothing in that machinery to exclude, so
 this is a de-branding job rather than a selection job.
@@ -780,7 +801,7 @@ never runs.
 
 **This is the most consequential implementation note in this document.** The
 reference build is an ecommerce site that uses the Dengage ecommerce API. This
-repository must not. Copying these four modules unchanged silently violates
+repository must not. Copying these five modules unchanged silently violates
 non-negotiable 3 on day one, and the violation is invisible from the rendered
 page: the demo will look perfect while writing rows into tables shared with the
 live sales assets.
@@ -842,6 +863,42 @@ The demo loses nothing. What the panel demonstrates is that a custom event
 lands in a custom table, not that the operator may name it freely.
 
 §9 asserts this, and §11 cannot.
+
+#### A sixth module, for a different reason: `productCatalog.js`
+
+**Added after reading the reference build rather than this document.** The list
+above is exhaustive for what it claims to cover, which is table writes and
+`ec:` calls. `productCatalog.js` makes neither, so it is correctly absent from
+it. It still cannot be copied across unchanged, and the reason is
+non-negotiable 8 rather than non-negotiable 3.
+
+It normalizes a product whose price could not be read to a price of zero:
+
+```js
+price: Number.isFinite(price) ? price : 0,     productCatalog.js
+price: Number.isFinite(price) && price > 0 ? price : 0,   wishlist.js
+```
+
+That is the `Number(null) === 0` trap, already shipped, sitting in the file the
+whole storefront reads its catalogue through. Every downstream module inherits
+it: the grid, the cart, `pageView`, and every `sandbox_events` row carrying
+`unit_price` or `total_value`.
+
+The same file gets `stock` right, returning `null` when the catalogue does not
+track it, with a comment explaining why. Price and stock are handled
+differently three lines apart, which is exactly what makes this easy to read
+past.
+
+**Both must become `null`, and every payload builder must drop null keys rather
+than send them.** Dropping the key is the part that actually keeps the column
+empty: a builder that leaves `unit_price` as `null` and hands it to the SDK
+sends a zero anyway. `factory/phase0/probe/probe.js` has the `compact()`
+helper this needs, and a probe card that exercises it.
+
+The general lesson, which is worth more than the fix: §5.3 is exhaustive
+against the criterion it states, and that criterion is narrower than "modules
+you can copy across safely". Read the reference build for the other
+non-negotiables too.
 
 One behaviour to preserve while rewriting `searchPanel.js`: search fires **once
 per settled query**, never per keystroke. Settled means a 700ms pause, or
@@ -1108,11 +1165,25 @@ be extended by editing `expiresAt` rather than rebuilt.
 
 `workflows/guard.yml`, on every PR:
 
-- **no `ec:` calls** anywhere under `demos/` or `template/`. One grep, and it
-  is not sufficient on its own: see the next check.
+- **no `ec:` calls** anywhere. One grep, and it is not sufficient on its own:
+  see the next check.
 - **every table name is on an ALLOWLIST**, not absent from a denylist. The only
   two names that may appear as a `sendDeviceEvent` target are
   `sandbox_events` and `sandbox_onsite_events`. Anything else fails.
+
+  **The target must be a string literal at the call site.** A variable, a
+  template literal or a concatenation fails, because CI cannot see what it
+  resolves to, and every one of the five modules in §5.3 uses a variable. This
+  is what makes the check unwalkaroundable rather than merely present, and it
+  is the reason a module that reads its table name from `demo.config.json`
+  would not pass: put the two literals in one module that owns them and have
+  the rest of the storefront call that.
+
+  > **Corrected.** These first two checks were originally scoped to `demos/`
+  > and `template/`. That is one directory too narrow: the Phase 0 probe sits
+  > outside both and makes real `sendDeviceEvent` calls, so the narrower scope
+  > would not police the one page that exists before any demo does. Both now
+  > run over every committed file.
 
   This is an allowlist for a reason that cost real time to learn. A denylist of
   the five standard ecommerce tables catches `wishlist.js`, which writes
@@ -1121,7 +1192,18 @@ be extended by editing `expiresAt` rather than rebuilt.
   which is a core-account table that was not on anybody's denylist (§5.3). An
   allowlist catches both, and it also catches the table nobody has invented
   yet. Same single grep, strictly better failure mode.
-- **no off-origin asset references** in any committed HTML, CSS or JS
+- **no off-origin asset references** in any committed HTML, CSS or JS, meaning
+  any host outside a short allowlist rather than any absolute URL at all. Three
+  hosts are unavoidable and none of them is a prospect's CDN, which is what the
+  rule is actually about: `pcdn.dengage.com`, where the SDK necessarily lives,
+  and `fonts.googleapis.com` with `fonts.gstatic.com`, which §7.2 requires
+  because the extracted fonts are mapped onto a Google Font the template
+  already loads. This origin and `localhost` are allowed too. Everything else
+  fails.
+
+  The check covers what a browser loads. It does not cover the `.mjs` tooling
+  under `factory/`, because a build script calling the Dengage REST API is not
+  a page fetching an asset.
 - **no prospect logo files** committed outside the expected product image path
 - **no em dashes or en dashes** in committed text
 - **the app guid in every demo matches the sandbox app guid**, never the BFSI
@@ -1252,9 +1334,17 @@ account:**
 - **The probe page.** With the config blank it should log the payload it would
   send instead of sending it, so the shape is verifiable today and the same
   harness becomes the §9 smoke test later.
+
+  It reads the account id and app guid from `factory/sandbox.json` at runtime,
+  which is **not** what a generated demo does. A demo has both substituted into
+  its page at build time and keeps the SDK snippet in the head, exactly as the
+  reference build does. The probe reads them because it is one page that has to
+  work before those values exist, and the invariant that matters is preserved
+  either way: the contact key is resolved before `initialize`, and `initialize`
+  before `pageView` (§6.2).
 - **The guard and its workflow** (§11). Build it early, not after Phase 1: it
   is what catches the five modules in §5.3 if one slips through. Test it
-  against a naive copy of `seed/site/js/`, which it must reject on every count
+  against a naive copy of `seed/site/en/js/`, which it must reject on every count
   (§11.1).
 - **`create-tables.mjs`** for §2.3, idempotent so it is safe to run twice.
 - **Scaffolding**: `.nojekyll`, the service worker at the repository root, and
@@ -1263,8 +1353,8 @@ account:**
 - **`factory/phase0/README.md`**, the panel checklist, so step 1 is a checklist
   Salil works through rather than a conversation.
 
-**Phase 1: the template.** Strip `seed/site/` to a brand-free `template/`,
-everything driven by `demo.config.json`, with the four modules in §5.3
+**Phase 1: the template.** Strip `seed/site/en/` to a brand-free `template/`,
+everything driven by `demo.config.json`, with the five modules in §5.3
 retargeted to the sandbox tables. Write the eight standardized creatives
 (§2.2a). Delete `seed/`. *Accept when:* one hand-written config produces a
 working themed storefront with all eight widgets firing, all five inline slots
@@ -1304,10 +1394,15 @@ Everything else in this document is decided. These three are not.
 1. **Account id and sandbox app guid.** Blocks Phase 0 entirely. Nothing can be
    tested without them.
 2. **A REST API bearer token** for the Dataspace endpoints: table creation in
-   Phase 0, row deletion in the Phase 3 purge. Published rate limit is 30
-   requests per second per IP. The core repository's notes mention the REST API
-   being IP-allowlisted in at least one context, so confirm a GitHub Actions
-   runner can reach it, or the purge job needs a different home.
+   Phase 0, row deletion in the Phase 3 purge. It needs the
+   **`dataSpace.manage`** permission specifically, per §2.3. Published rate
+   limit is 30 requests per second per IP. The core repository's notes mention
+   the REST API being IP-allowlisted in at least one context, so confirm a
+   GitHub Actions runner can reach it, or the purge job needs a different home.
+
+   The token is never committed. `create-tables.mjs` takes it from the
+   environment and has a `--dry-run` that needs no token at all, so the two
+   requests can be reviewed before anyone holds one.
 3. **Product images, one explicit confirmation.** The decision is to download
    and commit the prospect's real product images. This is the one place a
    prospect's own material is republished on a public repository under your org,
@@ -1423,6 +1518,32 @@ re-deriving the conversation.
 | J | Event panel | Free-text table input replaced by a fixed dropdown plus call-site validation. A runtime hole CI cannot close | §5.3, §9 |
 | K | Shared creative CTAs | Report and dismiss, never navigate. No URL is correct for every demo | §2.2a |
 | L | GitHub Pages | Enabled on the new repo, main branch root. Step zero of Phase 0 | §2.0 |
+
+---
+
+## 15a. Corrections made to this document while executing it
+
+A specification that has silently diverged from the code is worse than no
+specification, because the next person trusts it. Each of these was found by
+reading the reference build or by building the thing described, and each was
+corrected in place rather than worked around.
+
+| What was wrong | Where | Now |
+|---|---|---|
+| The file was committed as `DEMOFACTORYHANDOFF.md` while `CLAUDE.md`, `README.md` and §3 all linked to `DEMO-FACTORY-HANDOFF.md` | filename | renamed, three broken links fixed |
+| `seed/site/` and `seed/panel-content/`, one directory short of the files | §3, §3.1, §5, §13 | `seed/site/en/`, `seed/panel-content/en/` |
+| "these four modules", left from an earlier draft, beside a table of five | §5.3, §13 | five |
+| The `ec:` and allowlist checks scoped to `demos/` and `template/`, which does not cover the probe page | §11 | every committed file |
+| "no off-origin asset references", which is unbuildable: the SDK loader is necessarily off origin and §7.2 requires Google Fonts | §11 | a host allowlist, stated |
+| `productCatalog.js` normalizes an unreadable price to `0`, and is a sixth module needing a Phase 1 fix for a different non-negotiable | §5.3 | new subsection |
+
+Three things were added rather than corrected: the `dataSpace.manage`
+permission and the documented already-exists response in §2.3, both confirmed
+against the published reference while building `create-tables.mjs`; the
+requirement that a `sendDeviceEvent` target be a literal at the call site,
+in §11, which is what makes that check unwalkaroundable; and the note in §13
+on the probe reading its configuration at runtime where a demo has it
+substituted at build time.
 
 ---
 
