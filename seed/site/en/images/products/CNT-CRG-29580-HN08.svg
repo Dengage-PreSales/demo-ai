@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 560" width="520" height="560" role="img" aria-label="AEOLUS">
+  <defs>
+    <radialGradient id="rub" cx="38%" cy="30%">
+      <stop offset="0" stop-color="#3A3A40"/><stop offset="0.62" stop-color="#1C1C20"/><stop offset="1" stop-color="#0B0B0D"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#E6E8F0"/><stop offset="0.5" stop-color="#A8ACBD"/><stop offset="1" stop-color="#6E7285"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDE9F5"/>
+    </linearGradient>
+    <filter id="sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#4E018F" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="520" height="560" fill="url(#bg)"/>
+  <ellipse cx="260" cy="500" rx="176" ry="20" fill="#4E018F" opacity="0.13"/>
+  <g filter="url(#sh)">
+    <circle cx="260" cy="260" r="218" fill="url(#rub)"/>
+    <circle cx="260" cy="260" r="204" fill="none" stroke="#08080A" stroke-width="5"/>
+    <circle cx="260" cy="260" r="192" fill="none" stroke="#08080A" stroke-width="5"/>
+    <circle cx="260" cy="260" r="176" fill="none" stroke="#08080A" stroke-width="5"/>
+    <circle cx="260" cy="260" r="164" fill="none" stroke="#08080A" stroke-width="5"/>
+    <line x1="470.0" y1="260.0" x2="418.0" y2="260.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="468.8" y1="282.0" x2="417.1" y2="276.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="465.4" y1="303.7" x2="414.5" y2="292.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="459.7" y1="324.9" x2="410.3" y2="308.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="451.8" y1="345.4" x2="404.3" y2="324.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="441.9" y1="365.0" x2="396.8" y2="339.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="429.9" y1="383.4" x2="387.8" y2="352.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="416.1" y1="400.5" x2="377.4" y2="365.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="400.5" y1="416.1" x2="365.7" y2="377.4" stroke="#111114" stroke-width="1.6"/>
+    <line x1="383.4" y1="429.9" x2="352.9" y2="387.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="365.0" y1="441.9" x2="339.0" y2="396.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="345.4" y1="451.8" x2="324.3" y2="404.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="324.9" y1="459.7" x2="308.8" y2="410.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="303.7" y1="465.4" x2="292.9" y2="414.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="282.0" y1="468.8" x2="276.5" y2="417.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="260.0" y1="470.0" x2="260.0" y2="418.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="238.0" y1="468.8" x2="243.5" y2="417.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="216.3" y1="465.4" x2="227.1" y2="414.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="195.1" y1="459.7" x2="211.2" y2="410.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="174.6" y1="451.8" x2="195.7" y2="404.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="155.0" y1="441.9" x2="181.0" y2="396.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="136.6" y1="429.9" x2="167.1" y2="387.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="119.5" y1="416.1" x2="154.3" y2="377.4" stroke="#111114" stroke-width="1.6"/>
+    <line x1="103.9" y1="400.5" x2="142.6" y2="365.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="90.1" y1="383.4" x2="132.2" y2="352.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="78.1" y1="365.0" x2="123.2" y2="339.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="68.2" y1="345.4" x2="115.7" y2="324.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="60.3" y1="324.9" x2="109.7" y2="308.8" stroke="#111114" stroke-width="1.6"/>
+    <line x1="54.6" y1="303.7" x2="105.5" y2="292.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="51.2" y1="282.0" x2="102.9" y2="276.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="50.0" y1="260.0" x2="102.0" y2="260.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="51.2" y1="238.0" x2="102.9" y2="243.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="54.6" y1="216.3" x2="105.5" y2="227.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="60.3" y1="195.1" x2="109.7" y2="211.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="68.2" y1="174.6" x2="115.7" y2="195.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="78.1" y1="155.0" x2="123.2" y2="181.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="90.1" y1="136.6" x2="132.2" y2="167.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="103.9" y1="119.5" x2="142.6" y2="154.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="119.5" y1="103.9" x2="154.3" y2="142.6" stroke="#111114" stroke-width="1.6"/>
+    <line x1="136.6" y1="90.1" x2="167.1" y2="132.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="155.0" y1="78.1" x2="181.0" y2="123.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="174.6" y1="68.2" x2="195.7" y2="115.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="195.1" y1="60.3" x2="211.2" y2="109.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="216.3" y1="54.6" x2="227.1" y2="105.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="238.0" y1="51.2" x2="243.5" y2="102.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="260.0" y1="50.0" x2="260.0" y2="102.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="282.0" y1="51.2" x2="276.5" y2="102.9" stroke="#111114" stroke-width="1.6"/>
+    <line x1="303.7" y1="54.6" x2="292.9" y2="105.5" stroke="#111114" stroke-width="1.6"/>
+    <line x1="324.9" y1="60.3" x2="308.8" y2="109.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="345.4" y1="68.2" x2="324.3" y2="115.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="365.0" y1="78.1" x2="339.0" y2="123.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="383.4" y1="90.1" x2="352.9" y2="132.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="400.5" y1="103.9" x2="365.7" y2="142.6" stroke="#111114" stroke-width="1.6"/>
+    <line x1="416.1" y1="119.5" x2="377.4" y2="154.3" stroke="#111114" stroke-width="1.6"/>
+    <line x1="429.9" y1="136.6" x2="387.8" y2="167.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="441.9" y1="155.0" x2="396.8" y2="181.0" stroke="#111114" stroke-width="1.6"/>
+    <line x1="451.8" y1="174.6" x2="404.3" y2="195.7" stroke="#111114" stroke-width="1.6"/>
+    <line x1="459.7" y1="195.1" x2="410.3" y2="211.2" stroke="#111114" stroke-width="1.6"/>
+    <line x1="465.4" y1="216.3" x2="414.5" y2="227.1" stroke="#111114" stroke-width="1.6"/>
+    <line x1="468.8" y1="238.0" x2="417.1" y2="243.5" stroke="#111114" stroke-width="1.6"/>
+    <circle cx="260" cy="260" r="156" fill="#141417"/>
+    <circle cx="260" cy="260" r="152" fill="none" stroke="#2E2E34" stroke-width="2"/>
+    <circle cx="260" cy="260" r="104" fill="none" stroke="#0A0A0C" stroke-width="10"/>
+    <circle cx="260" cy="260" r="90" fill="url(#rim)"/>
+    <circle cx="260" cy="260" r="34" fill="#5A5D6B"/>
+    <circle cx="316.0" cy="260.0" r="7" fill="#8C8FA0"/><circle cx="299.6" cy="299.6" r="7" fill="#8C8FA0"/><circle cx="260.0" cy="316.0" r="7" fill="#8C8FA0"/><circle cx="220.4" cy="299.6" r="7" fill="#8C8FA0"/><circle cx="204.0" cy="260.0" r="7" fill="#8C8FA0"/><circle cx="220.4" cy="220.4" r="7" fill="#8C8FA0"/><circle cx="260.0" cy="204.0" r="7" fill="#8C8FA0"/><circle cx="299.6" cy="220.4" r="7" fill="#8C8FA0"/>
+    <circle cx="260" cy="260" r="14" fill="#2E3140"/>
+  </g>
+  <path id="arc" d="M 126 260 a 134 134 0 0 0 268 0" fill="none"/>
+  <text font-family="Barlow Condensed, Impact, sans-serif" font-size="27" font-weight="700" fill="#C9C4D6" letter-spacing="3">
+    <textPath href="#arc" startOffset="50%" text-anchor="middle">AEOLUS</textPath>
+  </text>
+  <text x="260" y="536" text-anchor="middle" font-family="Inter, sans-serif" font-size="21" font-weight="600" fill="#4E018F" letter-spacing="1.5">295/80 R22.5</text>
+</svg>

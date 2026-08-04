@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | Survey (native Dengage question form)</title>
+<!-- =====================================================================
+     CANTUPNEUS SURVEY, On-Site content for the panel
+
+     VERSION 2, built on Dengage's NATIVE QUESTION FORM.
+
+     Why it changed: the engine renders this content inside an iframe on
+     another origin, so the previous CSS-only submit looked like it worked but
+     recorded nothing anywhere. The supported path is the native question form:
+     when the content contains data-dn-form-id="question_form", the engine
+     injects its own form-handler.js and exposes window.Dn in the iframe.
+
+     The native form contract used here:
+       <form class="form" data-dn-form-id="question_form">   root
+       the FIRST .form-block is the question. It carries:
+         data-dn-name="<tag name>"          the tag each answer is written to
+         data-dn-is-radio="true"            single choice; omit for multi
+         data-dn-min-selection / -max-selection   for multi choice
+       it must contain input[type=checkbox] (or radio) and a div.form-message
+       Dn.postQuestion()   validates, then writes the answers as CONTACT TAGS
+       Dn.close()          closes the message
+
+     WHERE THE DATA LANDS: contact tags, one per selected answer, as
+     {tag:"tyre_line_interest", value:"<option>"}. Not a Big Data table. Read
+     them back in the panel on the contact card and use them in segments.
+
+     ONE QUESTION ONLY: the engine's question form reads a single .form-block,
+     so a multi-question survey is not something the native mechanism supports.
+     This asks the one question that is actually useful for segmentation. The
+     free-text box and the 1-5 score from the old draft were removed rather
+     than left on screen collecting nothing (NPS has its own scenario).
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = survey
+       - Popup layout, width 460 to 480px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<form class="form" data-dn-form-id="question_form" data-dn-validation-language="en"
+      id="cantu-survey" onsubmit="return false">
+  <style>
+    #cantu-survey *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-survey{
+      --cs-purple:#4E018F; --cs-purple-dark:#35015F; --cs-yellow:#FFE958;
+      --cs-ink:#1A1030; --cs-ink-soft:#4A4363; --cs-line:#E6E1F0; --cs-cream:#F6F4FA;
+      --cs-error:#C0263C;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;
+      width:100%;display:block;
+    }
+    body > #cantu-survey{max-width:480px;margin:40px auto;}
+    #cantu-survey .cs-vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+
+    #cantu-survey .cs-card{
+      width:100%;background:#fff;border-radius:18px;overflow:hidden;position:relative;
+      box-shadow:0 8px 24px rgba(26,16,48,.18);animation:cs-in .35s cubic-bezier(.21,.9,.35,1.1);
+    }
+    @keyframes cs-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    #cantu-survey .cs-head{
+      background:linear-gradient(120deg,var(--cs-purple) 0%,var(--cs-purple-dark) 100%);
+      color:#fff;padding:18px 22px;display:flex;align-items:center;gap:11px;position:relative;
+    }
+    #cantu-survey .cs-mark{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    #cantu-survey .cs-mark svg{width:26px;height:26px;}
+    #cantu-survey .cs-brand{font-family:'Barlow Condensed',Impact,sans-serif;font-size:21px;
+      font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    #cantu-survey .cs-brand b{color:var(--cs-yellow);font-weight:600;}
+
+    #cantu-survey .cs-body{padding:24px 26px 26px;}
+    #cantu-survey .cs-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.16em;
+      color:var(--cs-purple);text-transform:uppercase;margin-bottom:8px;}
+    #cantu-survey h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:27px;
+      line-height:1.12;color:var(--cs-ink);margin-bottom:4px;
+    }
+    #cantu-survey h2 em{font-style:normal;color:var(--cs-purple);
+      box-shadow:inset 0 -9px 0 var(--cs-yellow);}
+    #cantu-survey .cs-sub{font-size:13px;color:var(--cs-ink-soft);margin-bottom:18px;}
+    #cantu-survey .cs-q{font-size:13px;font-weight:600;color:var(--cs-ink);margin:0 0 11px;}
+
+    /* the question block: hidden checkboxes plus styled labels */
+    #cantu-survey .cs-chips{display:flex;flex-wrap:wrap;gap:7px;}
+    #cantu-survey .cs-chips label{
+      border:1.5px solid var(--cs-line);border-radius:999px;background:var(--cs-cream);
+      padding:9px 15px;font:500 12.5px Inter,sans-serif;color:var(--cs-ink-soft);cursor:pointer;
+      transition:all .15s ease;
+    }
+    #cantu-survey .cs-chips label:hover{border-color:var(--cs-purple);color:var(--cs-purple);}
+    #cantu-survey .cs-chips input:checked + label{
+      background:var(--cs-purple);border-color:var(--cs-purple);color:#fff;font-weight:600;
+    }
+
+    /* the engine writes its validation text into div.form-message and stamps
+       data-dn-invalid on the block, so only show the text when it is invalid */
+    #cantu-survey .form-message{
+      display:none;font-size:11.5px;color:var(--cs-error);margin-top:10px;
+    }
+    #cantu-survey .form-block[data-dn-invalid="true"] .form-message{display:block;}
+    #cantu-survey .form-block[data-dn-invalid="true"] .cs-chips label{border-color:var(--cs-error);}
+
+    #cantu-survey .cs-send{
+      display:block;width:100%;margin-top:18px;padding:14px;border-radius:12px;border:0;
+      background:var(--cs-purple);color:#fff;font:700 13px Inter,sans-serif;text-align:center;
+      letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:all .2s ease;
+    }
+    #cantu-survey .cs-send:hover{background:var(--cs-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.35);}
+    #cantu-survey .cs-note{font-size:11px;color:var(--cs-ink-soft);text-align:center;margin-top:10px;}
+
+    /* confirmation panel, driven by the engine's data-dn-is-submitted stamp */
+    #cantu-survey .submitted-content{display:none;padding:44px 30px 46px;text-align:center;}
+    #cantu-survey .container[data-dn-is-submitted="true"] .cs-body{display:none;}
+    #cantu-survey .container[data-dn-is-submitted="true"] .submitted-content{display:block;}
+    #cantu-survey .cs-check{
+      width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--cs-yellow);
+      display:flex;align-items:center;justify-content:center;
+      animation:cs-pop .4s cubic-bezier(.2,1.6,.4,1);
+    }
+    @keyframes cs-pop{from{transform:scale(.4);opacity:0;}to{transform:none;opacity:1;}}
+    #cantu-survey .cs-check svg{width:30px;height:30px;}
+    #cantu-survey .submitted-content h3{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:26px;
+      line-height:1.12;color:var(--cs-ink);margin-bottom:8px;
+    }
+    #cantu-survey .submitted-content h3 em{font-style:normal;color:var(--cs-purple);
+      box-shadow:inset 0 -9px 0 var(--cs-yellow);}
+    #cantu-survey .submitted-content p{font-size:13.5px;color:var(--cs-ink-soft);line-height:1.55;}
+
+    @media (max-width:420px){
+      #cantu-survey .cs-body{padding:20px 18px 22px;}
+      #cantu-survey h2{font-size:24px;}
+    }
+  </style>
+
+  <div class="container cs-card" role="dialog" aria-modal="true" aria-label="CantuPneus survey">
+    <div class="cs-head">
+      <span class="cs-mark" aria-hidden="true">
+        <svg viewBox="0 0 120 64" fill="none"><g stroke="#fff" stroke-width="13" stroke-linecap="round"><path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/></g><rect x="46" y="11.5" width="28" height="13" rx="6.5" fill="#fff"/><rect x="46" y="39.5" width="28" height="13" rx="6.5" fill="#fff"/></svg>
+      </span>
+      <span class="cs-brand">Cantu<b>Pneus</b></span>
+    </div>
+
+    <div class="cs-body">
+      <p class="cs-eyebrow">Quick question &middot; 15 seconds</p>
+      <h2>Which lines should we <em>keep in stock</em> for you?</h2>
+      <p class="cs-sub">Tell us what you buy and we will only send price lists for those lines.</p>
+
+      <!-- the FIRST .form-block is the question the engine reads -->
+      <div class="form-block" data-dn-name="tyre_line_interest"
+           data-dn-min-selection="1" data-dn-max-selection="3">
+        <p class="cs-q">Pick up to three lines you usually buy</p>
+        <div class="cs-chips">
+          <input class="cs-vh" type="checkbox" id="cs-c1" value="truck"><label for="cs-c1">Truck</label>
+          <input class="cs-vh" type="checkbox" id="cs-c2" value="passenger"><label for="cs-c2">Passenger</label>
+          <input class="cs-vh" type="checkbox" id="cs-c3" value="agricultural"><label for="cs-c3">Agricultural</label>
+          <input class="cs-vh" type="checkbox" id="cs-c4" value="industrial-otr"><label for="cs-c4">Industrial and OTR</label>
+          <input class="cs-vh" type="checkbox" id="cs-c5" value="wheels-tubes"><label for="cs-c5">Wheels and tubes</label>
+        </div>
+        <div class="form-message"></div>
+      </div>
+
+      <button type="button" class="cs-send"
+              onclick="Dn.sendClick('survey__submit');Dn.postQuestion()">Send my answer</button>
+      <p class="cs-note">No personal details asked. Takes less than a minute.</p>
+    </div>
+
+    <!-- auto-close OFF: the engine closes a tag submission instantly otherwise,
+         so the confirmation would never be seen -->
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="false" data-dn-modal-close-seconds="6">
+      <div class="cs-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#35015F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Thanks for <em>rolling</em> with us</h3>
+      <p>Your answer is on your profile now, so the next price list only covers
+         the lines you picked.</p>
+    </div>
+  </div>
+</form>
+
+</body>
+</html>

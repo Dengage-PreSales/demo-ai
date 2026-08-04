@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | A/B Variant C, photo and proof</title>
+<!-- =====================================================================
+     A/B TEST VARIANT C, "photo and proof"
+
+     Paste this WHOLE file into VARIANT C of the "CantuPneus - A/B Testing"
+     campaign. All CSS is scoped to #cantu-ab-c.
+
+     Same offer, same promise, same CTA destination as A and B. Only the visual
+     design changes, so the result is attributable to design and nothing else.
+
+       C -> Dn.sendClick('ab-testing__C')
+
+     The photo uses an absolute site URL, so it also loads in the panel preview.
+
+     Panel settings for the campaign (shared by all three variants):
+       - Trigger: DATA_LAYER_EVENT, eventName = ab-testing
+       - Popup layout, width 560px, padding 0, transparent background
+       - Split: Control 10, A 30, B 30, C 30
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-ab-c" data-variant="C">
+  <style>
+    #cantu-ab-c *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-ab-c{
+      --ac-purple:#4E018F; --ac-purple-dark:#35015F; --ac-yellow:#FFE958;
+      --ac-ink:#1A1030; --ac-ink-soft:#5C5573; --ac-line:#EDE9F5; --ac-cream:#FAF8FD;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+      position:relative;
+    }
+    body > #cantu-ab-c{max-width:560px;margin:40px auto;}
+
+    #cantu-ab-c .ac-card{
+      width:100%;background:#fff;border-radius:16px;overflow:hidden;position:relative;
+      box-shadow:0 12px 34px rgba(26,16,48,.2);
+      animation:ac-in .4s cubic-bezier(.21,.9,.35,1.05);
+    }
+    @keyframes ac-in{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+
+    /* photo strip with the offer sitting on it */
+    #cantu-ab-c .ac-stage{position:relative;height:196px;background:var(--ac-ink);}
+    #cantu-ab-c .ac-photo{display:block;width:100%;height:100%;object-fit:cover;
+      object-position:58% 58%;}
+    /* two layers: a left-weighted purple wash for the headline, plus a flat
+       darkening pass so the controls on the bright side stay legible too */
+    #cantu-ab-c .ac-shade{
+      position:absolute;inset:0;
+      background:
+        linear-gradient(100deg,rgba(53,1,95,.93) 0%,rgba(53,1,95,.68) 50%,rgba(53,1,95,.34) 100%),
+        rgba(26,16,48,.26);
+    }
+    #cantu-ab-c .ac-over{
+      position:absolute;inset:0;padding:24px 26px;color:#fff;
+      display:flex;flex-direction:column;justify-content:center;
+    }
+    #cantu-ab-c .ac-flag{
+      display:inline-block;align-self:flex-start;background:var(--ac-yellow);
+      color:var(--ac-purple-dark);border-radius:5px;font:700 10px Inter,sans-serif;
+      letter-spacing:.13em;text-transform:uppercase;padding:5px 9px;margin-bottom:11px;
+    }
+    #cantu-ab-c h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;
+      font-size:34px;line-height:1.03;max-width:20ch;
+    }
+    #cantu-ab-c h2 em{font-style:normal;color:var(--ac-yellow);}
+    #cantu-ab-c .ac-variant{
+      position:absolute;top:14px;right:56px;z-index:2;
+      font:700 9.5px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+      color:rgba(255,255,255,.78);background:rgba(26,16,48,.42);
+      border:1px solid rgba(255,255,255,.26);border-radius:3px;padding:4px 8px;
+    }
+
+    #cantu-ab-c .ac-body{padding:20px 26px 24px;}
+    #cantu-ab-c .ac-lede{font-size:13.5px;line-height:1.6;color:var(--ac-ink-soft);margin-bottom:18px;}
+
+    /* three-up proof grid, the design signature of this variant */
+    #cantu-ab-c .ac-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--ac-line);
+      border:1px solid var(--ac-line);border-radius:11px;overflow:hidden;margin-bottom:20px;
+    }
+    #cantu-ab-c .ac-cell{background:var(--ac-cream);padding:14px 12px;text-align:center;}
+    #cantu-ab-c .ac-num{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:26px;
+      line-height:1;color:var(--ac-purple);
+    }
+    #cantu-ab-c .ac-lbl{
+      font-size:10.5px;line-height:1.35;color:var(--ac-ink-soft);margin-top:5px;
+      letter-spacing:.03em;
+    }
+
+    #cantu-ab-c .ac-cta{
+      display:block;width:100%;background:var(--ac-purple);color:#fff;text-decoration:none;
+      font:700 13px Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;
+      padding:16px;border-radius:11px;text-align:center;transition:all .2s ease;
+    }
+    #cantu-ab-c .ac-cta:hover{background:var(--ac-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.32);}
+    #cantu-ab-c .ac-note{font-size:11px;color:var(--ac-ink-soft);text-align:center;margin-top:12px;}
+
+    @media (max-width:520px){
+      #cantu-ab-c .ac-stage{height:168px;}
+      #cantu-ab-c h2{font-size:28px;}
+      #cantu-ab-c .ac-body{padding:18px 18px 20px;}
+      #cantu-ab-c .ac-num{font-size:22px;}
+    }
+  </style>
+
+  <div class="ac-card" role="dialog" aria-modal="true" aria-label="Free freight on your first fleet order">
+    <div class="ac-stage">
+      <img class="ac-photo" alt="Freight truck on the highway"
+        src="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/images/scenes/hero-carga.jpg">
+      <span class="ac-shade" aria-hidden="true"></span>
+      <div class="ac-over">
+        <span class="ac-flag">First fleet order</span>
+        <h2>Free freight on orders over <em>R$ 5,000</em></h2>
+      </div>
+      <span class="ac-variant">Variant C</span>
+    </div>
+
+    <div class="ac-body">
+      <p class="ac-lede">Truck, passenger, agricultural and OTR lines, all from ready
+        stock and invoiced the same week you order.</p>
+
+      <div class="ac-grid">
+        <div class="ac-cell">
+          <p class="ac-num">25,000+</p>
+          <p class="ac-lbl">Fleets served</p>
+        </div>
+        <div class="ac-cell">
+          <p class="ac-num">12,000</p>
+          <p class="ac-lbl">Tyres in stock</p>
+        </div>
+        <div class="ac-cell">
+          <p class="ac-num">24h</p>
+          <p class="ac-lbl">To invoice</p>
+        </div>
+      </div>
+
+      <a target="_top" class="ac-cta" onclick="Dn.sendClick('ab-testing__C')"
+         href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#products">Claim free freight</a>
+      <p class="ac-note">Registered businesses only. Offer runs while stock lasts.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

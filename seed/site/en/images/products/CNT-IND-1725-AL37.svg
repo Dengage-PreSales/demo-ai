@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 560" width="520" height="560" role="img" aria-label="AEOLUS">
+  <defs>
+    <radialGradient id="rub" cx="38%" cy="30%">
+      <stop offset="0" stop-color="#3A3A40"/><stop offset="0.62" stop-color="#1C1C20"/><stop offset="1" stop-color="#0B0B0D"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FFF3A8"/><stop offset="0.5" stop-color="#FFE958"/><stop offset="1" stop-color="#D9BE1F"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDE9F5"/>
+    </linearGradient>
+    <filter id="sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#4E018F" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="520" height="560" fill="url(#bg)"/>
+  <ellipse cx="260" cy="500" rx="176" ry="20" fill="#4E018F" opacity="0.13"/>
+  <g filter="url(#sh)">
+    <circle cx="260" cy="260" r="218" fill="url(#rub)"/>
+    <polygon points="470.4,234.2 470.4,285.8 415.4,273.3 415.4,246.7" fill="#303035"/>
+    <polygon points="462.7,322.0 441.7,369.2 396.6,335.4 407.4,311.0" fill="#303035"/>
+    <polygon points="437.8,375.5 404.6,415.0 370.5,370.1 387.6,349.7" fill="#303035"/>
+    <polygon points="375.5,437.8 329.0,460.4 316.2,405.5 340.1,393.9" fill="#303035"/>
+    <polygon points="322.0,462.7 271.1,471.7 273.9,415.4 300.1,410.8" fill="#303035"/>
+    <polygon points="234.2,470.4 184.0,457.9 209.5,407.6 235.3,414.0" fill="#303035"/>
+    <polygon points="177.2,455.1 132.4,429.3 170.7,387.9 193.8,401.3" fill="#303035"/>
+    <polygon points="105.0,404.6 74.6,362.8 126.4,340.6 142.1,362.1" fill="#303035"/>
+    <polygon points="71.1,356.2 53.4,307.7 109.4,300.6 118.5,325.7" fill="#303035"/>
+    <polygon points="48.3,271.1 51.9,219.5 105.9,235.9 104.0,262.5" fill="#303035"/>
+    <polygon points="53.4,212.3 71.1,163.8 118.5,194.3 109.4,219.4" fill="#303035"/>
+    <polygon points="90.7,132.4 126.6,95.2 157.4,142.4 138.9,161.6" fill="#303035"/>
+    <polygon points="132.4,90.7 177.2,64.9 193.8,118.7 170.7,132.1" fill="#303035"/>
+    <polygon points="212.3,53.4 263.7,48.0 257.0,104.0 230.5,106.8" fill="#303035"/>
+    <polygon points="271.1,48.3 322.0,57.3 300.1,109.2 273.9,104.6" fill="#303035"/>
+    <polygon points="356.2,71.1 399.1,100.0 358.0,138.6 335.9,123.7" fill="#303035"/>
+    <polygon points="404.6,105.0 437.8,144.5 387.6,170.3 370.5,149.9" fill="#303035"/>
+    <polygon points="455.1,177.2 469.4,226.8 413.1,230.0 405.7,204.3" fill="#303035"/>
+    <circle cx="260" cy="260" r="156" fill="#141417"/>
+    <circle cx="260" cy="260" r="152" fill="none" stroke="#2E2E34" stroke-width="2"/>
+    <circle cx="260" cy="260" r="104" fill="none" stroke="#0A0A0C" stroke-width="10"/>
+    <circle cx="260" cy="260" r="90" fill="url(#rim)"/>
+    <circle cx="260" cy="260" r="34" fill="#5A5D6B"/>
+    <circle cx="316.0" cy="260.0" r="7" fill="#8C8FA0"/><circle cx="299.6" cy="299.6" r="7" fill="#8C8FA0"/><circle cx="260.0" cy="316.0" r="7" fill="#8C8FA0"/><circle cx="220.4" cy="299.6" r="7" fill="#8C8FA0"/><circle cx="204.0" cy="260.0" r="7" fill="#8C8FA0"/><circle cx="220.4" cy="220.4" r="7" fill="#8C8FA0"/><circle cx="260.0" cy="204.0" r="7" fill="#8C8FA0"/><circle cx="299.6" cy="220.4" r="7" fill="#8C8FA0"/>
+    <circle cx="260" cy="260" r="14" fill="#2E3140"/>
+  </g>
+  <path id="arc" d="M 126 260 a 134 134 0 0 0 268 0" fill="none"/>
+  <text font-family="Barlow Condensed, Impact, sans-serif" font-size="27" font-weight="700" fill="#C9C4D6" letter-spacing="3">
+    <textPath href="#arc" startOffset="50%" text-anchor="middle">AEOLUS</textPath>
+  </text>
+  <text x="260" y="536" text-anchor="middle" font-family="Inter, sans-serif" font-size="21" font-weight="600" fill="#4E018F" letter-spacing="1.5">17.5-25</text>
+</svg>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | Image Popup (Dengage panel content)</title>
+<!-- =====================================================================
+     CANTUPNEUS IMAGE POPUP, On-Site content for the panel
+
+     Paste this WHOLE file into the "image-popup" scenario editor. All CSS is
+     scoped to #cantu-imgpop, so nothing leaks onto the page. The image uses an
+     absolute site URL so it also loads in the panel preview.
+
+     Clicks: the engine renders this content inside a cross-origin iframe, so it
+     only counts a click when the content calls Dn.sendClick(buttonId). The CTA
+     reports; the close control calls Dn.close() instead, so a dismissal never
+     inflates CLICK, UNIQUE CLICK or CTR.
+
+     Links: target="_top" so navigation leaves the iframe.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = image-popup
+       - Popup design: width 460 to 520px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-imgpop">
+  <style>
+    #cantu-imgpop *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-imgpop{
+      --ip-purple:#4E018F; --ip-purple-dark:#35015F; --ip-yellow:#FFE958; --ip-ink:#1A1030;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+      position:relative;
+    }
+    body > #cantu-imgpop{max-width:500px;margin:40px auto;}
+
+    #cantu-imgpop .ip-card{
+      display:block;width:100%;position:relative;border-radius:18px;overflow:hidden;
+      text-decoration:none;box-shadow:0 8px 24px rgba(26,16,48,.18);
+      animation:ip-in .35s cubic-bezier(.21,.9,.35,1.1);background:var(--ip-ink);
+    }
+    @keyframes ip-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    #cantu-imgpop .ip-photo{display:block;width:100%;height:340px;object-fit:cover;}
+    #cantu-imgpop .ip-shade{
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(26,16,48,.92) 0%,rgba(26,16,48,.45) 45%,rgba(26,16,48,.08) 75%);
+    }
+    #cantu-imgpop .ip-copy{position:absolute;left:0;right:0;bottom:0;padding:22px 24px 24px;color:#fff;}
+    #cantu-imgpop .ip-tag{
+      display:inline-block;background:var(--ip-yellow);color:var(--ip-purple-dark);
+      border-radius:8px;font:700 10.5px Inter,sans-serif;letter-spacing:.12em;
+      text-transform:uppercase;padding:5px 10px;margin-bottom:10px;
+    }
+    #cantu-imgpop h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:32px;
+      line-height:1.08;margin-bottom:6px;
+    }
+    #cantu-imgpop h2 em{font-style:normal;color:var(--ip-yellow);}
+    #cantu-imgpop .ip-sub{font-size:13px;opacity:.88;margin-bottom:14px;}
+    #cantu-imgpop .ip-cta{
+      display:inline-block;background:#fff;color:var(--ip-purple);border-radius:10px;
+      font:700 12px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+      padding:11px 20px;transition:all .2s ease;
+    }
+    #cantu-imgpop .ip-card:hover .ip-cta{background:var(--ip-yellow);color:var(--ip-purple-dark);
+      transform:translateY(-1px);}
+
+    @media (max-width:420px){
+      #cantu-imgpop .ip-photo{height:300px;}
+      #cantu-imgpop h2{font-size:27px;}
+      #cantu-imgpop .ip-copy{padding:18px 18px 20px;}
+    }
+  </style>
+
+  <a target="_top" class="ip-card" onclick="Dn.sendClick('image-popup__view-line')" href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#products"
+     aria-label="See truck line offers">
+    <img class="ip-photo" alt="Truck on the highway running CantuPneus truck tyres"
+      src="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/images/scenes/linha-carga.jpg">
+    <span class="ip-shade" aria-hidden="true"></span>
+    <span class="ip-copy">
+      <span class="ip-tag">Truck line</span>
+      <h2>Up to <em>18% off</em> for fleets</h2>
+      <span class="ip-sub">Lug and rib 295/80 R22.5, in stock and shipping nationwide.</span>
+      <span class="ip-cta">See truck line</span>
+    </span>
+  </a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | Sticky Bar (Dengage panel content)</title>
+<!-- =====================================================================
+     CANTUPNEUS STICKY BAR, On-Site content for the panel
+
+     Paste this WHOLE file into the "stickey-bar" scenario editor. All CSS is
+     scoped to #cantu-bar, so nothing leaks onto the page.
+
+     Clicks: the engine renders this content inside a cross-origin iframe, so it
+     only counts a click when the content calls Dn.sendClick(buttonId). The CTA
+     reports; the close control calls Dn.close() instead, so a dismissal never
+     inflates CLICK, UNIQUE CLICK or CTR.
+
+     Links: target="_top" so navigation leaves the iframe.
+
+     WIDTH: use the panel's BANNER layout (not Popup). The banner container is
+     already fixed and full width; the bar just fills 100% of it.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = stickey-bar
+       - Layout: Banner, Position = Top,
+         "Keep this message in place on scroll" ON
+       - Design: padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-bar">
+  <style>
+    #cantu-bar *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-bar{
+      --cb-purple:#4E018F; --cb-purple-dark:#35015F; --cb-yellow:#FFE958; --cb-ink:#1A1030;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+    }
+    #cantu-bar .cb-vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+    #cantu-bar #cb-hide:checked ~ .cb-strip{display:none;}
+
+    /* in normal flow: the Banner layout container is already fixed and full
+       width, so the bar only has to fill 100% of it */
+    #cantu-bar .cb-strip{
+      width:100%;height:54px;position:relative;
+      display:flex;align-items:center;justify-content:center;gap:16px;
+      padding:0 52px 0 18px;overflow:hidden;
+      background:linear-gradient(100deg,var(--cb-purple) 0%,var(--cb-purple-dark) 100%);
+      color:#fff;box-shadow:0 6px 18px rgba(26,16,48,.22);
+      animation:cb-in .3s ease-out;
+    }
+    @keyframes cb-in{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+    /* the site header is fixed at the top too; while this bar is open at the
+       top, push the header down by its height (the rule only matches when
+       this content exists and is open) */
+    body:has(#cantu-bar #cb-hide:not(:checked)) .site-header{top:54px;}
+
+    #cantu-bar .cb-tag{
+      background:var(--cb-yellow);color:var(--cb-purple-dark);border-radius:8px;
+      font:700 10.5px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+      padding:5px 10px;flex-shrink:0;
+    }
+    #cantu-bar .cb-msg{font-size:13.5px;line-height:1.35;min-width:0;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    #cantu-bar .cb-msg b{color:var(--cb-yellow);font-weight:700;}
+    #cantu-bar .cb-cta{
+      flex-shrink:0;background:#fff;color:var(--cb-purple);text-decoration:none;
+      font:700 12px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+      padding:9px 18px;border-radius:10px;transition:all .2s ease;
+    }
+    #cantu-bar .cb-cta:hover{background:var(--cb-yellow);color:var(--cb-purple-dark);
+      transform:translateY(-1px);}
+    #cantu-bar .cb-close{
+      position:absolute;top:50%;right:12px;transform:translateY(-50%);
+      width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.16);
+      color:#fff;font-size:14px;line-height:28px;text-align:center;cursor:pointer;
+      transition:background .2s;
+    }
+    #cantu-bar .cb-close:hover{background:rgba(255,255,255,.3);}
+
+    @media (max-width:640px){
+      #cantu-bar .cb-strip{gap:10px;padding:0 46px 0 12px;}
+      #cantu-bar .cb-msg{font-size:12px;white-space:normal;line-height:1.25;
+        display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+      #cantu-bar .cb-tag{display:none;}
+    }
+  </style>
+
+  <input type="checkbox" id="cb-hide" class="cb-vh">
+  <div class="cb-strip" role="region" aria-label="CantuPneus offer">
+    <span class="cb-tag">This week only</span>
+    <span class="cb-msg"><b>Free freight</b> on orders above R$ 5,000 to the South and Southeast. Ready stock, same-day dispatch.</span>
+    <a target="_top" class="cb-cta" onclick="Dn.sendClick('stickey-bar__claim-offer')" href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#products">Claim offer</a>
+    <label class="cb-close" for="cb-hide" onclick="Dn.close()" role="button" aria-label="Close bar">&#10005;</label>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | Horizontal Popup (Dengage panel content)</title>
+<!-- =====================================================================
+     CANTUPNEUS HORIZONTAL POPUP, On-Site content for the panel
+
+     Paste this WHOLE file into the "horizonal-popup" scenario editor. All CSS
+     is scoped to #cantu-hpop, so nothing leaks onto the page.
+
+     Clicks: the engine renders this content inside a cross-origin iframe, so it
+     only counts a click when the content calls Dn.sendClick(buttonId). The CTA
+     reports; the close control calls Dn.close() instead, so a dismissal never
+     inflates CLICK, UNIQUE CLICK or CTR.
+
+     Links: target="_top" so navigation leaves the iframe.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = horizonal-popup
+       - Popup design: width 640 to 720px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-hpop">
+  <style>
+    #cantu-hpop *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-hpop{
+      --hp-purple:#4E018F; --hp-purple-dark:#35015F; --hp-yellow:#FFE958;
+      --hp-ink:#1A1030; --hp-ink-soft:#4A4363;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+    }
+    body > #cantu-hpop{max-width:700px;margin:40px auto;}
+
+    #cantu-hpop .hp-card{
+      width:100%;display:flex;background:#fff;border-radius:18px;overflow:hidden;
+      position:relative;box-shadow:0 8px 24px rgba(26,16,48,.18);
+      animation:hp-in .35s cubic-bezier(.21,.9,.35,1.1);
+    }
+    @keyframes hp-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    /* branded left panel */
+    #cantu-hpop .hp-left{
+      flex:0 0 38%;background:linear-gradient(150deg,var(--hp-purple) 0%,var(--hp-purple-dark) 100%);
+      color:#fff;padding:26px 22px;display:flex;flex-direction:column;justify-content:space-between;
+      gap:20px;
+    }
+    #cantu-hpop .hp-brandrow{display:flex;align-items:center;gap:10px;}
+    #cantu-hpop .hp-mark{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    #cantu-hpop .hp-mark svg{width:23px;height:23px;}
+    #cantu-hpop .hp-brand{font-family:'Barlow Condensed',Impact,sans-serif;font-size:18px;
+      font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    #cantu-hpop .hp-brand b{color:var(--hp-yellow);font-weight:600;}
+    #cantu-hpop .hp-big{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:44px;
+      line-height:.95;color:var(--hp-yellow);
+    }
+    #cantu-hpop .hp-big small{display:block;font-size:15px;color:#fff;letter-spacing:.08em;
+      text-transform:uppercase;margin-top:6px;}
+
+    /* content on the right */
+    #cantu-hpop .hp-right{flex:1;padding:26px 28px;}
+    #cantu-hpop .hp-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.16em;
+      color:var(--hp-purple);text-transform:uppercase;margin-bottom:8px;}
+    #cantu-hpop h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:28px;
+      line-height:1.1;color:var(--hp-ink);margin-bottom:8px;
+    }
+    #cantu-hpop h2 em{font-style:normal;color:var(--hp-purple);
+      box-shadow:inset 0 -9px 0 var(--hp-yellow);}
+    #cantu-hpop .hp-sub{font-size:13px;color:var(--hp-ink-soft);line-height:1.5;margin-bottom:14px;}
+    #cantu-hpop .hp-list{list-style:none;margin-bottom:18px;}
+    #cantu-hpop .hp-list li{
+      font-size:12.5px;color:var(--hp-ink-soft);padding:4px 0 4px 24px;position:relative;
+    }
+    #cantu-hpop .hp-list li::before{
+      content:"";position:absolute;left:0;top:7px;width:14px;height:14px;border-radius:50%;
+      background:var(--hp-yellow) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="%2335015F" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>') center/8px no-repeat;
+    }
+    #cantu-hpop .hp-cta{
+      display:inline-block;background:var(--hp-purple);color:#fff;text-decoration:none;
+      font:700 12px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;
+      padding:13px 24px;border-radius:11px;transition:all .2s ease;
+    }
+    #cantu-hpop .hp-cta:hover{background:var(--hp-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.35);}
+    #cantu-hpop .hp-note{font-size:11px;color:var(--hp-ink-soft);margin-top:10px;}
+
+
+    @media (max-width:560px){
+      #cantu-hpop .hp-card{flex-direction:column;}
+      #cantu-hpop .hp-left{flex:none;flex-direction:row;align-items:center;padding:18px 20px;}
+      #cantu-hpop .hp-big{font-size:34px;}
+      #cantu-hpop .hp-right{padding:20px 20px 22px;}
+    }
+  </style>
+
+  <div class="hp-card" role="dialog" aria-modal="true" aria-label="CantuPneus wholesale">
+    <div class="hp-left">
+      <div class="hp-brandrow">
+        <span class="hp-mark" aria-hidden="true">
+          <svg viewBox="0 0 120 64" fill="none"><g stroke="#fff" stroke-width="13" stroke-linecap="round"><path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/></g><rect x="46" y="11.5" width="28" height="13" rx="6.5" fill="#fff"/><rect x="46" y="39.5" width="28" height="13" rx="6.5" fill="#fff"/></svg>
+        </span>
+        <span class="hp-brand">Cantu<b>Pneus</b></span>
+      </div>
+      <p class="hp-big">25,000+<small>fleets served</small></p>
+    </div>
+
+    <div class="hp-right">
+      <p class="hp-eyebrow">Wholesale for businesses</p>
+      <h2>Deal direct with a <em>fleet specialist</em></h2>
+      <p class="hp-sub">Volume pricing, extended payment terms and scheduled delivery for carriers, resellers and agribusiness.</p>
+      <ul class="hp-list">
+        <li>Tiered price list from 20 tyres up</li>
+        <li>Invoiced within 24h by bank slip or instant transfer</li>
+        <li>WhatsApp support, no queue</li>
+      </ul>
+      <a target="_top" class="hp-cta" onclick="Dn.sendClick('horizonal-popup__talk-to-advisor')" href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#contact">Talk to a specialist</a>
+      <p class="hp-note">Answered in under 30 minutes during business hours.</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

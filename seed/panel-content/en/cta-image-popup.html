@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | CTA Image Popup (Dengage panel content)</title>
+<!-- =====================================================================
+     CANTUPNEUS CTA IMAGE POPUP, On-Site content for the panel
+
+     Paste this WHOLE file into the "cta-image-popup" scenario editor. All CSS
+     is scoped to #cantu-ctapop, so nothing leaks onto the page. Product and
+     prices are the real catalogue values (Marshal KLD01).
+
+     Clicks: the engine renders this content inside a cross-origin iframe, so it
+     only counts a click when the content calls Dn.sendClick(buttonId). The CTA
+     reports; the close control calls Dn.close() instead, so a dismissal never
+     inflates CLICK, UNIQUE CLICK or CTR.
+
+     Links: target="_top" so navigation leaves the iframe.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = cta-image-popup
+       - Popup design: width 440 to 480px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-ctapop">
+  <style>
+    #cantu-ctapop *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-ctapop{
+      --cp-purple:#4E018F; --cp-purple-dark:#35015F; --cp-yellow:#FFE958;
+      --cp-ink:#1A1030; --cp-ink-soft:#4A4363; --cp-cream:#F6F4FA;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+    }
+    body > #cantu-ctapop{max-width:460px;margin:40px auto;}
+
+    #cantu-ctapop .cp-card{
+      width:100%;background:#fff;border-radius:18px;overflow:hidden;position:relative;
+      box-shadow:0 8px 24px rgba(26,16,48,.18);animation:cp-in .35s cubic-bezier(.21,.9,.35,1.1);
+    }
+    @keyframes cp-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    #cantu-ctapop .cp-stage{
+      background:radial-gradient(120% 120% at 50% 0%,#F1EAFB 0%,var(--cp-cream) 60%);
+      padding:26px 26px 18px;text-align:center;position:relative;
+    }
+    #cantu-ctapop .cp-flag{
+      position:absolute;top:14px;left:14px;background:var(--cp-yellow);
+      color:var(--cp-purple-dark);border-radius:8px;font:700 10.5px Inter,sans-serif;
+      letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;
+    }
+    #cantu-ctapop .cp-photo{width:190px;height:190px;object-fit:contain;
+      filter:drop-shadow(0 14px 18px rgba(26,16,48,.25));}
+
+    #cantu-ctapop .cp-body{padding:18px 26px 26px;text-align:center;}
+    #cantu-ctapop .cp-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.16em;
+      color:var(--cp-purple);text-transform:uppercase;margin-bottom:6px;}
+    #cantu-ctapop h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:27px;
+      line-height:1.1;color:var(--cp-ink);margin-bottom:4px;
+    }
+    #cantu-ctapop .cp-spec{font-size:12.5px;color:var(--cp-ink-soft);margin-bottom:14px;}
+
+    #cantu-ctapop .cp-pricerow{display:flex;align-items:baseline;justify-content:center;
+      gap:10px;margin-bottom:16px;}
+    #cantu-ctapop .cp-old{font-size:14px;color:#A9A2BC;text-decoration:line-through;}
+    #cantu-ctapop .cp-price{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:34px;
+      color:var(--cp-purple);
+    }
+    #cantu-ctapop .cp-save{
+      background:var(--cp-yellow);color:var(--cp-purple-dark);border-radius:7px;
+      font:700 11px Inter,sans-serif;padding:4px 8px;
+    }
+    #cantu-ctapop .cp-cta{
+      display:block;width:100%;background:var(--cp-purple);color:#fff;text-decoration:none;
+      font:700 13px Inter,sans-serif;letter-spacing:.09em;text-transform:uppercase;
+      padding:14px;border-radius:12px;transition:all .2s ease;
+    }
+    #cantu-ctapop .cp-cta:hover{background:var(--cp-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.35);}
+    #cantu-ctapop .cp-note{font-size:11px;color:var(--cp-ink-soft);margin-top:10px;}
+
+    @media (max-width:420px){
+      #cantu-ctapop .cp-photo{width:160px;height:160px;}
+      #cantu-ctapop .cp-body{padding:16px 18px 22px;}
+    }
+  </style>
+
+  <div class="cp-card" role="dialog" aria-modal="true" aria-label="Marshal KLD01 offer">
+    <div class="cp-stage">
+      <span class="cp-flag">Bestseller</span>
+      <img class="cp-photo" alt="Marshal KLD01 295/80 R22.5 tyre"
+        src="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/images/products/CNT-CRG-29580-KLD01.svg">
+    </div>
+    <div class="cp-body">
+      <p class="cp-eyebrow">Offer of the week</p>
+      <h2>Marshal KLD01</h2>
+      <p class="cp-spec">295/80 R22.5 &middot; Lug pattern for drive axles &middot; Casing rated for multiple retreads</p>
+      <div class="cp-pricerow">
+        <span class="cp-old">R$ 2,090</span>
+        <span class="cp-price">R$ 1,890</span>
+        <span class="cp-save">-10%</span>
+      </div>
+      <a target="_top" class="cp-cta" onclick="Dn.sendClick('cta-image-popup__view-product')" href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/product.html?id=CNT-CRG-29580-KLD01">View product</a>
+      <p class="cp-note">Cash price per unit for registered businesses. Ready stock, same-day dispatch.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

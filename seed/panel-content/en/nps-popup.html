@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | NPS Popup (native Dengage question form)</title>
+<!-- =====================================================================
+     CANTUPNEUS NPS POPUP, On-Site content for the panel
+
+     VERSION 2, built on Dengage's NATIVE QUESTION FORM.
+
+     Why it changed: the engine renders this content inside an iframe on
+     another origin, so the previous CSS-only submit looked like it worked but
+     recorded nothing anywhere. NPS is exactly what the native question form
+     handles best: one single-choice question, written to a contact tag.
+
+     The native form contract used here:
+       <form class="form" data-dn-form-id="question_form">   root
+       the FIRST .form-block is the question. It carries:
+         data-dn-name="nps_score"   the tag the answer is written to
+         data-dn-is-radio="true"    single choice
+       it must contain input[type=radio] and a div.form-message
+       Dn.postQuestion()   validates, then writes the answer as a CONTACT TAG
+       Dn.close()          closes the message
+
+     WHERE THE DATA LANDS: a contact tag {tag:"nps_score", value:"0".."10"}.
+     Not a Big Data table. Segment on it in the panel: promoters 9-10,
+     passives 7-8, detractors 0-6.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = nps-popup
+       - Popup layout, width 500 to 540px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<form class="form" data-dn-form-id="question_form" data-dn-validation-language="en"
+      id="cantu-nps" onsubmit="return false">
+  <style>
+    #cantu-nps *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-nps{
+      --np-purple:#4E018F; --np-purple-dark:#35015F; --np-yellow:#FFE958;
+      --np-ink:#1A1030; --np-ink-soft:#4A4363; --np-line:#E6E1F0; --np-cream:#F6F4FA;
+      --np-error:#C0263C;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;
+      width:100%;display:block;
+    }
+    body > #cantu-nps{max-width:520px;margin:40px auto;}
+    #cantu-nps .np-vh{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;}
+
+    #cantu-nps .np-card{
+      width:100%;background:#fff;border-radius:18px;overflow:hidden;position:relative;
+      box-shadow:0 8px 24px rgba(26,16,48,.18);animation:np-in .35s cubic-bezier(.21,.9,.35,1.1);
+    }
+    @keyframes np-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    #cantu-nps .np-head{
+      background:linear-gradient(120deg,var(--np-purple) 0%,var(--np-purple-dark) 100%);
+      color:#fff;padding:22px 26px;position:relative;
+    }
+    #cantu-nps .np-brandrow{display:flex;align-items:center;gap:11px;margin-bottom:12px;}
+    #cantu-nps .np-mark{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    #cantu-nps .np-mark svg{width:25px;height:25px;}
+    #cantu-nps .np-brand{font-family:'Barlow Condensed',Impact,sans-serif;font-size:20px;
+      font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    #cantu-nps .np-brand b{color:var(--np-yellow);font-weight:600;}
+    #cantu-nps .np-head h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:27px;line-height:1.12;
+    }
+    #cantu-nps .np-head h2 em{font-style:normal;color:var(--np-yellow);}
+    #cantu-nps .np-head p{font-size:12.5px;opacity:.85;margin-top:6px;}
+
+    #cantu-nps .np-body{padding:22px 26px 24px;}
+
+    /* 0 to 10 scale: hidden radios plus styled labels */
+    #cantu-nps .np-scale{display:flex;gap:5px;}
+    #cantu-nps .np-scale label{
+      flex:1;height:44px;border:1.5px solid var(--np-line);border-radius:10px;background:#fff;
+      font:600 14px Inter,sans-serif;color:var(--np-ink-soft);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;transition:all .15s ease;
+    }
+    #cantu-nps .np-scale label:hover{border-color:var(--np-purple);color:var(--np-purple);
+      transform:translateY(-2px);}
+    #cantu-nps .np-scale input:checked + label{
+      background:var(--np-purple);border-color:var(--np-purple);color:#fff;
+      box-shadow:0 6px 16px rgba(78,1,143,.35);
+    }
+    #cantu-nps .np-ends{display:flex;justify-content:space-between;font-size:10.5px;
+      color:var(--np-ink-soft);margin-top:7px;}
+
+    /* the engine writes its validation text into div.form-message and stamps
+       data-dn-invalid on the block, so only show the text when it is invalid */
+    #cantu-nps .form-message{
+      display:none;font-size:11.5px;color:var(--np-error);margin-top:10px;
+    }
+    #cantu-nps .form-block[data-dn-invalid="true"] .form-message{display:block;}
+    #cantu-nps .form-block[data-dn-invalid="true"] .np-scale label{border-color:var(--np-error);}
+
+    #cantu-nps .np-send{
+      display:block;width:100%;margin-top:18px;padding:14px;border-radius:12px;border:0;
+      background:var(--np-purple);color:#fff;font:700 13px Inter,sans-serif;text-align:center;
+      letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:all .2s ease;
+    }
+    #cantu-nps .np-send:hover{background:var(--np-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.35);}
+    #cantu-nps .np-note{font-size:11px;color:var(--np-ink-soft);text-align:center;margin-top:10px;}
+
+    /* confirmation panel, driven by the engine's data-dn-is-submitted stamp */
+    #cantu-nps .submitted-content{display:none;padding:44px 30px 46px;text-align:center;}
+    #cantu-nps .container[data-dn-is-submitted="true"] .np-body{display:none;}
+    #cantu-nps .container[data-dn-is-submitted="true"] .submitted-content{display:block;}
+    #cantu-nps .np-check{
+      width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--np-yellow);
+      display:flex;align-items:center;justify-content:center;
+      animation:np-pop .4s cubic-bezier(.2,1.6,.4,1);
+    }
+    @keyframes np-pop{from{transform:scale(.4);opacity:0;}to{transform:none;opacity:1;}}
+    #cantu-nps .np-check svg{width:30px;height:30px;}
+    #cantu-nps .submitted-content h3{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:26px;
+      line-height:1.12;color:var(--np-ink);margin-bottom:8px;
+    }
+    #cantu-nps .submitted-content h3 em{font-style:normal;color:var(--np-purple);
+      box-shadow:inset 0 -9px 0 var(--np-yellow);}
+    #cantu-nps .submitted-content p{font-size:13.5px;color:var(--np-ink-soft);line-height:1.55;}
+
+    @media (max-width:480px){
+      #cantu-nps .np-head{padding:18px 18px;}
+      #cantu-nps .np-body{padding:18px 16px 20px;}
+      #cantu-nps .np-scale{gap:3px;}
+      #cantu-nps .np-scale label{height:38px;font-size:12px;border-radius:8px;}
+      #cantu-nps .np-head h2{font-size:24px;}
+    }
+  </style>
+
+  <div class="container np-card" role="dialog" aria-modal="true" aria-label="CantuPneus recommendation score">
+    <div class="np-head">
+      <div class="np-brandrow">
+        <span class="np-mark" aria-hidden="true">
+          <svg viewBox="0 0 120 64" fill="none"><g stroke="#fff" stroke-width="13" stroke-linecap="round"><path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/></g><rect x="46" y="11.5" width="28" height="13" rx="6.5" fill="#fff"/><rect x="46" y="39.5" width="28" height="13" rx="6.5" fill="#fff"/></svg>
+        </span>
+        <span class="np-brand">Cantu<b>Pneus</b></span>
+      </div>
+      <h2>Would you recommend us to <em>another fleet</em>?</h2>
+      <p>One tap. It goes straight to the team that handles your account.</p>
+    </div>
+
+    <div class="np-body">
+      <!-- the FIRST .form-block is the question the engine reads -->
+      <div class="form-block" data-dn-name="nps_score" data-dn-is-radio="true">
+        <div class="np-scale" role="radiogroup" aria-label="Score from 0 to 10">
+          <input class="np-vh" type="radio" name="np-score" id="np-s0" value="0"><label for="np-s0">0</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s1" value="1"><label for="np-s1">1</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s2" value="2"><label for="np-s2">2</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s3" value="3"><label for="np-s3">3</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s4" value="4"><label for="np-s4">4</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s5" value="5"><label for="np-s5">5</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s6" value="6"><label for="np-s6">6</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s7" value="7"><label for="np-s7">7</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s8" value="8"><label for="np-s8">8</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s9" value="9"><label for="np-s9">9</label>
+          <input class="np-vh" type="radio" name="np-score" id="np-s10" value="10"><label for="np-s10">10</label>
+        </div>
+        <div class="np-ends"><span>Not at all likely</span><span>Extremely likely</span></div>
+        <div class="form-message"></div>
+      </div>
+
+      <button type="button" class="np-send"
+              onclick="Dn.sendClick('nps-popup__submit');Dn.postQuestion()">Send my score</button>
+      <p class="np-note">No personal details asked.</p>
+    </div>
+
+    <!-- auto-close OFF: the engine closes a tag submission instantly otherwise,
+         so the confirmation would never be seen -->
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="false" data-dn-modal-close-seconds="6">
+      <div class="np-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#35015F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>Score <em>recorded</em></h3>
+      <p>Thanks. Your account team sees this today, and it shapes what we keep
+         on the shelf for you.</p>
+    </div>
+  </div>
+</form>
+
+</body>
+</html>

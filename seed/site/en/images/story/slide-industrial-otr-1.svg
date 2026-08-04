@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" role="img" aria-label="Industrial and OTR: Loaders, lifts, quarries">
+  <defs>
+    <linearGradient id="industrial-otr-1-bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#9A3412"/><stop offset="1" stop-color="#1A1030"/>
+    </linearGradient>
+    <linearGradient id="industrial-otr-1-veil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A1030" stop-opacity=".55"/>
+      <stop offset="0.42" stop-color="#1A1030" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1A1030" stop-opacity=".82"/>
+    </linearGradient>
+    <clipPath id="industrial-otr-1-frame"><rect width="1080" height="1920" rx="0"/></clipPath>
+  </defs>
+  <g clip-path="url(#industrial-otr-1-frame)">
+    <rect width="1080" height="1920" fill="url(#industrial-otr-1-bg)"/>
+
+    <!-- tread motif, scaled up as the frame's texture -->
+    <g transform="translate(300 620) scale(3.1)" opacity=".22"><rect x="54" y="78" width="52" height="58" rx="9" fill="#fff" opacity="0.26"/><rect x="122" y="78" width="52" height="58" rx="9" fill="#fff" opacity="0.39"/><rect x="190" y="78" width="52" height="58" rx="9" fill="#fff" opacity="0.52"/><rect x="54" y="156" width="52" height="58" rx="9" fill="#fff" opacity="0.65"/><rect x="122" y="156" width="52" height="58" rx="9" fill="#fff" opacity="0.26"/><rect x="190" y="156" width="52" height="58" rx="9" fill="#fff" opacity="0.39"/></g>
+    <circle cx="890" cy="360" r="300" fill="#FFE958" opacity=".07"/>
+    <rect width="1080" height="1920" fill="url(#industrial-otr-1-veil)"/>
+
+    <rect x="72.0" y="72" width="456" height="6" rx="3" fill="#fff" opacity="1"/><rect x="540.0" y="72" width="456" height="6" rx="3" fill="#fff" opacity="0.3"/>
+
+    <text x="72" y="150" font-family="Inter, Helvetica, Arial, sans-serif" font-size="30"
+          font-weight="700" letter-spacing="6" fill="#FFE958">INDUSTRIAL AND OTR</text>
+
+    <text x="72" y="820" font-family="'Barlow Condensed', Impact, sans-serif" font-size="112"
+          font-weight="600" fill="#ffffff"><tspan x="72" dy="0">Loaders,</tspan><tspan x="72" dy="104">lifts, quarries</tspan></text>
+
+    <text x="72" y="1030" font-family="Inter, Helvetica, Arial, sans-serif" font-size="38"
+          fill="#ffffff" opacity=".84"><tspan x="72" dy="0">AL37 and E3 patterns for wheel loaders and forklifts,</tspan><tspan x="72" dy="46">8.25-15 through 17.5-25.</tspan></text>
+
+    <!-- the one number this frame is making -->
+    <g transform="translate(72 1180)">
+      <rect x="0" y="0" width="6" height="150" rx="3" fill="#FFE958"/>
+      <text x="34" y="86" font-family="'Barlow Condensed', Impact, sans-serif" font-size="120"
+            font-weight="600" fill="#FFE958">E3</text>
+      <text x="34" y="132" font-family="Inter, Helvetica, Arial, sans-serif" font-size="32"
+            fill="#ffffff" opacity=".72">earthmover rating</text>
+    </g>
+
+    <!-- brand mark, bottom left. Everything below y=1560 is left clear so the
+         panel's own CTA button has room. -->
+    <g transform="translate(72 1450)">
+      <rect x="0" y="0" width="58" height="58" rx="15" fill="#ffffff" opacity=".16"/>
+      <g transform="translate(11 17) scale(0.3)" stroke="#fff" stroke-width="13" stroke-linecap="round" fill="none">
+        <path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/>
+      </g>
+      <text x="76" y="39" font-family="'Barlow Condensed', Impact, sans-serif" font-size="40"
+            font-weight="600" letter-spacing="3" fill="#ffffff">CANTUPNEUS</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 64" width="120" height="64" role="img" aria-label="CantuPneus">
+  <!-- Two interlocking C forms, echoing the CantuPneus corporate mark. -->
+  <g fill="none" stroke="currentColor" stroke-width="13" stroke-linecap="round">
+    <path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/>
+    <path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/>
+  </g>
+  <rect x="46" y="11.5" width="28" height="13" rx="6.5" fill="currentColor"/>
+  <rect x="46" y="39.5" width="28" height="13" rx="6.5" fill="currentColor"/>
+</svg>

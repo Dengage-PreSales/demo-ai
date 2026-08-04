@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 560" width="520" height="560" role="img" aria-label="CANTUPNEUS">
+  <defs>
+    <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#F0F1F6"/><stop offset="0.45" stop-color="#B9BDCC"/><stop offset="1" stop-color="#7C8092"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#EDE9F5"/>
+    </linearGradient>
+    <filter id="sh" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#4E018F" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="520" height="560" fill="url(#bg)"/>
+  <ellipse cx="260" cy="500" rx="168" ry="19" fill="#4E018F" opacity="0.13"/>
+  <g filter="url(#sh)">
+    <circle cx="260" cy="260" r="218" fill="url(#steel)"/>
+    <circle cx="260" cy="260" r="204" fill="none" stroke="#6E7285" stroke-width="9"/>
+    <circle cx="260" cy="260" r="178" fill="#A4A8B8"/>
+    <circle cx="260" cy="260" r="166" fill="url(#steel)"/>
+    <circle cx="357.1" cy="330.5" r="26" fill="#9296A8"/><circle cx="222.9" cy="374.1" r="26" fill="#9296A8"/><circle cx="140.0" cy="260.0" r="26" fill="#9296A8"/><circle cx="222.9" cy="145.9" r="26" fill="#9296A8"/><circle cx="357.1" cy="189.5" r="26" fill="#9296A8"/>
+    <circle cx="260" cy="260" r="86" fill="#B4B8C6"/>
+    <circle cx="260" cy="260" r="34" fill="#6E7285"/>
+    <circle cx="322.0" cy="260.0" r="9" fill="#6E7285"/><circle cx="303.8" cy="303.8" r="9" fill="#6E7285"/><circle cx="260.0" cy="322.0" r="9" fill="#6E7285"/><circle cx="216.2" cy="303.8" r="9" fill="#6E7285"/><circle cx="198.0" cy="260.0" r="9" fill="#6E7285"/><circle cx="216.2" cy="216.2" r="9" fill="#6E7285"/><circle cx="260.0" cy="198.0" r="9" fill="#6E7285"/><circle cx="303.8" cy="216.2" r="9" fill="#6E7285"/>
+  </g>
+  <text x="260" y="536" text-anchor="middle" font-family="Inter, sans-serif" font-size="21" font-weight="600" fill="#4E018F" letter-spacing="1.5">22.5 x 8.25</text>
+</svg>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | A/B Variant B, bold medallion</title>
+<!-- =====================================================================
+     A/B TEST VARIANT B, "bold medallion"
+
+     Paste this WHOLE file into VARIANT B of the "CantuPneus - A/B Testing"
+     campaign. All CSS is scoped to #cantu-ab-b.
+
+     Same offer, same promise, same CTA destination as A and C. Only the visual
+     design changes, so the result is attributable to design and nothing else.
+
+       B -> Dn.sendClick('ab-testing__B')
+
+     Panel settings for the campaign (shared by all three variants):
+       - Trigger: DATA_LAYER_EVENT, eventName = ab-testing
+       - Popup layout, width 560px, padding 0, transparent background
+       - Split: Control 10, A 30, B 30, C 30
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-ab-b" data-variant="B">
+  <style>
+    #cantu-ab-b *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-ab-b{
+      --ab-purple:#4E018F; --ab-purple-dark:#2A0148; --ab-yellow:#FFE958;
+      --ab-ink:#1A1030;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+      position:relative;
+    }
+    body > #cantu-ab-b{max-width:560px;margin:40px auto;}
+
+    #cantu-ab-b .ab-card{
+      width:100%;position:relative;border-radius:22px;overflow:hidden;
+      padding:38px 34px 34px;text-align:center;color:#fff;
+      background:
+        radial-gradient(120% 90% at 12% 0%,rgba(255,233,88,.20) 0%,transparent 46%),
+        linear-gradient(155deg,var(--ab-purple) 0%,var(--ab-purple-dark) 100%);
+      box-shadow:0 18px 44px rgba(26,16,48,.4);
+      animation:ab-in .4s cubic-bezier(.2,1.3,.4,1);
+    }
+    @keyframes ab-in{from{opacity:0;transform:scale(.92);}to{opacity:1;transform:none;}}
+
+    /* diagonal stripe texture, purely decorative */
+    #cantu-ab-b .ab-card::after{
+      content:"";position:absolute;inset:0;pointer-events:none;opacity:.09;
+      background:repeating-linear-gradient(115deg,#fff 0 2px,transparent 2px 13px);
+    }
+
+    #cantu-ab-b .ab-variant{
+      position:absolute;top:16px;left:18px;z-index:2;
+      font:700 9.5px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+      color:rgba(255,255,255,.62);border:1px solid rgba(255,255,255,.28);
+      border-radius:999px;padding:4px 9px;
+    }
+
+    #cantu-ab-b .ab-inner{position:relative;z-index:1;}
+
+    /* the medallion carries the offer */
+    #cantu-ab-b .ab-medal{
+      width:168px;height:168px;margin:6px auto 22px;border-radius:50%;
+      background:var(--ab-yellow);color:var(--ab-purple-dark);
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+      box-shadow:0 0 0 9px rgba(255,233,88,.16),0 14px 30px rgba(26,16,48,.34);
+      transform:rotate(-4deg);
+    }
+    #cantu-ab-b .ab-medal .ab-m1{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;
+      font-size:19px;letter-spacing:.14em;text-transform:uppercase;line-height:1;
+    }
+    #cantu-ab-b .ab-medal .ab-m2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;
+      font-size:52px;line-height:.86;letter-spacing:-.01em;margin:2px 0 1px;
+    }
+    #cantu-ab-b .ab-medal .ab-m3{
+      font:700 10px Inter,sans-serif;letter-spacing:.13em;text-transform:uppercase;opacity:.72;
+    }
+
+    #cantu-ab-b h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;
+      font-size:36px;line-height:1.02;text-transform:uppercase;letter-spacing:.005em;
+      margin-bottom:10px;
+    }
+    #cantu-ab-b h2 em{font-style:normal;color:var(--ab-yellow);}
+    #cantu-ab-b .ab-sub{
+      font-size:13.5px;line-height:1.55;opacity:.86;max-width:38ch;margin:0 auto 20px;
+    }
+
+    #cantu-ab-b .ab-chips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:24px;}
+    #cantu-ab-b .ab-chips span{
+      background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
+      border-radius:999px;padding:6px 13px;font:600 11px Inter,sans-serif;
+      letter-spacing:.05em;
+    }
+
+    #cantu-ab-b .ab-cta{
+      display:block;width:100%;background:var(--ab-yellow);color:var(--ab-purple-dark);
+      text-decoration:none;font:800 14px Inter,sans-serif;letter-spacing:.09em;
+      text-transform:uppercase;padding:18px;border-radius:14px;transition:all .2s ease;
+      box-shadow:0 10px 24px rgba(255,233,88,.26);
+    }
+    #cantu-ab-b .ab-cta:hover{background:#fff;transform:translateY(-2px);
+      box-shadow:0 14px 30px rgba(255,255,255,.3);}
+    #cantu-ab-b .ab-note{font-size:11px;opacity:.68;margin-top:13px;}
+
+    @media (max-width:520px){
+      #cantu-ab-b .ab-card{padding:32px 20px 26px;}
+      #cantu-ab-b .ab-medal{width:140px;height:140px;}
+      #cantu-ab-b .ab-medal .ab-m2{font-size:44px;}
+      #cantu-ab-b h2{font-size:29px;}
+    }
+  </style>
+
+  <div class="ab-card" role="dialog" aria-modal="true" aria-label="Free freight on your first fleet order">
+    <span class="ab-variant">Variant B</span>
+
+    <div class="ab-inner">
+      <div class="ab-medal" aria-hidden="true">
+        <span class="ab-m1">Freight</span>
+        <span class="ab-m2">FREE</span>
+        <span class="ab-m3">First order</span>
+      </div>
+
+      <h2>Your first fleet order<br><em>ships on us</em></h2>
+      <p class="ab-sub">Every order above R$ 5,000 goes out at our cost, straight
+        from ready stock.</p>
+
+      <div class="ab-chips">
+        <span>R$ 5,000 minimum</span>
+        <span>Invoiced in 24h</span>
+        <span>12,000 tyres ready</span>
+      </div>
+
+      <a target="_top" class="ab-cta" onclick="Dn.sendClick('ab-testing__B')"
+         href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#products">Claim free freight</a>
+      <p class="ab-note">Registered businesses only. Offer runs while stock lasts.</p>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

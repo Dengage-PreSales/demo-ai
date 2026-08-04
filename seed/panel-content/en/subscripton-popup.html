@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | Subscription Popup (native Dengage form)</title>
+<!-- =====================================================================
+     CANTUPNEUS SUBSCRIPTION POPUP, On-Site content for the panel
+
+     VERSION 2, built on Dengage's NATIVE SUBSCRIPTION FORM.
+
+     Why it changed: the engine renders this content inside an iframe on
+     another origin (pcdn.dengage.com/onsite-message/initiator.html). A
+     listener on the site CANNOT see anything that happens in here, which is
+     why an earlier host-page bridge could not capture responses. The
+     supported path is the native form: when the content contains
+     data-dn-form-id="subscription_form", the engine injects its own
+     form-handler.js and exposes window.Dn inside the iframe.
+
+     The native form contract used here:
+       <form class="form" data-dn-form-id="subscription_form">   root
+       [data-dn-id="<key>"]          field, becomes the payload key
+       [data-dn-type="EMAIL|TEXT|GSM|PERMISSION_CHECKBOX|...]    validation
+       [data-dn-required="true"]      required
+       [data-dn-invalid-message-type="EMAIL"]  where the message renders
+       data-dn-id="mergedPermission" expands to emailPermission + gsmPermission
+       Dn.postSubscription()         submits and CREATES / UPDATES THE CONTACT
+       Dn.close()                    closes the message
+
+     Thank-you state: on success the engine posts closeForm back into the
+     iframe, the handler stamps data-dn-is-submitted="true" on .container and
+     reads .submitted-content for the auto-close settings below. That is what
+     swaps the form for the confirmation panel.
+
+     Unlike the previous version this does not write a Big Data row: it creates
+     a real Dengage contact with email and SMS permission.
+
+     Panel settings:
+       - Scenario: triggerBy = DATA_LAYER_EVENT, eventName = subscripton-popup
+       - Popup layout, width 460 to 480px, padding 0, transparent background
+====================================================================== -->
+</head>
+<body>
+
+<form class="form" data-dn-form-id="subscription_form" data-dn-validation-language="en"
+      id="cantu-subs" onsubmit="return false">
+  <style>
+    #cantu-subs *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-subs{
+      --su-purple:#4E018F; --su-purple-dark:#35015F; --su-yellow:#FFE958;
+      --su-ink:#1A1030; --su-ink-soft:#4A4363; --su-line:#E6E1F0; --su-error:#C0263C;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;
+      width:100%;display:block;
+    }
+    body > #cantu-subs{max-width:480px;margin:40px auto;}
+
+    #cantu-subs .su-card{
+      width:100%;background:#fff;border-radius:18px;overflow:hidden;position:relative;
+      box-shadow:0 8px 24px rgba(26,16,48,.18);animation:su-in .35s cubic-bezier(.21,.9,.35,1.1);
+    }
+    @keyframes su-in{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+
+    #cantu-subs .su-head{
+      background:linear-gradient(120deg,var(--su-purple) 0%,var(--su-purple-dark) 100%);
+      color:#fff;padding:26px 26px 22px;position:relative;
+    }
+    #cantu-subs .su-brandrow{display:flex;align-items:center;gap:11px;margin-bottom:14px;}
+    #cantu-subs .su-mark{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.14);
+      display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    #cantu-subs .su-mark svg{width:26px;height:26px;}
+    #cantu-subs .su-brand{font-family:'Barlow Condensed',Impact,sans-serif;font-size:21px;
+      font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    #cantu-subs .su-brand b{color:var(--su-yellow);font-weight:600;}
+    #cantu-subs .su-head h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:30px;line-height:1.1;
+    }
+    #cantu-subs .su-head h2 em{font-style:normal;color:var(--su-yellow);}
+    #cantu-subs .su-head p{font-size:13px;opacity:.85;margin-top:6px;}
+
+    #cantu-subs .su-body{padding:22px 26px 24px;}
+    #cantu-subs .su-perks{list-style:none;margin-bottom:16px;}
+    #cantu-subs .su-perks li{font-size:13px;color:var(--su-ink-soft);padding:5px 0 5px 26px;position:relative;}
+    #cantu-subs .su-perks li::before{
+      content:"";position:absolute;left:0;top:8px;width:15px;height:15px;border-radius:50%;
+      background:var(--su-yellow) url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="%2335015F" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></svg>') center/9px no-repeat;
+    }
+
+    #cantu-subs .form-block{margin-bottom:12px;}
+    #cantu-subs input[data-dn-id="email"]{
+      width:100%;border:1.5px solid var(--su-line);border-radius:12px;padding:13px 14px;
+      font:400 13.5px Inter,sans-serif;color:var(--su-ink);background:#fff;transition:border-color .15s;
+    }
+    #cantu-subs input[data-dn-id="email"]:focus{outline:none;border-color:var(--su-purple);}
+    #cantu-subs input[data-dn-id="email"]::placeholder{color:#A9A2BC;}
+    /* the engine's handler stamps data-dn-invalid="true" on the failing field */
+    #cantu-subs [data-dn-invalid="true"]{border-color:var(--su-error);}
+    #cantu-subs [data-dn-invalid-message-type]{
+      display:none;font-size:11.5px;color:var(--su-error);margin-top:6px;
+    }
+    #cantu-subs [data-dn-invalid="true"] ~ [data-dn-invalid-message-type]{display:block;}
+
+    #cantu-subs .su-perm{display:flex;align-items:flex-start;gap:9px;margin:4px 0 2px;}
+    #cantu-subs .su-perm input{margin-top:2px;width:16px;height:16px;accent-color:var(--su-purple);flex-shrink:0;}
+    #cantu-subs .su-perm label{font-size:11.5px;color:var(--su-ink-soft);line-height:1.45;}
+
+    #cantu-subs .su-send{
+      display:block;width:100%;margin-top:14px;padding:14px;border-radius:12px;border:0;
+      background:var(--su-purple);color:#fff;font:700 13px Inter,sans-serif;text-align:center;
+      letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:all .2s ease;
+    }
+    #cantu-subs .su-send:hover{background:var(--su-purple-dark);transform:translateY(-1px);
+      box-shadow:0 10px 22px rgba(78,1,143,.35);}
+    #cantu-subs .su-note{font-size:11px;color:var(--su-ink-soft);text-align:center;margin-top:10px;}
+
+    /* confirmation panel, driven by the engine's data-dn-is-submitted stamp */
+    #cantu-subs .submitted-content{display:none;padding:42px 30px 44px;text-align:center;}
+    #cantu-subs .container[data-dn-is-submitted="true"] .su-body{display:none;}
+    #cantu-subs .container[data-dn-is-submitted="true"] .submitted-content{display:block;}
+    #cantu-subs .su-check{
+      width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:var(--su-yellow);
+      display:flex;align-items:center;justify-content:center;
+      animation:su-pop .4s cubic-bezier(.2,1.6,.4,1);
+    }
+    @keyframes su-pop{from{transform:scale(.4);opacity:0;}to{transform:none;opacity:1;}}
+    #cantu-subs .su-check svg{width:30px;height:30px;}
+    #cantu-subs .submitted-content h3{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;font-size:26px;
+      line-height:1.12;color:var(--su-ink);margin-bottom:8px;
+    }
+    #cantu-subs .submitted-content h3 em{font-style:normal;color:var(--su-purple);
+      box-shadow:inset 0 -9px 0 var(--su-yellow);}
+    #cantu-subs .submitted-content p{font-size:13.5px;color:var(--su-ink-soft);line-height:1.55;}
+
+    @media (max-width:420px){
+      #cantu-subs .su-head{padding:22px 18px 18px;}
+      #cantu-subs .su-body{padding:18px 18px 20px;}
+      #cantu-subs .su-head h2{font-size:26px;}
+    }
+  </style>
+
+  <div class="container su-card" role="dialog" aria-modal="true" aria-label="CantuPneus offer signup">
+    <div class="su-head">
+      <div class="su-brandrow">
+        <span class="su-mark" aria-hidden="true">
+          <svg viewBox="0 0 120 64" fill="none"><g stroke="#fff" stroke-width="13" stroke-linecap="round"><path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/></g><rect x="46" y="11.5" width="28" height="13" rx="6.5" fill="#fff"/><rect x="46" y="39.5" width="28" height="13" rx="6.5" fill="#fff"/></svg>
+        </span>
+        <span class="su-brand">Cantu<b>Pneus</b></span>
+      </div>
+      <h2>Wholesale offers, <em>before everyone else</em></h2>
+      <p>Line-by-line pricing, pre-sales and restock alerts, straight to your inbox.</p>
+    </div>
+
+    <div class="su-body">
+      <ul class="su-perks">
+        <li>Wholesale price lists by line: truck, passenger, agricultural and OTR</li>
+        <li>Restock alerts before the offer opens to the market</li>
+        <li>No spam: two emails a month at most</li>
+      </ul>
+
+      <div class="form-block">
+        <input type="email" placeholder="Your work email" aria-label="Work email"
+               data-dn-id="email" data-dn-type="EMAIL" data-dn-required="true">
+        <span data-dn-invalid-message-type="EMAIL"></span>
+      </div>
+
+      <div class="su-perm">
+        <input type="checkbox" id="su-perm" checked
+               data-dn-id="mergedPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
+        <label for="su-perm">I agree to receive CantuPneus offers and news by email and SMS.
+          I can unsubscribe whenever I want.</label>
+      </div>
+      <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
+
+      <button type="button" class="su-send"
+              onclick="Dn.sendClick('subscripton-popup__subscribe');Dn.postSubscription()">Send me the offers</button>
+      <p class="su-note">Unsubscribe any time, in one click.</p>
+    </div>
+
+    <!-- data-dn-is-modal-auto-close-enabled ON: the engine shows this panel and
+         closes the message after data-dn-modal-close-seconds -->
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="true" data-dn-modal-close-seconds="6">
+      <div class="su-check" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 12.5l5 5 10-11" stroke="#35015F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h3>You are <em>on the list</em></h3>
+      <p>The next wholesale price list lands in your inbox.<br>
+         Good business and safe roads.</p>
+    </div>
+  </div>
+</form>
+
+</body>
+</html>

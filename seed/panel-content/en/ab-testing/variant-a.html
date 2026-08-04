@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CantuPneus | A/B Variant A, editorial minimal</title>
+<!-- =====================================================================
+     A/B TEST VARIANT A, "editorial minimal"
+
+     Paste this WHOLE file into VARIANT A of the "CantuPneus - A/B Testing"
+     campaign. All CSS is scoped to #cantu-ab-a.
+
+     THE TEST: all three variants carry the SAME offer, the same promise and
+     the same CTA destination. Only the visual design changes, so the result
+     is attributable to design and nothing else.
+
+       A  editorial minimal  no imagery, large type, one solid button
+       B  bold medallion     dark card, yellow badge, high contrast
+       C  photo and proof    warehouse photo, benefit grid
+
+     CONVERSION: the A/B engine scores on clicks only, so each variant reports
+     its own button id. A dismissal is never reported, or every variant would
+     "convert" on close.
+
+       A -> Dn.sendClick('ab-testing__A')
+
+     Panel settings for the campaign (shared by all three variants):
+       - Trigger: DATA_LAYER_EVENT, eventName = ab-testing
+       - Popup layout, width 560px, padding 0, transparent background
+       - Split: Control 10, A 30, B 30, C 30
+====================================================================== -->
+</head>
+<body>
+
+<div id="cantu-ab-a" data-variant="A">
+  <style>
+    #cantu-ab-a *{margin:0;padding:0;box-sizing:border-box;}
+    #cantu-ab-a{
+      --aa-purple:#4E018F; --aa-purple-dark:#35015F; --aa-ink:#1A1030;
+      --aa-ink-soft:#6B6484; --aa-rule:#E6E1F0;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,sans-serif;width:100%;
+      position:relative;
+    }
+    body > #cantu-ab-a{max-width:560px;margin:40px auto;}
+
+    #cantu-ab-a .aa-card{
+      width:100%;background:#fff;border-radius:4px;position:relative;
+      padding:52px 56px 46px;text-align:left;
+      box-shadow:0 10px 40px rgba(26,16,48,.14);
+      animation:aa-in .4s cubic-bezier(.21,.9,.35,1.05);
+    }
+    @keyframes aa-in{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+    #cantu-ab-a .aa-tagrow{display:flex;align-items:center;gap:10px;margin-bottom:30px;}
+    #cantu-ab-a .aa-brand{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-size:15px;font-weight:600;
+      letter-spacing:.22em;text-transform:uppercase;color:var(--aa-ink);
+    }
+    #cantu-ab-a .aa-rule{flex:1;height:1px;background:var(--aa-rule);}
+    #cantu-ab-a .aa-variant{
+      font:600 9.5px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+      color:var(--aa-ink-soft);border:1px solid var(--aa-rule);border-radius:3px;padding:3px 7px;
+    }
+
+    #cantu-ab-a h2{
+      font-family:'Barlow Condensed',Impact,sans-serif;font-weight:600;
+      font-size:46px;line-height:.98;letter-spacing:-.005em;color:var(--aa-ink);
+      margin-bottom:18px;
+    }
+    #cantu-ab-a h2 em{font-style:normal;display:block;color:var(--aa-purple);}
+    #cantu-ab-a .aa-lede{
+      font-size:14.5px;line-height:1.65;color:var(--aa-ink-soft);max-width:40ch;
+      margin-bottom:28px;
+    }
+    #cantu-ab-a .aa-terms{
+      border-top:1px solid var(--aa-rule);padding-top:16px;margin-bottom:26px;
+      display:flex;flex-wrap:wrap;gap:6px 26px;
+    }
+    #cantu-ab-a .aa-terms span{
+      font-size:12px;color:var(--aa-ink-soft);letter-spacing:.01em;
+    }
+    #cantu-ab-a .aa-terms b{color:var(--aa-ink);font-weight:600;}
+
+    #cantu-ab-a .aa-cta{
+      display:block;width:100%;background:var(--aa-purple);color:#fff;text-decoration:none;
+      font:600 13px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;
+      padding:17px;border-radius:3px;text-align:center;transition:background .2s ease;
+    }
+    #cantu-ab-a .aa-cta:hover{background:var(--aa-purple-dark);}
+    #cantu-ab-a .aa-note{
+      font-size:11px;color:var(--aa-ink-soft);margin-top:14px;text-align:center;
+    }
+
+
+    @media (max-width:520px){
+      #cantu-ab-a .aa-card{padding:36px 24px 30px;}
+      #cantu-ab-a h2{font-size:36px;}
+    }
+  </style>
+
+  <div class="aa-card" role="dialog" aria-modal="true" aria-label="Free freight on your first fleet order">
+
+    <div class="aa-tagrow">
+      <span class="aa-brand">CantuPneus</span>
+      <span class="aa-rule" aria-hidden="true"></span>
+      <span class="aa-variant">Variant A</span>
+    </div>
+
+    <h2>Free freight on<em>your first fleet order</em></h2>
+    <p class="aa-lede">Orders above R$ 5,000 ship at our cost. Truck, passenger,
+      agricultural and OTR lines, all from ready stock.</p>
+
+    <div class="aa-terms">
+      <span><b>R$ 5,000</b> minimum order</span>
+      <span><b>24h</b> to invoice</span>
+      <span><b>12,000</b> tyres in stock</span>
+    </div>
+
+    <a target="_top" class="aa-cta" onclick="Dn.sendClick('ab-testing__A')"
+       href="https://salil-dengage.github.io/dengage-demos/cantu-pneus/en/index.html#products">Claim free freight</a>
+    <p class="aa-note">Registered businesses only. Offer runs while stock lasts.</p>
+  </div>
+</div>
+
+</body>
+</html>

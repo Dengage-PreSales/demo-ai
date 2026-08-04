@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920" role="img" aria-label="Passenger: Quiet on the highway">
+  <defs>
+    <linearGradient id="passenger-1-bg" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#5B1BA8"/><stop offset="1" stop-color="#1A1030"/>
+    </linearGradient>
+    <linearGradient id="passenger-1-veil" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1A1030" stop-opacity=".55"/>
+      <stop offset="0.42" stop-color="#1A1030" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1A1030" stop-opacity=".82"/>
+    </linearGradient>
+    <clipPath id="passenger-1-frame"><rect width="1080" height="1920" rx="0"/></clipPath>
+  </defs>
+  <g clip-path="url(#passenger-1-frame)">
+    <rect width="1080" height="1920" fill="url(#passenger-1-bg)"/>
+
+    <!-- tread motif, scaled up as the frame's texture -->
+    <g transform="translate(300 620) scale(3.1)" opacity=".22"><rect x="50" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.24"/><rect x="80" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.37"/><rect x="110" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.50"/><rect x="140" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.63"/><rect x="170" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.24"/><rect x="200" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.37"/><rect x="230" y="70" width="12" height="172" rx="6" fill="#fff" opacity="0.50"/></g>
+    <circle cx="890" cy="360" r="300" fill="#FFE958" opacity=".07"/>
+    <rect width="1080" height="1920" fill="url(#passenger-1-veil)"/>
+
+    <rect x="72.0" y="72" width="456" height="6" rx="3" fill="#fff" opacity="1"/><rect x="540.0" y="72" width="456" height="6" rx="3" fill="#fff" opacity="0.3"/>
+
+    <text x="72" y="150" font-family="Inter, Helvetica, Arial, sans-serif" font-size="30"
+          font-weight="700" letter-spacing="6" fill="#FFE958">PASSENGER LINE</text>
+
+    <text x="72" y="820" font-family="'Barlow Condensed', Impact, sans-serif" font-size="112"
+          font-weight="600" fill="#ffffff"><tspan x="72" dy="0">Quiet on</tspan><tspan x="72" dy="104">the highway</tspan></text>
+
+    <text x="72" y="1030" font-family="Inter, Helvetica, Arial, sans-serif" font-size="38"
+          fill="#ffffff" opacity=".84"><tspan x="72" dy="0">Asymmetric rib pattern from 175/70 R13 up to 235/45 R18,</tspan><tspan x="72" dy="46">tuned for wet grip and low noise.</tspan></text>
+
+    <!-- the one number this frame is making -->
+    <g transform="translate(72 1180)">
+      <rect x="0" y="0" width="6" height="150" rx="3" fill="#FFE958"/>
+      <text x="34" y="86" font-family="'Barlow Condensed', Impact, sans-serif" font-size="120"
+            font-weight="600" fill="#FFE958">40+</text>
+      <text x="34" y="132" font-family="Inter, Helvetica, Arial, sans-serif" font-size="32"
+            fill="#ffffff" opacity=".72">sizes in stock</text>
+    </g>
+
+    <!-- brand mark, bottom left. Everything below y=1560 is left clear so the
+         panel's own CTA button has room. -->
+    <g transform="translate(72 1450)">
+      <rect x="0" y="0" width="58" height="58" rx="15" fill="#ffffff" opacity=".16"/>
+      <g transform="translate(11 17) scale(0.3)" stroke="#fff" stroke-width="13" stroke-linecap="round" fill="none">
+        <path d="M52 18 H32 a14 14 0 0 0 0 28 h20"/><path d="M68 46 H88 a14 14 0 0 0 0-28 H68"/>
+      </g>
+      <text x="76" y="39" font-family="'Barlow Condensed', Impact, sans-serif" font-size="40"
+            font-weight="600" letter-spacing="3" fill="#ffffff">CANTUPNEUS</text>
+    </g>
+  </g>
+</svg>

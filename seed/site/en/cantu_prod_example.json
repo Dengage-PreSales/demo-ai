@@ -1,0 +1,300 @@
+[
+  {
+    "id": "CNT-CRG-29580-KLD01",
+    "name": "Marshal KLD01 295/80 R22.5",
+    "desc": "Marshal KLD01 in size 295/80 R22.5. Drive-axle traction for heavy highway use, reinforced casing for multiple retreads.",
+    "price": "1890.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-29580-KLD01.svg"
+    ],
+    "category": "Tires > Truck > Lug",
+    "brand": "Marshal",
+    "availability": true,
+    "colors": [
+      "Lug pattern",
+      "295/80 R22.5"
+    ],
+    "oldPrice": "2090.00",
+    "stock": 34
+  },
+  {
+    "id": "CNT-CRG-29580-HN08",
+    "name": "Aeolus HN08 Neo 295/80 R22.5",
+    "desc": "Aeolus HN08 Neo in size 295/80 R22.5. Low rolling resistance rib pattern, recommended for steer axles on long haul routes.",
+    "price": "1740.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-29580-HN08.svg"
+    ],
+    "category": "Tires > Truck > Rib",
+    "brand": "Aeolus",
+    "availability": true,
+    "colors": [
+      "Rib pattern",
+      "295/80 R22.5"
+    ],
+    "stock": 61
+  },
+  {
+    "id": "CNT-CRG-27580-WIN",
+    "name": "CEAT WinMile X3 275/80 R22.5",
+    "desc": "CEAT WinMile X3 in size 275/80 R22.5. Mixed use on asphalt and dirt, reinforced shoulders against sidewall cuts.",
+    "price": "1620.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-27580-WIN.svg"
+    ],
+    "category": "Tires > Truck > Mixed",
+    "brand": "CEAT",
+    "availability": true,
+    "colors": [
+      "Mixed use",
+      "275/80 R22.5"
+    ],
+    "oldPrice": "1810.00",
+    "stock": 18
+  },
+  {
+    "id": "CNT-CRG-21575-URB",
+    "name": "Ranger RT500 215/75 R17.5",
+    "desc": "Ranger RT500 in size 215/75 R17.5. Urban profile for light distribution, high mileage in frequent stop-and-go cycles.",
+    "price": "1120.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-21575-URB.svg"
+    ],
+    "category": "Tires > Truck > Urban",
+    "brand": "Ranger",
+    "availability": true,
+    "colors": [
+      "Mixed use",
+      "215/75 R17.5"
+    ],
+    "oldPrice": "1290.00",
+    "stock": 47
+  },
+  {
+    "id": "CNT-CRG-1200-R24",
+    "name": "DRC D900 1200 R24",
+    "desc": "DRC D900 in size 1200 R24. 20-ply construction for heavy loads and rough surfaces, traction on loose ground.",
+    "price": "2480.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-1200-R24.svg"
+    ],
+    "category": "Tires > Truck > Off-road",
+    "brand": "DRC",
+    "availability": true,
+    "colors": [
+      "Lug pattern",
+      "1200 R24"
+    ],
+    "stock": 9
+  },
+  {
+    "id": "CNT-PAS-20555-ENE",
+    "name": "SpeedMax Energrip EV 205/55 R16",
+    "desc": "SpeedMax Energrip EV in size 205/55 R16. Built for electric vehicles: handles extra weight and instant torque with low noise.",
+    "price": "398.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-PAS-20555-ENE.svg"
+    ],
+    "category": "Tires > Passenger > Electric",
+    "brand": "SpeedMax",
+    "availability": true,
+    "colors": [
+      "Radial",
+      "205/55 R16"
+    ],
+    "oldPrice": "449.00",
+    "stock": 13
+  },
+  {
+    "id": "CNT-PAS-17570-SOL",
+    "name": "Kumho Solus TA31 175/70 R13",
+    "desc": "Kumho Solus TA31 in size 175/70 R13. Silica compound for wet grip, everyday city driving.",
+    "price": "289.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-PAS-17570-SOL.svg"
+    ],
+    "category": "Tires > Passenger > City",
+    "brand": "Kumho",
+    "availability": true,
+    "colors": [
+      "Radial",
+      "175/70 R13"
+    ],
+    "oldPrice": "339.00",
+    "stock": 88
+  },
+  {
+    "id": "CNT-PAS-19565-ECS",
+    "name": "Marshal Ecsta HS52 195/65 R15",
+    "desc": "Marshal Ecsta HS52 in size 195/65 R15. Firm steering response and short braking, recommended for mid-size sedans.",
+    "price": "352.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-PAS-19565-ECS.svg"
+    ],
+    "category": "Tires > Passenger > Performance",
+    "brand": "Marshal",
+    "availability": true,
+    "colors": [
+      "Radial",
+      "195/65 R15"
+    ],
+    "stock": 25
+  },
+  {
+    "id": "CNT-AGR-1224-D2000",
+    "name": "DRC D2000 Agro 12.4-24",
+    "desc": "DRC D2000 Agro in size 12.4-24. Deep lugs for traction in wet soil, for mid-size tractors.",
+    "price": "1650.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-AGR-1224-D2000.svg"
+    ],
+    "category": "Tires > Agricultural > Tractor",
+    "brand": "DRC",
+    "availability": true,
+    "colors": [
+      "R1 lugs",
+      "12.4-24"
+    ],
+    "oldPrice": "1790.00",
+    "stock": 11
+  },
+  {
+    "id": "CNT-AGR-1834-R1W",
+    "name": "CEAT Farmax R1W 18.4-34",
+    "desc": "CEAT Farmax R1W in size 18.4-34. High load capacity for high-horsepower tractors, lower soil compaction.",
+    "price": "3980.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-AGR-1834-R1W.svg"
+    ],
+    "category": "Tires > Agricultural > Tractor",
+    "brand": "CEAT",
+    "availability": true,
+    "colors": [
+      "R1W lugs",
+      "18.4-34"
+    ],
+    "stock": 7
+  },
+  {
+    "id": "CNT-IND-1725-AL37",
+    "name": "Aeolus AL37 OTR 17.5-25",
+    "desc": "Aeolus AL37 OTR in size 17.5-25. Reinforced rubber layer for quarries and mining, cut and heat resistant.",
+    "price": "4290.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-IND-1725-AL37.svg"
+    ],
+    "category": "Tires > Industrial & OTR > Wheel loader",
+    "brand": "Aeolus",
+    "availability": true,
+    "colors": [
+      "L3",
+      "17.5-25"
+    ],
+    "oldPrice": "4690.00",
+    "stock": 4
+  },
+  {
+    "id": "CNT-IND-825-EMP",
+    "name": "Marshal Lift 825 8.25-15",
+    "desc": "Marshal Lift 825 in size 8.25-15. Solid forklift tire for indoor operations, no puncture risk.",
+    "price": "1240.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-IND-825-EMP.svg"
+    ],
+    "category": "Tires > Industrial & OTR > Forklift",
+    "brand": "Marshal",
+    "availability": true,
+    "colors": [
+      "Solid",
+      "8.25-15"
+    ],
+    "stock": 42
+  },
+  {
+    "id": "CNT-ACS-RODA-2250",
+    "name": "Steel Wheel 22.5 x 8.25",
+    "desc": "Steel Wheel in size 22.5 x 8.25. Steel truck wheel, painted finish, compatible with 22.5 rims.",
+    "price": "620.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-ACS-RODA-2250.svg"
+    ],
+    "category": "Accessories > Wheels",
+    "brand": "CantuPneus",
+    "availability": true,
+    "colors": [
+      "Steel",
+      "22.5 x 8.25"
+    ],
+    "oldPrice": "690.00",
+    "stock": 31
+  },
+  {
+    "id": "CNT-ACS-CAM-1100",
+    "name": "Inner Tube 1100-22",
+    "desc": "Inner Tube in size 1100-22. Butyl inner tube with metal valve, high pressure retention.",
+    "price": "148.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-ACS-CAM-1100.svg"
+    ],
+    "category": "Accessories > Tubes",
+    "brand": "CantuPneus",
+    "availability": true,
+    "colors": [
+      "Butyl",
+      "1100-22"
+    ],
+    "stock": 240
+  },
+  {
+    "id": "CNT-ACS-PROT-1100",
+    "name": "Tube Protector 1100-22",
+    "desc": "Tube Protector in size 1100-22. Flap that prevents friction between tube and rim, extends the life of the assembly.",
+    "price": "96.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-ACS-PROT-1100.svg"
+    ],
+    "category": "Accessories > Protectors",
+    "brand": "CantuPneus",
+    "availability": true,
+    "colors": [
+      "Rubber",
+      "1100-22"
+    ],
+    "oldPrice": "118.00",
+    "stock": 156
+  },
+  {
+    "id": "CNT-CRG-29580-RCP",
+    "name": "Aeolus Neo Recap 295/80 R22.5",
+    "desc": "Aeolus Neo Recap in size 295/80 R22.5. Selected casing and cold retreading, lower cost per kilometer for fleets.",
+    "price": "1180.00",
+    "currency": "BRL",
+    "image": [
+      "images/products/CNT-CRG-29580-RCP.svg"
+    ],
+    "category": "Tires > Truck > Retread",
+    "brand": "Aeolus",
+    "availability": true,
+    "colors": [
+      "Lug pattern",
+      "295/80 R22.5"
+    ],
+    "oldPrice": "1340.00",
+    "stock": 72
+  }
+]

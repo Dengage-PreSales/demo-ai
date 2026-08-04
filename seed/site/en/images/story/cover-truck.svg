@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 312 312" width="312" height="312" role="img" aria-label="Truck">
+  <defs>
+    <linearGradient id="truck-cover-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4E018F"/><stop offset="1" stop-color="#2A0148"/>
+    </linearGradient>
+    <clipPath id="truck-cover-clip"><circle cx="156" cy="156" r="156"/></clipPath>
+  </defs>
+  <g clip-path="url(#truck-cover-clip)">
+    <rect width="312" height="312" fill="url(#truck-cover-bg)"/>
+    <rect x="58" y="96" width="30" height="120" rx="7" fill="#fff" opacity="0.30"/><rect x="104" y="122" width="30" height="120" rx="7" fill="#fff" opacity="0.44"/><rect x="150" y="96" width="30" height="120" rx="7" fill="#fff" opacity="0.58"/><rect x="196" y="122" width="30" height="120" rx="7" fill="#fff" opacity="0.30"/><rect x="242" y="96" width="30" height="120" rx="7" fill="#fff" opacity="0.44"/>
+    <circle cx="156" cy="156" r="156" fill="none" stroke="#FFE958" stroke-width="10" opacity=".9"/>
+  </g>
+</svg>
