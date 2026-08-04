@@ -29,19 +29,34 @@ already come from stopping at the response code.
 
 ## Before you start
 
-Three values are needed and only the first two block anything:
-
 | What | Where it goes | Blocks |
 |---|---|---|
-| The Dengage account id | `factory/sandbox.json` | steps 4 to 7 |
-| The sandbox application's app guid | `factory/sandbox.json` | steps 4 to 7 |
-| A REST API bearer token | passed on the command line, never committed | step 3 only |
+| The Dengage account id | `factory/sandbox.json` | steps 6 and 7 |
+| The sandbox application's app guid | `factory/sandbox.json` | steps 6 and 7 |
+| An API user's key and password | the environment, never committed | the optional check in step 3 |
 
-The token needs the **`dataSpace.manage`** permission. Without it the table
-creation call is refused with a 403 that names the permission it wanted.
+**There is no bearer token to be issued.** Authentication is an **API user**,
+created in the panel under Configuration, Users, New User. The platform
+generates a user key and shows the password once, and also emails it. Those two
+are exchanged at `POST /rest/login` for an access token that lasts an hour.
 
-The token is used once, to create two tables, and again in Phase 3 for the
-scheduled purge. It is never written into a file in this repository.
+They are only needed for the optional verification in step 3 and later for the
+Phase 3 purge. Nothing in Phase 0 requires them, because the tables are created
+by hand.
+
+**The API is IP allowlisted.** It refuses on the calling address before it
+looks at the credentials, and the message it returns names the address. If a
+call is refused with a 403 mentioning whitelisting, the credentials are not the
+problem and re-issuing them will not help. This has a consequence for Phase 3
+that is recorded in the handoff: a stock GitHub Actions runner draws from a
+large, changing pool of addresses, so there is nothing stable to allowlist and
+the purge needs a different home.
+
+> **Never delete or truncate anything in Dengage without written approval.**
+> Dropping a table, truncating one, deleting rows or contacts. Every time, for
+> that specific object, agreed beforehand. The Data Space is shared with five
+> live demo sites and two mobile apps, and a drop cannot be undone from this
+> side. CLAUDE.md section 1a.
 
 ---
 
@@ -70,18 +85,26 @@ core demo sites use.
 
 | Field | Value |
 |---|---|
-| Name | `DND - eComm DemoFactory [Salil]` |
+| Name | `DND - PreSales eComm [Salil]` |
 | Site Domain URL | `https://dengage-presales.github.io` |
-| Icon/Badge URL | `https://dengage-presales.github.io/demo-ai/assets/dengage-push-icon.png` |
+| Icon/Badge URL | `https://dengage-presales.github.io/dengage-push-icon.png` |
 
 **Site Domain URL takes the origin only.** No path, no trailing slash. Every
 demo ever built sits underneath that one address, so it is filled in once and
 covers all of them. Putting the full path to one demo there would scope the
 application to that demo alone.
 
-The icon is optional on the first pass. It resolves to nothing until step 1 has
-published, so if the panel refuses it, come back after that. Push works without
-it.
+**The icon is required, and it points at the origin root, not at this
+repository.** The panel wants a square HTTPS image of at least 256px, and it
+rejects a URL that does not resolve. `assets/dengage-push-icon.png` in this
+repository is the Dengage mark at 1200x1200, which satisfies the size rule, but
+it is only reachable once this repository's own Pages is published under
+`/demo-ai/`.
+
+Put the same file at the **root of the `dengage-presales.github.io`
+repository**, alongside the service worker, and use the URL above. That site is
+already published, so the URL resolves immediately, and it stays valid however
+this repository's Pages setting changes later.
 
 ### The four advanced settings
 
@@ -112,28 +135,71 @@ here.
 
 ---
 
-## 3. Create the two tables
+## 3. Create the two tables, by hand, as Big Data tables
 
-Review what will be sent first. This needs no token and no account:
+Print the specification:
 
-    node factory/phase0/create-tables.mjs --dry-run
+    node factory/phase0/tables.mjs
 
-Then create them:
+That sends nothing. It prints the exact table type, names, descriptions,
+columns and relations to enter.
 
-    DENGAGE_API_TOKEN=... node factory/phase0/create-tables.mjs
+**They cannot be created by API, and the reason is the table type.** Dengage
+has five: Regular, Big Data, Sendable Contact List, Sendable Token List and
+Remote. Event data belongs in **Big Data**, which the panel describes as being
+for external event and analytics data with relations used for segmentation. The
+`CreateTable` API has no field for the type: given a contact key column it
+makes a **Sendable** table, which is a send list, an audience you can mail or
+push to. There is no way to ask it for a Big Data table.
 
-Safe to run twice. A table that already exists is reported as such and left
-alone, so re-running after a partial failure finishes the job.
+This was found by creating them and looking at the result. The two Sendable
+tables that produced were empty and have been removed.
 
-Two tables are created:
+So: Data Space, Tables, New, **Big Data**, twice.
 
 | Table | One row per |
 |---|---|
 | `sandbox_onsite_events` | widget fired from the launcher |
 | `sandbox_events` | storefront interaction |
 
-**These two are the whole of what any demo may write to.** Everything the
-reference build sent to `shopping_cart_events`, `order_events`,
+**Leave `contact_key` nullable.** On a Sendable table it cannot be, because the
+contact key is the send target. On a Big Data table it can, and Dengage's star
+schema documentation says that is exactly what it is for: letting anonymous,
+unauthenticated devices record rows. Anonymous visitors staying anonymous is
+correct behaviour here, so a non-nullable contact key would mean the demo
+records nothing at all until somebody signs up.
+
+### Then relate each table to `master_contact`
+
+Dengage is a star schema built around `master_contact` and `master_device`. A
+custom table earns its place in segmentation by being related to it.
+
+| | |
+|---|---|
+| Where | the **Connect Toolbox**, upper right of the table, then **New Relation** |
+| From | `sandbox_onsite_events.contact_key`, and separately `sandbox_events.contact_key` |
+| To | `master_contact.contact_key` |
+| Cardinality | one to many. One contact, many event rows |
+
+Without the relation the two tables are inert stores. With it, the Interactive
+Segment tools can build segments across them, which is the thing a prospect is
+actually being shown. "Everyone who fired the NPS widget and did not complete
+checkout" is a segment only if the relation exists.
+
+### Check the result
+
+Optional, and needs the API user from above:
+
+    DENGAGE_API_USERKEY=... DENGAGE_API_PASSWORD=... \
+      node factory/phase0/tables.mjs --verify
+
+It compares what exists against the specification and changes nothing. It
+cannot see the table type or the relation, so it flags a non-nullable contact
+key as the likely sign of a Sendable table and otherwise leaves both to be
+confirmed in the panel.
+
+**These two tables are the whole of what any demo may write to.** Everything
+the reference build sent to `shopping_cart_events`, `order_events`,
 `order_events_detail`, `wishlist_events` and `search_events` comes here
 instead.
 
@@ -149,9 +215,13 @@ output on assets used to close real deals, and nothing structural prevents it.
 
 ## 4. Create the eight campaigns
 
-By hand, in the panel. This cannot be scripted: the API can create tables but
-it cannot create on-site campaigns, and this is the step that the whole shared
-prefix design exists to make you do only once.
+By hand, in the panel, like step 3. The API cannot create on-site campaigns at
+all: the published reference exposes an id for updating an existing one and
+nothing for creating one.
+
+Everything panel side is manual, and all of it is one time. That is the shape
+of the design, and the promise it protects is not "no manual setup", it is **no
+per demo panel work**. This step is where that promise is earned.
 
 Settings common to all eight:
 
@@ -218,9 +288,25 @@ the panel, that a click is reported and that the card dismisses.
 
 Point the push domain on the new application at the Pages origin.
 
-The service worker is `dengagewebpushsw.js` at the **repository root**, not
-inside a demo folder. A service worker's scope is its path, so one worker at
-the root serves every demo on the origin.
+**The service worker lives at the origin root, which is a different repository
+from this one.** A service worker's scope is its path, so the file has to sit
+above every demo it serves.
+
+| | |
+|---|---|
+| Repository | `Dengage-PreSales/dengage-presales.github.io` |
+| Served at | `https://dengage-presales.github.io/dengage-webpush-sw.js` |
+| Scope | `/`, the whole origin, so it covers every demo |
+
+This corrects the handoff, which said the worker sits at the root of *this*
+repository. That was written assuming this repository served the origin root.
+It does not: `demo-ai` is a project Pages site published under `/demo-ai/`, so
+a worker here would be scoped to `/demo-ai/` only. The origin root belongs to
+the `dengage-presales.github.io` repository, and the worker is already there.
+
+The file is account agnostic. It reads the account id and app guid from its own
+query string and imports the real worker from the Dengage CDN, so one copy
+serves any application and nothing in it needs changing per demo.
 
 One property worth knowing and worth telling the pre-sales team: **push
 subscriptions belong to the origin, and every demo shares one origin.** A

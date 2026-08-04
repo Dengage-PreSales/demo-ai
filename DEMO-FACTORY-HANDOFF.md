@@ -48,8 +48,19 @@ something the pre-sales team cannot use.
 1. **This repository never touches `salil-dengage/dengage-demos`.** No shared
    branch, no shared workflow, no shared Pages deploy, no cross-repo imports.
    That repo hosts five customer-facing demo sites and two mobile apps that are
-   used on live calls. Isolation here is structural, which is the whole reason
-   this is a separate repository rather than a folder in that one.
+   used on live calls.
+
+   **Corrected, and this matters more than the original wording did.** An
+   earlier draft called this isolation structural. It is not. The GitHub
+   identity a session here runs as **can read and write that repository**,
+   because Claude Code supports one GitHub connection per account. That was
+   accepted deliberately.
+
+   So the separate repository keeps the two codebases apart, and it does
+   nothing to stop a write. **The boundary is enforced by instruction only.**
+   Do not read from, write to, clone, or add `salil-dengage/dengage-demos`.
+   The `core-repo-isolation` guard check catches a reference that gets
+   committed here, which is a much smaller thing than the rule it serves.
 
 2. **Every generated demo fires the `dengage_demo_` event prefix and nothing
    else.** Eight campaigns exist once, in one dedicated Dengage web
@@ -100,6 +111,22 @@ something the pre-sales team cannot use.
 10. **No em dashes or en dashes** in anything written here. Commas, periods,
     colons, or rephrase.
 
+11. **Never delete or truncate anything in Dengage without written approval
+    from Salil, obtained beforehand, for that specific object.** Dropping a
+    table, truncating one, deleting rows, deleting or merging contacts,
+    removing a campaign or a creative. All of it, every time, no exceptions
+    and no inference from context. An offer to handle something manually is
+    not an approval.
+
+    The Data Space is shared with five live demo sites and two mobile apps, a
+    drop cannot be undone from this side, and nothing about a demo reveals that
+    it happened. Reading is always fine: inspect, count, report what you would
+    remove, then ask.
+
+    **This binds the 90 day purge in §10**, which is this same action on a
+    timer. See CLAUDE.md §1a, which is the copy that gets read at the start of
+    every session.
+
 ---
 
 ## 2. The Dengage side: one-time setup
@@ -139,9 +166,17 @@ Form values, so this is filling in a form rather than a decision:
 
 | Field | Value |
 |---|---|
-| Name | `DND - eComm DemoFactory [Salil]` |
+| Name | `DND - PreSales eComm [Salil]` |
 | Site Domain URL | `https://dengage-presales.github.io` |
-| Icon/Badge URL | `https://dengage-presales.github.io/demo-ai/assets/dengage-push-icon.png` |
+| Icon/Badge URL | `https://dengage-presales.github.io/dengage-push-icon.png` |
+
+**Corrected: the icon sits at the origin root, not under `/demo-ai/`.** It is a
+required field, the panel rejects a URL that does not resolve, and this
+repository's Pages site is published under `/demo-ai/` rather than at the root.
+The origin root is the `Dengage-PreSales/dengage-presales.github.io`
+repository, which is already published, so an icon there resolves immediately
+and stays valid however this repository's Pages setting changes. The same file
+is kept here at `assets/dengage-push-icon.png` as the source of truth.
 
 **Site Domain URL takes the origin only, with no path and no trailing slash.**
 Every demo ever built sits underneath that one address, so it is filled in once
@@ -291,22 +326,69 @@ live demo at once.
 
 ### 2.3 The two tables
 
-These **are** automatable: `POST https://api.dengage.com/rest/dataspace/tables`,
-bearer token, 30 requests per second per IP. Reference:
-https://dev.dengage.com/reference/createtable
+> ### CORRECTED: these are NOT automatable, and the reason is the table type
+>
+> An earlier draft opened this section with "These **are** automatable", and
+> built the §2.4 argument on it. That is wrong, and it was found by creating
+> them and looking at the result.
+>
+> **Dengage has five table types.** The panel offers Regular, Big Data,
+> Sendable Contact List, Sendable Token List, and Remote. Event and analytics
+> data belongs in **Big Data**: the panel's own description is "used for
+> storing external event and analytics data, create relations with these tables
+> and use them for segmentation". The reference build says so too, in a comment
+> at the top of `cantuCatalog.js` instructing the reader to create a Big Data
+> table with that name.
+>
+> **`CreateTable` cannot make one.** The request body has exactly five fields,
+> `name`, `columns`, `contactKeyColumn`, `description` and `folderId`, and
+> **none of them selects a type**. The API decides for you: with
+> `contactKeyColumn` set it creates a **Sendable** table, without it a
+> standalone one. There is no third outcome.
+>
+> A Sendable table is a send list, an audience you can mail or push to. Using
+> one to collect launcher clicks is the wrong shape, and in a shared account it
+> puts two fake audiences in front of everyone else using it.
+>
+> **So the two tables are created by hand, in the panel, as Big Data tables,
+> once.** §2.4's conclusion survives intact and its reasoning does not: it is
+> not that tables are automatable and campaigns are not, it is that
+> **everything panel side is manual and all of it is one time.** No per demo
+> panel work, which is the promise that actually matters, is unaffected.
+>
+> `factory/phase0/tables.mjs` no longer creates anything. It prints the
+> exact specification to enter, and it can verify what exists afterwards. See
+> §2.3a for the panel steps and the relations.
 
-Three details from that reference, confirmed against it while building
-`factory/phase0/create-tables.mjs`:
+Reference: https://dev.dengage.com/reference/createtable
 
-- **The token needs the `dataSpace.manage` permission.** Without it the call is
-  refused with HTTP 403 and code 10, and the response names the permission it
-  wanted. Worth asking for by name rather than asking for "an API token".
-- **A repeat call answers HTTP 400 with code 1**, "Table with given name
-  already exists!". That is what makes the script idempotent, so re-running
-  after a partial failure finishes the job rather than erroring out.
+Four things about the API, all confirmed by calling it rather than by reading
+about it. They matter for the verify and purge paths, which do use it.
+
+- **There is no bearer token to be handed.** Authentication is an **API user**,
+  created in the panel under Configuration, Users, New User, which yields a
+  **user key and a password**. Those are exchanged at
+  `POST /rest/login`, body `{"userkey": ..., "password": ...}`, for an
+  `access_token` good for 3600 seconds, then sent as
+  `Authorization: Bearer <access_token>`. Dengage's guidance is explicit that
+  logging in before every call is wrong and can get the requests blocked, so
+  log in once and reuse.
+
+- **The API is IP allowlisted**, and it refuses on the address *before* it
+  looks at the credentials, with HTTP 403 and the reason in `actionResult`
+  rather than in `message`. The default reading of a 403 on a login call is
+  "wrong password", so this is worth detecting precisely. §14.2 flagged this as
+  a risk to confirm. It is confirmed, and see §10 for what it costs the purge.
+
 - **The accepted column types** are `TEXT`, `INTEGER`, `DATE`, `BOOLEAN`,
-  `EMAIL`, `PHONE` and `DECIMAL`. The two definitions below use only `TEXT`,
-  `INTEGER` and `DECIMAL`, so they are valid as written.
+  `EMAIL`, `PHONE` and `DECIMAL`.
+
+- **Useful read and cleanup endpoints**, for the verify step and for §10:
+  `GET /rest/dataspace/tables`, `GET /rest/dataspace/tables/{tableId}`,
+  `DELETE .../{tableId}/truncate`, `DELETE .../{tableId}/drop`, and
+  `DELETE /rest/dataspace/sync/delete` or `/async/delete` for rows. **Every one
+  of the deleting endpoints is covered by §1.11 and needs written approval
+  first.** `drop` also requires the table to already be empty.
 
 Both tables need a **`contact_key` column of type TEXT, named as the
 `contactKeyColumn`**. The API requires that column to be text, and without it
@@ -388,6 +470,52 @@ full of zero-value orders is worse than a table with gaps.
 Both tables are shared by every demo. `demo_slug` is what separates them and
 what the 90 day purge filters on.
 
+### 2.3a Creating the two tables in the panel, and relating them
+
+Done once, by hand, because §2.3 above establishes that the API cannot produce
+the right type.
+
+**For each of the two tables:** Data Space, Tables, New, and pick **Big Data**.
+Not Regular, which is for data linked on primary keys rather than for events.
+Not either Sendable type, which are send lists. Enter the name, the description
+and the columns exactly as the two definitions above give them.
+
+**`contact_key` is nullable on a Big Data table, and should be left nullable.**
+This is the opposite of what the API forced, and the difference is the type. A
+Sendable table is an audience, so its contact key cannot be empty; the API
+refuses one with `ContactKey or PrimaryKey column cannot be nullable!`. A Big
+Data table has no such requirement, and Dengage's own star schema documentation
+says `contact_key` is nullable there precisely so that **anonymous,
+unauthenticated devices can still record rows**.
+
+That matters more than it sounds. §6.2 has anonymous visitors staying anonymous
+as correct behaviour. Had these stayed Sendable, every event from an anonymous
+visitor would have been rejected, and the demo would silently record nothing
+until someone signed up.
+
+**Then relate each table to `master_contact`.** Dengage is a star schema built
+around `master_contact` and `master_device`, and a custom table earns its place
+in segmentation by being related to it.
+
+| | |
+|---|---|
+| Where | the **Connect Toolbox**, upper right of the table, then **New Relation** |
+| From | `sandbox_onsite_events.contact_key`, and separately `sandbox_events.contact_key` |
+| To | `master_contact.contact_key` |
+| Cardinality | one to many. One contact, many event rows |
+
+Relations are created in the panel only. There is no API for them, which is the
+same shape as the campaigns in §2.2 and for the same reason: it is one time
+setup, not per demo work.
+
+**What the relation buys**, and why it is not optional: without it the two
+tables are inert stores. With it, the Interactive Segment tools can build
+segments across them, which is the thing a prospect is actually being shown.
+"Everyone who fired the NPS widget and did not complete checkout" is a segment
+only if the relation exists.
+
+Reference: https://dev.dengage.com/docs/star-schema-relational-database
+
 ### 2.4 What the API cannot do
 
 I checked the published API reference. **On-site campaigns cannot be created by
@@ -402,9 +530,29 @@ assumes campaign creation can be scripted.
 ### 2.5 Web push, phase 1
 
 In scope. Configure the push domain on the new web application, pointed at the
-Pages origin. `dengagewebpushsw.js` sits at the **repository root**, not inside
-a demo folder, because a service worker's scope is its path and one worker at
-the root serves every demo on the origin.
+Pages origin.
+
+**Corrected: the service worker is not in this repository.** An earlier draft
+put it at "the repository root", which assumed this repository served the
+origin root. It does not. `demo-ai` is a *project* Pages site published under
+`https://dengage-presales.github.io/demo-ai/`, so a worker committed here is
+scoped to `/demo-ai/` and covers nothing above it.
+
+| | |
+|---|---|
+| Repository | `Dengage-PreSales/dengage-presales.github.io` |
+| Served at | `https://dengage-presales.github.io/dengage-webpush-sw.js` |
+| Scope | `/`, the whole origin, so it covers every demo |
+
+That is the correct arrangement and it is already in place. A service worker's
+scope is its path, so the file has to sit above every demo it serves, and the
+origin root is the only place that is true. Note the filename, which is
+`dengage-webpush-sw.js` rather than the `dengagewebpushsw.js` the reference
+build uses.
+
+The file is account agnostic: it reads the account id and app guid from its own
+query string and imports the real worker from the Dengage CDN, so one copy
+serves any application and nothing in it changes per demo.
 
 One property to know and to tell pre-sales: **push subscriptions are per
 origin, and every demo shares one origin.** A browser that subscribed while
@@ -505,7 +653,6 @@ demo-ai/
   DEMO-FACTORY-HANDOFF.md       this file
   README.md                     what this is, how a pre-sales person uses it
   CLAUDE.md                     the operating rules, short, pointing here
-  dengagewebpushsw.js           service worker, root scope, serves every demo
   .nojekyll
 
   seed/                         TEMPORARY, see §3.1. Delete at end of phase 1
@@ -537,7 +684,7 @@ demo-ai/
     sandbox.json                the account id and app guid, the only copy
     phase0/                     the panel bring-up kit, built in Phase 0
       README.md                 the panel checklist, step by step
-      create-tables.mjs         §2.3, idempotent, safe to run twice
+      tables.mjs         §2.3, idempotent, safe to run twice
       probe/                    the page that proves the panel works
       creative/                 a generic card to paste for the Phase 0 check
     guard/                      §11, the CI guardrails. Build these early
@@ -604,11 +751,12 @@ switcher pointing at the Portuguese site. There is no parent site in this
 repository, so all six 404. Remove the language switcher entirely; the demos
 are English only (§2.7).
 
-It exists because **the session building this has no access to
-`salil-dengage/dengage-demos` and must not request any.** Granting read access
-to the repository holding the live sales assets, purely to copy one folder out
-of it, would trade the isolation guarantee for a convenience. Copying the
-folder in ahead of time costs one commit and keeps that guarantee structural.
+It exists because **a session building this must not open
+`salil-dengage/dengage-demos`, even though it can.** See §1.1: the boundary is
+instruction, not structure. Reaching into the repository that holds the live
+sales assets, purely to copy one folder out of it, is exactly the kind of
+"just this once" that the rule exists to refuse. Copying the folder in ahead of
+time costs one commit and removes the temptation entirely.
 
 **Delete `seed/` once `template/` is built.** It is scaffolding. If it is still
 present at the end of Phase 1, something in the fork was left unfinished, and a
@@ -1146,6 +1294,13 @@ credibility. Do not let them be skipped for speed.
 
 ## 10. Purge
 
+> **Read §1.11 before building any of this.** Steps 2, 3 and 4 below are
+> deletions, on a schedule, against a Data Space shared with five live demo
+> sites and two mobile apps. The purge is designed and reviewed with Salil
+> before it is ever armed. Until then it runs in report only mode: it lists
+> exactly what it would remove and removes nothing. A scheduled job is not
+> exempt from the approval rule, it is the reason the rule exists.
+
 `workflows/purge.yml`, scheduled daily:
 
 1. read `expiresAt` from every `demos/*/demo.config.json`
@@ -1319,7 +1474,7 @@ Five steps, and only the first two need Salil:
 
 1. Create the web application, four advanced settings, push domain. §2.0 first.
 2. Create the two tables: `DENGAGE_API_TOKEN=... node
-   factory/phase0/create-tables.mjs`. Safe to run twice.
+   factory/phase0/tables.mjs`. Safe to run twice.
 3. Create the eight campaigns by hand. This cannot be automated (§2.4) and it
    is the only panel work there will ever be. Phase 0 needs content in one of
    them; `factory/phase0/creative/phase0-check.html` is a generic card to
@@ -1346,7 +1501,7 @@ account:**
   is what catches the five modules in §5.3 if one slips through. Test it
   against a naive copy of `seed/site/en/js/`, which it must reject on every count
   (§11.1).
-- **`create-tables.mjs`** for §2.3, idempotent so it is safe to run twice.
+- **`tables.mjs`** for §2.3, idempotent so it is safe to run twice.
 - **Scaffolding**: `.nojekyll`, the service worker at the repository root, and
   the push icon at `assets/dengage-push-icon.png` at 1200x1200, which clears
   the 256px minimum and is what §2.1 points at.
@@ -1400,7 +1555,7 @@ Everything else in this document is decided. These three are not.
    the REST API being IP-allowlisted in at least one context, so confirm a
    GitHub Actions runner can reach it, or the purge job needs a different home.
 
-   The token is never committed. `create-tables.mjs` takes it from the
+   The token is never committed. `tables.mjs` takes it from the
    environment and has a `--dry-run` that needs no token at all, so the two
    requests can be reviewed before anyone holds one.
 3. **Product images, one explicit confirmation.** The decision is to download
@@ -1426,15 +1581,23 @@ So the isolation looks like this:
 
 | Layer | Separate? | Enforced by |
 |---|---|---|
-| Repository | yes | different account entirely |
+| Repository contents | yes | different account entirely |
+| **Repository write access** | **no** | **instruction only. One GitHub connection per account** |
 | Browser origin, storage, notification permission | yes | the browser (§2.5a) |
 | Dengage web application, campaigns, push config | yes | a distinct app guid |
-| **Dengage account, Data Space, tables, contacts** | **no** | **nothing but this specification** |
+| **Dengage account, Data Space, tables, contacts** | **no** | **instruction only** |
 
-That last row is the whole risk surface, and three things stand on it: the
-`ec:*` prohibition (§1.3), the table allowlist (§11), and the event panel
-runtime fix (§5.3). None of them is optional and none is defence in depth for
-the others. They are the only protection there is.
+**Two rows are the risk surface, not one.** The repository write access row was
+added after the fact: the GitHub identity a session runs as can write
+`salil-dengage/dengage-demos`, because Claude Code supports one GitHub
+connection per account, and that was accepted deliberately. See §1.1.
+
+Three things stand on the Data Space row: the `ec:*` prohibition (§1.3), the
+table allowlist (§11), and the event panel runtime fix (§5.3). None of them is
+optional and none is defence in depth for the others. They are the only
+protection there is.
+
+Nothing at all stands on the write access row except not doing it.
 
 The practical rule that follows: **a change that touches how this repository
 writes to Dengage deserves more scrutiny than a change to how it looks.** A
@@ -1537,13 +1700,50 @@ corrected in place rather than worked around.
 | "no off-origin asset references", which is unbuildable: the SDK loader is necessarily off origin and §7.2 requires Google Fonts | §11 | a host allowlist, stated |
 | `productCatalog.js` normalizes an unreadable price to `0`, and is a sixth module needing a Phase 1 fix for a different non-negotiable | §5.3 | new subsection |
 
-Three things were added rather than corrected: the `dataSpace.manage`
-permission and the documented already-exists response in §2.3, both confirmed
-against the published reference while building `create-tables.mjs`; the
-requirement that a `sendDeviceEvent` target be a literal at the call site,
-in §11, which is what makes that check unwalkaroundable; and the note in §13
-on the probe reading its configuration at runtime where a demo has it
-substituted at build time.
+Also added: the requirement that a `sendDeviceEvent` target be a literal at the
+call site, in §11, which is what makes that check unwalkaroundable; and the
+note in §13 on the probe reading its configuration at runtime where a demo has
+it substituted at build time.
+
+### A second round, from calling the API and looking at the panel
+
+The corrections above came from reading. These came from doing, and they are
+larger.
+
+| What was wrong | Where | Now |
+|---|---|---|
+| "These **are** automatable", and §2.4's reasoning built on it | §2.3, §2.4 | the API cannot make a **Big Data** table, so both are created by hand. See below |
+| Authentication described as "a REST API bearer token" | §2.3, §14.2 | an **API user's key and password**, exchanged at `POST /rest/login` for a one hour token |
+| The REST API being IP allowlisted listed as a risk to confirm | §14.2 | **confirmed**, and it refuses on the address before it checks credentials |
+| The service worker "sits at the repository root" | §2.5, §3 | the origin root, in the `dengage-presales.github.io` repository. This one is a *project* Pages site under `/demo-ai/` |
+| The push icon URL under `/demo-ai/assets/` | §2.1 | the origin root, published today and valid regardless of this repository's Pages setting |
+| Isolation from the core repository described as structural | §1.1, §14.4 | instruction only. The GitHub identity can write it |
+| Nothing said about destructive Dengage operations | §1 | new non-negotiable 11, and CLAUDE.md §1a |
+
+**The table type is the one to understand rather than skim.** Dengage has five
+table types and `CreateTable` has no field for choosing one. Given a
+`contactKeyColumn` it produces a **Sendable** table, which is a send list.
+Event data belongs in **Big Data**. The reference build knew this:
+`cantuCatalog.js` opens with an instruction to create a Big Data table with
+that name. The specification did not carry it across.
+
+It was found by creating both tables, seeing them appear as Sendable, and then
+checking what the API can actually express. The two wrong tables were empty and
+have been removed.
+
+There is a second consequence that is easy to miss. The API refused a nullable
+contact key on those Sendable tables with `ContactKey or PrimaryKey column
+cannot be nullable!`, which reads like a rule about contact keys and is really
+a rule about send lists. On a Big Data table the contact key **is** nullable,
+and Dengage's star schema documentation says that is deliberate, so that
+anonymous devices can still record rows. Had the Sendable tables stayed, every
+event from an anonymous visitor would have been refused. §6.2 has anonymous
+visitors staying anonymous as correct behaviour, so the demo would have
+recorded nothing until somebody signed up, and nothing on screen would have
+shown it.
+
+Added rather than corrected: §2.3a, the panel steps and the `master_contact`
+relations that make the two tables usable in segmentation.
 
 ---
 

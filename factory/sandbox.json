@@ -1,6 +1,6 @@
 {
-  "accountId": "",
-  "appGuid": "",
+  "accountId": "28",
+  "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
 
   "_comment": [
     "The Dengage web application every demo talks to. Handoff 2.1.",
@@ -9,21 +9,23 @@
     "the generator, the smoke test and the CI guardrails all read them from here,",
     "so filling this in is the whole of wiring the repository to the panel.",
     "",
-    "Both are blank until the sandbox application exists. While they are blank the",
-    "probe page runs in dry run: it prints every payload it would send and sends",
-    "nothing, so the event shapes are reviewable before anyone holds a token.",
+    "The application is DND - PreSales eComm [Salil], a new web application inside",
+    "account 28. It has its own campaigns and its own push configuration. It does",
+    "NOT have its own Data Space: every table and every contact is shared with the",
+    "five core demo sites and the two mobile apps. That is the reason for the",
+    "table allowlist. Handoff 14.4.",
     "",
-    "accountId  the Dengage account. The core demos use 28 and the sandbox",
-    "           application is a new application inside that same account, so",
-    "           the Data Space and every contact are shared with them. That is",
-    "           the reason for the table allowlist. Handoff 14.4.",
-    "appGuid    the sandbox application's guid, from the panel. The guardrails",
-    "           treat this as an allowlist of one: any other application",
-    "           identifier appearing anywhere in this repository is rejected,",
-    "           so the identifier the core demos use never has to be written",
-    "           down here in order to be kept out.",
+    "The guardrails treat the app guid as an allowlist of one. Any other",
+    "application identifier appearing anywhere in this repository is rejected, so",
+    "the identifier the core demos use never has to be written down here in order",
+    "to be kept out.",
     "",
     "The SDK loader URL these two compose is",
-    "https://pcdn.dengage.com/p/push/<accountId>/<appGuid>/dengage_sdk_loader.js"
+    "https://pcdn.dengage.com/p/push/28/99d9b8fb-0c62-5a85-3e43-2402554d93a5/dengage_sdk_loader.js",
+    "",
+    "NO CREDENTIALS LIVE IN THIS FILE OR ANYWHERE ELSE IN THIS REPOSITORY.",
+    "The Dataspace API is reached with an API user's key and password, exchanged",
+    "for a short lived token at login. Both are passed through the environment.",
+    "See factory/phase0/create-tables.mjs."
   ]
 }

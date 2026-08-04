@@ -27,7 +27,8 @@ A demo is **done** when all eleven of these are true:
 5. All eight Dengage on-site widgets fire on demand from an in-page launcher,
    and can be re-fired repeatedly during one call without going dark
 6. All five inline content slots are present and targetable from the panel
-7. Web push works from the shared service worker at the repository root
+7. Web push works from the shared service worker at the **origin root**, which
+   lives in the `dengage-presales.github.io` repository, not this one
 8. Every event it records lands in `sandbox_onsite_events` or `sandbox_events`,
    tagged with its `demo_slug`. The only exception is `pageView`, which stays
 9. It writes nothing to `shopping_cart_events`, `order_events`,
@@ -45,25 +46,37 @@ Target volume: **5 to 7 demos a month**, each live for **90 days**.
 **Nothing this repository does may ever touch `salil-dengage/dengage-demos`.**
 
 That repository holds five customer-facing demo sites and two mobile apps used
-on live sales calls. This session has no access to it and must not request any.
+on live sales calls.
+
+**You can reach it, and you must not.** The GitHub identity this session runs
+as can read and write that repository. Claude Code supports one GitHub
+connection per account, so this was accepted deliberately rather than
+overlooked. Do not read from it, write to it, clone it, or add it to the
+session. If something appears to require it, stop and ask Salil. It has never
+yet been the right answer.
 
 The part that is easy to get wrong: **the isolation is not only about files.**
 Writing a row into a Dengage table that repository shares is as much a breach as
 editing one of its files, and it is silent.
 
-Know exactly how much is separate, because three of four layers are, and the
-fourth is the one that matters:
+Know exactly how much is separate, because two of five layers are not, and both
+of those are held by instruction alone:
 
 | Layer | Separate? | Enforced by |
 |---|---|---|
-| Repository and GitHub account | yes | `Dengage-PreSales`, a different account |
+| Repository contents and GitHub account | yes | `Dengage-PreSales`, a different account |
+| **Repository write access** | **no** | **instruction only. One GitHub connection per account** |
 | Browser origin, storage, notification permission | yes | the browser |
 | Dengage web application, campaigns, push | yes | a distinct app guid |
-| **Dengage account 28, Data Space, tables, contacts** | **no** | **nothing but discipline** |
+| **Dengage account 28, Data Space, tables, contacts** | **no** | **instruction only** |
 
-**The account split does not protect the tables.** Three things do, and they
-are the whole of it: no `ec:*` calls, the table allowlist in CI, and the event
-panel's runtime validation. None is redundant with the others.
+**Neither split protects what matters most.** The account split does not protect
+the tables, and the separate repository does not protect the core repository
+from a write. Three things protect the tables, and they are the whole of it: no
+`ec:*` calls, the table allowlist in CI, and the event panel's runtime
+validation. None is redundant with the others. Nothing protects the core
+repository except not touching it, and the guard's `core-repo-isolation` check,
+which can only catch a reference that gets committed here.
 
 So: a change to how this repository writes to Dengage deserves more scrutiny
 than a change to how it looks. A broken layout costs a demo. A row in
@@ -71,6 +84,43 @@ than a change to how it looks. A broken layout costs a demo. A row in
 
 If something appears to require reaching into the core repository, stop and ask
 Salil. It has never yet been the right answer.
+
+---
+
+## 1a. Never delete or truncate anything in Dengage without written approval
+
+**Salil's explicit instruction. It is never skipped, never assumed, and never
+inferred from context.**
+
+Get approval **in writing, in the conversation, for that specific object, before
+the call is made.** Not afterwards. Not because the object looks empty,
+disposable, wrong, or because you created it yourself five minutes ago. Not
+because a previous message sounded like it was heading that way. An offer to
+handle something manually is not an approval, and neither is a general
+discussion of cleanup.
+
+This covers, at minimum:
+
+| Action | Endpoint or surface |
+|---|---|
+| Drop a table | `DELETE /rest/dataspace/tables/{id}/drop` |
+| Truncate a table | `DELETE /rest/dataspace/tables/{id}/truncate` |
+| Delete rows | `DELETE /rest/dataspace/sync/delete`, `/async/delete` |
+| Delete or merge contacts | any contact endpoint, and the panel |
+| Delete a campaign, creative, segment or application | the panel |
+
+**Why it is absolute here.** The Data Space is shared with five live demo sites
+and two mobile apps. A dropped table cannot be restored from this side, the
+blast radius is invisible from the demo, and by the time anyone notices, the
+call it broke has already happened.
+
+**This binds the 90 day purge too** (handoff §10). A scheduled job that deletes
+rows and contacts is this same action on a timer. It is designed and reviewed
+with Salil before it is ever armed, it names exactly what it will remove, and
+it never widens its own filter.
+
+**Reading is always fine.** `GET` a table, count its rows, inspect a schema,
+report what you found and what you would remove. Then stop and ask.
 
 ---
 
@@ -133,10 +183,16 @@ Salil. It has never yet been the right answer.
 ```bash
 python3 -m http.server 8101
 # http://localhost:8101/demos/<slug>/
+# http://localhost:8101/factory/phase0/probe/
 ```
 
-Serve from the **repository root**, not a demo folder, so the shared service
-worker resolves.
+Serve from the **repository root**, not a demo folder, so relative paths
+resolve the way they do on Pages.
+
+Web push is not testable this way. The service worker lives at the origin root,
+in the `dengage-presales.github.io` repository, and the application's push
+domain is the published origin. Locally there is no worker above the demo, so
+push is checked on the published site rather than here.
 
 ### Verify
 
