@@ -1,0 +1,27 @@
+/* Known-bad fixture. The reference build's stylesheet, with its brand surface
+   still spread through the file rather than reduced to the token block.
+
+   Every colour below the :root block is a theming decision the config can no
+   longer reach, so the demo renders in the reference build's colours whatever
+   demo.config.json says. Handoff 4, 11. */
+
+:root {
+    --brand-primary: #125cfa;
+    --brand-ink: #14181b;
+    --brand-surface: #ffffff;
+}
+
+.cantu-header {
+    background: #125cfa;
+    color: #ffffff;
+}
+
+.cantu-logo-word {
+    font-family: 'Barlow Condensed', sans-serif;
+    color: rgb(18, 92, 250);
+}
+
+.product-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    border: 1px solid #e5e7eb;
+}

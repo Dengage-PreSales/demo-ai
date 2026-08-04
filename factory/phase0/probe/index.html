@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory: Phase 0 probe</title>
+<meta name="description" content="Proves the Dengage sandbox application, the two Data Space tables and the eight shared campaigns are wired up, before any demo is generated.">
+
+<!--
+    THE PHASE 0 PROBE. Handoff 13.
+
+    One page whose only job is to answer three questions, in order:
+
+      1. Does the sandbox application load and initialize, with a contact key
+         resolved before the first call, rather than after it?
+      2. Does firing a scenario make a widget appear on screen?
+      3. Does the launcher click land as a row in Data Space?
+
+    The third is the one that gets skipped and it is the entire point. An HTTP
+    200 from the event endpoint means accepted, not stored, and the row is the
+    only proof an event landed. That has produced two confident and wrong "it
+    is working" claims already. Handoff 12.5.
+
+    There is no tag manager on this page and there will not be one. The SDK
+    watches window.dataLayer itself, so campaigns triggered by a Data Layer
+    Event fire with no tag manager involved, and a second copy of the SDK
+    loaded from a container would double-initialize it. Handoff 12.1, 12.9.
+
+    Serve from the REPOSITORY ROOT, not from this folder, so the service worker
+    at the root resolves:
+
+        python3 -m http.server 8101
+        http://localhost:8101/factory/phase0/probe/
+-->
+
+<link rel="stylesheet" href="probe.css">
+<!-- Relative, not absolute. Served locally the repository root is /, and on
+     Pages it is /demo-ai/, so an absolute path is wrong in one of the two
+     places. Without any icon the browser asks for /favicon.ico and logs a 404,
+     which is noise in a page whose job is to make real problems visible. -->
+<link rel="icon" href="../../../assets/dengage-push-icon.png" type="image/png">
+</head>
+<body>
+
+<header class="masthead">
+    <span class="mark" aria-hidden="true">
+        <svg viewBox="0 0 24 28" focusable="false">
+            <path d="M10 28H5.8v-6h4.2c4.4-.2 7.9-3.8 7.7-8.2-.1-4.3-3.6-7.7-7.7-7.8H5.8v5.1h5v6H0V0h10c7.7.3 13.8 6.6 13.5 14.4C23.3 21.8 17.4 27.7 10 28z"/>
+        </svg>
+    </span>
+    <div>
+        <h1>Phase 0 probe</h1>
+        <p class="sub">eComm Demo Factory</p>
+    </div>
+</header>
+
+<main>
+
+<!-- Filled in by probe.js once factory/sandbox.json has been read. -->
+<section id="status" class="card status" aria-live="polite">
+    <p class="loading">Reading the sandbox configuration.</p>
+</section>
+
+<section class="card">
+    <h2>1. Fire a scenario</h2>
+    <p>
+        Each card pushes its event to <code>window.dataLayer</code> and records
+        the click to <code>sandbox_onsite_events</code>. A widget appears only if
+        a campaign exists in the panel with that exact trigger name. If one is
+        missing, that card is silently dark: nothing errors and nothing logs, so
+        check the campaign list before suspecting the code.
+    </p>
+    <div id="launcher" class="launcher"></div>
+</section>
+
+<section class="card">
+    <h2>2. Record a storefront event</h2>
+    <p>
+        The second table, written the way the storefront will write it. This is
+        a fixed set of events sending a fixed set of columns. There is no field
+        here for choosing a table, and that is deliberate: the two sandbox
+        tables are the only ones any part of this repository may write to.
+    </p>
+    <div id="events" class="launcher"></div>
+</section>
+
+<section class="card">
+    <h2>3. Web push</h2>
+    <p>
+        Push subscriptions belong to the origin, and every demo shares one
+        origin. A browser that subscribes here is subscribed for the whole
+        sandbox. For composing a push in the panel during a call and having it
+        arrive on screen, that is the behaviour you want. Handoff 2.5.
+    </p>
+    <div class="row">
+        <button type="button" id="push-ask" class="btn">Ask for notification permission</button>
+        <button type="button" id="push-check" class="btn btn-quiet">Check the service worker</button>
+    </div>
+    <p id="push-state" class="state"></p>
+</section>
+
+<section class="card">
+    <h2>4. Reset the widget display state</h2>
+    <p>
+        A campaign has a display frequency, and the SDK also keeps display state
+        in this browser. Fire the same widget twice on a call and the second one
+        may not appear, which looks like a broken product. Clearing that state
+        is the fix, not rebuilding the campaign. Handoff 2.6.
+    </p>
+    <p>
+        This control lists every key it is about to remove and asks a second
+        time before removing anything. Handoff 2.5a.
+    </p>
+    <button type="button" id="reset" class="btn btn-warn">Show what would be cleared</button>
+    <div id="reset-detail" class="state"></div>
+</section>
+
+<section class="card">
+    <h2>Log</h2>
+    <p id="log-intro" class="state"></p>
+    <div id="log" class="log" role="log" aria-live="polite"></div>
+    <button type="button" id="log-clear" class="btn btn-quiet">Clear the log</button>
+</section>
+
+<section class="card accept">
+    <h2>What acceptance means</h2>
+    <p>
+        Phase 0 is done when a widget has appeared on screen from section 1
+        <strong>and</strong> the click for it is visible as a row in Data Space.
+        Open <code>sandbox_onsite_events</code> and filter on the contact key
+        shown at the top of this page.
+    </p>
+    <p>
+        A 200 is not acceptance. The row is. Handoff 12.5, 13.
+    </p>
+</section>
+
+</main>
+
+<script src="probe.js"></script>
+</body>
+</html>

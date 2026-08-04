@@ -1,0 +1,45 @@
+name: Guard
+
+# The CI guardrails, handoff section 11. These run on every change, and one of
+# them is the only thing standing between a generated demo and the Dengage
+# tables that the core demo sites and the two mobile apps share.
+#
+# The guard's own test suite runs first and runs always. A guard that passes on
+# an empty repository proves nothing (handoff 11.1), so the evidence that these
+# checks work is that they reject a tree known to be wrong, on every count.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runs before the guard itself. If the checks have stopped working, the
+      # result of running them over the repository means nothing, so there is
+      # no point reading it.
+      - name: Guard test suite
+        run: ./factory/guard/test.sh
+
+      # Deliberately not the runner's default locale. The dash check matches
+      # raw UTF-8 bytes so that it behaves identically everywhere, and running
+      # CI under a non-UTF-8 locale is what would surface a regression back to
+      # a code point pattern, which reports every file clean without one.
+      - name: Guard test suite, non-UTF-8 locale
+        run: ./factory/guard/test.sh
+        env:
+          LC_ALL: C
+          LANG: C
+
+      - name: Guardrails
+        run: ./factory/guard/run.sh

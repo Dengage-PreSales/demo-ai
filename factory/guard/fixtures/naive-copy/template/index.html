@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CantuPneus | Known-bad fixture</title>
+
+    <!-- Tag manager, carried over from the reference build. Handoff 12.9 says
+         generated demos ship no container at all: its only possible
+         contribution here is a second SDK load that double-initialises. -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NL6J5Z53');</script>
+
+    <!-- The application identifier pasted straight into page code, so the
+         template carries an identity instead of receiving one at build time. -->
+    <script>
+      !function (e, a, n, d, g) {
+        e.dengage = e.dengage || function () { (e.dengage.q = e.dengage.q || []).push(arguments) },
+        d = a.getElementsByTagName("head")[0],
+        (g = a.createElement("script")).async = 1,
+        g.src = "https://pcdn.dengage.com/p/push/28/c8d2da44-b982-1925-9ad8-e7caddf0894a/dengage_sdk_loader.js",
+        d.appendChild(g)
+      }(window, document);
+      dengage('initialize');
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body data-page-type="home">
+    <!-- A link back to the core repository's Pages origin. -->
+    <p><a href="https://salil-dengage.github.io/dengage-demos/">Other demos</a></p>
+
+    <!-- A product image hotlinked from a CDN the demo does not control. -->
+    <img src="https://cdn.shopify.com/s/files/1/0000/0001/products/hero.jpg" alt="Product">
+
+    <script src="js/cantuCatalog.js"></script>
+    <script src="js/cartManager.js"></script>
+    <script src="js/searchPanel.js"></script>
+    <script src="js/wishlist.js"></script>
+    <script src="js/eventModal.js"></script>
+</body>
+</html>
