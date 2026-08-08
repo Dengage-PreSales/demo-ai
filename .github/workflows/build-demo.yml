@@ -258,6 +258,10 @@ jobs:
           # does not touch the network. It belongs in this step rather than with the
           # unit suite because it needs the browser installed above.
           node factory/scrape/theme-rendered.test.mjs
+          # The email set: contrast on a hostile theme, live queries in the panel
+          # files, no tags left in a preview, and the AMP variant against the
+          # official amp4email validator when it is installed.
+          node factory/emails/emails.test.mjs
 
       - name: Generate the demo
         id: generate

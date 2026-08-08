@@ -219,7 +219,13 @@ fi
 # purgeable, only because its page views exist. A page that skips pageView
 # writes cart and order rows that can never be attributed to it (handoff 13).
 # ---------------------------------------------------------------------------
-pages="$( ( cd "$ROOT" 2>/dev/null && find template demos -name '*.html' -type f 2>/dev/null | sort ) )"
+# EMAILS ARE EXCLUDED, AND THEY HAVE TO BE. demos/<slug>/emails/ holds journey
+# messages, which are HTML but are not storefront pages: they are read in an inbox,
+# they cannot run the SDK, and requiring dengageEvents.js of them would be asking a
+# message to fire a page view. Their own attribution is Dengage's send and click
+# tracking, not the on-site event module.
+pages="$( ( cd "$ROOT" 2>/dev/null && find template demos -name '*.html' -type f 2>/dev/null \
+    | grep -v '/emails/' | sort ) )"
 if [ -z "$pages" ]; then
     skip pageview-required "no storefront pages in scope"
 else
@@ -261,7 +267,11 @@ fi
 # w3.org URIs are XML namespaces inside SVG, not asset fetches, so they are not
 # matched at all.
 # ---------------------------------------------------------------------------
-ALLOWED_HOSTS='pcdn\.dengage\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|dengage-presales\.github\.io|github\.com|localhost(:[0-9]+)?|127\.0\.0\.1(:[0-9]+)?'
+# cdn.ampproject.org is on this list because amp4email REQUIRES it: an AMP email
+# must load the AMP runtime from the AMP CDN, there is no self hosted option, and
+# the validator refuses the document without it. It appears only in
+# demos/<slug>/emails/*.amp.html, never in a storefront page.
+ALLOWED_HOSTS='pcdn\.dengage\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|dengage-presales\.github\.io|github\.com|cdn\.ampproject\.org|localhost(:[0-9]+)?|127\.0\.0\.1(:[0-9]+)?'
 urls="$(grep_list 'https?://[a-zA-Z0-9.:-]+' "$BROWSER_FILES" -o)"
 urls="$(printf '%s\n' "$urls" | grep -v '^$' | grep -vE "https?://(www\.)?w3\.org")"
 if [ -z "$BROWSER_FILES" ]; then
@@ -272,7 +282,7 @@ else
     bad="$(printf '%s\n' "$urls" | grep -vE "https?://($ALLOWED_HOSTS)")"
     if [ -n "$bad" ]; then
         fail off-origin-assets "reference to a host that is not allowed"
-        detail "allowed: pcdn.dengage.com, fonts.googleapis.com, fonts.gstatic.com, dengage-presales.github.io"
+        detail "allowed: pcdn.dengage.com, fonts.googleapis.com, fonts.gstatic.com, dengage-presales.github.io, cdn.ampproject.org"
         printf '%s\n' "$bad" | show
     else
         pass off-origin-assets "all absolute URLs are on allowed hosts"

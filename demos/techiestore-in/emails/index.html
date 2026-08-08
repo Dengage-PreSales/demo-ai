@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Email set: techiestore-in</title>
+<style>
+  :root{color-scheme:light dark}
+  body{margin:0;background:#ffffff;color:#333333;
+       font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;padding:34px 18px 70px}
+  .head{max-width:1180px;margin:0 auto 30px}
+  h1{font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;margin:0 0 8px;color:#333333}
+  .sub{margin:0;font-size:15px;color:#616161;max-width:70ch;line-height:1.6}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .sw{font-size:11px;padding:5px 9px;border-radius:999px;border:1px solid #c3c3c4;
+      background:#f5f5f7;color:#333333}
+  .grid{max-width:1180px;margin:0 auto;display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:26px}
+  .msg{background:#f5f5f7;border:1px solid #c3c3c4;
+       border-radius:5px;overflow:hidden}
+  .msg header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;
+              padding:15px 17px;border-bottom:1px solid #c3c3c4}
+  h2{font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;margin:0 0 3px;color:#333333}
+  .subj{margin:0;font-size:13px;color:#616161}
+  .links{display:flex;flex-direction:column;gap:4px;text-align:right;white-space:nowrap}
+  .links a{font-size:12px;color:#ff8c00;text-decoration:none}
+  .links a:hover{text-decoration:underline}
+  .links .amp{color:#616161}
+  iframe{display:block;width:100%;height:600px;border:0;background:#ffffff}
+  .reads{margin:0;padding:11px 17px 13px;font-size:12px;line-height:1.5;
+         color:#616161;border-top:1px solid #c3c3c4}
+</style></head>
+<body>
+  <div class="head">
+    <h1>Email set for techiestore-in</h1>
+    <p class="sub">Ten journey messages plus one AMP variant, themed from this demo's own
+      palette, typography and catalogue. Every colour below was derived from
+      demo.config.json and checked for contrast before it was written. Paste a file into
+      the Dengage Code Editor, or the AMP one into the AMP tab beside it.</p>
+    <div class="swatches">
+      <span class="sw">brand #ff8c00</span>
+      <span class="sw">on brand #000000</span>
+      <span class="sw">card #f5f5f7</span>
+      <span class="sw">canvas #ffffff</span>
+      <span class="sw">text #333333</span>
+      <span class="sw">light theme</span>
+      <span class="sw">DM Sans</span>
+    </div>
+  </div>
+  <div class="grid">
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Identity capture</h2>
+          <p class="subj">Welcome to Techiestore</p>
+        </div>
+        <div class="links">
+          <a href="welcome.html">Panel file</a>
+          <a href="welcome.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="welcome.preview.html" title="Identity capture" loading="lazy"></iframe>
+      <p class="reads">No query. A coupon code from a Dengage coupon list with Contact Key mapped.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Checkout rescue</h2>
+          <p class="subj">Your order is still waiting</p>
+        </div>
+        <div class="links">
+          <a href="checkout-rescue.html">Panel file</a>
+          <a href="checkout-rescue.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="checkout-rescue.preview.html" title="Checkout rescue" loading="lazy"></iframe>
+      <p class="reads">shopping_cart_events for this contact, newest first.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Cart abandonment</h2>
+          <p class="subj">You left something behind</p>
+        </div>
+        <div class="links">
+          <a href="cart-abandonment.html">Panel file</a>
+          <a href="cart-abandonment.preview.html" class="amp">Preview</a>
+          <a href="cart-abandonment.amp.preview.html" class="amp">AMP</a>
+        </div>
+      </header>
+      <iframe src="cart-abandonment.preview.html" title="Cart abandonment" loading="lazy"></iframe>
+      <p class="reads">shopping_cart_events for this contact, newest first. AMP variant beside it.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Browse abandonment</h2>
+          <p class="subj">Still thinking it over?</p>
+        </div>
+        <div class="links">
+          <a href="browse-abandonment.html">Panel file</a>
+          <a href="browse-abandonment.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="browse-abandonment.preview.html" title="Browse abandonment" loading="lazy"></iframe>
+      <p class="reads">page_view_events for the category in the headline and the product shown.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Failed search recovery</h2>
+          <p class="subj">Back in stock</p>
+        </div>
+        <div class="links">
+          <a href="back-in-stock.html">Panel file</a>
+          <a href="back-in-stock.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="back-in-stock.preview.html" title="Failed search recovery" loading="lazy"></iframe>
+      <p class="reads">search_events for the words typed, wishlist_events for the item.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Wishlist triggers</h2>
+          <p class="subj">The price dropped on something you saved</p>
+        </div>
+        <div class="links">
+          <a href="price-drop.html">Panel file</a>
+          <a href="price-drop.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="price-drop.preview.html" title="Wishlist triggers" loading="lazy"></iframe>
+      <p class="reads">wishlist_events for the saved item whose price changed.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Basket building</h2>
+          <p class="subj">Order confirmed</p>
+        </div>
+        <div class="links">
+          <a href="order-confirmation.html">Panel file</a>
+          <a href="order-confirmation.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="order-confirmation.preview.html" title="Basket building" loading="lazy"></iframe>
+      <p class="reads">order_events_detail for the lines on the order.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Replenishment</h2>
+          <p class="subj">Running low?</p>
+        </div>
+        <div class="links">
+          <a href="replenishment.html">Panel file</a>
+          <a href="replenishment.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="replenishment.preview.html" title="Replenishment" loading="lazy"></iframe>
+      <p class="reads">order_events_detail for what was bought last time.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>RFM lifecycle</h2>
+          <p class="subj">Early access, before anyone else</p>
+        </div>
+        <div class="links">
+          <a href="vip-early-access.html">Panel file</a>
+          <a href="vip-early-access.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="vip-early-access.preview.html" title="RFM lifecycle" loading="lazy"></iframe>
+      <p class="reads">No query. Audience is an RFM persona segment.</p>
+    </section>
+    <section class="msg">
+      <header>
+        <div>
+          <h2>Win-back</h2>
+          <p class="subj">A few things changed since you were last here</p>
+        </div>
+        <div class="links">
+          <a href="win-back.html">Panel file</a>
+          <a href="win-back.preview.html" class="amp">Preview</a>
+        </div>
+      </header>
+      <iframe src="win-back.preview.html" title="Win-back" loading="lazy"></iframe>
+      <p class="reads">page_view_events for the category named, wishlist_events for saved items.</p>
+    </section>
+  </div>
+</body></html>

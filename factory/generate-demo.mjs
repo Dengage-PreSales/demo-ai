@@ -555,6 +555,28 @@ async function main() {
         rewriteFontLink(join(dest, 'index.html'), href);
         rewriteFontLink(join(dest, 'product.html'), href);
 
+        /* THE EMAIL SET. Built from the config and products.json just written, so it
+           carries this demo's own palette, typography, catalogue and currency.
+
+           Two files per journey: the panel file with live {%= =%} tags and $from
+           queries to paste into the Dengage Code Editor, and a resolved preview so
+           the set can be shown on a call without a send. Plus the AMP variant of
+           the cart message for the panel's AMP tab.
+
+           It is not allowed to fail the build. A demo with no email set is still a
+           working demo, and losing one over a template that can be rebuilt with one
+           command afterwards would be the wrong trade. */
+        try {
+            const { buildEmails } = await import('./emails/build-emails.mjs');
+            const emails = buildEmails(slug);
+            console.error('Emails: ' + emails.count + ' journeys, ' + emails.amp +
+                ' AMP, themed on ' + emails.palette.brand +
+                (emails.palette.dark ? ' (dark)' : ''));
+        } catch (err) {
+            console.error('Emails: none (' + err.message + ')');
+            console.error('Run this afterwards:  node factory/emails/build-emails.mjs --slug ' + slug);
+        }
+
         /* THE MOTIF PASS AND THE FEED, in that order, because the feed reads what
            the motif pass writes.
 
