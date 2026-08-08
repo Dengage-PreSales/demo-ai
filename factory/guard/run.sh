@@ -219,13 +219,14 @@ fi
 # purgeable, only because its page views exist. A page that skips pageView
 # writes cart and order rows that can never be attributed to it (handoff 13).
 # ---------------------------------------------------------------------------
-# EMAILS ARE EXCLUDED, AND THEY HAVE TO BE. demos/<slug>/emails/ holds journey
+# EMAILS AND THE MESSAGE DECK ARE EXCLUDED, AND THEY HAVE TO BE. demos/<slug>/emails/
+# holds journey
 # messages, which are HTML but are not storefront pages: they are read in an inbox,
 # they cannot run the SDK, and requiring dengageEvents.js of them would be asking a
 # message to fire a page view. Their own attribution is Dengage's send and click
 # tracking, not the on-site event module.
 pages="$( ( cd "$ROOT" 2>/dev/null && find template demos -name '*.html' -type f 2>/dev/null \
-    | grep -v '/emails/' | sort ) )"
+    | grep -vE '/(emails|messages)/' | sort ) )"
 if [ -z "$pages" ]; then
     skip pageview-required "no storefront pages in scope"
 else

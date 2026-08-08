@@ -577,6 +577,26 @@ async function main() {
             console.error('Run this afterwards:  node factory/emails/build-emails.mjs --slug ' + slug);
         }
 
+        /* THE SHORT FORM CONTENT PACK, for the five channels that are not email.
+           Same shape as the email set: panel copy with live tags, a preview deck for
+           the call, and every field measured against the limit that applies. It
+           reports anything over rather than writing it silently, and like the email
+           set it is not allowed to fail the build. */
+        try {
+            const { buildMessages } = await import('./messages/build-messages.mjs');
+            const pack = buildMessages(slug);
+            console.error('Messages: ' + pack.messages + ' across ' + pack.journeys +
+                ' journeys' + (pack.problems.length
+                    ? ', ' + pack.problems.length + ' OVER LIMIT' : ', all within limits'));
+            for (const problem of pack.problems) {
+                console.error('   over: ' + problem.journey + ' / ' + problem.channel +
+                    ' / ' + problem.field + ' ' + problem.cost + ' of ' + problem.max);
+            }
+        } catch (err) {
+            console.error('Messages: none (' + err.message + ')');
+            console.error('Run this afterwards:  node factory/messages/build-messages.mjs --slug ' + slug);
+        }
+
         /* THE MOTIF PASS AND THE FEED, in that order, because the feed reads what
            the motif pass writes.
 

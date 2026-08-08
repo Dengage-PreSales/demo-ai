@@ -262,6 +262,10 @@ jobs:
           # files, no tags left in a preview, and the AMP variant against the
           # official amp4email validator when it is installed.
           node factory/emails/emails.test.mjs
+          # The short form pack: the length checker in both directions, SMS counted
+          # the way Dengage charges it, WhatsApp's submission rules, and the on-site
+          # copy staying generic because those creatives are shared by every demo.
+          node factory/messages/messages.test.mjs
 
       - name: Generate the demo
         id: generate

@@ -1,0 +1,1129 @@
+{
+  "slug": "techiestore-in",
+  "note": "Panel copy carries live Dengage tags. Paste into the channel content named in each entry.",
+  "journeys": [
+    {
+      "id": "identity",
+      "journey": "Identity capture",
+      "channels": {
+        "webPush": {
+          "title": "Your code is saved",
+          "body": "It is on your account and waiting at checkout. Nothing to remember.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 18,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your code is saved"
+            },
+            {
+              "field": "body",
+              "cost": 67,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "It is on your account and waiting at checkout. Nothing to remember."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Welcome. Your code is inside.",
+          "body": "We have kept your code on your account, so it applies itself at checkout. Here is where to start.",
+          "expiryDays": 7,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 29,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Welcome. Your code is inside."
+            },
+            {
+              "field": "body",
+              "cost": 97,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "We have kept your code on your account, so it applies itself at checkout. Here is where to start."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Spin to Win, or Subscription Popup on exit",
+          "heading": "Take 10 percent off your first order",
+          "body": "Spin once for a code, and we will keep it on your account until you use it.",
+          "cta": "Spin to win",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 36,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Take 10 percent off your first order"
+            },
+            {
+              "field": "body",
+              "cost": 75,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Spin once for a code, and we will keep it on your account until you use it."
+            },
+            {
+              "field": "cta",
+              "cost": 11,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Spin to win"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "checkout",
+      "journey": "Checkout rescue",
+      "channels": {
+        "webPush": {
+          "title": "You were one step away",
+          "body": "Your basket is still saved. Picking up where you left off takes a moment.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/checkout.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 22,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You were one step away"
+            },
+            {
+              "field": "body",
+              "cost": 73,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is still saved. Picking up where you left off takes a moment."
+            }
+          ]
+        },
+        "mobilePush": {
+          "title": "Still want to finish?",
+          "body": "Everything is saved, including your delivery choice.",
+          "subtitle": "Your basket",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/checkout.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 21,
+              "max": 40,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still want to finish?"
+            },
+            {
+              "field": "body",
+              "cost": 52,
+              "max": 110,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Everything is saved, including your delivery choice."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Utility",
+          "messageType": "Blank Content",
+          "header": "Your order is not complete",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Finish checkout",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/checkout.html"
+            },
+            {
+              "type": "Quick Reply",
+              "label": "Something went wrong"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 26,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Your order is not complete"
+            },
+            {
+              "field": "body",
+              "cost": 206,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Finish checkout\"",
+              "cost": 15,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Finish checkout"
+            },
+            {
+              "field": "button \"Something went wrong\"",
+              "cost": 20,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Something went wrong"
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Modal, on exit intent at checkout",
+          "heading": "Before you go",
+          "body": "Your basket is saved. Delivery dates and returns are shown before you pay.",
+          "cta": "Finish checkout",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 13,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Before you go"
+            },
+            {
+              "field": "body",
+              "cost": 74,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is saved. Delivery dates and returns are shown before you pay."
+            },
+            {
+              "field": "cta",
+              "cost": 15,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Finish checkout"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cart",
+      "journey": "Cart abandonment",
+      "channels": {
+        "webPush": {
+          "title": "Still thinking about it?",
+          "body": "{% var r = $from(\"shopping_cart_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].product_name) { %}{%= r[0].product_name.length > 70 ? r[0].product_name.substring(0, 67) + \"...\" : r[0].product_name =%}{% } else { %}What you added{% } %} is still in your basket.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 24,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still thinking about it?"
+            },
+            {
+              "field": "body",
+              "cost": 100,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14, 5 14IIL05... is still in your basket."
+            }
+          ]
+        },
+        "sms": {
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, your basket at Techiestore is still saved. Finish here: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
+          "senderName": "Techiestore",
+          "checks": [
+            {
+              "field": "body",
+              "cost": 137,
+              "max": 400,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Hi Christopher, your basket at Techiestore is still saved. Finish here: https://dng.link/abcdef Reply https://dng.link/abcdef to opt out."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Carousel",
+          "header": "None",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, your basket is still saved. Swipe to see what goes with it, or go straight to checkout.",
+          "footer": "Reply STOP to opt out",
+          "carousel": true,
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Return to basket",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "None"
+            },
+            {
+              "field": "body",
+              "cost": 103,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, your basket is still saved. Swipe to see what goes with it, or go straight to checkout."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Return to basket\"",
+              "cost": 16,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Return to basket"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Your basket is saved",
+          "body": "We are holding {% var r = $from(\"shopping_cart_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].product_name) { %}{%= r[0].product_name.length > 90 ? r[0].product_name.substring(0, 87) + \"...\" : r[0].product_name =%}{% } else { %}what you added{% } %} for you. Prices and stock can move while an item sits in a basket.",
+          "expiryDays": 7,
+          "priority": 2,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 20,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is saved"
+            },
+            {
+              "field": "body",
+              "cost": 177,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "We are holding valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14, 5 14IIL05, 14ITL05, Flex 5-14... for you. Prices and stock can move while an item sits in a basket."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Sticky Bar, on return to the site",
+          "heading": "Your basket is still here",
+          "body": "Everything you added is saved and waiting.",
+          "cta": "Return to basket",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 25,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is still here"
+            },
+            {
+              "field": "body",
+              "cost": 42,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Everything you added is saved and waiting."
+            },
+            {
+              "field": "cta",
+              "cost": 16,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Return to basket"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "browse",
+      "journey": "Browse abandonment",
+      "channels": {
+        "webPush": {
+          "title": "Still looking at {% var r = $from(\"page_view_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].category) { %}{%= r[0].category.length > 24 ? r[0].category.substring(0, 21) + \"...\" : r[0].category =%}{% } else { %}these{% } %}?",
+          "body": "The one you spent time with is still there, along with a few alternatives.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 38,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still looking at valueLaptop Keyboard?"
+            },
+            {
+              "field": "body",
+              "cost": 74,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The one you spent time with is still there, along with a few alternatives."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "The one you were looking at",
+          "body": "Still available, and the alternatives underneath are what other shoppers compared it against.",
+          "expiryDays": 5,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 27,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The one you were looking at"
+            },
+            {
+              "field": "body",
+              "cost": 93,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still available, and the alternatives underneath are what other shoppers compared it against."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Inline Personalization, on the home page",
+          "heading": "Pick up where you left off",
+          "body": "The things you looked at last time, and a few close alternatives.",
+          "cta": "Keep looking",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 26,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Pick up where you left off"
+            },
+            {
+              "field": "body",
+              "cost": 65,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The things you looked at last time, and a few close alternatives."
+            },
+            {
+              "field": "cta",
+              "cost": 12,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Keep looking"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "search",
+      "journey": "Failed search recovery",
+      "channels": {
+        "webPush": {
+          "title": "Back in stock",
+          "body": "The {% var r = $from(\"search_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(1).get(); %}{% if (r.length && r[0].search_query) { %}{%= r[0].search_query.length > 55 ? r[0].search_query.substring(0, 52) + \"...\" : r[0].search_query =%}{% } else { %}item you searched for{% } %} you looked for is available again.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 13,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Back in stock"
+            },
+            {
+              "field": "body",
+              "cost": 99,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 A... you looked for is available again."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "What you searched for is back",
+          "body": "You looked for {% var r = $from(\"search_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(1).get(); %}{% if (r.length && r[0].search_query) { %}{%= r[0].search_query.length > 60 ? r[0].search_query.substring(0, 57) + \"...\" : r[0].search_query =%}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.",
+          "expiryDays": 3,
+          "priority": 2,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 29,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "What you searched for is back"
+            },
+            {
+              "field": "body",
+              "cost": 149,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You looked for valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14,... when we had none. It is back, and a return like this can go quickly."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Product Box, on the empty results page",
+          "heading": "Nothing for that search",
+          "body": "Here is what is popular in the section you were browsing instead.",
+          "cta": "Browse these",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 23,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Nothing for that search"
+            },
+            {
+              "field": "body",
+              "cost": 65,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Here is what is popular in the section you were browsing instead."
+            },
+            {
+              "field": "cta",
+              "cost": 12,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Browse these"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "wishlist",
+      "journey": "Wishlist triggers",
+      "channels": {
+        "webPush": {
+          "title": "Price drop on something you saved",
+          "body": "{% var r = $from(\"wishlist_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].product_name) { %}{%= r[0].product_name.length > 60 ? r[0].product_name.substring(0, 57) + \"...\" : r[0].product_name =%}{% } else { %}A saved item{% } %} now costs less than when you saved it.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 33,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Price drop on something you saved"
+            },
+            {
+              "field": "body",
+              "cost": 104,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14,... now costs less than when you saved it."
+            }
+          ]
+        },
+        "mobilePush": {
+          "title": "Cheaper than when you saved it",
+          "body": "{% var r = $from(\"wishlist_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].product_name) { %}{%= r[0].product_name.length > 70 ? r[0].product_name.substring(0, 67) + \"...\" : r[0].product_name =%}{% } else { %}Your saved item{% } %} has dropped in price.",
+          "subtitle": "Saved items",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 30,
+              "max": 40,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Cheaper than when you saved it"
+            },
+            {
+              "field": "body",
+              "cost": 97,
+              "max": 110,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14, 5 14IIL05... has dropped in price."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Limited-Time Offer",
+          "header": "Text",
+          "headerText": "Price drop on your saved item",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, something on your saved list has come down in price. Saved items are held in your account, so it is where you left it.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "See saved items",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 134,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, something on your saved list has come down in price. Saved items are held in your account, so it is where you left it."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"See saved items\"",
+              "cost": 15,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "See saved items"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "A saved item changed price",
+          "body": "One of the things on your saved list costs less than it did when you saved it. Saved items stay in your account.",
+          "expiryDays": 7,
+          "priority": 1,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 26,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "A saved item changed price"
+            },
+            {
+              "field": "body",
+              "cost": 112,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "One of the things on your saved list costs less than it did when you saved it. Saved items stay in your account."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "basket",
+      "journey": "Basket building",
+      "channels": {
+        "inbox": {
+          "title": "Goes with your order",
+          "body": "A few things people usually add alongside what you just bought.",
+          "expiryDays": 7,
+          "priority": 4,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 20,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Goes with your order"
+            },
+            {
+              "field": "body",
+              "cost": 63,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "A few things people usually add alongside what you just bought."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Product Box, on the product and cart pages",
+          "heading": "Often bought together",
+          "body": "The things people usually add alongside this one.",
+          "cta": "Add to basket",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 21,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Often bought together"
+            },
+            {
+              "field": "body",
+              "cost": 49,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The things people usually add alongside this one."
+            },
+            {
+              "field": "cta",
+              "cost": 13,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Add to basket"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "replenish",
+      "journey": "Replenishment",
+      "channels": {
+        "webPush": {
+          "title": "Running low?",
+          "body": "Reordering {% var r = $from(\"order_events_detail\").where(\"contact_key\", \"=\", $Contact.contact_key).take(3).get(); %}{% if (r.length && r[0].product_name) { %}{%= r[0].product_name.length > 75 ? r[0].product_name.substring(0, 72) + \"...\" : r[0].product_name =%}{% } else { %}your usual{% } %} takes one tap.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 12,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Running low?"
+            },
+            {
+              "field": "body",
+              "cost": 106,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Reordering valueTechie Laptop Keyboard for Lenovo Ideapad 5-14ITL6 AIR14, 5 14IIL05, 14I... takes one tap."
+            }
+          ]
+        },
+        "mobilePush": {
+          "title": "Time for another?",
+          "body": "Your usual is one tap away, at the same price.",
+          "subtitle": "Reorder",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 17,
+              "max": 40,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Time for another?"
+            },
+            {
+              "field": "body",
+              "cost": 46,
+              "max": 110,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your usual is one tap away, at the same price."
+            }
+          ]
+        },
+        "sms": {
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, running low? Reorder your usual from Techiestore in one tap: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
+          "senderName": "Techiestore",
+          "checks": [
+            {
+              "field": "body",
+              "cost": 142,
+              "max": 400,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Hi Christopher, running low? Reorder your usual from Techiestore in one tap: https://dng.link/abcdef Reply https://dng.link/abcdef to opt out."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Utility",
+          "messageType": "Blank Content",
+          "header": "Text",
+          "headerText": "Time to reorder",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, judging by when you last ordered, you are probably near the end of it. Reordering the same thing takes one tap and keeps the same delivery address.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Reorder",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html"
+            },
+            {
+              "type": "Quick Reply",
+              "label": "Not yet"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 163,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, judging by when you last ordered, you are probably near the end of it. Reordering the same thing takes one tap and keeps the same delivery address."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Reorder\"",
+              "cost": 7,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Reorder"
+            },
+            {
+              "field": "button \"Not yet\"",
+              "cost": 7,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Not yet"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "rfm",
+      "journey": "RFM lifecycle",
+      "channels": {
+        "webPush": {
+          "title": "Yours first",
+          "body": "Early access is open to you a day before everyone else. No code needed.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 11,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Yours first"
+            },
+            {
+              "field": "body",
+              "cost": 71,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access is open to you a day before everyone else. No code needed."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Blank Content",
+          "header": "Text",
+          "headerText": "Early access",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Shop early access",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 159,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Shop early access\"",
+              "cost": 17,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Shop early access"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Early access, before anyone else",
+          "body": "You are one of our most regular customers, so this opens for you first. Nothing to enter.",
+          "expiryDays": 2,
+          "priority": 1,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 32,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access, before anyone else"
+            },
+            {
+              "field": "body",
+              "cost": 89,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You are one of our most regular customers, so this opens for you first. Nothing to enter."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Image Bar, for the top of the page",
+          "heading": "Early access is open to you",
+          "body": "You are in the first group to see this, a day before everyone else.",
+          "cta": "Shop early access",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 27,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access is open to you"
+            },
+            {
+              "field": "body",
+              "cost": 67,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You are in the first group to see this, a day before everyone else."
+            },
+            {
+              "field": "cta",
+              "cost": 17,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Shop early access"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "winback",
+      "journey": "Win-back",
+      "channels": {
+        "webPush": {
+          "title": "A few things changed",
+          "body": "New ranges in {% var r = $from(\"page_view_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_time\").take(3).get(); %}{% if (r.length && r[0].category) { %}{%= r[0].category.length > 30 ? r[0].category.substring(0, 27) + \"...\" : r[0].category =%}{% } else { %}your categories{% } %}, and your saved items are still saved.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 20,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "A few things changed"
+            },
+            {
+              "field": "body",
+              "cost": 73,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "New ranges in valueLaptop Keyboard, and your saved items are still saved."
+            }
+          ]
+        },
+        "sms": {
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, it has been a while. New ranges are in at Techiestore, and your saved items are still saved: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
+          "senderName": "Techiestore",
+          "checks": [
+            {
+              "field": "body",
+              "cost": 174,
+              "max": 400,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Hi Christopher, it has been a while. New ranges are in at Techiestore, and your saved items are still saved: https://dng.link/abcdef Reply https://dng.link/abcdef to opt out."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Copy Coupon",
+          "header": "Text",
+          "headerText": "Since you were last here",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it.",
+          "footer": "Reply STOP to opt out",
+          "coupon": true,
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "See what is new",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 219,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"See what is new\"",
+              "cost": 15,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "See what is new"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Since you were last here",
+          "body": "New ranges in the categories you used to buy from, and everything you saved is still exactly where you left it.",
+          "expiryDays": 7,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 24,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Since you were last here"
+            },
+            {
+              "field": "body",
+              "cost": 111,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "New ranges in the categories you used to buy from, and everything you saved is still exactly where you left it."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
