@@ -1,0 +1,788 @@
+name: Build demo
+
+# THE FACTORY. A pre-sales colleague opens an issue with one URL in it and gets a
+# live demo address back. Handoff 8, and the intake half of phase 3.
+#
+# WHAT RUNS, AND IN WHAT ORDER, because the order is the whole safety argument:
+#
+#   1. read the issue form
+#   2. generate the demo         factory/generate-demo.mjs
+#   3. run the guard             factory/guard/run.sh
+#   4. run the smoke test        factory/checks/smoke.mjs
+#   5. only then push to main
+#
+# NOTHING IS PUSHED THAT HAS NOT PASSED, and that is a deliberate departure from
+# handoff 8, which called for a branch, a pull request and auto merge. Two
+# reasons. Auto merge depends on repository settings that can be turned off
+# without anyone noticing, and a demo that silently sits unmerged is a demo that
+# is not there when the call starts. And verifying BEFORE the push is stronger
+# than merging and reviewing afterwards: main is what GitHub Pages serves, so
+# main is what must never receive a broken demo. The issue itself is the audit
+# trail the pull request would have been.
+#
+# EVERY MESSAGE POSTED BACK HERE IS READ BY A SALESPERSON. Handoff 8: "We could
+# not read this store's catalogue automatically. Attach a CSV of 20 to 30
+# products and I will retry" is right, a stack trace is not. The generator emits
+# its reasons as prose in its JSON report, and this workflow only ever pastes
+# that prose.
+
+on:
+  issues:
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Prospect website address
+        required: true
+      slug:
+        description: Short name for the address
+        required: false
+      currency:
+        description: Three letter currency code
+        required: false
+      name:
+        description: Store name for the browser tab
+        required: false
+
+permissions:
+  contents: write
+  issues: write
+  # Needed to start the Pages workflow after the demo is committed. See the
+  # "Ask Pages to publish" step: a push made by this workflow cannot trigger
+  # one, so this workflow has to ask.
+  actions: write
+
+concurrency:
+  # One build at a time per issue. Two runs pushing demo folders to main at once
+  # is a race for the same branch tip, and the loser's demo silently vanishes.
+  group: build-demo-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Generate and verify
+    runs-on: ubuntu-latest
+
+    # WHAT COUNTS AS A REQUEST. The title prefix or the label, either one.
+    #
+    # Both are accepted rather than just the label, because the label on its own is
+    # not dependable enough to be the only marker.
+    #
+    # The reason is a GitHub behaviour rather than anything in this file. GitHub
+    # DROPS a label an issue form asks for if that label does not exist in the
+    # repository, without warning and without
+    # recording anything, and nobody had ever created new-demo. So the form declared
+    # it, GitHub discarded it, and the gate found nothing to match.
+    #
+    # The title is the more dependable marker of the two, because the form sets it
+    # (title: "Demo: ") and it cannot be dropped for not existing. The label is kept
+    # as well: it is what a human filters on, and the step below now creates it, so
+    # the documented path works from here on.
+    #
+    # A comment still only counts when it asks for a retry. Without that, every
+    # comment on every issue in the repository would start a build.
+    #
+    # AND THE AUTHOR HAS TO BE ONE OF US. This is the half the title prefix made
+    # necessary, added 7 August 2026 alongside it. The label was privileged without
+    # anybody arranging it: only an account with write access can put a label on an
+    # issue, so the old gate could never be reached by a stranger. A title prefix is
+    # not privileged at all. This repository is public, so anyone can open an issue
+    # called "Demo: anything", and this workflow reads a website, commits to main and
+    # starts a deployment. Matching on the title alone would have handed all three to
+    # the internet.
+    #
+    # The comment's own author is tested on the retry path, not the issue's. A
+    # stranger commenting "retry" on a real request is the same problem wearing
+    # somebody else's issue.
+    # ONE RUN PER REQUEST, BECAUSE THE TWO TRIGGERS ABOVE CAN BOTH MATCH ONE.
+    #
+    # The issue form creates the issue AND applies the label in one action, so
+    # GitHub delivers `opened` and `labeled` as separate events a second apart.
+    # Without the `action` test below, both match this gate and one request starts
+    # two builds. The concurrency group serialises the pair rather than dropping
+    # one, so the second build starts after the first has finished, finds the demo
+    # folder already committed, takes a numbered slug, and publishes a duplicate.
+    #
+    # So a `labeled` event is only honoured when the title does NOT already carry
+    # the prefix, because a title that carries it was handled at `opened`. The
+    # label path stays fully alive for the case it exists for: an issue opened by
+    # hand without the prefix and labelled afterwards, which `opened` ignores and
+    # only `labeled` can start.
+    #
+    # THE PREFIX IS TESTED WITHOUT ITS TRAILING SPACE, AND THAT IS NOT A TYPO.
+    # The form declares title: "Demo: " with a trailing space, and GITHUB TRIMS AN
+    # ISSUE TITLE. A form submitted with nothing typed into the name field arrives
+    # as exactly 'Demo:', so a comparison against 'Demo: ' never matches it.
+    #
+    # That one character decides two things at once: whether a request is eligible
+    # at all, and whether it runs once or twice. 'Demo:' matches what GitHub
+    # actually stores, with or without a name after it, so do not put the space
+    # back to make it look like the form.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                github.event.issue.author_association) &&
+       (github.event.action == 'opened' ||
+        !startsWith(github.event.issue.title, 'Demo:')) &&
+       (contains(github.event.issue.labels.*.name, 'new-demo') ||
+        startsWith(github.event.issue.title, 'Demo:'))) ||
+      (github.event_name == 'issue_comment' &&
+       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                github.event.comment.author_association) &&
+       (contains(github.event.issue.labels.*.name, 'new-demo') ||
+        startsWith(github.event.issue.title, 'Demo:')) &&
+       contains(toJSON(github.event.comment.body), 'retry'))
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The full history, because this pushes back to main and a shallow
+          # clone cannot fast forward onto a tip that moved while it worked.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # ---------------------------------------------------------------- input
+      - name: Read the request
+        id: request
+        env:
+          BODY: ${{ github.event.issue.body }}
+          COMMENT: ${{ github.event.comment.body }}
+          IN_URL: ${{ github.event.inputs.url }}
+          IN_SLUG: ${{ github.event.inputs.slug }}
+          IN_CURRENCY: ${{ github.event.inputs.currency }}
+          IN_NAME: ${{ github.event.inputs.name }}
+          # The store's name for the browser tab. The title is where a request
+          # carries it with real capitalisation: a domain gives riopneus and a
+          # colleague gives RioPneus.
+          TITLE: ${{ github.event.issue.title }}
+        run: node .github/scripts/parse-request.mjs >> "$GITHUB_OUTPUT"
+
+      # Creates new-demo if the repository does not have it, and puts it on this
+      # issue. Both are idempotent and neither can fail the build: a missing label is
+      # a filing detail, and losing a demo over one is what happened on 7 August.
+      # With the label real, the form stops having it silently discarded.
+      - name: Make sure the new-demo label exists, and is on this issue
+        if: github.event_name != 'workflow_dispatch'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner, repo = context.repo.repo
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: 'new-demo' })
+            } catch (err) {
+              if (err.status !== 404) throw err
+              await github.rest.issues.createLabel({
+                owner, repo, name: 'new-demo', color: '1F6FEB',
+                description: 'A request for a generated demo storefront'
+              })
+              core.info('created the new-demo label, which the repository was missing')
+            }
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number: context.issue.number, labels: ['new-demo']
+            })
+
+      - name: Say the build has started
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                'Building a demo from ' + process.env.URL + '.',
+                '',
+                'This usually takes about ten minutes, most of it publishing.',
+                'A live address will be posted here when it is ready.',
+                '',
+                '---',
+                '_Generated by [Claude Code](https://claude.ai/code)_'
+              ].join('\n')
+            })
+        env:
+          URL: ${{ steps.request.outputs.url }}
+
+      # ------------------------------------------------------------------ CSV
+      # Only fetched when a comment carried one. Tier 3 stays an exception path:
+      # nobody is asked for a CSV until the first two tiers have failed.
+      - name: Fetch an attached CSV, if there is one
+        id: csv
+        if: steps.request.outputs.csv_url != ''
+        run: |
+          set -euo pipefail
+          curl -sSL --max-time 60 "${{ steps.request.outputs.csv_url }}" -o /tmp/products.csv
+          echo "path=/tmp/products.csv" >> "$GITHUB_OUTPUT"
+          echo "Fetched $(wc -l < /tmp/products.csv) lines"
+
+      # -------------------------------------------------------------- generate
+      # A STORE THAT WILL NOT BE READ IS NOT A BROKEN PIPELINE, and this step is where
+      # the difference is drawn. Rio Pneus sits behind Akamai and answers 403 to
+      # every automated reader, which is a fact about that store and the correct
+      # outcome is the CSV request the operator gets. Reporting it as a failed run
+      # trains everyone to ignore a red workflow, and then a real fault goes unread.
+      #
+      # So the generator's own report decides. It writes stage: 'catalogue' when the
+      # catalogue could not be read, which is an outcome, and stage: 'build' when
+      # something here went wrong, which is a fault. Only the second is red.
+      # BEFORE GENERATION, NOT AFTER IT, and the order is the point. The generator
+      # itself needs a browser twice since 8 August 2026: the image pipeline
+      # compresses product photographs through Chromium's canvas, and the render
+      # tier reads JavaScript rendered storefronts. With this step in its old
+      # place, after generation, both quietly degraded on every real build (raw
+      # oversized images or none, and no render tier at all) while passing every
+      # check in an environment that happened to have a browser. The smoke test
+      # further down needs it anyway, so the cost moves rather than grows.
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      # THE PIPELINE PROVES ITSELF BEFORE IT TOUCHES THE PROSPECT'S SITE. These
+      # suites are fixture based and quick, and a regression in either one means
+      # demos quietly shipping without photographs or without the render tier,
+      # which is exactly the class of silent degradation this build must refuse.
+      - name: Image and render pipeline self test
+        run: |
+          node factory/scrape/images.test.mjs
+          node factory/scrape/render.test.mjs
+          node factory/scrape/stock.test.mjs
+          # The rendered theme channel, which is what makes a dark store produce a
+          # dark demo. Its fixtures are served from 127.0.0.1, so this is quick and
+          # does not touch the network. It belongs in this step rather than with the
+          # unit suite because it needs the browser installed above.
+          node factory/scrape/theme-rendered.test.mjs
+
+      - name: Generate the demo
+        id: generate
+        env:
+          # THROUGH THE ENVIRONMENT, NOT THROUGH THE COMMAND LINE, and that is not
+          # style. A store's name legitimately contains spaces, an ampersand and an
+          # apostrophe, all of which parse-request allows and all of which mean
+          # something to a shell. Interpolating it into the line below would let an
+          # issue title decide where the command ends. Every other argument here is
+          # a URL, a slug, a three letter code or a path this workflow chose.
+          STORE_NAME: ${{ steps.request.outputs.name }}
+          # Stock photograph fallback, Salil's call, 8 August 2026: only tiles the
+          # store's own photography could not fill, and only when the key exists.
+          # An absent secret resolves to an empty string, which the module treats
+          # as "do nothing", so a fork or a clone without the secret still builds.
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+        run: |
+          set -o pipefail
+          named=()
+          [ -n "${STORE_NAME:-}" ] && named=(--name "$STORE_NAME")
+          status=0
+          node factory/generate-demo.mjs \
+            --url "${{ steps.request.outputs.url }}" \
+            ${{ steps.request.outputs.slug && format('--slug {0}', steps.request.outputs.slug) || '' }} \
+            ${{ steps.request.outputs.currency && format('--currency {0}', steps.request.outputs.currency) || '' }} \
+            ${{ steps.csv.outputs.path && format('--csv {0}', steps.csv.outputs.path) || '' }} \
+            "${named[@]}" \
+            --json /tmp/report.json || status=$?
+
+          if [ "$status" -eq 0 ]; then
+            echo 'outcome=built' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          stage="$(node -e "try{console.log(require('/tmp/report.json').stage||'')}catch(e){console.log('')}")"
+          if [ "$stage" = "catalogue" ]; then
+            echo 'outcome=unreadable' >> "$GITHUB_OUTPUT"
+            echo "The catalogue could not be read. Reporting it on the issue and finishing green."
+            exit 0
+          fi
+
+          echo 'outcome=broken' >> "$GITHUB_OUTPUT"
+          exit "$status"
+
+      # ----------------------------------------------------------------- guard
+      # The guardrails run against the tree WITH the new demo in it, which is the
+      # only moment they can catch a generated demo that broke one of them: an
+      # off-origin image, an image outside the expected paths, a stray dash.
+      - name: Guardrails
+        if: steps.generate.outputs.outcome == 'built'
+        run: ./factory/guard/run.sh
+
+      # THE REPORTING STEP IS TESTED HERE, BEFORE THE PUSH, AND THAT ORDER IS THE
+      # WHOLE POINT OF THE STEP.
+      #
+      # "Post the live address and close the issue" runs at the very end, and it is
+      # skipped both when generation fails and by its own condition on
+      # workflow_dispatch. A step that rarely runs is a step whose first real
+      # execution can be the first time anybody learns whether it works.
+      #
+      # Its position makes a throw there expensive. It runs after the storefront is
+      # built, verified, committed and published, so one undefined property turns
+      # the job red with the demo already live, leaves the issue open with no
+      # address in it, and the documented answer to an open issue is to comment
+      # retry, which builds a SECOND storefront.
+      #
+      # Running it here inverts that. The script is read out of this file and
+      # executed against the report the generator just wrote, with github and core
+      # stubbed so nothing is posted and no issue is closed. If it cannot compose
+      # the comment, the build stops before anything is pushed and the operator
+      # gets the ordinary failure notice rather than a duplicate demo.
+      - name: Check the report a colleague will be sent
+        if: steps.generate.outputs.outcome == 'built'
+        run: node factory/checks/report-step.mjs /tmp/report.json --show
+
+      # ------------------------------------------------------------ smoke test
+
+      # The generator tries this itself and does not fail the build if it cannot,
+      # because a demo with no feed row is still a working demo. Here, after
+      # Playwright exists, is where it reliably succeeds: the motif pass needs a
+      # browser to ask the real classifier rather than reimplement it.
+      - name: Product feed
+        if: steps.generate.outputs.outcome == 'built'
+        run: |
+          node factory/make-motif-images.mjs
+          node factory/build-feed.mjs
+
+      - name: Smoke test the demo
+        if: steps.generate.outputs.outcome == 'built'
+        run: |
+          set -euo pipefail
+          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
+          python3 -m http.server 8101 --directory . >/dev/null 2>&1 &
+          SERVER=$!
+          trap 'kill $SERVER 2>/dev/null || true' EXIT
+          for _ in $(seq 1 20); do
+            curl -sf -o /dev/null "http://localhost:8101/demos/$SLUG/index.html" && break
+            sleep 0.5
+          done
+          node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"
+
+      # ------------------------------------------------------------------ push
+      - name: Publish
+        id: publish
+        if: steps.generate.outputs.outcome == 'built'
+        run: |
+          set -euo pipefail
+          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
+          git config user.name  "dengage-demo-factory[bot]"
+          git config user.email "rfp@dengage.com"
+          # The demo, the feed it added itself to, and the motif tiles the feed
+          # points at. All three or none: a feed row whose image is not committed
+          # is a broken tile in a Dengage rendered widget.
+          git add "demos/$SLUG" feed assets/motifs
+          git commit -m "Add the $SLUG demo storefront" \
+                     -m "Built from ${{ steps.request.outputs.url }} for issue #${{ github.event.issue.number || 0 }}." \
+                     -m "Expires $(node -e "console.log(require('/tmp/report.json').expiresAt)")."
+          # main moves while a build runs, so rebase rather than fail. A demo
+          # folder is a new path, so there is nothing for a rebase to conflict
+          # with.
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD:main && break
+            echo "Retrying push ($attempt)"
+            sleep $((attempt * 4))
+          done
+          echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
+
+      # ------------------------------------------------------- ask for a deploy
+      # THE STEP THAT MAKES THE PUSH ABOVE MEAN ANYTHING. Added 7 August 2026,
+      # after the riopneus demo was built, verified, and committed to main, and
+      # then sat at HTTP 404 with no Pages run for it anywhere in the Actions tab.
+      #
+      # The cause is a documented GitHub rule rather than anything in this
+      # repository: a push made with the automatic GITHUB_TOKEN does not trigger
+      # further workflow runs. It exists to stop a workflow that commits from
+      # re-triggering itself forever. So pages.yml, which listens on push to
+      # main, never heard the push the step above just made. The demo was in git
+      # and correct, and the live site had no idea it existed.
+      #
+      # workflow_dispatch is the documented exception to that rule, which is why
+      # asking works where pushing did not.
+      #
+      # THIS IS WHY THE WAIT BELOW WAITED TEN MINUTES AND FOUND NOTHING. It was
+      # watching an address that nothing had been asked to publish. Read the two
+      # steps together: this one starts the deploy, that one confirms it landed.
+      - name: Ask Pages to publish the new demo
+        id: askpages
+        if: steps.generate.outputs.outcome == 'built'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Three attempts. The dispatch is a single API call with nothing to
+            // race against, so a failure here is a transient API failure, and
+            // the demo going live rests on this call landing.
+            let started = false
+            for (let attempt = 1; attempt <= 3 && !started; attempt += 1) {
+              try {
+                await github.rest.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'pages.yml',
+                  ref: 'main',
+                })
+                started = true
+                core.info(`Pages asked to publish main (attempt ${attempt})`)
+              } catch (error) {
+                core.warning(`Attempt ${attempt} failed: ${error.message}`)
+                if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 5000))
+              }
+            }
+            core.setOutput('started', started)
+            if (!started) {
+              // Deliberately not a failure. The demo is committed and verified,
+              // and Pages can still be started by hand from the Actions tab.
+              // Failing here would reopen the issue for a retry, and a retry
+              // builds a SECOND demo.
+              core.warning('Could not start the Pages workflow. Run it manually:')
+              core.warning('Actions > Pages > Run workflow, on main. No commit needed.')
+            }
+
+      # ----------------------------------------------------------- publication
+      # PUSHING IS NOT PUBLISHING, and until 6 August 2026 this workflow treated
+      # them as the same thing. It posted "The demo is live" and closed the issue
+      # in the same second as the push, while GitHub Pages had not started
+      # deploying yet. So a salesperson could be handed an address that returned
+      # 404, on an issue marked completed, with nothing to tell them to wait.
+      #
+      # This step asks the published address whether it is actually there. It
+      # exits the moment it gets a 200, which is usually inside two minutes, so
+      # for a normal build it costs almost nothing. What it buys is that the word
+      # "live" in the next comment is a measurement rather than an assumption.
+      #
+      # IT NEVER FAILS THE BUILD. The demo is committed and verified by this
+      # point, and the step above has already asked Pages to publish it, so the
+      # deploy proceeds with or without this workflow watching. A slow Pages
+      # queue is not a broken demo, and failing here would reopen the issue for a
+      # retry that would build a SECOND demo. It records what it saw, and the
+      # report below says the truth either way.
+      - name: Wait for the demo to be reachable
+        id: live
+        if: steps.generate.outputs.outcome == 'built'
+        env:
+          # Overridable so the step's own logic can be exercised against a URL
+          # that is known to answer and one that is known not to, which is the
+          # only way to know it reports both outcomes. factory/checks/publish.sh.
+          ATTEMPTS: '40'
+          INTERVAL: '15'
+        run: |
+          set -uo pipefail
+          url="${DEMO_URL:-$(node -e "console.log(require('/tmp/report.json').liveUrl)")}"
+          echo "Waiting for $url"
+          published=false
+          # Ten minutes by default, the same ceiling the Pages deploy itself is
+          # capped at, so this cannot outlive the thing it is waiting for. The
+          # cache buster matters: the Pages CDN caches a 404 as readily as a 200.
+          for attempt in $(seq 1 "$ATTEMPTS"); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "${url}?cb=$attempt")" || code=000
+            if [ "$code" = "200" ]; then
+              echo "Live after about $((attempt * INTERVAL)) seconds"
+              published=true
+              break
+            fi
+            echo "  attempt $attempt: HTTP $code, waiting"
+            sleep "$INTERVAL"
+          done
+          # Written once. Two writes of the same key would leave which value
+          # wins up to how the runner parses the file, which is not something
+          # this should depend on.
+          echo "published=$published" >> "${GITHUB_OUTPUT:-/dev/stdout}"
+          if [ "$published" != true ]; then
+            echo "::warning::The demo is pushed and verified but the published"
+            echo "::warning::address is not answering yet. Pages is still working."
+            echo "::warning::Check with: curl -I $url"
+          fi
+
+      # A SECOND ASK, AND ONLY IF THE ADDRESS IS STILL DARK. Ten minutes is long
+      # enough that a deploy which has not landed is more likely to have been
+      # queued behind a cancelled one, or never started, than to be merely slow.
+      # Asking again costs one API call and gives the deploy a fresh run, so the
+      # address usually answers a few minutes after this job ends even though
+      # nothing is left watching it.
+      #
+      # It cannot loop: pages.yml queues rather than cancels, and this fires at
+      # most once per build.
+      - name: Ask Pages again if the demo is still dark
+        if: >-
+          steps.generate.outputs.outcome == 'built' &&
+          steps.live.outputs.published != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'pages.yml',
+                ref: 'main',
+              })
+              core.info('Pages asked a second time. Give it a few more minutes.')
+            } catch (error) {
+              core.warning(`Second ask failed: ${error.message}`)
+              core.warning('Run it manually: Actions > Pages > Run workflow, on main.')
+            }
+
+      # --------------------------------------------------------------- report
+      # The outcome test is not redundant. An unreadable catalogue now finishes the
+      # job GREEN, so success() is true in that case too, and without this guard the
+      # operator would be sent a live address for a demo that was never built.
+      - name: Post the live address and close the issue
+        if: >-
+          success() && github.event_name != 'workflow_dispatch' &&
+          steps.generate.outputs.outcome == 'built'
+        uses: actions/github-script@v7
+        env:
+          PUBLISHED: ${{ steps.live.outputs.published }}
+        with:
+          script: |
+            const report = require('/tmp/report.json')
+            const found = report.themeFound || {}
+            // primarySource is provenance, not a yes/no like the flags beside it.
+            const themed = Object.entries(found)
+              .filter(([what, was]) => was && what !== 'primarySource')
+              .map(([what]) => what)
+            const paletteHow = found.primary
+              ? (found.primarySource === 'declared'
+                  ? ' (the site declares its own colour tokens, the strongest signal)'
+                  : ' (inferred from how the site uses colour; worth a two second look)')
+              : ''
+            // Measured by the step above, not assumed. The two wordings differ
+            // because the situations differ: one address is confirmed answering,
+            // the other is committed and still publishing.
+            const published = process.env.PUBLISHED === 'true'
+            const lines = published
+              ? ['**The demo is live**, and the address below was checked before this was posted.', '', report.liveUrl, '']
+              : ['**The demo is built and is publishing now.**', '', report.liveUrl, '',
+                 'Everything passed, and the storefront is committed. GitHub Pages is'
+                   + ' still working through its queue, so give the address a few more'
+                   + ' minutes and refresh. Nothing needs to be rerun.', '']
+
+            // A GENERATED CATALOGUE IS SAID FIRST, ABOVE THE TABLE, and it is the
+            // one thing in this comment that must not be possible to miss. The
+            // storefront is complete and the products in it are not the prospect's.
+            // An operator who does not know that can say one sentence on a call that
+            // cannot be taken back.
+            if (report.tier === 'generated') {
+              lines.push(
+                '> **The products in this demo are stand-ins, not this store\'s own.**',
+                '> This store would not let an automated reader see its catalogue, so the'
+                  + ' storefront was filled with a representative '
+                  + (report.vertical || 'retail') + ' range: real category structure,'
+                  + ' realistic prices, invented products. Everything else works exactly'
+                  + ' as it would otherwise.',
+                '>',
+                '> To show the store\'s real catalogue instead, attach a CSV of 20 to 30'
+                  + ' products to this issue and comment **retry**. One row per product,'
+                  + ' with a heading row containing at least a name column and a price'
+                  + ' column.',
+                '')
+            }
+            // The images row is arithmetic on the generator's own report, so it
+            // is numbers either way: a report from before the row existed reads
+            // as zero downloaded, never as an error.
+            const imagesDownloaded = (report.images && report.images.downloaded) || 0
+            const imagesStock = (report.images && report.images.stock) || 0
+            lines.push(
+              '| | |',
+              '|---|---|',
+              '| Products | ' + report.productCount + ' |',
+              '| Product images | ' + imagesDownloaded + ' from the store, '
+                + (imagesStock ? imagesStock + ' stock stand-ins, ' : '')
+                + Math.max(0, report.productCount - imagesDownloaded - imagesStock)
+                + ' drawn as artwork |',
+              // GUARDED, BECAUSE THIS LINE IS WHERE A MISSING FIELD WOULD COST A
+              // DUPLICATE DEMO. By the time this step runs the storefront is built,
+              // verified, committed and published; a throw here turns the job red
+              // after all of it, leaves the issue open with no address in it, and
+              // the documented answer to an open issue is to comment retry, which
+              // builds a second storefront. A report that reached this point always
+              // carries categories, so this is insurance rather than a fix, and the
+              // cost of the insurance is nine characters.
+              '| Categories | ' + ((report.categories || []).join(', ') || 'none') + ' |',
+              // WHERE THE CURRENCY CAME FROM, not just what it is. A demo priced in
+              // an inferred currency is perfectly usable, and one priced in an
+              // inferred currency that the operator believed was read from the store
+              // is not: it goes on screen unchecked. Only these two of the five
+              // sources are inferences, so only these two are annotated.
+              '| Currency | ' + report.currency + ({
+                address: ', inferred from the country in the web address. Set a'
+                  + ' currency on the issue and comment retry if it is wrong',
+                fallback: ', the standard fallback, because nothing said otherwise.'
+                  + ' Set a currency on the issue and comment retry if it is wrong'
+              }[report.currencySource] || '') + ' |',
+              '| Catalogue read from | ' + ({
+                shopify: 'the store\'s product feed',
+                jsonld: 'the store\'s product pages',
+                csv: 'the CSV attached to this issue',
+                generated: 'nothing. The store blocked every reader, so these products'
+                  + ' are stand-ins'
+              }[report.tier] || report.tier) + ' |',
+              '| Themed from the store | ' + (themed.length ? themed.join(', ') + paletteHow : 'nothing, so the demo uses the standard palette') + ' |',
+              '| Expires | ' + report.expiresAt + ' |',
+              '',
+              // SAID CONDITIONALLY, BECAUSE IT WAS PREVIOUSLY SAID ALWAYS. The
+              // riopneus comment on 7 August 2026 reported "Themed from the store:
+              // nothing" two lines above a flat claim that the storefront carries the
+              // prospect's colours. Both sentences were generated by this step. An
+              // operator who reads the sentence and not the table walks into a call
+              // expecting a branded page.
+              report.tier === 'generated'
+                ? 'The storefront is a fictional one built for a sales conversation, and'
+                  + ' with a generated catalogue it carries nothing of this store\'s own.'
+                  + ' It carries the Dengage logo, never theirs.'
+                : themed.length
+                  ? 'The storefront carries the prospect\'s product names, categories and'
+                    + ' colours. It carries the Dengage logo, never theirs.'
+                  : 'The storefront carries the prospect\'s product names and categories.'
+                    + ' Its colours and typography are the standard Dengage demo palette,'
+                    + ' because this store\'s own could not be read. It carries the'
+                    + ' Dengage logo, never theirs.',
+              '',
+              'Open **Dengage scenarios** on the page to fire any on-site widget'
+                + ' during a call.'
+            )
+            if (report.suffixed) {
+              lines.push('', 'A demo already existed for this store, so this one has a'
+                + ' numbered address. The earlier one is untouched.')
+            }
+            lines.push('', '---', '_Generated by [Claude Code](https://claude.ai/code)_')
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, body: lines.join('\n')
+            })
+            await github.rest.issues.update({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed', state_reason: 'completed'
+            })
+
+      # ---------------------------------------------------------------- email
+      # EMAIL IS BEST EFFORT AND CANNOT FAIL A BUILD. always() so it reports whatever
+      # happened, continue-on-error so a mail server having a bad afternoon never
+      # turns a delivered demo into a red workflow, and an early exit when no SMTP
+      # secret is configured so the repository works without one.
+      #
+      # curl rather than a third party action, on purpose: it is already on the runner
+      # and it is one less thing that can change under us.
+      #
+      # NOTE THAT THIS IS THE SECOND NOTIFICATION, not the only one. GitHub already
+      # emails the issue author on every comment this workflow posts, with no secret
+      # and nothing to configure. If the pre-sales mailbox is the address on that
+      # GitHub account, it is already being told, and this step is belt and braces.
+      - name: Email the outcome to pre-sales
+        if: always() && github.event_name != 'workflow_dispatch'
+        continue-on-error: true
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_FROM: ${{ secrets.SMTP_FROM }}
+          MAIL_TO: presales.int@dengage.com
+          OUTCOME: ${{ steps.generate.outputs.outcome }}
+          JOB_STATUS: ${{ job.status }}
+          REQUEST_URL: ${{ steps.request.outputs.url }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          if [ -z "${SMTP_HOST:-}" ]; then
+            echo "No SMTP_HOST secret, so no email was sent. The issue comment is the"
+            echo "notification. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and"
+            echo "SMTP_FROM as repository secrets to turn this on."
+            exit 0
+          fi
+
+          case "${OUTCOME:-}" in
+            built)      subject="Demo ready: $ISSUE_TITLE" ;;
+            unreadable) subject="Demo needs a CSV: $ISSUE_TITLE" ;;
+            *)          subject="Demo build needs attention: $ISSUE_TITLE" ;;
+          esac
+
+          live=""
+          if [ "${OUTCOME:-}" = "built" ] && [ -f /tmp/report.json ]; then
+            live="$(node -e "try{console.log(require('/tmp/report.json').liveUrl||'')}catch(e){}")"
+          fi
+
+          {
+            printf 'From: %s\n' "${MAIL_FROM:-$SMTP_USER}"
+            printf 'To: %s\n' "$MAIL_TO"
+            printf 'Subject: %s\n' "$subject"
+            printf 'Content-Type: text/plain; charset=utf-8\n'
+            printf '\n'
+            printf 'Prospect address: %s\n' "$REQUEST_URL"
+            [ -n "$live" ] && printf 'Demo address: %s\n' "$live"
+            printf 'Request: %s\n' "$ISSUE_URL"
+            printf '\n'
+            case "${OUTCOME:-}" in
+              built)      printf 'The demo is built and verified. Open the demo address above.\n' ;;
+              unreadable) printf 'This store would not let an automated reader see its catalogue.\n'
+                          printf 'Attach a CSV of 20 to 30 products to the request above and\n'
+                          printf 'comment retry. The request has the detail.\n' ;;
+              *)          printf 'The build did not finish. The request above explains what\n'
+                          printf 'happened and stays open.\n' ;;
+            esac
+            printf '\nJob status: %s\n' "${JOB_STATUS:-unknown}"
+          } > /tmp/mail.txt
+
+          curl --silent --show-error --ssl-reqd --max-time 60 \
+            --url "smtps://${SMTP_HOST}:${SMTP_PORT:-465}" \
+            --user "${SMTP_USER}:${SMTP_PASS}" \
+            --mail-from "${MAIL_FROM:-$SMTP_USER}" \
+            --mail-rcpt "$MAIL_TO" \
+            --upload-file /tmp/mail.txt \
+            && echo "Emailed $MAIL_TO" \
+            || echo "The email did not send. This does not affect the demo."
+
+      # Left OPEN on failure, deliberately: the issue is where the retry happens.
+      #
+      # Fires on a real fault OR on a catalogue that could not be read. The second is
+      # a green run now, so failure() alone would no longer reach it, and the operator
+      # would be left with a started message and nothing after it. Same prose either
+      # way, because the operator's next step is the same: attach a CSV and retry.
+      - name: Explain the outcome and leave the issue open
+        if: >-
+          github.event_name != 'workflow_dispatch' &&
+          (failure() || steps.generate.outputs.outcome == 'unreadable')
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let report = null
+            try { report = require('/tmp/report.json') } catch (err) { /* failed before writing one */ }
+
+            /* HOW THIS READS IN PUBLIC IS PART OF THE SPECIFICATION, not a matter of
+               taste. This repository is public and customer-facing (CLAUDE.md 9),
+               and an issue comment sits on the Issues tab indefinitely where anyone
+               who opens the repository can read it.
+
+               The wording here used to volunteer where the fault lay: "the reason is
+               on our side rather than the store's". That is an accurate engineering
+               note and the wrong sentence to publish, because it says nothing the
+               operator can act on and everything a passing reader should not be
+               handed. Diagnostics belong in the run log, which is where the person
+               fixing it looks anyway.
+
+               So a comment says what was reached and what to do next, and nothing
+               about whose fault it is. The generator's own prose is still quoted
+               when it has some, because that prose is written for an operator and
+               names a real next step. */
+            const lines = []
+            if (report && report.message) {
+              lines.push('**This demo is not ready yet.**', '', report.message)
+              if (report.nextStep) lines.push('', '**What to do next**', '', report.nextStep)
+            } else {
+              lines.push(
+                '**This demo is not ready yet.**',
+                '',
+                'The address you gave is fine. This one needs a look from the'
+                  + ' factory before it can finish, and somebody will pick it up.'
+              )
+            }
+            lines.push('', 'This issue stays open. Comment **retry** to run it again,'
+              + ' with a CSV attached if one was asked for above.')
+            lines.push('', '---', '_Generated by [Claude Code](https://claude.ai/code)_')
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number, body: lines.join('\n')
+            })

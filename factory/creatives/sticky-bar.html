@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Sticky bar (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE EIGHT SHARED CREATIVES. Paste the whole file into the campaign
+     whose trigger name is:
+
+         dengage_demo_sticky-bar
+
+     Persistent top of page messaging. No form.
+
+     THIS IS A BANNER, NOT A POPUP, AND THE DIFFERENCE CHANGES THE MARKUP.
+
+       1. DO NOT ADD position: fixed. The engine's Banner container is already
+          fixed and full width. Adding it again produces a bar pinned inside a
+          bar, which on a narrow screen collapses to something unreadable.
+       2. The content fills the container, so this file has no max-width and no
+          auto margins, unlike the popups.
+       3. A Banner KEEPS ITS OWN CLOSE CONTROL. The panel does not offer
+          "Add close button to outside" for Banner, which it does for Popup, so
+          the X below is required rather than a duplicate. This is the one place
+          where the popups' rule is inverted.
+
+     Handoff 2.2a, and confirmed by observation in Phase 0.
+
+     IT ALSO HAS TO CLEAR THE DEMO'S HEADER. A top banner and a fixed site header
+     both want the top of the page, so the page moves its header down rather than
+     moving the banner. Corrected 7 August 2026: that offset used to be worked out
+     entirely from the page, and it could not be, because from outside a cross
+     origin frame a bar at the top of a full height transparent iframe and a modal
+     scrim look identical. So this file reports its own height instead, in the
+     block below the theme bootstrap. Handoff 5.2a.
+
+     Do not add a top offset to this file to compensate for the header: the page
+     is already moving out of the way and it would double up.
+
+     WHAT THIS FILE MAY NOT SAY: no brand, no product, no price, no currency, no
+     vertical. Customization tags do not rescue it, handoff 12.8. A bar is the
+     hardest of the eight to write for that reason, because a bar with nothing
+     specific to say is usually a bar about delivery, returns or price promises,
+     and every one of those is a number.
+
+     THE CTA REPORTS AND DISMISSES. IT NEVER NAVIGATES. Handoff 6.3.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_sticky-bar
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Banner, position TOP
+       Design               padding 0, transparent background
+
+     NO SCRIPT TAG. The panel strips script on save.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-sb">
+  <style>
+    #dnf-sb * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE, AND THE ONLY PLACE A COLOUR IS WRITTEN DOWN. The
+       bootstrap below overwrites these same names when the page answers with a
+       theme. */
+    #dnf-sb {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+
+    /* No position:fixed. The Banner container is already fixed and full width.
+       See the note in the header: adding it again nests a bar inside a bar. */
+    /* SOLID BRAND, NOT A GRADIENT, AND THE GRADIENT WAS DELIBERATELY GIVEN UP.
+       This bar carries text directly on the brand colour, and the only pair this
+       repository can guarantee is readable at any lightness is --c-primary with
+       --c-on-primary, because resolveOnPrimary in theme.mjs clamps exactly that pair
+       to 4.5:1.
+
+       A gradient needs a SECOND colour under the same text. Running it from a
+       darkened brand shade to the brand colour was tried and refused: for a pale
+       brand the readable pair is near-black on the brand colour, and near-black over
+       the darkened end measures about 3.8:1. That is the kind of "it is only a
+       little darker" reasoning that shipped a standard-blue popup onto a gold
+       storefront in the first place.
+
+       So the flourish goes and the guarantee stays. A sticky bar in one solid brand
+       colour reads perfectly well, and it reads that way on all fifty. */
+    /* THE PANEL IS FULL WIDTH. THE CONTENT INSIDE IT IS NOT, and on a wide screen
+       that is the difference between a bar that belongs to the storefront and one
+       that looks bolted on. Added 7 August 2026.
+
+       The storefront puts its header, its hero and every section inside
+       .container, which is max-width 1180px with 20px of padding, centred. This bar
+       had no equivalent, so on a 2000px window the mark sat hard against the left
+       edge of the screen and the button against the right, while the header logo
+       directly below it started 330px in. Two elements stacked on each other,
+       aligned to two different grids.
+
+       1180 mirrors template/style.css. The coupling is worth naming: if the
+       storefront's container ever changes, this number wants changing with it. It
+       degrades gently either way, because a bar centred to a slightly different
+       width still reads as deliberate, where no centring at all does not. */
+    #dnf-sb .bar {
+      width:100%;
+      background:var(--c-primary);
+      color:var(--c-on-primary);
+      padding:11px 0;
+      container-type:inline-size;
+    }
+    #dnf-sb .inner {
+      max-width:1180px; margin:0 auto; padding:0 20px;
+      display:flex; align-items:center; gap:14px;
+    }
+
+    #dnf-sb .mark { flex:0 0 auto; width:19px; height:19px; display:block; fill:var(--c-on-primary); opacity:.95; }
+
+    #dnf-sb .text { flex:1 1 auto; min-width:0; font-size:13.5px; line-height:1.45; }
+    #dnf-sb .text b { font-weight:700; }
+
+    #dnf-sb .cta {
+      flex:0 0 auto; border:0; cursor:pointer; font-family:inherit;
+      font-size:12.5px; font-weight:700; letter-spacing:.01em;
+      background:var(--c-on-primary); color:var(--c-primary);
+      border-radius:999px; padding:8px 15px; white-space:nowrap;
+      transition:transform .12s;
+    }
+    #dnf-sb .cta:hover { transform:translateY(-1px); }
+
+    /* Required on a Banner: the panel offers no outside close button for this
+       layout, unlike Popup. */
+    #dnf-sb .close {
+      flex:0 0 auto; border:0; background:none; cursor:pointer; padding:4px;
+      line-height:0; opacity:.75; transition:opacity .12s;
+    }
+    #dnf-sb .close:hover { opacity:1; }
+    #dnf-sb .close svg { width:15px; height:15px; display:block; stroke:#fff; stroke-width:2; fill:none; }
+
+    /* Container query, not a viewport query: the bar is inside an iframe the
+       engine sizes, so the viewport in there is the iframe's own width. */
+    @container (max-width: 560px) {
+      #dnf-sb .mark { display:none; }
+      #dnf-sb .text { font-size:12.5px; }
+      #dnf-sb .cta { padding:7px 12px; font-size:12px; }
+    }
+    @container (max-width: 400px) {
+      #dnf-sb .cta { display:none; }
+    }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-sb');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <!-- ===================================================================
+       THE BAR TELLS THE PAGE HOW TALL IT IS
+       ===================================================================
+
+       A second loader image, separate from the theme bootstrap above, because that
+       block is byte for byte identical in every creative and factory/creatives/
+       sync-bootstrap.py enforces it. This part belongs to this file alone.
+
+       ONLY THIS ONE OF THE TWO BARS HAS IT. image-bar.html sits at the BOTTOM of the
+       page, competes with nothing, and needs no offset published for it: reporting a
+       height from there would move the storefront header down for a bar that never
+       covered it.
+
+       WHY IT EXISTS. A bar pinned to the top of the viewport wants the same pixels as
+       the storefront header, and the page moves its header down by whatever
+       --dn-banner-height says. Working that number out from the page meant guessing at
+       the shape of markup it cannot see, and the guess was wrong twice: if the engine
+       renders this file inside a full viewport iframe with a transparent body, then the
+       thing pinned at the top of the screen is as tall as the screen, the page's height
+       ceiling rejects it as a modal scrim, and the header stays covered.
+
+       This element knows its own height and has no need to guess. One number, sent to
+       the page, is the whole mechanism.
+
+       SENT MORE THAN ONCE, a little apart, because the height is not final on the first
+       frame: the theme arrives by message and may swap the font, and a font swap
+       rewraps the copy. Re measuring on resize covers a phone turning sideways.
+
+       AND ZERO ON THE WAY OUT, so the header comes back up when the bar is dismissed.
+       The page treats zero as "stop trusting me and go back to looking", which is what
+       should happen when this file is no longer on screen. -->
+  <img alt="" aria-hidden="true" width="1" height="1"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-sb');
+    if(!root){return;}
+    function send(px){
+      try{window.parent.postMessage({dnBanner:'height',px:px},'*');}catch(err){}
+    }
+    /* THE BOTTOM EDGE, NOT THE HEIGHT, and the difference is the whole bug this
+       reporter was written to fix, returning by a different door. The page moves its
+       header to whatever this says, so what it needs is where the bar ENDS measured
+       from the top of the frame. Height is only the same number when nothing sits
+       above the bar, and something did: the loader image above was in the flow and
+       reserved a line box, so the bar started 18px down and its bottom was 18px
+       lower than its height. The header went to the height and a strip of page
+       showed above the bar. Reading bottom is correct whatever ends up above it. */
+    function report(){
+      var bar=root.querySelector('.bar')||root;
+      send(Math.ceil(bar.getBoundingClientRect().bottom));
+    }
+    window.dnfSbGone=function(){send(0);};
+    report();
+    var n=0;
+    (function again(){
+      report();
+      if(++n&lt;6){window.setTimeout(again,220);}
+    })();
+    window.addEventListener('resize',report);
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="bar">
+    <!-- The centred column. Its width mirrors the storefront's own
+         .container, so the mark here lines up with the logo in the header
+         directly below it rather than sitting against the screen edge. -->
+    <div class="inner">
+      <!-- The Dengage mark, never a prospect's. Handoff 1.5. -->
+      <svg class="mark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+        <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+        <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+      </svg>
+
+      <!-- No number, no channel promise, nothing vertical. What is left is the
+           mechanism itself, which is what this widget is here to demonstrate. -->
+      <div class="text"><b>You are seeing this because of what you just did.</b> Every page you open here reaches Dengage in real time.</div>
+
+      <!-- The guard on dnfSbGone is not defensive padding: the reporter above installs it
+           from an image's onload, so a browser that has not run that yet would throw here
+           and swallow the dismissal with it. -->
+      <button type="button" class="cta"
+              onclick="Dn.sendClick('sticky-bar__primary');if(window.dnfSbGone){dnfSbGone();}Dn.close()">
+        Got it
+      </button>
+
+      <!-- Dismissal only. No sendClick, so closing the bar is never reported as a
+           click. -->
+      <button type="button" class="close" aria-label="Close"
+              onclick="if(window.dnfSbGone){dnfSbGone();}Dn.close()">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

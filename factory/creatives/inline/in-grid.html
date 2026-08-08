@@ -1,0 +1,137 @@
+<!-- =========================================================================
+     INLINE CREATIVE. Campaign: dengage_demo_inline-in-grid
+     Target:  #dn_inline_target_in_grid
+
+     One promoted product, sitting in the flow of the grid rather than over it.
+     The most convincing of the five on a call, because it is indistinguishable
+     from the storefront's own merchandising until you point out that Dengage put
+     it there.
+
+     PRICE COMES FROM THE CATALOGUE OR IS OMITTED. Handoff 1.8. If the scrape did
+     not produce a price this renders "Price on request" rather than a number,
+     because Number(null) is 0 and a promoted product priced at zero is the kind
+     of detail a prospect notices and remembers.
+
+     NOT A POPUP. Style lifted into document.head, script in page scope, all CSS
+     scoped under #dnil-grid, clicks on a[href] counted by the SDK.
+
+     THE THREE WRAPPER CLASSES ARE NOT OPTIONAL. Read from the SDK, not guessed:
+
+       .dn-inline-style    cloned and appended to document.head
+       .dn-inline-html     cloned and inserted into the target selector
+       .dn-inline-script   its innerHTML is run through new Function() in page scope
+
+     The engine looks for exactly these three class names in the creative content
+     and silently does nothing with anything it cannot find. A file without them
+     renders as an empty target and reports no error.
+
+     AND .dn-inline-html MUST NOT BE EMPTY. The engine tests its innerHTML before
+     inserting, so an empty placeholder div is skipped entirely, which is the trap
+     this file would otherwise have walked into: the root element is styled and
+     scripted correctly and never reaches the page. Hence the empty span inside it,
+     which the script replaces on render.
+========================================================================== -->
+<div class="dn-inline-html" id="dnil-grid">
+  <div class="promo">
+    <span class="shot"></span>
+    <span class="body">
+      <span class="flag">Picked for you</span>
+      <span class="cat">Category path</span>
+      <h3>A product from this store</h3>
+      <span class="price">Price shown here</span>
+      <a class="go" href="#">Take a look</a>
+    </span>
+  </div>
+</div>
+
+<style class="dn-inline-style">
+#dnil-grid { display:block; margin:0 0 18px; }
+  #dnil-grid .promo {
+    display:flex; align-items:stretch; gap:0; overflow:hidden;
+    border:1px solid var(--primary); border-radius:var(--radius);
+    background:var(--surface); box-shadow:var(--shadow-sm);
+  }
+  #dnil-grid .shot { flex:0 0 34%; max-width:260px; background:var(--page); overflow:hidden; }
+  #dnil-grid .shot img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-grid .shot .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; min-height:150px; }
+  #dnil-grid .body { flex:1 1 auto; min-width:0; padding:18px 20px; display:flex; flex-direction:column; justify-content:center; }
+  #dnil-grid .flag {
+    display:inline-block; align-self:flex-start; font-size:10px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--on-primary);
+    background:var(--primary); border-radius:4px; padding:3px 7px; margin-bottom:9px;
+  }
+  #dnil-grid .cat { display:block; font-size:11px; letter-spacing:.04em; text-transform:uppercase; color:var(--muted); }
+  #dnil-grid h3 { font-family:var(--display-font); font-size:17px; font-weight:700; color:var(--ink); margin:3px 0 0; letter-spacing:-.02em; }
+  #dnil-grid .price { margin-top:8px; font-size:15px; font-weight:700; color:var(--ink); font-family:var(--display-font); }
+  #dnil-grid .price .none { font-weight:500; font-size:13px; color:var(--muted); font-family:var(--body-font); }
+  #dnil-grid .price .was { font-weight:500; font-size:13px; color:var(--muted); text-decoration:line-through; margin-left:7px; }
+  #dnil-grid a.go {
+    align-self:flex-start; margin-top:14px; text-decoration:none;
+    background:var(--primary); color:var(--on-primary); border-radius:8px;
+    padding:9px 18px; font-size:13.5px; font-weight:600; transition:filter .15s;
+  }
+  #dnil-grid a.go:hover { filter:brightness(1.07); text-decoration:none; }
+  @media (max-width:620px) {
+    #dnil-grid .promo { flex-direction:column; }
+    #dnil-grid .shot { flex:0 0 auto; max-width:none; height:150px; }
+  }
+</style>
+
+<script class="dn-inline-script">
+(function () {
+    'use strict';
+    var root = document.getElementById('dnil-grid');
+    if (!root || root.getAttribute('data-dnil-done')) return;
+
+    function money(value) {
+        var cfg = window.DEMO_CONFIG || {};
+        var sym = (cfg.locale && cfg.locale.currencySymbol) || '$';
+        if (value === null || value === undefined || value === '') return null;
+        var n = Number(value);
+        return isFinite(n) ? sym + n.toFixed(2) : null;
+    }
+
+    function render() {
+        var Catalog = window.Catalog;
+        if (!Catalog || !Catalog.all) return false;
+        var all = Catalog.all();
+        if (!all || !all.length) return false;
+
+        /* Promote something with a discount if the catalogue has one, because
+           that is the more interesting story to tell. Otherwise the first item. */
+        var p = all.filter(function (x) {
+            return x.discountedPrice !== null && x.discountedPrice !== undefined;
+        })[0] || all[0];
+
+        var esc = Catalog.escapeText, escA = Catalog.escapeAttr;
+        var now = money(Catalog.effectivePrice ? Catalog.effectivePrice(p) : p.price);
+        var was = (p.discountedPrice !== null && p.discountedPrice !== undefined)
+                  ? money(p.price) : null;
+
+        root.innerHTML =
+            '<div class="promo">' +
+              '<span class="shot">' + Catalog.media(p) + '</span>' +
+              '<span class="body">' +
+                '<span class="flag">Picked for you</span>' +
+                '<span class="cat">' + esc(p.categoryPath || p.category || '') + '</span>' +
+                '<h3>' + esc(p.name) + '</h3>' +
+                '<span class="price">' +
+                  (now === null
+                    ? '<span class="none">Price on request</span>'
+                    : now + (was ? '<span class="was">' + was + '</span>' : '')) +
+                '</span>' +
+                '<a class="go" href="' + escA(p.url) + '">Take a look</a>' +
+              '</span>' +
+            '</div>';
+        root.hidden = false;
+        root.setAttribute('data-dnil-done', '1');
+        return true;
+    }
+
+    if (render()) return;
+    var tries = 0;
+    var timer = setInterval(function () {
+        if (render() || ++tries > 10) clearInterval(timer);
+    }, 300);
+})();
+</script>

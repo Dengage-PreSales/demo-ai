@@ -1,0 +1,52 @@
+{
+  "slug": "template",
+  "displayName": "Dengage eComm Demo",
+  "sourceUrl": "",
+  "createdAt": "",
+  "expiresAt": "",
+
+  "theme": {
+    "primary":     "#125cfa",
+    "onPrimary":   "#ffffff",
+    "accent":      "#f5a524",
+    "ink":         "#14181b",
+    "muted":       "#667085",
+    "surface":     "#ffffff",
+    "page":        "#f6f7f8",
+    "line":        "#e4e7ec",
+    "radius":      "10px",
+    "displayFont": "Sora",
+    "bodyFont":    "Inter"
+  },
+
+  "locale": { "language": "en", "currency": "USD", "currencySymbol": "$" },
+
+  "dengage": {
+    "accountId": "",
+    "appGuid": "",
+    "scenarioPrefix": "dengage_demo_"
+  },
+
+  "categories": ["Fashion", "Electronics", "Home"],
+
+  "_comment": [
+    "The only file a brand decision may live in. Handoff 4.",
+    "",
+    "This copy is the template's own, so it carries no brand and no identity:",
+    "slug is 'template', and accountId and appGuid are blank. The guard rejects",
+    "any application identifier inside template/, because the template is never",
+    "served and receives its identity at build time.",
+    "",
+    "theme maps one to one onto the :root block at the top of style.css. If a",
+    "colour appears anywhere below that block, theming silently stops working",
+    "for that rule and the guard fails template-purity.",
+    "",
+    "slug is the namespace. Element ids, CSS classes, the localStorage cart key",
+    "and custom event names all derive from it, because every demo shares one",
+    "origin and two demos open in one browser must not see each other's cart.",
+    "",
+    "displayName is always the Dengage demo name, never the prospect's.",
+    "Handoff 1.5: their colours, typography, categories, product names and",
+    "photography are used. Their logo and word mark are not."
+  ]
+}

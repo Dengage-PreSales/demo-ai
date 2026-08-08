@@ -1,0 +1,122 @@
+<!-- =========================================================================
+     INLINE CREATIVE. Campaign: dengage_demo_inline-below-header
+     Target:  #dn_inline_target_below_header
+
+     A thin affinity strip naming the category the visitor has actually been in,
+     with the products they have not seen yet from it.
+
+     THIS TARGET IS THE AWKWARD ONE. It sits directly beneath a fixed header, so
+     it needs the measured clearance the storefront publishes as
+     --dn-header-clearance rather than a constant: the header changes height on
+     scroll and again when a Dengage top banner is pinned, so a fixed number is
+     wrong twice over. Handoff 5.2. Do not put a top margin here to compensate.
+
+     NOT A POPUP. Style is lifted into document.head and script runs in page
+     scope, so every selector is scoped under #dnil-head. Clicks on a[href] are
+     counted by the SDK. No Dn calls: Dn does not exist in page scope.
+
+     THE THREE WRAPPER CLASSES ARE NOT OPTIONAL. Read from the SDK, not guessed:
+
+       .dn-inline-style    cloned and appended to document.head
+       .dn-inline-html     cloned and inserted into the target selector
+       .dn-inline-script   its innerHTML is run through new Function() in page scope
+
+     The engine looks for exactly these three class names in the creative content
+     and silently does nothing with anything it cannot find. A file without them
+     renders as an empty target and reports no error.
+
+     AND .dn-inline-html MUST NOT BE EMPTY. The engine tests its innerHTML before
+     inserting, so an empty placeholder div is skipped entirely, which is the trap
+     this file would otherwise have walked into: the root element is styled and
+     scripted correctly and never reaches the page. Hence the empty span inside it,
+     which the script replaces on render.
+========================================================================== -->
+<div class="dn-inline-html" id="dnil-head">
+  <div class="in">
+    <span class="msg">More in <b>this category</b></span>
+    <span class="row">
+      <a class="chip" href="#"><span class="thumb"></span><span class="t">First item</span></a>
+      <a class="chip" href="#"><span class="thumb"></span><span class="t">Second item</span></a>
+      <a class="chip" href="#"><span class="thumb"></span><span class="t">Third item</span></a>
+      <a class="chip" href="#"><span class="thumb"></span><span class="t">Fourth item</span></a>
+    </span>
+  </div>
+</div>
+
+<style class="dn-inline-style">
+#dnil-head { display:block; background:var(--tint); border-bottom:1px solid var(--line); }
+  #dnil-head .in {
+    max-width:1180px; margin:0 auto; padding:9px 20px;
+    display:flex; align-items:center; gap:14px;
+  }
+  #dnil-head .msg { font-size:12.5px; color:var(--ink); flex:0 0 auto; }
+  #dnil-head .msg b { font-weight:700; color:var(--primary); }
+  #dnil-head .row { display:flex; gap:8px; flex:1 1 auto; min-width:0; overflow:hidden; }
+  #dnil-head a.chip {
+    display:flex; align-items:center; gap:7px; flex:0 0 auto;
+    background:var(--surface); border:1px solid var(--line); border-radius:20px;
+    padding:4px 12px 4px 4px; text-decoration:none; transition:border-color .15s;
+  }
+  #dnil-head a.chip:hover { border-color:var(--primary); }
+  #dnil-head .thumb { width:24px; height:24px; border-radius:50%; overflow:hidden; background:var(--page); flex:0 0 auto; }
+  #dnil-head .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-head .thumb .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:8px; }
+  #dnil-head .t { font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; max-width:150px; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:760px) { #dnil-head .row { display:none; } }
+</style>
+
+<script class="dn-inline-script">
+(function () {
+    'use strict';
+    var root = document.getElementById('dnil-head');
+    if (!root || root.getAttribute('data-dnil-done')) return;
+
+    /* The category the visitor is actually in, read from the page rather than
+       guessed: the category view puts it in the query string, and a product page
+       carries it on the product. Falls back to the first category so the strip
+       still says something true on the home page. */
+    function currentCategory(Catalog) {
+        var m = /[?&]category=([^&#]*)/.exec(window.location.search);
+        if (m) { try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; } }
+        var id = /[?&]id=([^&#]*)/.exec(window.location.search);
+        if (id) {
+            var p = Catalog.get(decodeURIComponent(id[1]));
+            if (p && p.category) return p.category;
+        }
+        var cats = Catalog.categories();
+        return cats && cats.length ? cats[0] : null;
+    }
+
+    function render() {
+        var Catalog = window.Catalog;
+        if (!Catalog || !Catalog.categories) return false;
+        var cat = currentCategory(Catalog);
+        if (!cat) return false;
+        var items = Catalog.inCategory(cat);
+        if (!items.length) return false;
+
+        var esc = Catalog.escapeText, escA = Catalog.escapeAttr;
+        var chips = items.slice(0, 4).map(function (p) {
+            return '<a class="chip" href="' + escA(p.url) + '">' +
+                     '<span class="thumb">' + Catalog.media(p) + '</span>' +
+                     '<span class="t">' + esc(p.name) + '</span>' +
+                   '</a>';
+        }).join('');
+
+        root.innerHTML =
+            '<div class="in">' +
+              '<span class="msg">More in <b>' + esc(cat) + '</b></span>' +
+              '<span class="row">' + chips + '</span>' +
+            '</div>';
+        root.hidden = false;
+        root.setAttribute('data-dnil-done', '1');
+        return true;
+    }
+
+    if (render()) return;
+    var tries = 0;
+    var timer = setInterval(function () {
+        if (render() || ++tries > 10) clearInterval(timer);
+    }, 300);
+})();
+</script>

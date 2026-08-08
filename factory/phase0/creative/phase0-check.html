@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Phase 0 check card (Dengage panel content)</title>
+<!-- =========================================================================
+     PHASE 0 CHECK CARD. Handoff 13, step 3.
+
+     Paste this whole file into the content editor of ONE of the
+     campaigns, whichever popup you set up first. It is throwaway: it exists to
+     answer a single question, which is whether a scenario fired from the probe
+     page reaches the panel and renders on screen.
+
+     It is NOT one of the standardized shared creatives. Those are Phase 1 work
+     and they are written once a widget has visibly rendered at least once,
+     because their mechanics rest on how the engine actually behaves rather
+     than on how it is documented to behave. Handoff 2.2a.
+
+     WHAT IT PROVES, in one press:
+
+       1. The campaign is wired to the trigger name and the content renders.
+       2. Dn.sendClick reports a click, so the campaign report shows engagement
+          rather than impressions with zero clicks.
+       3. Dn.close dismisses the card.
+
+     PANEL SETTINGS this card assumes, from handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           the campaign's trigger name, exactly
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, width 460 to 480
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     THREE THINGS THAT ARE NOT STYLE CHOICES:
+
+     Padding 0 and a transparent background. The engine's own container
+     otherwise draws a white box around this card, which reads as an unwanted
+     frame. The card supplies its own white, corner radius and shadow.
+
+     No close control of its own. The panel supplies one, outside the card. A
+     second one inside reads as a duplicate. The action below dismisses, which
+     is a different thing from a close control.
+
+     No script tag. The panel strips script on save, so anything interactive
+     here is CSS plus inline handlers. This card needs neither.
+
+     THE ACTION REPORTS AND DISMISSES. IT DOES NOT NAVIGATE.
+
+     That is the rule for every shared creative and it is worth understanding
+     before writing the shared set. One creative serves every demo, so there is no
+     URL that is correct for it: a link would send a prospect looking at their
+     own themed storefront somewhere unrelated. A relative link does not fix it
+     either, because popups render in a cross-origin iframe and a relative href
+     resolves against the iframe rather than against the page. Report the click
+     and dismiss, and the prospect stays on the storefront they were looking
+     at, which is where you want them during a call. Handoff 2.2a, 12.2.
+
+     All CSS is scoped under #dnf-check so nothing leaks onto the page.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-check">
+  <style>
+    #dnf-check * { margin:0; padding:0; box-sizing:border-box; }
+    #dnf-check {
+      --c-blue:#125cfa; --c-ink:#14181b; --c-muted:#667085;
+      --c-line:#e4e7ec; --c-surface:#ffffff;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    }
+
+    #dnf-check .card {
+      background:var(--c-surface);
+      border-radius:14px;
+      box-shadow:0 18px 44px rgba(20,24,27,.20);
+      overflow:hidden;
+      text-align:center;
+      padding:30px 28px 26px;
+      animation:dnf-in .26s ease-out;
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+
+    #dnf-check .mark { width:34px; height:40px; margin:0 auto 16px; display:block; fill:var(--c-blue); }
+
+    #dnf-check .tag {
+      display:inline-block; background:#eaf1ff; color:var(--c-blue);
+      border-radius:20px; padding:4px 11px; margin-bottom:12px;
+      font-size:10.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    }
+
+    #dnf-check h2 { font-size:19px; line-height:1.3; color:var(--c-ink); margin-bottom:8px; letter-spacing:-.01em; }
+    #dnf-check p  { font-size:13.5px; line-height:1.55; color:var(--c-muted); }
+
+    #dnf-check .steps { text-align:left; margin:18px 0 20px; border-top:1px solid var(--c-line); }
+    #dnf-check .steps li {
+      list-style:none; display:flex; gap:10px; align-items:flex-start;
+      padding:10px 2px; border-bottom:1px solid var(--c-line);
+      font-size:13px; line-height:1.45; color:var(--c-ink);
+    }
+    #dnf-check .steps li span:first-child { color:var(--c-blue); font-weight:700; flex-shrink:0; }
+    #dnf-check .steps li em { color:var(--c-muted); font-style:normal; }
+
+    #dnf-check .action {
+      display:block; width:100%; border:0; cursor:pointer;
+      background:var(--c-blue); color:#fff; border-radius:10px;
+      padding:12px 18px; font-family:inherit; font-size:14px; font-weight:600;
+      transition:filter .15s;
+    }
+    #dnf-check .action:hover { filter:brightness(1.07); }
+    #dnf-check .foot { margin-top:12px; font-size:11.5px; color:var(--c-muted); }
+  </style>
+
+  <div class="card" role="dialog" aria-label="Phase 0 check">
+
+    <svg class="mark" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+      <path d="M10 28H5.8v-6h4.2c4.4-.2 7.9-3.8 7.7-8.2-.1-4.3-3.6-7.7-7.7-7.8H5.8v5.1h5v6H0V0h10c7.7.3 13.8 6.6 13.5 14.4C23.3 21.8 17.4 27.7 10 28z"/>
+    </svg>
+
+    <span class="tag">Phase 0 check</span>
+    <h2>The panel is wired up</h2>
+    <p>
+      This card was fired from the probe page, matched a campaign in the panel
+      and rendered here. That is the first of the two things Phase 0 has to
+      prove.
+    </p>
+
+    <ul class="steps">
+      <li><span>1</span><span>The scenario reached the panel and rendered. <em>Proved by this card being on screen.</em></span></li>
+      <li><span>2</span><span>The click is reported, so the campaign shows engagement. <em>Proved by pressing the button below.</em></span></li>
+      <li><span>3</span><span>The launcher click reaches Data Space. <em>Not proved here. Go and look at the row.</em></span></li>
+    </ul>
+
+    <button type="button" class="action"
+            onclick="Dn.sendClick('phase0-check__cta'); Dn.close();">
+      Report this click and dismiss
+    </button>
+
+    <p class="foot">
+      Step 3 is the one that gets skipped. A response code means accepted, not
+      stored. Open <b>page_view_events</b> and find the row.
+    </p>
+
+  </div>
+</div>
+
+</body>
+</html>

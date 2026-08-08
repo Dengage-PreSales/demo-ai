@@ -1,0 +1,129 @@
+<!-- =========================================================================
+     INLINE CREATIVE. Campaign: dengage_demo_inline-pdp-below-price
+     Target:  #dn_inline_target_pdp_below_price
+
+     Cross sell under the price block on a product page, from the same category as
+     the product being viewed.
+
+     THIS IS THE ONE THAT ONLY EXISTS ON ONE PAGE. The target is in product.html
+     and not in index.html, so on the home page there is nothing to inject into
+     and the campaign simply does not render. That is correct rather than a fault,
+     and it is why the campaign can safely use /.*/ for Where to display.
+
+     It reads the product from the page's own query string rather than being told,
+     so the same single campaign works for every product on every demo.
+
+     NOT A POPUP. Style lifted into document.head, script in page scope, all CSS
+     scoped under #dnil-pdp, clicks on a[href] counted by the SDK.
+
+     THE THREE WRAPPER CLASSES ARE NOT OPTIONAL. Read from the SDK, not guessed:
+
+       .dn-inline-style    cloned and appended to document.head
+       .dn-inline-html     cloned and inserted into the target selector
+       .dn-inline-script   its innerHTML is run through new Function() in page scope
+
+     The engine looks for exactly these three class names in the creative content
+     and silently does nothing with anything it cannot find. A file without them
+     renders as an empty target and reports no error.
+
+     AND .dn-inline-html MUST NOT BE EMPTY. The engine tests its innerHTML before
+     inserting, so an empty placeholder div is skipped entirely, which is the trap
+     this file would otherwise have walked into: the root element is styled and
+     scripted correctly and never reaches the page. Hence the empty span inside it,
+     which the script replaces on render.
+========================================================================== -->
+<div class="dn-inline-html" id="dnil-pdp">
+  <span class="cap">Often bought with <b>this product</b></span>
+  <div class="row">
+    <a class="item" href="#"><span class="shot"></span><span class="n">First item</span><span class="p">Price</span></a>
+    <a class="item" href="#"><span class="shot"></span><span class="n">Second item</span><span class="p">Price</span></a>
+    <a class="item" href="#"><span class="shot"></span><span class="n">Third item</span><span class="p">Price</span></a>
+  </div>
+</div>
+
+<style class="dn-inline-style">
+#dnil-pdp { display:block; margin:16px 0 4px; padding:14px 0 0; border-top:1px solid var(--line); }
+  #dnil-pdp .cap { display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:10px; }
+  #dnil-pdp .cap b { color:var(--primary); font-weight:700; }
+  #dnil-pdp .row { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+  #dnil-pdp a.item { display:block; flex:0 0 96px; text-decoration:none; }
+  #dnil-pdp .shot {
+    display:block; width:96px; height:96px; border-radius:8px; overflow:hidden;
+    background:var(--page); border:1px solid var(--line); transition:border-color .15s;
+  }
+  #dnil-pdp a.item:hover .shot { border-color:var(--primary); }
+  #dnil-pdp .shot img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-pdp .shot .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:16px; }
+  #dnil-pdp .n {
+    display:block; font-size:11.5px; line-height:1.35; color:var(--ink); margin-top:6px;
+    overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+  }
+  #dnil-pdp .p { display:block; font-size:11.5px; font-weight:700; color:var(--ink); margin-top:2px; }
+</style>
+
+<script class="dn-inline-script">
+(function () {
+    'use strict';
+    var root = document.getElementById('dnil-pdp');
+    if (!root || root.getAttribute('data-dnil-done')) return;
+
+    function money(value) {
+        var cfg = window.DEMO_CONFIG || {};
+        var sym = (cfg.locale && cfg.locale.currencySymbol) || '$';
+        if (value === null || value === undefined || value === '') return '';
+        var n = Number(value);
+        return isFinite(n) ? sym + n.toFixed(2) : '';
+    }
+
+    function render() {
+        var Catalog = window.Catalog;
+        if (!Catalog || !Catalog.get) return false;
+
+        var m = /[?&]id=([^&#]*)/.exec(window.location.search);
+        if (!m) return true;               /* not a product page: nothing to do */
+        var id;
+        try { id = decodeURIComponent(m[1]); } catch (e) { id = m[1]; }
+        var product = Catalog.get(id);
+        if (!product) return false;
+
+        var others = Catalog.similar ? Catalog.similar(product, 5) : [];
+        /* Same rule as above-footer: never render nothing. A category holding one
+           product is unusual but a catalogue of twenty from a small prospect can
+           easily produce it, and the presenter would be looking at a slot that
+           stayed empty for a reason nobody in the room can see. Fall back to
+           anything else in the catalogue, and say plainly that it is the wider
+           catalogue rather than the same category. */
+        var wider = false;
+        if (!others.length) {
+            wider = true;
+            others = Catalog.all().filter(function (p) { return p.id !== product.id; }).slice(0, 5);
+            if (!others.length) return false;
+        }
+
+        var esc = Catalog.escapeText, escA = Catalog.escapeAttr;
+        var items = others.map(function (p) {
+            var price = money(Catalog.effectivePrice ? Catalog.effectivePrice(p) : p.price);
+            return '<a class="item" href="' + escA(p.url) + '">' +
+                     '<span class="shot">' + Catalog.media(p) + '</span>' +
+                     '<span class="n">' + esc(p.name) + '</span>' +
+                     (price ? '<span class="p">' + price + '</span>' : '') +
+                   '</a>';
+        }).join('');
+
+        root.innerHTML =
+            '<span class="cap">' +
+              (wider ? 'Also in this store' : 'Often bought with <b>' + esc(product.name) + '</b>') +
+            '</span>' +
+            '<div class="row">' + items + '</div>';
+        root.hidden = false;
+        root.setAttribute('data-dnil-done', '1');
+        return true;
+    }
+
+    if (render()) return;
+    var tries = 0;
+    var timer = setInterval(function () {
+        if (render() || ++tries > 10) clearInterval(timer);
+    }, 300);
+})();
+</script>

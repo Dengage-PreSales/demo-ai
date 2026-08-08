@@ -1,0 +1,102 @@
+name: Guard
+
+# The CI guardrails, handoff section 11. These run on every change, and one of
+# them is the only thing standing between a generated demo and the Dengage
+# tables that the core demo sites and the two mobile apps share.
+#
+# The guard's own test suite runs first and runs always. A guard that passes on
+# an empty repository proves nothing (handoff 11.1), so the evidence that these
+# checks work is that they reject a tree known to be wrong, on every count.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    name: Guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runs before the guard itself. If the checks have stopped working, the
+      # result of running them over the repository means nothing, so there is
+      # no point reading it.
+      - name: Guard test suite
+        run: ./factory/guard/test.sh
+
+      # Deliberately not the runner's default locale. The dash check matches
+      # raw UTF-8 bytes so that it behaves identically everywhere, and running
+      # CI under a non-UTF-8 locale is what would surface a regression back to
+      # a code point pattern, which reports every file clean without one.
+      - name: Guard test suite, non-UTF-8 locale
+        run: ./factory/guard/test.sh
+        env:
+          LC_ALL: C
+          LANG: C
+
+      - name: Guardrails
+        run: ./factory/guard/run.sh
+
+      # The generator's own judgement, tested without a network. Every case in
+      # here is one the code got wrong first: a null stock count coerced to zero,
+      # a category list with More in it twice, a font stack whose monospace
+      # fallback made it a mono font. None of them needs a prospect's site to be
+      # reachable, so none of them is allowed to be skipped when one is not.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Generator decisions
+        run: node factory/scrape/scrape.test.mjs
+
+      # The intake parser turns text a stranger wrote into command line
+      # arguments, so its refusals matter more than its successes.
+      - name: Issue request parser
+        run: node .github/scripts/parse-request.test.mjs
+
+      # The feed is the one artefact here that a system OUTSIDE this repository
+      # reads. A storefront defect shows on the page; a feed defect shows only as a
+      # recommendation that quietly makes no sense.
+      - name: Product feed
+        run: node factory/feed.test.mjs
+
+      # And the committed feed has to match the demos in the tree. A demo added or
+      # removed without rebuilding it leaves Dengage recommending something that is
+      # not there, or missing something that is.
+      - name: Product feed is up to date
+        run: node factory/build-feed.mjs --check
+
+      # FOURTEEN POPUP CREATIVES SHARE ONE THEME BOOTSTRAP, and survey.html is where
+      # it is written. Copying forty lines by hand into fourteen files produces
+      # fourteen slightly different copies, and the one that matters is always the one
+      # nobody re-read. Same reasoning as the inline creatives, which are generated
+      # from one source for exactly this reason.
+      - name: Theme bootstrap is identical in every creative
+        run: python3 factory/creatives/sync-bootstrap.py --check
+
+      # The sample push builder. It is never run by CI and never run by the build,
+      # but the one thing it must always do is name a single application, and that
+      # is also the one mistake with no visible symptom: an applicationIds array
+      # that lost an entry sends to devices in a shared account and looks entirely
+      # normal from this side. So the assertion runs here rather than only on the
+      # machine of whoever last edited it. Handoff 2.5b.
+      #
+      # It sends nothing and needs no credential, which is what makes it safe to
+      # run on every change.
+      - name: Sample push names one application
+        run: node factory/panel/send-instant-push.mjs --self-test
+
+      # The build workflow will not call a demo live until the published address
+      # answers, and the whole value of that is in the case where it does not.
+      # A wait that always reports success is the same as no wait, and it reads
+      # identically in a green run log, so it is tested here rather than trusted.
+      # No browser and no credential, seven seconds.
+      - name: Publication wait reports what it measured
+        run: ./factory/checks/publish.sh

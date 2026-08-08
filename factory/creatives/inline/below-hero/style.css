@@ -1,0 +1,33 @@
+  #dnil-hero { display:block; margin:26px 0 6px; }
+  #dnil-hero .head { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  #dnil-hero .head h2 {
+    font-family:var(--display-font); font-size:17px; font-weight:700;
+    color:var(--ink); letter-spacing:-.02em; margin:0;
+  }
+  #dnil-hero .head .by { font-size:11.5px; color:var(--muted); }
+  #dnil-hero .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  #dnil-hero a.tile {
+    display:block; border-radius:var(--radius); overflow:hidden; text-decoration:none;
+    border:1px solid var(--line); background:var(--surface); transition:border-color .15s, transform .15s;
+  }
+  #dnil-hero a.tile:hover { border-color:var(--primary); transform:translateY(-2px); }
+  /* display:block IS THE ROOT CAUSE, not a tidy-up. .shot is a <span>, and
+     aspect-ratio has no effect on a non-replaced inline element, so the ratio was
+     being ignored outright and the tile height came from inline layout around a
+     4:3 svg. .label is a span for the same reason. Everything else here was
+     correct, which is why it looked like a hard problem. */
+  #dnil-hero .shot { display:block; aspect-ratio:16/10; overflow:hidden; background:var(--page); }
+  #dnil-hero .label { display:block; }
+  #dnil-hero .shot img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-hero .shot .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; min-height:0; }
+  /* THE SVG MUST BE TOLD TO FILL THIS, or it wins. Generated artwork carries only a
+     viewBox, so its intrinsic ratio is 4:3, and aspect-ratio yields to a content
+     box larger than the ratio implies. The tile grew from 231px to 367px, and since
+     a.tile is overflow:hidden the category name underneath was clipped away
+     entirely: three tiles of artwork with blank bands and no labels. It looked like
+     a styling nicety and was the only thing wrong with this creative.
+     Height 100% here makes the svg defer to the ratio instead of setting it. */
+  #dnil-hero .shot .art svg { display:block; width:100%; height:100%; }
+  #dnil-hero .label { padding:10px 12px; }
+  #dnil-hero .label .name { display:block; font-size:13.5px; font-weight:600; color:var(--ink); }
+  #dnil-hero .label .n { display:block; font-size:11.5px; color:var(--muted); margin-top:2px; }

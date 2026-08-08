@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en" data-demo-slug="template">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product | __DEMO_TITLE__</title>
+<meta name="description" content="A working storefront for a conversation about personalization.">
+
+<!--
+    THE STOREFRONT TEMPLATE. Product detail.
+
+    The second and last page. Cart, checkout, search and wishlist are overlays
+    shared with index.html, which is why the head, header and overlay markup are
+    identical: two pages are the whole site. Handoff 5.0.
+
+    Never served. A generated demo is this file plus demo.config.json plus a
+    catalogue plus artwork, with the slug substituted. Handoff 5, 7.4.
+
+    NO TAG MANAGER, deliberately and permanently. The SDK watches
+    window.dataLayer by itself, so Data Layer Event campaigns fire with no
+    container involved, and a second SDK load from a GTM tag would
+    double-initialize everything. Handoff 12.1, 12.9.
+
+    ORDER IN THE HEAD IS LOAD BEARING:
+      1. identity.js resolves the contact key synchronously and sets __dnInit
+      2. the SDK snippet initializes WITH that key, so the contact is attached
+         before any event goes out
+      3. pageView fires later, from js/dengageEvents.js via the storefront boot
+
+    The reference build got this wrong: it initialized anonymously and set the
+    contact key up to five seconds later, by which point pageView had already
+    landed on the anonymous device profile and the contact card showed nothing.
+    Handoff 6.2, confirmed by observation in Phase 0.
+
+    The two panel settings this page's code assumes:
+      Trigger Initialize on Install   = OFF, the snippet calls initialize itself
+      Trigger Page View on Initialize = OFF, js/dengageEvents.js sends pageView
+                                        with real parameters, and ON double
+                                        counts every page view
+-->
+
+<!-- The Dengage mark, committed rather than hotlinked. Non-negotiable 4: a demo
+     never depends on a host we do not control at run time. vendor/assets/ is
+     inside the demo folder, so this one relative path resolves the same from
+     template/ and from demos/<slug>/. -->
+<link rel="icon" href="vendor/assets/dengage-logo.svg" type="image/svg+xml">
+
+<!-- SCRIPTS BEFORE STYLESHEETS, and this is not a preference.
+
+     A pending stylesheet blocks execution of every script after it, because a
+     script may ask for computed styles. The font link below is a request to a
+     third party, so with it above these two scripts the Dengage bootstrap waits
+     on Google Fonts: slow on a bad network, indefinite on a corporate network
+     that blocks it, and what a prospect sees in that case is a storefront where
+     no widget ever fires. Observed in a browser, with the page stuck at
+     readyState "loading" and identity.js never having run.
+
+     Neither script below reads a style, so nothing is lost by hoisting them. -->
+
+<!-- identity first: it feeds the contact key into initialize below -->
+<script src="js/identity.js"></script>
+
+<!-- DENGAGE SDK START. The loader URL is written by the generator from
+     demo.config.json, so the template itself carries no application identity
+     and the guard's app-guid check refuses one here. -->
+<script>
+  (function (window, document) {
+    window.dengage = window.dengage || function () {
+      (window.dengage.q = window.dengage.q || []).push(arguments);
+    };
+    var accountId = '__DENGAGE_ACCOUNT_ID__';
+    var appGuid = '__DENGAGE_APP_GUID__';
+    if (accountId.indexOf('__') !== 0 && appGuid.indexOf('__') !== 0) {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://pcdn.dengage.com/p/push/' + accountId + '/' + appGuid + '/dengage_sdk_loader.js';
+      document.getElementsByTagName('head')[0].appendChild(script);
+    }
+    window.__dnInit ? window.dengage('initialize', window.__dnInit) : window.dengage('initialize');
+  })(window, document);
+</script>
+<!-- DENGAGE SDK END -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page-type="product">
+
+<header class="site-header" id="header">
+    <div class="container">
+        <div class="header-inner">
+            <!-- On a narrow screen the category nav collapses behind this. Hidden
+                 above the breakpoint, where the nav sits in the header itself. It
+                 used to be that the nav was simply hidden on a phone, which left
+                 the categories unreachable and the store looking like one page. -->
+            <button type="button" class="icon-btn nav-toggle" id="nav-toggle"
+                    aria-controls="site-nav" aria-expanded="false"
+                    data-copy-attr="aria-label:menuAction" aria-label="Categories">
+                <svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg>
+            </button>
+            <a href="index.html" class="logo">
+                <!-- The Dengage mark, always. Never the prospect's logo or word
+                     mark, whatever they ask for on a call. Handoff 1.5. -->
+                <svg viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+                    <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+                    <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+                </svg>
+                <span>
+                    <span class="logo-word" data-copy="brand">Dengage</span>
+                    <span class="logo-sub" data-copy="brandSub">eComm Demo</span>
+                </span>
+            </a>
+
+            <nav class="site-nav" id="site-nav" aria-label="Categories"></nav>
+
+            <div class="header-actions">
+                <!-- Sign in identifies a contact, it does not authenticate one. The
+                     modal asks for a contact key and calls setContactKey, which
+                     is the only identity method the Web SDK exposes. -->
+                <button type="button" class="icon-btn" id="account-btn" data-open="#account"
+                        data-copy-attr="aria-label:accountAction" aria-label="Account">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c.6-3.7 3.5-5.6 7-5.6s6.4 1.9 7 5.6"/></svg>
+                </button>
+                <button type="button" class="icon-btn" data-open="#search"
+                        data-copy-attr="aria-label:searchTitle" aria-label="Search">
+                    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.3-4.3"/></svg>
+                </button>
+                <!-- The App Inbox. Built here rather than configured in the
+                     panel, because no Visual Editor template draws one. It reads
+                     the messages Dengage holds for this device, so it works for
+                     an anonymous visitor with no push permission. -->
+                <button type="button" class="icon-btn" data-open="#inbox"
+                        data-copy-attr="aria-label:inboxTitle" aria-label="Messages">
+                    <svg viewBox="0 0 24 24"><path d="M12 4a5 5 0 0 1 5 5v4l1.7 2.6H5.3L7 13V9a5 5 0 0 1 5-5z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+                    <span class="badge" id="inbox-badge" hidden>0</span>
+                </button>
+                <button type="button" class="icon-btn" data-open="#wishlist"
+                        data-copy-attr="aria-label:wishlistTitle" aria-label="Saved items">
+                    <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.6-7-9.6A4.4 4.4 0 0 1 12 7a4.4 4.4 0 0 1 7 3.4C19 15.4 12 20 12 20z"/></svg>
+                    <span class="badge" id="wishlist-badge" hidden>0</span>
+                </button>
+                <button type="button" class="icon-btn" data-open="#cart"
+                        data-copy-attr="aria-label:cartTitle" aria-label="Your cart">
+                    <svg viewBox="0 0 24 24"><path d="M5 7h14l-1.2 11.2A2 2 0 0 1 15.8 20H8.2a2 2 0 0 1-2-1.8L5 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/></svg>
+                    <span class="badge" id="cart-badge" hidden>0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Inline slot 1 of 5. Sits directly beneath a fixed header, so it needs the
+     measured clearance from js/slots.js. Handoff 5.2. -->
+<div id="dn_inline_target_below_header"></div>
+
+<main>
+    <div class="container">
+        <div class="pdp" id="pdp"></div>
+    </div>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head"><h2 data-copy="railSimilar">More in this category</h2></div>
+            <div class="rail" id="rail-similar"></div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="section-head"><h2 data-copy="railViewed">Others also viewed</h2></div>
+            <div class="rail" id="rail-viewed"></div>
+        </div>
+    </section>
+
+    <!-- Inline slot 4 of 5. dn_inline_target_pdp_below_price is rendered inside
+         the product block by js/storefront.js, since it sits under the price. -->
+    <div class="container"><div id="dn_inline_target_above_footer"></div></div>
+    <!-- Recommendations render here, on demand from the launcher. Hidden until a
+         strategy has been chosen, because an empty rail on a page nobody asked for
+         is worse than no rail. js/recommend.js owns the five strategies and all of
+         them read this demo's own catalogue, so they are always the prospect's
+         vertical. Handoff 2.2c. -->
+    <!-- DENGAGE'S OWN RECOMMENDATION ENGINE RENDERS HERE, and it is deliberately its
+     own slot rather than a share of #recommendations below. That section is hidden
+     until a local strategy fills it, so an engine widget placed inside it would be
+     invisible until something else ran first.
+
+     Sitting immediately above the local rail is the point: on a call the two can be
+     shown one after the other, the engine's output and the demo's own, in the same
+     place on the same page.
+
+     A plain container rather than a section, so it collapses to nothing while empty
+     instead of leaving a gap. The injected content brings its own spacing. -->
+<div class="container" id="dengage-reco"><div id="dn_inline_target_reco"></div></div>
+
+<section class="section" id="recommendations" hidden>
+        <div class="container">
+            <div class="section-head">
+                <h2 id="rec-title">Recommended</h2>
+                <span class="count" id="rec-note"></span>
+            </div>
+            <div class="rail" id="rec-rail"></div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <p data-copy="footerNote">A fictional storefront built for a sales conversation.</p>
+    </div>
+</footer>
+
+<!-- ---- overlays ---- -->
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="cart" aria-label="Your cart">
+    <div class="drawer-head">
+        <h2 data-copy="cartTitle">Your cart</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="cart-body"></div>
+    <div class="drawer-foot" id="cart-foot"></div>
+</aside>
+
+<aside class="drawer" id="inbox" aria-label="Messages">
+    <div class="drawer-head">
+        <h2 data-copy="inboxTitle">Messages</h2>
+        <span id="inbox-count" hidden></span>
+        <button type="button" class="link-btn" id="inbox-refresh" data-copy="inboxRefresh">Refresh</button>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="inbox-body"></div>
+</aside>
+
+<aside class="drawer" id="wishlist" aria-label="Saved items">
+    <div class="drawer-head">
+        <h2 data-copy="wishlistTitle">Saved items</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="wishlist-body"></div>
+</aside>
+
+<aside class="drawer left" id="search" aria-label="Search">
+    <div class="drawer-head">
+        <h2 data-copy="searchTitle">Search</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <div class="field">
+            <label for="search-input" data-copy="searchHint">Search products</label>
+            <input type="search" id="search-input" autocomplete="off">
+        </div>
+        <div class="search-results" id="search-results"></div>
+    </div>
+</aside>
+
+<div class="modal" id="checkout" role="dialog" aria-label="Checkout">
+    <div class="modal-head">
+        <h2 data-copy="checkoutTitle">Checkout</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="modal-body" id="checkout-body">
+        <div id="checkout-summary"></div>
+        <div class="field">
+            <label for="payment-method">Payment method</label>
+            <!-- Fixed list. These are the values the Dengage order contract
+                 documents, and an invented one reads oddly in the panel. -->
+            <select id="payment-method">
+                <option value="credit_card">Credit card</option>
+                <option value="debit_card">Debit card</option>
+                <option value="mobile_payment">Mobile payment</option>
+                <option value="bank_transfer">Bank transfer</option>
+                <option value="cod">Cash on delivery</option>
+            </select>
+        </div>
+        <button type="button" class="btn btn-block" id="place-order" data-copy="checkoutPay">Place order</button>
+    </div>
+</div>
+
+<!-- Rendered from js/storefront.js so the signed out and signed in states are
+     one code path and both pages stay identical. -->
+<div class="modal" id="account" role="dialog" aria-label="Your account">
+    <div class="modal-head">
+        <h2 data-copy="accountTitle">Your account</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="modal-body" id="account-body"></div>
+</div>
+
+<div class="modal" id="dengage-panel" role="dialog" aria-label="Dengage scenarios">
+    <div class="modal-head">
+        <h2 data-copy="launcherTitle">Dengage scenarios</h2>
+        <button type="button" class="icon-btn" data-close="1" data-copy-attr="aria-label:close" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p class="note" data-copy="launcherBody">Fire an on-site widget.</p>
+        <!-- The identifiers somebody needs to paste into the panel mid call.
+             COLLAPSED, AND AT THE TOP, deliberately. This modal is already about
+             2300px tall, so anything appended to the bottom sits below the event
+             panel and the log and needs a long scroll to reach, which is the
+             opposite of quick. A native details element is one line when shut,
+             keyboard operable for free, and needs no JavaScript to open.
+             Rendered by js/panels.js: the device id and push token arrive from
+             the SDK asynchronously. -->
+        <details class="ref-details">
+            <summary data-copy="refTitle">Quick reference</summary>
+            <p class="note" data-copy="refBody">This browser's identifiers, for pasting into Dengage.</p>
+            <div id="ref-grid"></div>
+        </details>
+        <div class="launcher-grid" id="launcher-grid"></div>
+
+
+        <!-- These five are computed by js/recommend.js from this demo's own
+             catalogue, so they are always the prospect's vertical and need no panel
+             setup. Restored 6 August 2026. Dengage's own engine stays parked, and
+             js/panels.js says why the two are separate decisions. -->
+        <h2 style="font-size:14px;margin:22px 0 6px" data-copy="recoTitle">Recommendations</h2>
+        <p class="note" data-copy="recoBody">Five strategies, all computed from this demo's own catalogue.</p>
+        <div class="launcher-grid" id="rec-grid"></div>
+
+        <h2 style="font-size:14px;margin:22px 0 6px" data-copy="eventsTitle">Event panel</h2>
+        <p class="note" data-copy="eventsBody">Send a storefront event.</p>
+        <div class="field">
+            <label for="event-select">Event</label>
+            <!-- A FIXED list. There is no field for a table name anywhere on
+                 this page, by design: the event determines its own table.
+                 Handoff 5.3. -->
+            <select id="event-select"></select>
+        </div>
+        <p class="note" id="event-note"></p>
+        <button type="button" class="btn btn-block" id="event-send" data-copy="eventsSend">Send event</button>
+
+        <button type="button" class="btn btn-quiet btn-block" id="reset-display"
+                style="margin-top:10px" data-copy="launcherReset">Reset widget display state</button>
+
+        <div class="log" id="panel-log"></div>
+    </div>
+</div>
+
+<div class="panel-toggle">
+    <button type="button" data-open="#dengage-panel" data-copy="launcherTitle">Dengage scenarios</button>
+</div>
+
+<script src="js/dengageEvents.js"></script>
+<script src="js/artwork.js"></script>
+<script src="js/catalog.js"></script>
+<script src="js/store.js"></script>
+<script src="js/panels.js"></script>
+<script src="js/slots.js"></script>
+<script src="js/inbox.js"></script>
+<!-- The event readout. Renders nothing unless ?debug=1 is on the URL. -->
+<script src="js/debug.js"></script>
+<script src="js/recommend.js"></script>
+<script src="js/storefront.js"></script>
+<script src="js/boot.js"></script>
+</body>
+</html>

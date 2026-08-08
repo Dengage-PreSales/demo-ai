@@ -1,0 +1,5 @@
+{
+  "accountId": "28",
+  "appGuid": "00000000-0000-4000-8000-000000000000",
+  "comment": "Known-bad fixture. A stand-in sandbox identifier, so the demo config in this tree mismatches it and the app-guid check has something to reject."
+}

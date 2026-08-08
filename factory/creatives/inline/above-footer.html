@@ -1,0 +1,125 @@
+<!-- =========================================================================
+     INLINE CREATIVE. Campaign: dengage_demo_inline-above-footer
+     Target:  #dn_inline_target_above_footer
+
+     Continue where you left off: the demo's own cart and saved items, read from
+     the browser rather than from Dengage.
+
+     WHY LOCAL AND NOT DENGAGE. The cart lives in localStorage under this demo's
+     slug, so it is already on the machine and needs no round trip. Reading it here
+     also makes the point on a call that the same state Dengage is receiving is the
+     state driving the page. If the visitor has nothing saved and nothing in the
+     cart this renders nothing at all, which is the honest outcome rather than a
+     strip of placeholders.
+
+     STORAGE IS NAMESPACED BY SLUG, dps:<slug>:cart, because every demo shares one
+     origin. Read the namespace from window.Store rather than rebuilding the key,
+     or this creative and the storefront will disagree the moment the convention
+     changes. Handoff 12.11.
+
+     NOT A POPUP. Style lifted into document.head, script in page scope, all CSS
+     scoped under #dnil-foot, clicks on a[href] counted by the SDK.
+
+     THE THREE WRAPPER CLASSES ARE NOT OPTIONAL. Read from the SDK, not guessed:
+
+       .dn-inline-style    cloned and appended to document.head
+       .dn-inline-html     cloned and inserted into the target selector
+       .dn-inline-script   its innerHTML is run through new Function() in page scope
+
+     The engine looks for exactly these three class names in the creative content
+     and silently does nothing with anything it cannot find. A file without them
+     renders as an empty target and reports no error.
+
+     AND .dn-inline-html MUST NOT BE EMPTY. The engine tests its innerHTML before
+     inserting, so an empty placeholder div is skipped entirely, which is the trap
+     this file would otherwise have walked into: the root element is styled and
+     scripted correctly and never reaches the page. Hence the empty span inside it,
+     which the script replaces on render.
+========================================================================== -->
+<div class="dn-inline-html" id="dnil-foot">
+  <div class="head"><h2>Browse the collection</h2><span class="n">Add something to see this change</span></div>
+  <div class="row">
+    <a class="item" href="#"><span class="shot"></span><span class="n2">First item</span></a>
+    <a class="item" href="#"><span class="shot"></span><span class="n2">Second item</span></a>
+    <a class="item" href="#"><span class="shot"></span><span class="n2">Third item</span></a>
+    <a class="item" href="#"><span class="shot"></span><span class="n2">Fourth item</span></a>
+  </div>
+</div>
+
+<style class="dn-inline-style">
+#dnil-foot { display:block; margin:30px 0 10px; padding:18px 20px; background:var(--page); border-radius:var(--radius); border:1px solid var(--line); }
+  #dnil-foot .head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
+  #dnil-foot h2 { font-family:var(--display-font); font-size:15px; font-weight:700; color:var(--ink); margin:0; letter-spacing:-.02em; }
+  #dnil-foot .head .n { font-size:11.5px; color:var(--muted); }
+  #dnil-foot .row { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+  #dnil-foot a.item { display:block; flex:0 0 110px; text-decoration:none; }
+  #dnil-foot .shot { display:block; width:110px; height:110px; border-radius:8px; overflow:hidden; background:var(--surface); border:1px solid var(--line); transition:border-color .15s; }
+  #dnil-foot a.item:hover .shot { border-color:var(--primary); }
+  #dnil-foot .shot img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-foot .shot .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:18px; }
+  #dnil-foot .n2 { display:block; font-size:11.5px; line-height:1.35; color:var(--ink); margin-top:6px; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+</style>
+
+<script class="dn-inline-script">
+(function () {
+    'use strict';
+    var root = document.getElementById('dnil-foot');
+    if (!root || root.getAttribute('data-dnil-done')) return;
+
+    function render() {
+        var Catalog = window.Catalog, Store = window.Store;
+        if (!Catalog || !Catalog.get || !Store || !Store.cart) return false;
+
+        /* Cart first, then saved items, deduplicated. Both come from Store so the
+           storage namespace is never rebuilt here. */
+        var seen = {}, picks = [];
+        [].concat(Store.cart(), Store.wishlist()).forEach(function (line) {
+            if (!line || seen[line.id]) return;
+            var p = Catalog.get(line.id);
+            if (!p) return;
+            seen[line.id] = 1;
+            picks.push(p);
+        });
+        /* ALWAYS RENDER SOMETHING. This used to return here when the cart and the
+           wishlist were both empty, which is the state of every fresh browser and
+           therefore the state at the start of most calls. The campaign fired, the
+           engine counted it as displayed, and the page showed nothing: on screen
+           that is indistinguishable from a broken widget, and it is the presenter
+           who has to explain it.
+
+           The fallback must not claim history the visitor does not have, so the
+           heading changes with the case rather than the products changing to fit
+           the heading. No "popular" or "trending" wording either: that is a claim
+           about numbers this demo does not have. CLAUDE.md 3.5. */
+        var resumed = picks.length > 0;
+        if (!resumed) {
+            picks = Catalog.all().slice(0, 6);
+            if (!picks.length) return false;
+        }
+
+        var esc = Catalog.escapeText, escA = Catalog.escapeAttr;
+        var items = picks.slice(0, 6).map(function (p) {
+            return '<a class="item" href="' + escA(p.url) + '">' +
+                     '<span class="shot">' + Catalog.media(p) + '</span>' +
+                     '<span class="n2">' + esc(p.name) + '</span>' +
+                   '</a>';
+        }).join('');
+
+        root.innerHTML =
+            '<div class="head">' +
+              '<h2>' + (resumed ? 'Pick up where you left off' : 'Browse the collection') + '</h2>' +
+              '<span class="n">' + (resumed ? picks.length + ' waiting' : 'Add something to see this change') + '</span>' +
+            '</div>' +
+            '<div class="row">' + items + '</div>';
+        root.hidden = false;
+        root.setAttribute('data-dnil-done', '1');
+        return true;
+    }
+
+    if (render()) return;
+    var tries = 0;
+    var timer = setInterval(function () {
+        if (render() || ++tries > 10) clearInterval(timer);
+    }, 300);
+})();
+</script>

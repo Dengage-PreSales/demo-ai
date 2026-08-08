@@ -1,0 +1,33 @@
+{
+  "slug": "acme-tools",
+  "displayName": "Dengage eComm Demo",
+  "sourceUrl": "https://www.example.com",
+  "createdAt": "2026-08-04",
+  "expiresAt": "2026-11-02",
+
+  "theme": {
+    "primary": "#1F5C3D",
+    "onPrimary": "#FFFFFF",
+    "accent": "#E4A11B",
+    "ink": "#14181B",
+    "muted": "#6B7280",
+    "surface": "#FFFFFF",
+    "page": "#F6F7F8",
+    "radius": "12px",
+    "displayFont": "Sora",
+    "bodyFont": "Inter"
+  },
+
+  "locale": { "language": "en", "currency": "USD", "currencySymbol": "$" },
+
+  "dengage": {
+    "accountId": "28",
+    "appGuid": "c8d2da44-b982-1925-9ad8-e7caddf0894a",
+    "scenarioPrefix": "dengage_demo_",
+    "onsiteTable": "sandbox_onsite_events",
+    "eventsTable": "sandbox_events"
+  },
+
+  "categories": ["Hand Tools", "Power Tools", "Workwear"],
+  "productCount": 28
+}

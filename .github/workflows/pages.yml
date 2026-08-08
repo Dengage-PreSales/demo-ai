@@ -1,0 +1,199 @@
+# =============================================================================
+# PUBLISH THE SITE. Ours, rather than GitHub's automatic one.
+#
+# WHY THIS EXISTS. On 6 August 2026 five consecutive Pages deployments failed and
+# the live demo sat a commit behind for over two hours. None of it was the
+# repository's fault: the build job succeeded in 6 to 9 seconds every single time.
+# All of it came from the auto-generated "pages build and deployment" workflow,
+# which is created by GitHub when the Pages source is a BRANCH and cannot be
+# edited, so none of its three problems could be fixed from here.
+#
+# The three problems, and what this file does about each:
+#
+#   1. TEN MINUTE TIMEOUT, AND IT CANNOT BE RAISED. actions/deploy-pages defaults
+#      to 600000 ms and also CLAMPS to it, so every first attempt today aborted at
+#      10:09 and no setting in this file can change that. An earlier revision
+#      claimed 30 minutes as its headline fix; the run log showed the action
+#      silently reducing it back.
+#
+#      What this file does about it, since the cap itself is immovable: the
+#      deploy step no longer decides the run. Deployments here were observed
+#      landing AFTER the action cancelled at its cap, so its timeout is not the
+#      site failing to update. The confirmation step at the bottom is the
+#      verdict, it reads the live site rather than the action's opinion, and its
+#      thirty minute window is ours to set. The staging step keeps the artifact
+#      small so that on a healthy day none of this is ever exercised.
+#
+#   2. A CANCELLED DEPLOY WEDGED THE NEXT ONE. Pages allows one deployment at a
+#      time and keys it on the commit SHA. When the timeout cancelled one, Pages
+#      still held it as in progress, and later commits were refused outright with
+#      "Please cancel <sha> first". Recovering needed the Pages API, which is
+#      blocked from the build environment, so it needed a human. concurrency with
+#      cancel-in-progress FALSE is what stops that: deployments queue behind each
+#      other instead of cancelling each other.
+#
+#   3. NO WAY TO RETRY WITHOUT A COMMIT. The automatic workflow has no manual
+#      trigger, so re-triggering meant pushing an empty commit. workflow_dispatch
+#      fixes that.
+#
+# TWO OF THOSE WERE SELF INFLICTED and are worth naming so nobody repeats them.
+# Pushing twice in quick succession is what cancelled the first deploy, and the
+# cancellation is what wedged Pages. Batch changes into one push.
+#
+# THE SETTING THIS NEEDED IS DONE. Settings > Pages > Source was switched from
+# "Deploy from a branch" to "GitHub Actions" by Salil on 6 August 2026, which is
+# what lets this workflow deploy at all and stops GitHub running its own. If
+# deploys ever silently revert to the old behaviour, check that setting first: it
+# cannot be read or changed from the build environment, because the Pages API is
+# blocked there.
+# =============================================================================
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  # Retry a stuck or timed out deploy without pushing an empty commit, which is
+  # itself what cancels an in-flight deploy and wedges Pages.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# THE CANCEL BEHAVIOUR IS THE WHOLE POINT, see note 2 above. Two pushes close
+# together must QUEUE, never cancel, because a cancelled Pages deployment is what
+# blocks every deployment after it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+        id: pages
+
+      # A COMMIT MARKER, so "is the live site current" is a question with an
+      # answer rather than a guess. Today that question was answered by grepping
+      # for a string from the newest change, which only works until the next
+      # change. This works for every commit, forever, and it is one line to check
+      # from anywhere:
+      #
+      #   curl https://dengage-presales.github.io/demo-ai/pages-commit.txt
+      #
+      # Generated here rather than committed, so it can never be stale in git.
+      - name: Stamp the commit being published
+        run: |
+          printf '%s\n' "${{ github.sha }}" > pages-commit.txt
+          printf 'built %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> pages-commit.txt
+
+      # ONLY WHAT A VISITOR LOADS. Trimmed 6 August 2026, for two reasons.
+      #
+      # Nothing a visitor loads references factory/ or template/: a generated demo
+      # is a self contained copy, verified by grep before this was changed. So
+      # publishing them added about 1.4 MB and 110 files to every deployment for
+      # nothing, and deployment time is the one thing that cannot be waited out
+      # because the ten minute cap is immovable.
+      #
+      # It also stops serving the repository's own tooling and internal
+      # documentation from a public URL, which is what the 6 August audit asked
+      # for. The repository stays public and readable on GitHub, which is
+      # deliberate. Serving the handoff and the guard fixtures as web pages was
+      # not.
+      - name: Stage only the published site
+        run: |
+          mkdir -p _site
+          cp -r index.html assets demos feed pages-commit.txt _site/
+          # Stops Pages running its Jekyll pass over files that are already final.
+          cp .nojekyll _site/ 2>/dev/null || touch _site/.nojekyll
+          echo "Publishing:"
+          du -sh _site
+          find _site -type f | wc -l | sed 's/^/  files: /'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      # v5 rather than v4, on evidence rather than optimism: GitHub's own
+      # auto-generated workflow downloaded actions/deploy-pages@v5, so it exists
+      # and takes the same inputs. The other actions here are left where they are.
+      #
+      # THE NODE 20 DEPRECATION WARNING IN THE RUN LOG IS A WARNING, NOT A FAILURE.
+      # Every action here targets Node 20 and the runner forces them onto Node 24
+      # already. Clearing it properly means bumping each action's major, and the
+      # current majors cannot be read from this environment because the proxy
+      # blocks the API for other repositories. Bumping blind would risk a broken
+      # deploy to silence a warning, which is the wrong trade. Worth revisiting
+      # from a machine that can read the marketplace.
+      # ADVISORY, NOT THE VERDICT, and continue-on-error is the load bearing
+      # line. Measured on 6 August 2026 with a 4.6 MB, 87 file artifact and
+      # GitHub's status page reporting Pages operational:
+      #
+      #   The action polls for at most ten minutes. That cap is a clamp inside
+      #   actions/deploy-pages: 1800000 was tried, and the run log answered
+      #   "timeout value is greater than the allowed maximum - timeout set to
+      #   the maximum of 600000 milliseconds". No setting raises it.
+      #
+      #   This site's deployments were taking longer than that, and then
+      #   LANDING ANYWAY. The action cancelled its deployment at ten minutes,
+      #   reported failure, and the site was serving that exact commit fifteen
+      #   minutes later. So "the action gave up waiting" and "the site did not
+      #   update" are different facts, and only the second is worth failing on.
+      #
+      # So this step creates the deployment and does its best, and the step
+      # after it owns the verdict, with a window this file actually controls.
+      # Without continue-on-error, the action's timeout would fail the run and
+      # skip the one step that finds out what really happened.
+      - id: deployment
+        uses: actions/deploy-pages@v5
+        continue-on-error: true
+        with:
+          timeout: 600000
+          # Not capped. Tolerance for transient polling errors.
+          error_count: 25
+
+      # THE RUN'S VERDICT. Green means one thing: the live site serves this
+      # commit, read from the site itself. Red means it still did not after
+      # half an hour, which is sized from the slowest landing observed today,
+      # about twenty minutes from push to live, with room. On a normal day the
+      # deploy step succeeds in two or three minutes and this exits on its
+      # first attempt, so the window costs nothing when things are healthy.
+      - name: Confirm the published site carries this commit
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          base="${{ steps.pages.outputs.base_url }}"
+          url="${base%/}/"
+          want="${{ github.sha }}"
+          echo "Expecting $want at ${url}pages-commit.txt"
+          for attempt in $(seq 1 60); do
+            got="$(curl -s --max-time 20 "${url}pages-commit.txt?cb=$attempt" | head -1 | tr -d '\r\n')" || got=""
+            if [ "$got" = "$want" ]; then
+              echo "Confirmed on attempt $attempt: the live site serves $got"
+              exit 0
+            fi
+            echo "  attempt $attempt: live site reports '${got:-nothing}', waiting"
+            sleep 30
+          done
+          echo "The live site never served this commit. What the Pages API says,"
+          echo "asked from the runner, where that API is reachable:"
+          curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+               -H "Accept: application/vnd.github+json" \
+               "https://api.github.com/repos/$GITHUB_REPOSITORY/pages" || true
+          echo
+          echo "::error::Thirty minutes after the deployment was created, the live"
+          echo "::error::site still serves '${got:-nothing}' rather than $want."
+          echo "::error::Deployments here have landed up to twenty minutes after"
+          echo "::error::the deploy action cancelled itself, so first re-check the"
+          echo "::error::site in a few minutes. If it is still behind, re-run this"
+          echo "::error::workflow from the Actions tab: it needs no new commit."
+          exit 1

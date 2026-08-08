@@ -1,0 +1,137 @@
+<!-- =========================================================================
+     INLINE CREATIVE. Campaign: dengage_demo_inline-below-hero
+     Target:  #dn_inline_target_below_hero
+
+     The prospect's own top level categories, as tiles, with artwork taken from a
+     real product in each one.
+
+     THIS IS NOT A POPUP. Read factory/creatives/inline/README.md before editing.
+     Style is lifted into document.head and script runs in PAGE SCOPE, so every
+     selector below is scoped under #dnil-hero and one that is not would restyle
+     the storefront. Clicks on a[href] are counted by the SDK, so there is no
+     click reporting call here, and the reporting object does not exist in page
+     scope anyway. The check refuses one, and it does not exempt comments: that
+     would mean parsing JavaScript in grep, and rewording a sentence is cheaper
+     than a parser.
+
+     WHY IT IS PROSPECT SPECIFIC AND THE POPUPS ARE NOT. Script in page scope can
+     read window.Catalog, which holds the catalogue the generator scraped from the
+     URL pre-sales fed in, with the product images committed into the demo folder.
+     So this renders their categories and their photography with no edit here. A
+     popup renders in a cross-origin iframe and can do none of that.
+
+     THE THREE WRAPPER CLASSES ARE NOT OPTIONAL. Read from the SDK, not guessed:
+
+       .dn-inline-style    cloned and appended to document.head
+       .dn-inline-html     cloned and inserted into the target selector
+       .dn-inline-script   its innerHTML is run through new Function() in page scope
+
+     The engine looks for exactly these three class names in the creative content
+     and silently does nothing with anything it cannot find. A file without them
+     renders as an empty target and reports no error.
+
+     AND .dn-inline-html MUST NOT BE EMPTY. The engine tests its innerHTML before
+     inserting, so an empty placeholder div is skipped entirely, which is the trap
+     this file would otherwise have walked into: the root element is styled and
+     scripted correctly and never reaches the page. Hence the empty span inside it,
+     which the script replaces on render.
+========================================================================== -->
+<div class="dn-inline-html" id="dnil-hero">
+  <div class="head"><h2>Browse by category</h2><span class="by">Chosen for you</span></div>
+  <div class="tiles">
+    <a class="tile" href="#"><span class="shot"></span><span class="label"><span class="name">First category</span><span class="n">Items to browse</span></span></a>
+    <a class="tile" href="#"><span class="shot"></span><span class="label"><span class="name">Second category</span><span class="n">Items to browse</span></span></a>
+    <a class="tile" href="#"><span class="shot"></span><span class="label"><span class="name">Third category</span><span class="n">Items to browse</span></span></a>
+  </div>
+</div>
+
+<style class="dn-inline-style">
+#dnil-hero { display:block; margin:26px 0 6px; }
+  #dnil-hero .head { display:flex; align-items:baseline; gap:10px; margin-bottom:12px; }
+  #dnil-hero .head h2 {
+    font-family:var(--display-font); font-size:17px; font-weight:700;
+    color:var(--ink); letter-spacing:-.02em; margin:0;
+  }
+  #dnil-hero .head .by { font-size:11.5px; color:var(--muted); }
+  #dnil-hero .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; }
+  #dnil-hero a.tile {
+    display:block; border-radius:var(--radius); overflow:hidden; text-decoration:none;
+    border:1px solid var(--line); background:var(--surface); transition:border-color .15s, transform .15s;
+  }
+  #dnil-hero a.tile:hover { border-color:var(--primary); transform:translateY(-2px); }
+  /* display:block IS THE ROOT CAUSE, not a tidy-up. .shot is a <span>, and
+     aspect-ratio has no effect on a non-replaced inline element, so the ratio was
+     being ignored outright and the tile height came from inline layout around a
+     4:3 svg. .label is a span for the same reason. Everything else here was
+     correct, which is why it looked like a hard problem. */
+  #dnil-hero .shot { display:block; aspect-ratio:16/10; overflow:hidden; background:var(--page); }
+  #dnil-hero .label { display:block; }
+  #dnil-hero .shot img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-hero .shot .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; min-height:0; }
+  /* THE SVG MUST BE TOLD TO FILL THIS, or it wins. Generated artwork carries only a
+     viewBox, so its intrinsic ratio is 4:3, and aspect-ratio yields to a content
+     box larger than the ratio implies. The tile grew from 231px to 367px, and since
+     a.tile is overflow:hidden the category name underneath was clipped away
+     entirely: three tiles of artwork with blank bands and no labels. It looked like
+     a styling nicety and was the only thing wrong with this creative.
+     Height 100% here makes the svg defer to the ratio instead of setting it. */
+  #dnil-hero .shot .art svg { display:block; width:100%; height:100%; }
+  #dnil-hero .label { padding:10px 12px; }
+  #dnil-hero .label .name { display:block; font-size:13.5px; font-weight:600; color:var(--ink); }
+  #dnil-hero .label .n { display:block; font-size:11.5px; color:var(--muted); margin-top:2px; }
+</style>
+
+<script class="dn-inline-script">
+/* Runs in page scope. Guarded on every side, because an inline creative that
+   throws leaves a blank strip in the middle of the page during a call, and the
+   SDK reports the error where nobody is looking. */
+(function () {
+    'use strict';
+    var root = document.getElementById('dnil-hero');
+    if (!root || root.getAttribute('data-dnil-done')) return;
+
+    function render() {
+        var Catalog = window.Catalog;
+        if (!Catalog || !Catalog.categories) return false;
+        var cats = Catalog.categories();
+        if (!cats || !cats.length) return false;
+
+        var esc = Catalog.escapeText, escA = Catalog.escapeAttr;
+        var tiles = cats.slice(0, 4).map(function (cat) {
+            var items = Catalog.inCategory(cat);
+            if (!items.length) return '';
+            /* Catalog.media returns the committed image, or a generated
+               placeholder when the scrape produced none. Never hand build an
+               <img>: a product without artwork would render broken. */
+            return '<a class="tile" href="index.html?category=' + encodeURIComponent(cat) + '">' +
+                     '<span class="shot">' + Catalog.media(items[0]) + '</span>' +
+                     '<span class="label">' +
+                       '<span class="name">' + esc(cat) + '</span>' +
+                       '<span class="n">' + items.length + ' to browse</span>' +
+                     '</span>' +
+                   '</a>';
+        }).join('');
+        if (!tiles) return false;
+
+        root.innerHTML =
+            '<div class="head">' +
+              '<h2>Browse by category</h2>' +
+              '<span class="by">Chosen for you</span>' +
+            '</div>' +
+            '<div class="tiles">' + tiles + '</div>';
+        root.hidden = false;
+        root.setAttribute('data-dnil-done', '1');
+        return true;
+    }
+
+    /* The SDK can inject before boot.js has finished fetching the catalogue, so
+       retry briefly rather than render an empty strip. Bounded: ten tries at
+       300ms, then give up silently and leave nothing on the page, which is the
+       right failure for a creative nobody asked for. */
+    if (render()) return;
+    var tries = 0;
+    var timer = setInterval(function () {
+        if (render() || ++tries > 10) clearInterval(timer);
+    }, 300);
+})();
+</script>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Demo Factory | A/B variant B (Dengage panel content)</title>
+<!-- =========================================================================
+     A/B VARIANT B of 3. Campaign: dengage_demo_ab-test, arm B, 30 percent.
+
+     One strong colour field: the whole card is the brand colour and the type is
+     reversed out of it. The loud end of the spectrum, and the same message as A
+     and C.
+
+     Same message across all three on purpose. See the README in this folder,
+     including why the 10 percent control arm seeing nothing is the real scenario.
+
+     Reports  ab-test__variant-b
+
+     CSS scoped under #dnf-abb. No script tag. CTA reports and dismisses.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-abb">
+  <style>
+    #dnf-abb * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE, AND THE ONLY PLACE A COLOUR IS WRITTEN DOWN. The
+       bootstrap below overwrites these same names when the page answers with a
+       theme. --c-brand-text is the brand colour made safe to use as text, derived in
+       boot.js: never use --c-primary for text or a graphic on the card. */
+    #dnf-abb {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    body > #dnf-abb { max-width:440px; margin:40px auto; }
+
+    /* A SHALLOW GRADIENT, AND THE DEPTH OF IT IS A READABILITY LIMIT RATHER THAN A
+       TASTE DECISION. Every word on this card is --c-on-primary, and the only thing
+       the generator guarantees about that value is that it reads on --c-primary
+       ITSELF. Move the panel away from primary and the guarantee goes with it.
+
+       This gradient used to end at a 58 percent mix toward ink, which on a brand
+       whose on-primary is the dark option took a paragraph down to 3.66:1. Which
+       direction is safe depends on which on-primary was chosen, and CSS cannot ask:
+       darkening helps a white on-primary and ruins a dark one. So the panel stays
+       within 12 percent of primary, which is safe whichever was picked and is still
+       a gradient you can see. */
+    #dnf-abb .card {
+      width:100%; border-radius:14px; overflow:hidden; position:relative;
+      background:linear-gradient(145deg,
+        color-mix(in srgb, var(--c-primary) 94%, var(--c-on-primary)) 0%,
+        var(--c-primary) 45%,
+        color-mix(in srgb, var(--c-primary) 88%, var(--c-ink)) 100%);
+      box-shadow:0 18px 44px rgba(10,42,107,.34);
+      box-shadow:0 18px 44px color-mix(in srgb, var(--c-primary) 34%, transparent);
+      padding:32px 30px 30px; color:var(--c-on-primary);
+    }
+    /* One decorative disc, clipped by the card. Cheap depth without an image. */
+    #dnf-abb .card::after {
+      content:""; position:absolute; top:-70px; right:-70px;
+      width:210px; height:210px; border-radius:50%; background:var(--c-on-primary); opacity:.09;
+    }
+    /* NO OPACITY ON ANY OF THE TEXT, which is the other half of the same problem.
+       Fading a label to 72 percent composites it toward the panel behind it, so it
+       costs contrast in exactly the way a colour change would, and it is easy to miss
+       because nothing in the stylesheet mentions a colour. Hierarchy here comes from
+       size, weight and letter spacing instead, which cost nothing. */
+    #dnf-abb .arm {
+      position:relative; font-size:10.5px; font-weight:700; letter-spacing:.14em;
+      text-transform:uppercase;
+    }
+    #dnf-abb h2 { position:relative; font-size:25px; line-height:1.18; letter-spacing:-.028em; margin-top:12px; }
+    #dnf-abb p { position:relative; font-size:14px; line-height:1.6; margin-top:11px; }
+    /* THE BRAND COLOUR MADE SAFE AS TEXT, not the brand colour. This button is a
+       white panel with brand coloured type on it, which is the one place --c-primary
+       must never be used directly: on a pale brand it came out at 2.95:1. */
+    #dnf-abb .cta {
+      position:relative; display:block; width:100%; border:0; cursor:pointer; margin-top:22px;
+      background:var(--c-surface); color:var(--c-brand-text); border-radius:9px;
+      padding:12px 18px; font-family:inherit; font-size:14px; font-weight:700;
+      transition:transform .13s;
+    }
+    #dnf-abb .cta:hover { transform:translateY(-1px); }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-abb');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="card">
+    <span class="arm">Variant B</span>
+    <h2>Everything you saved, still here</h2>
+    <p>Pick up exactly where you stopped. Nothing has been cleared and nothing has moved.</p>
+    <button type="button" class="cta"
+            onclick="Dn.sendClick('ab-test__variant-b');Dn.close()">
+      Continue
+    </button>
+  </div>
+</div>
+
+</body>
+</html>

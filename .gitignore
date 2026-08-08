@@ -1,0 +1,5 @@
+# Playwright, installed on demand by factory/checks/run.sh. It is a test
+# dependency of the checks and never something a demo loads, so it stays out of a
+# repository whose whole job is to be served as static files.
+node_modules/
+package-lock.json

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720"
+     width="1280" height="720" role="img"
+     aria-label="Dengage eComm Demo: what this storefront can do">
+  <defs>
+    <linearGradient id="dnbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A2A6E"/>
+      <stop offset=".6" stop-color="#125CFA"/>
+      <stop offset="1" stop-color="#3D7BFF"/>
+    </linearGradient>
+    <radialGradient id="dnwash" cx=".3" cy=".3" r=".5">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity=".22"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+    <style>
+      .card{opacity:0}
+      .c0{animation:dncard0 16840ms linear infinite both}.c1{animation:dncard1 16840ms linear infinite both}.c2{animation:dncard2 16840ms linear infinite both}.c3{animation:dncard3 16840ms linear infinite both}.c4{animation:dncard4 16840ms linear infinite both}.c5{animation:dncard5 16840ms linear infinite both}
+      @keyframes dncard0{0%,0.000%{opacity:0;transform:translateY(18px)}3.088%,16.152%{opacity:1;transform:translateY(0)}19.240%,100%{opacity:0;transform:translateY(-14px)}}
+      @keyframes dncard1{0%,16.152%{opacity:0;transform:translateY(18px)}19.240%,32.304%{opacity:1;transform:translateY(0)}35.392%,100%{opacity:0;transform:translateY(-14px)}}
+      @keyframes dncard2{0%,32.304%{opacity:0;transform:translateY(18px)}35.392%,48.456%{opacity:1;transform:translateY(0)}51.544%,100%{opacity:0;transform:translateY(-14px)}}
+      @keyframes dncard3{0%,48.456%{opacity:0;transform:translateY(18px)}51.544%,64.608%{opacity:1;transform:translateY(0)}67.696%,100%{opacity:0;transform:translateY(-14px)}}
+      @keyframes dncard4{0%,64.608%{opacity:0;transform:translateY(18px)}67.696%,80.760%{opacity:1;transform:translateY(0)}83.848%,100%{opacity:0;transform:translateY(-14px)}}
+      @keyframes dncard5{0%,80.760%{opacity:0;transform:translateY(18px)}83.848%,96.912%{opacity:1;transform:translateY(0)}100.000%,100%{opacity:0;transform:translateY(-14px)}}
+      .wash{animation:dndrift 9s ease-in-out infinite alternate}
+      @keyframes dndrift{from{transform:translate(-6%,-4%) scale(1)}
+                         to{transform:translate(8%,6%) scale(1.15)}}
+      /* Restarts with the cards, so the bar always describes the current pass
+         rather than sitting full for the rest of the loop. */
+      .bar{animation:dngrow 16840ms linear infinite}
+      @keyframes dngrow{from{width:0}to{width:1280px}}
+      text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+           fill:#FFFFFF}
+      .kicker{font-size:22px;font-weight:600;letter-spacing:3.5px;opacity:.72}
+      .title{font-size:74px;font-weight:700;letter-spacing:-1.2px}
+      .line{font-size:27px;opacity:.82}
+      .brandword{font-size:19px;font-weight:600;letter-spacing:3px;opacity:.88}
+    </style>
+  </defs>
+
+  <rect width="1280" height="720" fill="url(#dnbg)"/>
+  <rect class="wash" x="-20%" y="-20%" width="140%" height="140%" fill="url(#dnwash)"/>
+
+  <g transform="translate(64 40) scale(1.1)" fill="#FFFFFF">
+    <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+    <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+  </g>
+  <text class="brandword" x="128" y="72">ECOMM DEMO</text>
+
+    <g class="card c0">
+      <text class="kicker" x="64" y="510">DENGAGE</text>
+      <text class="title"  x="64" y="580">eComm Demo</text>
+      <text class="line"   x="64" y="624">A working storefront for a personalization conversation</text>
+    </g>
+    <g class="card c1">
+      <text class="kicker" x="64" y="510">ON-SITE</text>
+      <text class="title"  x="64" y="580">Eleven messages</text>
+      <text class="line"   x="64" y="624">Popups, bars, slide-ins, exit intent and scroll depth</text>
+    </g>
+    <g class="card c2">
+      <text class="kicker" x="64" y="510">INLINE</text>
+      <text class="title"  x="64" y="580">Five content slots</text>
+      <text class="line"   x="64" y="624">Content placed into the page, not over it</text>
+    </g>
+    <g class="card c3">
+      <text class="kicker" x="64" y="510">GAMIFICATION</text>
+      <text class="title"  x="64" y="580">Spin, scratch, count down</text>
+      <text class="line"   x="64" y="624">Reward mechanics with a coupon behind them</text>
+    </g>
+    <g class="card c4">
+      <text class="kicker" x="64" y="510">MESSAGING</text>
+      <text class="title"  x="64" y="580">Push and an inbox</text>
+      <text class="line"   x="64" y="624">Reach the device, or leave it waiting to be read</text>
+    </g>
+    <g class="card c5">
+      <text class="kicker" x="64" y="510">EVERY EVENT</text>
+      <text class="title"  x="64" y="580">Straight into Dengage</text>
+      <text class="line"   x="64" y="624">Views, carts, orders, wishlists and searches</text>
+    </g>
+  <rect class="bar" x="0" y="715" width="0" height="5" fill="#FFFFFF" opacity=".7"/>
+</svg>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Subscription popup (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE EIGHT SHARED CREATIVES. Paste the whole file into the campaign
+     whose trigger name is:
+
+         dengage_demo_subscription-popup
+
+     It does two jobs: it demonstrates contact creation with permissions, and it
+     is the storefront's REGISTRATION path. The Register button pushes this
+     scenario to window.dataLayer and this card appears, so the prospect fills in
+     their own details during the call.
+
+     THAT IS NOT A SHORTCUT, IT IS THE ONLY PATH. The Web SDK exposes
+     sendDeviceEvent and setContactKey and nothing else: it cannot write a
+     contact's name, email, phone or permissions. The REST API can, and is
+     unusable from a page twice over, since it needs an API user's key and
+     password in client side JavaScript and it is IP allowlisted, which no end
+     user's browser can satisfy. The engine's native form has neither problem.
+
+     ===================================================================
+     THE NATIVE FORM CONTRACT. Get this exactly right or nothing happens.
+     ===================================================================
+
+     When the content contains data-dn-form-id="subscription_form", the engine
+     injects its own form handler and exposes window.Dn inside the iframe.
+
+     THE SKELETON IS PART OF THE CONTRACT, and this is the half that is easy to
+     miss because it looks like layout:
+
+       <form data-dn-form-id="subscription_form" id="<scope>">   THE ROOT
+         <style> ... </style>
+         <div class="container">                    INSIDE the form
+           ... fields and button ...
+           <div class="submitted-content"
+                data-dn-is-enabled="true"
+                data-dn-is-modal-auto-close-enabled="true"
+                data-dn-modal-close-seconds="6"> ... </div>
+         </div>
+       </form>
+
+     The form is the outermost element and carries the id everything is scoped
+     under. .container sits inside it, because .container is what the engine
+     stamps data-dn-is-submitted="true" on. The auto close attributes belong on
+     .submitted-content, not on the form.
+
+     Per field:
+
+       data-dn-id="<key>"                  becomes the payload key
+       data-dn-type="EMAIL|TEXT|GSM|PERMISSION_CHECKBOX"   which validator runs
+       data-dn-required="true"             required
+       data-dn-invalid-message-type="..."  where that field's error renders
+       data-dn-id="mergedPermission"       expands to emailPermission AND
+                                           gsmPermission in one checkbox
+       Dn.postSubscription()               submits, CREATES OR UPDATES the contact
+
+     TWO STRUCTURAL THINGS THAT ARE EASY TO GET WRONG, both of which look like
+     layout rather than contract:
+
+     1. Field vocabulary is data-dn-id plus data-dn-type. data-dn-name is the SURVEY
+        and NPS mechanism, which writes contact tags, and is not this one.
+
+     2. .container sits INSIDE the form, and .submitted-content carries
+        data-dn-is-enabled. That is what the confirmation state is driven from.
+
+     factory/checks/creative.js drives this exact markup against the engine's
+     published handler and asserts the payload, the validation and the confirmation
+     state. Run bash factory/checks/run.sh after any change to this file: a capture
+     creative that does not submit looks exactly like one that does until the contact
+     is checked.
+
+     Validation is the ENGINE'S, not the browser's. data-dn-type selects the
+     validator and data-dn-invalid-message-type is where the message renders.
+     HTML5 required and type="email" do not drive this and must not be relied on:
+     the handler is attached to the button, which fires before native validation
+     would, so native validation cannot gate it.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_subscription-popup
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, width 460 to 480
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     Padding 0 and a transparent background are not style choices: the engine's
+     container otherwise draws a white box around the card. Confirmed on screen.
+     The card draws no close control of its own because the panel supplies one.
+
+     NO SCRIPT TAG. The panel strips script on save. Everything here is CSS plus
+     inline handlers, and all CSS is scoped under #dnf-sub so nothing leaks.
+
+     THE FIELD KEYS ARE master_contact COLUMN NAMES, taken from the panel:
+
+       name      surname     email     gsm
+
+     Not firstName and lastName, which an earlier draft of this file guessed.
+     The columns are name and surname, so those are the keys.
+
+     mergedPermission is not a column: it is the engine's shorthand that expands
+     to emailPermission and gsmPermission, which is why one checkbox sets both.
+
+     WhatsApp permission is deliberately absent. master_contact carries email and
+     gsm permission natively; WhatsApp needs Contact Extension, which is its own
+     piece of setup. The copy therefore says email and SMS, and does not promise
+     a channel this form cannot enable.
+========================================================================== -->
+</head>
+<body>
+
+<!-- THE FORM IS THE ROOT ELEMENT. See the skeleton note above: this is not a
+     style choice, and nesting it inside a wrapper stops the engine finding
+     .container to stamp on success. -->
+<form class="form" data-dn-form-id="subscription_form" data-dn-validation-language="en"
+      id="dnf-sub" onsubmit="return false">
+  <style>
+    #dnf-sub * { margin:0; padding:0; box-sizing:border-box; }
+    #dnf-sub {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085;
+      --c-line:#e4e7ec; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      /* Not themed, on purpose. An error reads as an error on every demo. */
+      --c-ok:#0f7b45; --c-error:#dc2626;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    /* Only when the file is opened on its own, so it can be checked without the
+       panel. Inside the engine's iframe the container is already sized. */
+    body > #dnf-sub { max-width:480px; margin:40px auto; }
+
+    #dnf-sub .container {
+      width:100%; background:var(--c-surface);
+      /* A popup wants a slightly softer corner than a card in the grid. */
+      border-radius:calc(var(--c-radius) + 4px); overflow:hidden;
+      box-shadow:0 18px 44px rgba(20,24,27,.20);
+      box-shadow:0 18px 44px color-mix(in srgb, var(--c-ink) 20%, transparent);
+      animation:dnf-in .26s ease-out;
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+
+    #dnf-sub .head { padding:26px 26px 0; text-align:center; }
+    #dnf-sub .mark { width:30px; height:35px; margin:0 auto 14px; display:block; fill:var(--c-brand-text); }
+    #dnf-sub h2 {
+      font-family:var(--c-display-font);
+      font-size:19px; line-height:1.3; color:var(--c-ink); letter-spacing:-.01em;
+    }
+    #dnf-sub .sub { font-size:13.5px; line-height:1.55; color:var(--c-muted); margin-top:7px; }
+
+    #dnf-sub .body { padding:20px 26px 24px; }
+    #dnf-sub .row { display:flex; gap:10px; }
+    #dnf-sub .block { margin-bottom:11px; flex:1; min-width:0; }
+    #dnf-sub label.cap { display:block; font-size:12px; color:var(--c-muted); margin-bottom:4px; font-weight:500; }
+
+    #dnf-sub input[data-dn-id] {
+      width:100%; font:inherit; font-size:14px; padding:10px 12px; color:var(--c-ink);
+      border:1.5px solid var(--c-line); border-radius:9px; background:var(--c-surface);
+      transition:border-color .15s;
+    }
+    #dnf-sub input[data-dn-id]:focus { outline:none; border-color:var(--c-primary); }
+    /* Derived from the theme rather than a fixed lilac, so a placeholder stays
+       quieter than the real text on every palette instead of only on this one. */
+    #dnf-sub input[data-dn-id]::placeholder { color:color-mix(in srgb, var(--c-muted) 70%, var(--c-surface)); }
+
+    /* The engine's handler stamps data-dn-invalid="true" on the failing field,
+       and the sibling message element is revealed by it. This is the whole of
+       how validation is shown: there is no script to do it. */
+    #dnf-sub [data-dn-invalid="true"] { border-color:var(--c-error); }
+    #dnf-sub [data-dn-invalid-message-type] {
+      display:none; font-size:11.5px; color:var(--c-error); margin-top:5px;
+    }
+    #dnf-sub [data-dn-invalid="true"] ~ [data-dn-invalid-message-type] { display:block; }
+
+    #dnf-sub .perm { display:flex; gap:9px; align-items:flex-start; margin:14px 0 0; }
+    #dnf-sub .perm input { margin-top:2px; width:16px; height:16px; accent-color:var(--c-primary); flex-shrink:0; }
+    #dnf-sub .perm label { font-size:12.5px; color:var(--c-ink); line-height:1.5; font-weight:400; }
+    #dnf-sub .channels { font-size:11.5px; color:var(--c-muted); margin-top:6px; line-height:1.5; }
+
+    #dnf-sub .send {
+      display:block; width:100%; border:0; cursor:pointer; margin-top:16px;
+      background:var(--c-primary); color:var(--c-on-primary); border-radius:var(--c-radius);
+      padding:12px 18px; font-family:inherit; font-size:14px; font-weight:600;
+      transition:filter .15s;
+    }
+    #dnf-sub .send:hover { filter:brightness(1.07); }
+
+    #dnf-sub .foot { font-size:11px; color:var(--c-muted); text-align:center; margin-top:11px; line-height:1.5; }
+
+    /* The engine stamps data-dn-is-submitted="true" on .container on success. */
+    #dnf-sub .submitted-content { display:none; padding:32px 26px 36px; text-align:center; }
+    #dnf-sub .submitted-content .tick {
+      width:42px; height:42px; margin:0 auto 14px; border-radius:50%;
+      background:#e7f6ee; color:var(--c-ok); font-size:22px; line-height:42px;
+    }
+    #dnf-sub .container[data-dn-is-submitted="true"] .head,
+    #dnf-sub .container[data-dn-is-submitted="true"] .body { display:none; }
+    #dnf-sub .container[data-dn-is-submitted="true"] .submitted-content { display:block; }
+
+    @media (max-width:420px) { #dnf-sub .row { flex-direction:column; gap:0; } }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-sub');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="container">
+
+    <div class="head">
+      <!-- The Dengage mark, never a prospect's. This creative renders on every
+           demo, so it could not carry theirs even if the rule allowed it. -->
+      <svg class="mark" viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+        <path d="M10 28H5.8v-6h4.2c4.4-.2 7.9-3.8 7.7-8.2-.1-4.3-3.6-7.7-7.7-7.8H5.8v5.1h5v6H0V0h10c7.7.3 13.8 6.6 13.5 14.4C23.3 21.8 17.4 27.7 10 28z"/>
+      </svg>
+      <h2>Create your account</h2>
+      <!-- Generic on purpose: no brand, no product, no vertical, and NO NUMBER
+           in the offer. "10% off your first order" invites a prospect to ask why
+           the discount does not match their margins. Handoff 2.2a. -->
+      <p class="sub">Save your details, track your orders, and hear about new arrivals first.</p>
+    </div>
+
+    <div class="body">
+
+      <div class="row">
+        <div class="block">
+          <label class="cap" for="dnf-first">First name</label>
+          <input type="text" id="dnf-first" placeholder="Ada" aria-label="First name"
+                 data-dn-id="name" data-dn-type="TEXT" data-dn-required="true">
+          <span data-dn-invalid-message-type="TEXT"></span>
+        </div>
+        <div class="block">
+          <label class="cap" for="dnf-last">Last name</label>
+          <input type="text" id="dnf-last" placeholder="Lovelace" aria-label="Last name"
+                 data-dn-id="surname" data-dn-type="TEXT" data-dn-required="true">
+          <span data-dn-invalid-message-type="TEXT"></span>
+        </div>
+      </div>
+
+      <div class="block">
+        <label class="cap" for="dnf-email">Email</label>
+        <input type="email" id="dnf-email" placeholder="you@company.com" aria-label="Email"
+               data-dn-id="email" data-dn-type="EMAIL" data-dn-required="true">
+        <span data-dn-invalid-message-type="EMAIL"></span>
+      </div>
+
+      <div class="block">
+        <label class="cap" for="dnf-gsm">Mobile</label>
+        <!-- data-dn-type="GSM" is what gives this a phone validator. The engine
+             owns the format rules, which is better than a regex here inventing
+             its own and disagreeing with what the platform will accept. -->
+        <input type="tel" id="dnf-gsm" placeholder="+44 7700 900000" aria-label="Mobile"
+               data-dn-id="gsm" data-dn-type="GSM" data-dn-required="true">
+        <span data-dn-invalid-message-type="GSM"></span>
+      </div>
+
+      <div class="perm">
+        <!-- mergedPermission expands to emailPermission AND gsmPermission, so one
+             checkbox sets both. WhatsApp permission is not part of this contract:
+             see the note in factory/creatives/README.md. -->
+        <input type="checkbox" id="dnf-perm" checked
+               data-dn-id="mergedPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
+        <label for="dnf-perm">Yes, contact me with offers and updates. I can unsubscribe whenever I want.</label>
+      </div>
+      <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
+      <p class="channels">Applies to email and SMS.</p>
+
+      <!-- type="button", not submit: the engine's handler runs on this click.
+           sendClick reports the click so the campaign report shows engagement
+           rather than impressions with zero clicks, which is a bad moment in
+           front of a prospect caused entirely by a missing line. Handoff 6.3.
+
+           No Dn.close() here. The engine closes the card itself once the post
+           succeeds, via the auto close attributes on .submitted-content below.
+           Closing in the same handler dismisses the card before the post
+           completes and the contact is never created. -->
+      <button type="button" class="send"
+              onclick="Dn.sendClick('subscription-popup__subscribe');Dn.postSubscription()">
+        Create account
+      </button>
+
+      <p class="foot">A demonstration storefront. Your details are used only to show how Dengage records a contact.</p>
+    </div>
+
+    <!-- data-dn-is-enabled turns this panel on. Without it the engine has no
+         confirmation state to switch to, and a successful post looks identical
+         to a failed one. The auto close attributes belong here, on this element,
+         and not on the form. -->
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="true" data-dn-modal-close-seconds="6">
+      <div class="tick">&#10003;</div>
+      <h2>You are on the list</h2>
+      <p class="sub">Your contact record now exists, with permission set for email and SMS.</p>
+    </div>
+
+  </div>
+</form>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dengage eComm Demo Factory</title>
+<meta name="description" content="Generates a working, themed ecommerce demo storefront from one URL, for a pre-sales conversation.">
+<link rel="icon" href="assets/dengage-logo.svg" type="image/svg+xml">
+<!--
+    The landing page for the origin.
+
+    It exists because this address is published in the README and was
+    answering 404, which reads as a broken deploy rather than as a repository
+    with no index. Generated demos live under demos/<slug>/ and are reached
+    from their own URLs, so nothing depends on this page. It is a signpost.
+-->
+<style>
+    :root {
+        --dn-blue: #125cfa;
+        --ink: #14181b;
+        --muted: #667085;
+        --line: #e4e7ec;
+        --surface: #ffffff;
+        --page: #f6f7f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        padding: 0 20px 72px;
+        background: var(--page);
+        color: var(--ink);
+        font: 15px/1.6 ui-sans-serif, system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    header { display: flex; align-items: center; gap: 14px; padding: 56px 0 12px; }
+    header svg { width: 34px; height: 40px; display: block; fill: var(--dn-blue); }
+    h1 { margin: 0; font-size: 22px; letter-spacing: -0.015em; }
+    .sub { margin: 3px 0 0; color: var(--muted); font-size: 13.5px; }
+
+    /* THE SIGN IN PANEL. See the note in the script below for what this is and,
+       more importantly, what it is not. */
+    .wrap[hidden] { display: none; }
+    #gate {
+        max-width: 380px; margin: 14vh auto 0; padding: 26px 24px;
+        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    }
+    #gate h1 { font-size: 18px; margin: 0 0 4px; }
+    #gate p { color: var(--muted); font-size: 13.5px; margin: 0 0 18px; }
+    #gate label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 5px; }
+    #gate input {
+        width: 100%; box-sizing: border-box; padding: 9px 11px; font: inherit;
+        border: 1px solid var(--line); border-radius: 8px; background: var(--page);
+        color: var(--ink);
+    }
+    #gate button {
+        width: 100%; margin-top: 18px; padding: 10px; font: inherit; font-weight: 600;
+        color: var(--surface); background: var(--ink); border: 0; border-radius: 8px;
+        cursor: pointer;
+    }
+    #gate .no { color: #b42318; font-size: 13px; margin: 12px 0 0; min-height: 18px; }
+    .lede { font-size: 16px; color: var(--ink); margin: 20px 0 28px; }
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 20px 22px;
+        margin-bottom: 14px;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 14px; letter-spacing: -0.005em; }
+    .card p { margin: 0 0 10px; color: var(--muted); font-size: 13.5px; }
+    .card p:last-child { margin-bottom: 0; }
+    a { color: var(--dn-blue); }
+    code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        background: var(--page);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+    }
+    .empty { color: var(--muted); font-size: 13.5px; font-style: normal; }
+    ul.demos { list-style: none; margin: 0; padding: 0; }
+    ul.demos li {
+        display: flex; align-items: baseline; gap: 10px;
+        padding: 7px 0; border-bottom: 1px solid var(--line);
+    }
+    ul.demos li:last-child { border-bottom: 0; }
+    ul.demos a { font-size: 14px; font-weight: 600; text-decoration: none; }
+    ul.demos a:hover { text-decoration: underline; }
+    ul.demos span { color: var(--muted); font-size: 12.5px; }
+    footer { margin-top: 28px; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+<form id="gate" autocomplete="on">
+    <h1>Dengage eComm Demos</h1>
+    <p>Internal tool. Sign in to continue.</p>
+    <label for="gate-email">Email</label>
+    <input id="gate-email" name="email" type="email" autocomplete="username" required>
+    <label for="gate-pass">Password</label>
+    <input id="gate-pass" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit">Sign in</button>
+    <p class="no" id="gate-no" role="alert"></p>
+</form>
+<div class="wrap" hidden>
+
+    <header>
+        <svg viewBox="0 0 24 28" aria-hidden="true" focusable="false">
+            <path d="M10 28H5.8v-6h4.2c4.4-.2 7.9-3.8 7.7-8.2-.1-4.3-3.6-7.7-7.7-7.8H5.8v5.1h5v6H0V0h10c7.7.3 13.8 6.6 13.5 14.4C23.3 21.8 17.4 27.7 10 28z"/>
+        </svg>
+        <div>
+            <h1>Dengage</h1>
+            <p class="sub">eComm Demo Factory</p>
+        </div>
+    </header>
+
+    <p class="lede">
+        Generates a working, themed ecommerce demo storefront from one URL, so a
+        pre-sales conversation can be held against a store that looks like the
+        prospect's own.
+    </p>
+
+    <section class="card">
+        <h2>Live demos</h2>
+        <div id="demos">
+            <p class="empty">Reading the list.</p>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>Request a demo</h2>
+        <p>
+            Open an issue with the prospect's website address. No developer, and
+            no work in the Dengage panel.
+        </p>
+        <p>
+            <a href="https://github.com/Dengage-PreSales/demo-ai/issues/new/choose">Open an issue</a>
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>What is live</h2>
+        <p>
+            The product catalogue every demo publishes for Dengage to read, and
+            the commit this site was built from.
+        </p>
+        <p>
+            <a href="feed/products.csv">Product feed</a>
+            &nbsp;&middot;&nbsp;
+            <a href="pages-commit.txt">Deployed commit</a>
+        </p>
+    </section>
+
+    <footer>
+        These are fictional storefronts built for a sales conversation. They
+        carry a prospect's real product names and are not the prospect's own
+        site.
+    </footer>
+
+</div>
+
+<script>
+/*
+    THE DEMO LIST IS READ, NOT TYPED. This card said "None yet" for two days after
+    the first demo went live, because it was hand written prose and nothing ever
+    came back to update it. A landing page that lies about what exists is worse
+    than one with no list at all.
+
+    feed/products.json is regenerated and committed on every build, and it already
+    carries the slug of every live demo, so it is the one file guaranteed to be
+    current. Each demo's own demo.config.json supplies the name and the expiry.
+
+    No build step and no dependency: this runs in the visitor's browser against
+    files that are already published.
+*/
+(function () {
+    'use strict';
+    var host = document.getElementById('demos');
+
+    function say(html) { host.innerHTML = html; }
+
+    function esc(text) {
+        return String(text === null || text === undefined ? '' : text)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function whenText(expiresAt) {
+        if (!expiresAt) return '';
+        var left = Math.ceil((new Date(expiresAt) - Date.now()) / 86400000);
+        if (isNaN(left)) return '';
+        if (left < 0) return 'expired';
+        if (left === 0) return 'expires today';
+        return left + (left === 1 ? ' day left' : ' days left');
+    }
+
+    fetch('feed/products.json', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function (feed) {
+            var slugs = (feed && feed.demos) || [];
+            if (!slugs.length) {
+                say('<p class="empty">None yet. Each generated demo appears at ' +
+                    '<code>demos/&lt;slug&gt;/</code> and stays live for 90 days.</p>');
+                return;
+            }
+            /* Each config is optional. A demo still gets listed if its config
+               cannot be read, because the folder existing is the fact that
+               matters and the name is decoration. */
+            return Promise.all(slugs.map(function (slug) {
+                return fetch('demos/' + encodeURIComponent(slug) + '/demo.config.json',
+                             { cache: 'no-store' })
+                    .then(function (r) { return r.ok ? r.json() : {}; })
+                    .catch(function () { return {}; })
+                    .then(function (config) { return { slug: slug, config: config }; });
+            })).then(function (rows) {
+                say('<ul class="demos">' + rows.map(function (row) {
+                    var name = row.config.displayName || row.slug;
+                    var when = whenText(row.config.expiresAt);
+                    return '<li><a href="demos/' + esc(row.slug) + '/">' + esc(name) +
+                        '</a><span>' + esc(row.slug) + (when ? ', ' + esc(when) : '') +
+                        '</span></li>';
+                }).join('') + '</ul>');
+            });
+        })
+        .catch(function () {
+            say('<p class="empty">The list could not be read just now. Demos live at ' +
+                '<code>demos/&lt;slug&gt;/</code>.</p>');
+        });
+}());
+</script>
+<script>
+/*
+    THE SIGN IN PANEL, AND WHAT IT IS HONESTLY WORTH.
+
+    Asked for on 7 August 2026 to keep this page from casual view. It does that, and
+    it is worth writing down plainly that it is a DETERRENT and not access control,
+    so nobody later mistakes it for one:
+
+      GitHub Pages serves static files. There is no server here to check anything,
+      so the check happens in the visitor's own browser and the visitor can skip it.
+
+      This repository is PUBLIC, so this file is readable by anyone. Only a SHA-256
+      digest of the credential is stored rather than the credential itself, which
+      keeps the password out of a public repository, but a digest of one short
+      password is not a secret either.
+
+      Every demo under /demos/<slug>/ stays reachable directly, because a prospect
+      opens one on a call and cannot be asked to sign in. feed/products.csv stays
+      reachable too, because Dengage reads it as a product feed.
+
+    WHAT ACTUALLY PREVENTS ABUSE, and it was already in place: generating a demo
+    means opening an issue on the repository, and that needs a GitHub account with
+    access. This page only links there. Nobody can make the factory do anything by
+    reading this page.
+
+    So: this hides the demo list from a passer-by. It does not protect the demos, and
+    if the list of prospect names is genuinely sensitive, the answer is not to
+    publish the list, or to put the page behind something with a server in it.
+*/
+(function () {
+    'use strict';
+
+    /* sha256(lowercased email + newline + password). The credential itself is not
+       here. Rotate by recomputing this digest, not by editing a password. */
+    var DIGEST = '9f61e8a7cf5d7d22bd3bfa7f472b9da54052f596349950697bcbb10c90477c69';
+    var KEY = 'dps:landing:in';
+
+    var gate = document.getElementById('gate');
+    var wrap = document.querySelector('.wrap');
+    var no = document.getElementById('gate-no');
+    if (!gate || !wrap) return;
+
+    /* Nothing to re-render. The list loader above is an immediate function and has
+       already filled #demos while the panel was up, hidden rather than absent. Which
+       is also the clearest illustration of what this panel is: the data was fetched
+       and sitting in the page the whole time. */
+    function open_() {
+        gate.remove();
+        wrap.removeAttribute('hidden');
+    }
+
+    try {
+        if (window.sessionStorage.getItem(KEY) === '1') { open_(); return; }
+    } catch (err) { /* private mode, so it asks every time */ }
+
+    function digest(text) {
+        var bytes = new TextEncoder().encode(text);
+        return crypto.subtle.digest('SHA-256', bytes).then(function (buf) {
+            return Array.prototype.map.call(new Uint8Array(buf), function (b) {
+                return ('0' + b.toString(16)).slice(-2);
+            }).join('');
+        });
+    }
+
+    gate.addEventListener('submit', function (event) {
+        event.preventDefault();
+        no.textContent = '';
+        var email = document.getElementById('gate-email').value.trim().toLowerCase();
+        var pass = document.getElementById('gate-pass').value;
+
+        /* crypto.subtle needs a secure context. Pages is https, so this is only
+           reachable when somebody opens the file locally over http. */
+        if (!window.crypto || !crypto.subtle) {
+            no.textContent = 'This needs a secure connection. Open the published address.';
+            return;
+        }
+
+        digest(email + '\n' + pass).then(function (hex) {
+            if (hex !== DIGEST) {
+                no.textContent = 'That email and password do not match.';
+                return;
+            }
+            try { window.sessionStorage.setItem(KEY, '1'); } catch (err) { /* private mode */ }
+            open_();
+        }, function () {
+            no.textContent = 'Could not check that. Please try again.';
+        });
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{
+  "accountId": "28",
+  "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
+
+  "_comment": [
+    "The Dengage web application every demo talks to. Handoff 2.1.",
+    "",
+    "This is the single place these two values are written down. The probe page,",
+    "the generator, the smoke test and the CI guardrails all read them from here,",
+    "so filling this in is the whole of wiring the repository to the panel.",
+    "",
+    "The application is DND - PreSales eComm [Salil], a new web application inside",
+    "account 28. It has its own campaigns and its own push configuration. It does",
+    "NOT have its own Data Space: every table and every contact is shared with the",
+    "five core demo sites and the two mobile apps. Handoff 14.4.",
+    "",
+    "That sharing is why every page fires pageView before anything else. There is",
+    "no column a demo can tag its rows with, so page_url on the page view, and the",
+    "session_id join out of it, are the only way back to a demo's own rows.",
+    "CLAUDE.md 1b. An earlier revision named a table allowlist here instead; the",
+    "allowlist was removed on 4 August 2026 when demos moved to the standard",
+    "ecommerce tables, so it no longer describes anything in this repository.",
+    "",
+    "The guardrails treat the app guid as an allowlist of one. Any other",
+    "application identifier appearing anywhere in this repository is rejected, so",
+    "the identifier the core demos use never has to be written down here in order",
+    "to be kept out.",
+    "",
+    "The SDK loader URL these two compose is",
+    "https://pcdn.dengage.com/p/push/28/99d9b8fb-0c62-5a85-3e43-2402554d93a5/dengage_sdk_loader.js",
+    "",
+    "NO CREDENTIALS LIVE IN THIS FILE OR ANYWHERE ELSE IN THIS REPOSITORY.",
+    "The Dataspace API is reached with an API user's key and password, exchanged",
+    "for a short lived token at login. Both are passed through the environment.",
+    "See factory/phase0/create-tables.mjs."
+  ]
+}

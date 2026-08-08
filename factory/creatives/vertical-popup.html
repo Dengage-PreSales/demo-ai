@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Vertical popup (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE SHARED CREATIVES. Paste the whole file into the campaign whose
+     trigger name is:
+
+         dengage_demo_vertical-popup
+
+     ===================================================================
+     WHY THIS FILE EXISTS WHEN A PANEL TEMPLATE ALREADY DID
+     ===================================================================
+
+     Added 7 August 2026. Vertical Popup is one of the panel's own ready made
+     templates: Content > Onsite > New > Vertical Popup, an image with a title, a
+     message and up to two buttons stacked under it. That version is documented in
+     factory/panel/NATIVE-TEMPLATES.md section 4 and it works.
+
+     What it cannot do is take the prospect's colours. A native template's look is
+     set by fields in the panel, so it is one fixed palette for every demo the
+     factory ever builds, and it renders in a cross origin iframe where the page's
+     custom properties do not reach. On a themed storefront that reads as a widget
+     belonging to a different site, which is the most visible thing on screen.
+
+     So this is the same anatomy as an HTML creative, which can ask the page what
+     the theme is and paint itself accordingly:
+
+       media at the top
+       a title
+       a message
+       a primary button, full width
+       a secondary button that only dismisses
+
+     The copy and the button labels are carried over from the native template
+     unchanged, so swapping one for the other changes nothing a prospect reads.
+
+     ===================================================================
+     THE ARTWORK IS INLINE SVG, NOT THE COMMITTED JPG
+     ===================================================================
+
+     The native template points at a published image. A pasted creative should not:
+     an absolute URL can be slow and it can be blocked, and a creative that renders
+     a broken image icon in front of a prospect is worse than one that never fired.
+     Inline SVG makes zero requests, scales cleanly on a shared screen, and takes
+     the theme, which a committed JPG cannot. Non-negotiable 4.
+
+     WHAT THIS FILE MAY NOT SAY. It renders on every demo the factory ever builds,
+     so it cannot name a brand, a product, a price, a currency or a vertical.
+     Customization tags do not rescue it either: they resolve in Preview and are not
+     applied on a real time On-Site Targeting trigger, handoff 12.8.
+
+     NEITHER BUTTON NAVIGATES. There is no destination that is correct on every
+     demo, and a relative URL resolves against the iframe rather than the page. The
+     primary reports the click and closes; the secondary closes only, so a
+     dismissal is never counted as engagement. Handoff 6.3.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_vertical-popup
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, position Center, width 400 to 440
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     Padding 0 and a transparent background are not style choices: the engine's
+     container otherwise draws a white box around the card, which reads as an
+     unwanted frame. This card draws no close control of its own, because the panel
+     supplies one outside it and two would read as a duplicate.
+
+     NO SCRIPT TAG. The panel strips script on save. Everything is CSS plus the
+     inline handlers, and all CSS is scoped under #dnf-vp so nothing leaks.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-vp">
+  <style>
+    #dnf-vp * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE, AND THE ONLY PLACE A COLOUR IS WRITTEN DOWN. The
+       bootstrap below overwrites these same names when the page answers with a
+       theme. --c-brand-text is the brand colour made safe to use as text, derived in
+       boot.js: never use --c-primary for text or a graphic on the card. */
+    #dnf-vp {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    /* Only when the file is opened on its own, so it can be checked without the
+       panel. Inside the engine's iframe the container is already sized. */
+    body > #dnf-vp { max-width:420px; margin:40px auto; }
+
+    #dnf-vp .card {
+      width:100%; overflow:hidden; text-align:center;
+      background:var(--c-surface);
+      border-radius:calc(var(--c-radius) + 4px);
+      border:1px solid color-mix(in srgb, var(--c-ink) 8%, transparent);
+      box-shadow:0 20px 50px rgba(20,24,27,.22);
+      box-shadow:0 20px 50px color-mix(in srgb, var(--c-ink) 22%, transparent);
+      animation:dnf-in .28s cubic-bezier(.2,.8,.3,1);
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+
+    #dnf-vp .art { display:block; width:100%; height:auto; }
+
+    #dnf-vp .body { padding:22px 26px 24px; }
+
+    #dnf-vp .eyebrow {
+      display:inline-block; margin-bottom:12px;
+      font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--c-brand-text);
+      background:color-mix(in srgb, var(--c-primary) 10%, transparent);
+      border:1px solid color-mix(in srgb, var(--c-primary) 22%, transparent);
+      border-radius:999px; padding:5px 12px;
+    }
+    #dnf-vp h2 {
+      font-family:var(--c-display-font);
+      font-size:21px; font-weight:700; line-height:1.26; letter-spacing:-.02em;
+      color:var(--c-ink);
+    }
+    #dnf-vp p {
+      font-size:13.5px; line-height:1.6; margin-top:9px;
+      color:var(--c-muted);
+    }
+
+    /* THE TWO BUTTONS, STACKED, which is what makes this the vertical shape rather
+       than a plain popup. The primary carries the brand colour and a glow in it; the
+       secondary is a plain outline so there is never a question which one is the
+       action. */
+    #dnf-vp .cta {
+      display:block; width:100%; border:0; cursor:pointer; margin-top:18px;
+      background:var(--c-primary); color:var(--c-on-primary);
+      border-radius:var(--c-radius);
+      padding:13px 18px; font-family:inherit; font-size:14.5px; font-weight:700;
+      box-shadow:0 8px 20px color-mix(in srgb, var(--c-primary) 32%, transparent);
+      transition:transform .14s cubic-bezier(.2,.8,.3,1), box-shadow .14s, filter .14s;
+    }
+    #dnf-vp .cta:hover {
+      transform:translateY(-2px); filter:brightness(1.05);
+      box-shadow:0 12px 26px color-mix(in srgb, var(--c-primary) 40%, transparent);
+    }
+    #dnf-vp .cta:active { transform:translateY(0); }
+
+    #dnf-vp .ghost {
+      display:block; width:100%; cursor:pointer; margin-top:9px;
+      background:transparent;
+      /* Darker than muted, because this is a control rather than a caption and it
+         sits under a button carrying a brand coloured glow. */
+      color:color-mix(in srgb, var(--c-muted) 82%, var(--c-ink));
+      border:1px solid color-mix(in srgb, var(--c-ink) 14%, transparent);
+      border-radius:var(--c-radius);
+      padding:12px 18px; font-family:inherit; font-size:13.5px; font-weight:600;
+      transition:background .14s, border-color .14s;
+    }
+    #dnf-vp .ghost:hover {
+      background:color-mix(in srgb, var(--c-ink) 4%, transparent);
+      border-color:color-mix(in srgb, var(--c-ink) 22%, transparent);
+    }
+    #dnf-vp .cta:focus-visible,
+    #dnf-vp .ghost:focus-visible { outline:3px solid var(--c-brand-text); outline-offset:2px; }
+
+    #dnf-vp .foot {
+      font-size:11px; margin-top:13px; line-height:1.5;
+      color:color-mix(in srgb, var(--c-muted) 82%, var(--c-ink));
+    }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-vp');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="card">
+
+    <!-- Brand neutral by construction: abstract geometry, no photography, no word
+         mark, nothing that belongs to any vertical. The Dengage mark sits in it
+         because this is a Dengage demo, and never a prospect's logo, whatever they
+         ask for on a call. Handoff 1.5.
+
+         Every colour in here is a theme token, so the media takes the prospect's
+         palette rather than sitting on top of it in a fixed blue. Anything drawn ON
+         the gradient is --c-on-primary, which is the value the generator already
+         guarantees is readable against --c-primary. -->
+    <svg class="art" viewBox="0 0 420 250" role="img" aria-label="Abstract artwork">
+      <defs>
+        <linearGradient id="dnf-vp-g1" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="var(--c-primary)"/>
+          <stop offset="1" stop-color="color-mix(in srgb, var(--c-primary) 52%, var(--c-ink))"/>
+        </linearGradient>
+        <linearGradient id="dnf-vp-g2" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="var(--c-on-primary)" stop-opacity="0"/>
+          <stop offset="1" stop-color="var(--c-on-primary)" stop-opacity=".16"/>
+        </linearGradient>
+      </defs>
+      <rect width="420" height="250" fill="url(#dnf-vp-g1)"/>
+      <rect width="420" height="250" fill="url(#dnf-vp-g2)"/>
+      <circle cx="344" cy="40" r="104" fill="var(--c-on-primary)" opacity=".07"/>
+      <circle cx="58" cy="222" r="80" fill="var(--c-on-primary)" opacity=".06"/>
+      <path d="M0 198c72-26 128 14 204-6s146-58 216-26v84H0z"
+            fill="var(--c-on-primary)" opacity=".08"/>
+      <g transform="translate(172 88) scale(2)" fill="var(--c-on-primary)">
+        <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+        <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+      </g>
+    </svg>
+
+    <div class="body">
+      <span class="eyebrow">On site scenario</span>
+      <h2>Everything here is a Dengage scenario</h2>
+      <p>This popup is one of them. Open the scenarios panel to fire the rest, and
+         watch each one arrive on the page.</p>
+
+      <!-- Exactly one sendClick in the file, on the primary only. -->
+      <button type="button" class="cta"
+              onclick="Dn.sendClick('vertical-popup__primary');Dn.close()">
+        Got it
+      </button>
+      <!-- No sendClick: a dismissal is not a click. -->
+      <button type="button" class="ghost" onclick="Dn.close()">
+        Not now
+      </button>
+
+      <p class="foot">A demonstration storefront, built for this conversation.</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

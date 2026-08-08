@@ -1,0 +1,84 @@
+name: New demo storefront
+description: Paste a prospect's website address and get a live demo back.
+title: "Demo: "
+labels: ["new-demo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in the first field and submit. Everything else is optional and is
+        worked out from the store itself.
+
+        A live address is posted back on this issue when the demo is ready,
+        usually within about fifteen minutes. The demo stays up for 90 days.
+
+  - type: input
+    id: url
+    attributes:
+      label: Prospect website address
+      description: >-
+        The store's home page. Anything that works in a browser works here.
+      placeholder: https://www.example.com
+    validations:
+      required: true
+
+  - type: input
+    id: slug
+    attributes:
+      label: Short name for the address
+      description: >-
+        Optional. Becomes the last part of the demo's web address. Lowercase
+        letters, numbers and hyphens. Worked out from the website if left blank.
+      placeholder: northfield-outdoor
+    validations:
+      required: false
+
+  - type: input
+    id: currency
+    attributes:
+      label: Currency
+      description: >-
+        Optional. A three letter code such as USD, EUR, GBP or TRY. Read from
+        the store where it publishes one.
+      placeholder: EUR
+    validations:
+      required: false
+
+  - type: input
+    id: vertical
+    attributes:
+      label: What the store sells
+      description: >-
+        Optional, and only used in the summary posted back here. The product
+        artwork is chosen per product from its own name and category.
+      placeholder: outdoor clothing and equipment
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes for the build
+      description: Optional. Anything worth knowing before the call.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ### If the catalogue cannot be read
+
+        Some stores do not let an automated reader see their products, and larger
+        retailers often block them outright. If that happens, a comment here will
+        say so and ask for a CSV.
+
+        Attach the CSV to a comment on this issue, then add the word **retry** in
+        that same comment. One row per product with a heading row. A name column
+        and a price column are needed. Category and sale price columns are used if
+        they are there.
+
+        ```
+        SKU,Product Name,Category,Price,Sale Price,Stock
+        NF-JKT-001,Trail Jacket,Jackets,189.00,149.00,12
+        NF-BAG-004,Summit Pack 30L,Packs,120.00,,4
+        ```

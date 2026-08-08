@@ -1,0 +1,83 @@
+# =============================================================================
+# Refresh one demo's product images, on demand.
+#
+#   Actions > Refresh demo images > Run workflow > type the slug
+#
+# WHY A WORKFLOW AND NOT A LOCAL RUN. Two of the three image sources only exist
+# here: the runner's network reaches stores that block other ranges, and the
+# UNSPLASH_ACCESS_KEY secret never leaves GitHub. The tool itself,
+# factory/refresh-images.mjs, changes nothing but the demo's images folder and
+# the image field of its products.json: theme, catalogue, prices and expiry are
+# untouched, which is the whole reason this is not a rebuild.
+# =============================================================================
+name: Refresh demo images
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Demo slug, the folder name under demos/'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-images-${{ inputs.slug }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh images for ${{ inputs.slug }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The compressor and the render tier both want a browser, same as the
+      # build workflow, and for the same reasons.
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.62.1
+          npx playwright install --with-deps chromium
+
+      - name: Refresh
+        env:
+          UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          node factory/refresh-images.mjs --slug "$SLUG" | tee /tmp/refresh.json
+
+      - name: Guardrails
+        run: ./factory/guard/run.sh
+
+      - name: Commit what changed
+        env:
+          SLUG: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          git config user.name  "dengage-demo-factory[bot]"
+          git config user.email "rfp@dengage.com"
+          git add "demos/$SLUG"
+          if git diff --cached --quiet; then
+            echo "Nothing changed. Every tile already carries its photograph."
+            exit 0
+          fi
+          WITH=$(node -e "console.log(require('/tmp/refresh.json').withPhotograph)")
+          STOCK=$(node -e "console.log(require('/tmp/refresh.json').stock)")
+          git commit -m "Refresh the $SLUG demo's product images" \
+                     -m "$WITH of 30 tiles now carry a photograph, $STOCK of them stock stand-ins."
+          for attempt in 1 2 3 4; do
+            git pull --rebase origin main && git push origin HEAD:main && break
+            echo "Retrying push ($attempt)"
+            sleep $((attempt * 4))
+          done
+
+      # Pages redeploys on push; this run is done. The demo shows the new tiles
+      # after the Pages workflow that this push triggers has finished.

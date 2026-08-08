@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Demo Factory | Slide in (Dengage panel content)</title>
+<!-- =========================================================================
+     ON-SITE SCENARIO 1 of 3. Campaign: dengage_demo_slide-in
+
+     What it demonstrates is not the card, it is the RESTRAINT. A slide in sits in
+     a corner and never covers the content, so it is the overlay a prospect can
+     accept on a product page where a centre-screen popup would be resented. On a
+     call this is the answer to "we do not want to interrupt people".
+
+     THE LAYOUT IS THE SCENARIO, so the panel settings matter more than usual:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_slide-in
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, position BOTTOM_RIGHT, width 320 to 360
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     Position is what separates this from image-popup. Set it to a corner or this
+     is a small centred popup and demonstrates nothing new.
+
+     DO NOT ADD position: fixed. The engine's container is already positioned. A
+     second layer of positioning pins the card to the corner of its own container
+     rather than the viewport, which looks correct on a wide screen and wrong on
+     every narrow one.
+
+     Generic by necessity: renders on every demo forever, so no brand, product,
+     price, currency or vertical. The CTA reports and dismisses, never navigates.
+     No script tag: the panel strips it. CSS scoped under #dnf-si.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-si">
+  <style>
+    #dnf-si * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE, AND THE ONLY PLACE A COLOUR IS WRITTEN DOWN. The
+       bootstrap below overwrites these same names when the page answers with a
+       theme. --c-brand-text is the brand colour made safe to use as text, derived in
+       boot.js: never use --c-primary for text or a graphic on the card. */
+    #dnf-si {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    body > #dnf-si { max-width:340px; margin:40px auto; }
+
+    #dnf-si .card {
+      width:100%; background:var(--c-surface);
+      border-radius:calc(var(--c-radius) + 2px); overflow:hidden;
+      box-shadow:0 14px 38px rgba(20,24,27,.22);
+      box-shadow:0 14px 38px color-mix(in srgb, var(--c-ink) 22%, transparent);
+      animation:dnf-slide .34s cubic-bezier(.21,.9,.35,1.05);
+    }
+    /* Slides in from the side it is anchored to, which reads as arriving rather
+       than appearing. A fade would look like a popup that missed its mark. */
+    @keyframes dnf-slide { from { opacity:0; transform:translateX(24px); } to { opacity:1; transform:none; } }
+
+    #dnf-si .top { display:flex; align-items:center; gap:9px; padding:14px 16px 0; }
+    #dnf-si .mark { width:17px; height:17px; display:block; fill:var(--c-brand-text); flex:0 0 auto; }
+    #dnf-si .top span { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--c-muted); }
+
+    #dnf-si .body { padding:9px 16px 16px; }
+    #dnf-si h2 {
+      font-family:var(--c-display-font);
+      font-size:15.5px; line-height:1.3; color:var(--c-ink); letter-spacing:-.01em;
+    }
+    #dnf-si p { font-size:12.5px; line-height:1.55; color:var(--c-muted); margin-top:6px; }
+
+    #dnf-si .cta {
+      display:block; width:100%; border:0; cursor:pointer; margin-top:13px;
+      background:var(--c-primary); color:var(--c-on-primary); border-radius:var(--c-radius);
+      padding:10px 14px; font-family:inherit; font-size:13px; font-weight:600;
+      transition:filter .15s;
+    }
+    #dnf-si .cta:hover { filter:brightness(1.07); }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-si');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="card">
+    <div class="top">
+      <svg class="mark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+        <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+        <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+      </svg>
+      <span>Quietly, over here</span>
+    </div>
+    <div class="body">
+      <h2>Saved to your list</h2>
+      <p>Nothing has moved on the page. Carry on browsing and it will still be there.</p>
+      <button type="button" class="cta"
+              onclick="Dn.sendClick('slide-in__primary');Dn.close()">
+        See my list
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

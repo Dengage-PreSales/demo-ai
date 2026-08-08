@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Survey (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE SHARED CREATIVES. Paste the whole file into the campaign
+     whose trigger name is:
+
+         dengage_demo_survey
+
+     It captures an answer as CONTACT TAGS. Nothing is written to a table, so there
+     is nothing to create in Data Space for it: results are read on the contact card
+     and segmented on the tags. Handoff 12.4.
+
+     ===================================================================
+     IT TAKES THE DEMO'S THEME, WHICH A POPUP PREVIOUSLY COULD NOT
+     ===================================================================
+
+     Added 7 August 2026. Every popup creative used to be hardcoded to the standard
+     palette, so a prospect-coloured storefront produced a standard-blue popup, and
+     the seam was the most visible thing on the screen.
+
+     WHY AN INLINE CREATIVE NEEDED NONE OF THIS. Inline content renders in the page's
+     own document, so `var(--primary)` simply resolves. A popup renders in a
+     cross-origin iframe, where custom properties do not cross and the parent's
+     stylesheet is unreachable. That is the whole difficulty, and it is not solvable
+     in CSS.
+
+     WHAT IT DOES INSTEAD, cheapest route first, in the bootstrap below:
+
+       1. Read --primary from this document. Non-empty means the creative is in page
+          scope after all, so the theme is already inherited and is simply adopted.
+       2. Read it from window.parent. Works when the frame is same-origin, throws
+          when it is not, so the throw is the test.
+       3. ASK THE PAGE. postMessage { dnTheme: 'request' } to the parent, which
+          answers with its theme block. The parent half is answerThemeRequests in
+          template/js/boot.js, registered the moment that file applies the theme to
+          the page, so the two can never disagree. This is the route that works.
+       4. Change nothing, and keep the neutral palette declared in the CSS below.
+
+     THERE USED TO BE A FIFTH ROUTE, AND IT WAS ONCE THE FIRST. It read
+     document.referrer, found the demo folder in it, and fetched that demo's config.
+     It looked right and it was tested against four simulated routes, and on a real
+     popup it requested the published origin's root with demo.config.json on the end,
+     which is a 404: no demo folder in the path at all.
+
+     The cause is not something care in this file can fix. Chrome's default referrer
+     policy is strict-origin-when-cross-origin, so a cross-origin frame is told the
+     ORIGIN and never the path. No amount of parsing recovers a path the browser
+     refused to send. The page is the only thing that knows which demo this is, so
+     the page has to be asked, which is what route 3 does.
+
+     It was deleted on 7 August 2026 rather than left as a fallback, for a second
+     reason that stands on its own: it named a host, and a creative may not depend on
+     a host outside this repository at run time. Non-negotiable 4. Together with the
+     font link that went at the same time, these files now make no outside request of
+     any kind.
+
+     data-theme-state ON THE FORM SAYS WHICH ROUTE WON: page, parent, message or
+     none. Read it in devtools when a popup looks wrong; it separates "the theme
+     did not arrive" from "the theme arrived and the CSS is wrong", which look
+     identical on screen.
+
+     A DEMO PUBLISHED BEFORE 7 AUGUST 2026 HAS NO PARENT HALF, so route 3 goes
+     unanswered there and the popup stays neutral. That is the correct outcome rather
+     than a failure: nothing breaks, and re-publishing the demo fixes it.
+
+     THE FONT LINK IS THE ONE OUTSIDE REQUEST HERE, and it is optional. Delete the
+     two lines marked FONT to remove it: the palette still applies and type falls
+     back to the system stack. It points at fonts.googleapis.com, which every demo
+     page already preconnects to and loads from, so it introduces no host the
+     storefront does not use already.
+
+     STATUS COLOURS ARE DELIBERATELY NOT THEMED, matching template/style.css: a
+     validation error reads as an error on every demo, and a prospect whose brand
+     colour is red still needs a red that means "this is wrong".
+
+     ===================================================================
+     HOW THIS SUBMITS
+     ===================================================================
+
+     With Dn.setTags, which is the call that writes contact tags. A question creative
+     produces tags, so that is the call it makes. This file validates its own single
+     question first and then submits:
+
+         [ { tag: "<data-dn-name>", value: "<the chosen input value>" } ]
+
+     Every native attribute the question contract documents is present and correct
+     below, so the engine's validation and state stamping apply on top of that.
+
+     DO NOT CHANGE THIS TO A DIFFERENT SUBMIT CALL without re-running
+     bash factory/checks/run.sh and reading its output for this creative. That check
+     drives this exact markup against the engine's published handler and asserts the
+     payload, the invalid state and the confirmation state. A capture creative that
+     does not submit looks exactly like one that does until the contact is checked,
+     so the check is the only thing that will tell you.
+
+     THE CONTRACT, read from the SDK and confirmed against the reference build:
+
+       <form class="form" data-dn-form-id="question_form">     the root
+       the FIRST .form-block is the question, and IT carries:
+         data-dn-name="<tag name>"            the tag answers are written to
+         data-dn-is-radio="true"              single choice; omit for multi
+         data-dn-min-selection / -max-selection    for multi choice
+       it must contain input[type=checkbox] or [type=radio]
+       and it must contain a div.form-message      <- a DIV, the selector is
+                                                      div.form-message and a span
+                                                      would not be found
+
+     Those attributes belong on .form-block, NOT on the form. An earlier draft of
+     factory/creatives/README.md had them on the form element, which would have
+     produced a question with no tag name and no selection bounds.
+
+     ONE QUESTION ONLY. The engine reads a single .form-block, so a second question
+     is silently ignored.
+
+     THE VISUALLY HIDDEN CLASS IS LOAD BEARING. Handoff 12.7, and it has been
+     mistaken for cruft before. The real inputs are hidden behind styled labels
+     using .vh, and the labels' appearance is driven by the hidden input's :checked
+     state. Remove it and the whole option row unstyles. It is not display:none
+     because the input must stay in the layout to remain focusable.
+
+     GENERIC BY NECESSITY: one campaign serves every demo forever, so the question
+     cannot name a brand, a product, a price or a vertical. "What matters most when
+     you shop" works on any storefront; "which tyre line interests you" is the kind
+     of question a shared creative cannot ask.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_survey
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, width 440 to 480
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     NO SCRIPT TAG. The panel strips it, which is why the theming runs from an
+     onload attribute on a zero-size image. Inline handlers survive, as the submit
+     button below has always relied on. CSS scoped under #dnf-sv.
+
+     &lt; and &amp; are written as entities in the attributes below because the HTML
+     parser decodes them before the JavaScript ever sees them. Writing them raw
+     inside an attribute is what an HTML parser is entitled to misread.
+========================================================================== -->
+</head>
+<body>
+
+<form class="form" data-dn-form-id="question_form" data-dn-validation-language="en"
+      id="dnf-sv" onsubmit="return false">
+  <style>
+    #dnf-sv * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE, AND THE ONLY PLACE A COLOUR IS WRITTEN DOWN. The
+       bootstrap overwrites these same names on this element when it finds a demo
+       theme, so every rule below is written once and themes itself. Route 4 is
+       simply not overwriting them. */
+    #dnf-sv {
+      --c-primary:#125cfa; --c-on-primary:#ffffff;
+      /* THE BRAND COLOUR MADE SAFE TO USE AS TEXT, derived by boot.js and sent with
+         the theme. Every rule below that puts the brand colour ON the card uses this
+         and never --c-primary, because a pale brand as text on white is unreadable:
+         measured 2.79:1 for the first prospect this shipped to. A dark brand arrives
+         here unchanged, so nothing is lost where nothing was wrong. */
+      --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085;
+      --c-line:#e4e7ec; --c-surface:#ffffff;
+      --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      /* Not themed, on purpose. See the note at the top. */
+      --c-ok:#0f7b45; --c-error:#dc2626;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    body > #dnf-sv { max-width:460px; margin:40px auto; }
+
+    #dnf-sv .container {
+      width:100%; background:var(--c-surface);
+      /* A popup wants a slightly softer corner than a card in the grid, so it
+         tracks the theme's radius rather than matching it exactly. */
+      border-radius:calc(var(--c-radius) + 4px); overflow:hidden;
+      box-shadow:0 18px 44px rgba(20,24,27,.20);
+      box-shadow:0 18px 44px color-mix(in srgb, var(--c-ink) 20%, transparent);
+      animation:dnf-in .26s ease-out;
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+
+    #dnf-sv .head { padding:26px 26px 0; text-align:center; }
+    #dnf-sv .mark { width:26px; height:30px; margin:0 auto 13px; display:block; fill:var(--c-brand-text); }
+    #dnf-sv h2 {
+      font-family:var(--c-display-font);
+      font-size:19px; line-height:1.3; color:var(--c-ink); letter-spacing:-.015em;
+    }
+    #dnf-sv .sub { font-size:13px; line-height:1.55; color:var(--c-muted); margin-top:7px; }
+
+    #dnf-sv .body { padding:18px 26px 24px; }
+
+    /* The bootstrap's host. Zero size and out of the flow, so it cannot affect
+       layout on any theme. */
+    #dnf-sv .boot { position:absolute; width:0; height:0; opacity:0; pointer-events:none; }
+
+    /* LOAD BEARING. The real checkboxes live here, invisible but in the layout, and
+       the styled labels below are driven by their :checked state. Not display:none,
+       which would take them out of the focus order. Handoff 12.7. */
+    #dnf-sv .vh { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+    #dnf-sv .chips { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    #dnf-sv .chips label {
+      display:block; text-align:center; cursor:pointer;
+      border:1.5px solid var(--c-line); border-radius:var(--c-radius); padding:11px 10px;
+      font-size:13px; font-weight:500; color:var(--c-ink);
+      transition:border-color .14s, background .14s;
+    }
+    #dnf-sv .chips label:hover { border-color:var(--c-primary); }
+    /* The whole styling mechanism, and why .vh cannot be removed. The border and
+       the weight carry the selected state on their own, so a browser without
+       color-mix loses the tint and nothing else. */
+    #dnf-sv .vh:checked + label {
+      border-color:var(--c-primary); font-weight:600; color:var(--c-brand-text);
+      background:color-mix(in srgb, var(--c-primary) 8%, transparent);
+    }
+
+    #dnf-sv .form-message {
+      display:none; font-size:11.5px; color:var(--c-error); margin-top:9px;
+    }
+    #dnf-sv .form-block[data-dn-invalid="true"] .form-message { display:block; }
+    #dnf-sv .form-block[data-dn-invalid="true"] .chips label { border-color:var(--c-error); }
+
+    #dnf-sv .send {
+      display:block; width:100%; border:0; cursor:pointer; margin-top:16px;
+      background:var(--c-primary); color:var(--c-on-primary); border-radius:var(--c-radius);
+      padding:12px 18px; font-family:inherit; font-size:14px; font-weight:600;
+      transition:filter .15s;
+    }
+    #dnf-sv .send:hover { filter:brightness(1.07); }
+    #dnf-sv .foot { font-size:11px; color:var(--c-muted); text-align:center; margin-top:11px; line-height:1.5; }
+
+    #dnf-sv .submitted-content { display:none; padding:34px 26px 38px; text-align:center; }
+    #dnf-sv .submitted-content .tick {
+      width:42px; height:42px; margin:0 auto 14px; border-radius:50%;
+      background:#e7f6ee; color:var(--c-ok); font-size:22px; line-height:42px;
+    }
+    #dnf-sv .container[data-dn-is-submitted="true"] .head,
+    #dnf-sv .container[data-dn-is-submitted="true"] .body { display:none; }
+    #dnf-sv .container[data-dn-is-submitted="true"] .submitted-content { display:block; }
+
+    @media (max-width:400px) { #dnf-sv .chips { grid-template-columns:1fr; } }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-sv');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="container">
+
+    <div class="head">
+      <svg class="mark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+        <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+        <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+      </svg>
+      <h2>What matters most when you shop?</h2>
+      <p class="sub">Pick as many as apply. It shapes what you are shown from here on.</p>
+    </div>
+
+    <div class="body">
+      <!-- THE FIRST .form-block IS THE QUESTION, and it carries the tag name and
+           the selection bounds. Not the form element. -->
+      <div class="form-block" data-dn-name="interest_area"
+           data-dn-min-selection="1" data-dn-max-selection="4">
+
+        <div class="chips">
+          <input class="vh" type="checkbox" id="dnf-sv-1" value="delivery_speed">
+          <label for="dnf-sv-1">Getting it quickly</label>
+
+          <input class="vh" type="checkbox" id="dnf-sv-2" value="value_for_money">
+          <label for="dnf-sv-2">Value for money</label>
+
+          <input class="vh" type="checkbox" id="dnf-sv-3" value="product_range">
+          <label for="dnf-sv-3">Plenty to choose from</label>
+
+          <input class="vh" type="checkbox" id="dnf-sv-4" value="personal_picks">
+          <label for="dnf-sv-4">Things picked for me</label>
+        </div>
+
+        <!-- A DIV, not a span. The engine's selector is div.form-message. -->
+        <div class="form-message">Choose at least one.</div>
+      </div>
+
+      <!-- Validation and submit in the handler. See the note at the top before
+           changing the call. -->
+      <button type="button" class="send"
+              onclick="var f=document.getElementById('dnf-sv'),b=f.querySelector('.form-block'),s=b.querySelectorAll('input[type=checkbox]:checked'),t=b.getAttribute('data-dn-name'),v=[],i=0;for(i=0;i&lt;s.length;i++){v.push({tag:t,value:s[i].value});}if(!v.length){b.setAttribute('data-dn-invalid','true');return;}b.removeAttribute('data-dn-invalid');this.disabled=true;Dn.sendClick('survey__submit');Dn.setTags(v);f.querySelector('.container').setAttribute('data-dn-is-submitted','true');">
+        Send my answer
+      </button>
+
+      <p class="foot">A demonstration storefront. Your answer is used only to show how Dengage records it.</p>
+    </div>
+
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="false" data-dn-modal-close-seconds="6">
+      <div class="tick">&#10003;</div>
+      <h2>Noted, thank you</h2>
+      <p class="sub">That is on your contact record now, as a tag you can segment on.</p>
+    </div>
+
+  </div>
+</form>
+
+</body>
+</html>

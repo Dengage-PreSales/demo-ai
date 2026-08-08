@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | NPS (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE EIGHT SHARED CREATIVES. Paste the whole file into the campaign
+     whose trigger name is:
+
+         dengage_demo_nps-popup
+
+     Captures a score from 0 to 10 as a CONTACT TAG, so results are read on the
+     contact card and segmented on the tag. Nothing is written to a table and there
+     is nothing to create in Data Space for it. Handoff 12.4.
+
+     IT SUBMITS WITH Dn.setTags, the call that writes contact tags, because a score
+     is a tag. It validates its own single question and then submits:
+
+         [ { tag: "nps_score", value: "<0 to 10>" } ]
+
+     DO NOT CHANGE THIS TO A DIFFERENT SUBMIT CALL without re-running
+     bash factory/checks/run.sh and reading its output for this creative. The same
+     reasoning as survey.html, and the same check covers both.
+
+     THE CONTRACT: the FIRST .form-block is the question and carries data-dn-name
+     and data-dn-is-radio="true" for single choice. It must contain
+     input[type="radio"] and a div.form-message, a DIV because the selector is
+     div.form-message. Those attributes belong on .form-block, never on the form.
+
+     THE VISUALLY HIDDEN CLASS IS LOAD BEARING, and on this creative more visibly
+     than anywhere else. Handoff 12.7. The eleven score buttons are <label>
+     elements whose appearance comes entirely from the :checked state of the radio
+     hidden beside them. Delete .vh and the whole scale unstyles into a row of
+     radio buttons. It is not display:none because the input must stay in the
+     layout to remain reachable by keyboard.
+
+     GENERIC BY NECESSITY: one campaign serves every demo forever. An NPS question
+     is naturally generic, which makes this the easiest of the eight to keep clean.
+     Do not add a brand name to it.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_nps-popup
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, width 460 to 500
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+
+     NO SCRIPT TAG. The panel strips it. CSS scoped under #dnf-np.
+========================================================================== -->
+</head>
+<body>
+
+<form class="form" data-dn-form-id="question_form" data-dn-validation-language="en"
+      id="dnf-np" onsubmit="return false">
+  <style>
+    #dnf-np * { margin:0; padding:0; box-sizing:border-box; }
+    #dnf-np {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085;
+      --c-line:#e4e7ec; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      /* Not themed, on purpose: a validation error reads as an error on every demo,
+         and a prospect whose brand colour is red still needs a red that means "this
+         is wrong". Matches template/style.css. */
+      --c-ok:#0f7b45; --c-error:#dc2626;
+      font-family:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      width:100%; display:block;
+    }
+    body > #dnf-np { max-width:480px; margin:40px auto; }
+
+    #dnf-np .container {
+      width:100%; background:var(--c-surface);
+      /* A popup wants a slightly softer corner than a card in the grid. */
+      border-radius:calc(var(--c-radius) + 4px); overflow:hidden;
+      box-shadow:0 18px 44px rgba(20,24,27,.20);
+      box-shadow:0 18px 44px color-mix(in srgb, var(--c-ink) 20%, transparent);
+      animation:dnf-in .26s ease-out;
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+
+    #dnf-np .head { padding:26px 26px 0; text-align:center; }
+    #dnf-np .mark { width:26px; height:30px; margin:0 auto 13px; display:block; fill:var(--c-brand-text); }
+    #dnf-np h2 {
+      font-family:var(--c-display-font);
+      font-size:19px; line-height:1.3; color:var(--c-ink); letter-spacing:-.015em;
+    }
+    #dnf-np .sub { font-size:13px; line-height:1.55; color:var(--c-muted); margin-top:7px; }
+
+    #dnf-np .body { padding:20px 26px 24px; }
+
+    /* LOAD BEARING. The eleven radios sit here invisibly and drive the labels.
+       Handoff 12.7. */
+    #dnf-np .vh { position:absolute; width:1px; height:1px; opacity:0; pointer-events:none; }
+
+    #dnf-np .scale { display:grid; grid-template-columns:repeat(11,1fr); gap:4px; }
+    #dnf-np .scale label {
+      display:flex; align-items:center; justify-content:center; cursor:pointer;
+      aspect-ratio:1; border:1.5px solid var(--c-line); border-radius:7px;
+      font-size:13px; font-weight:600; color:var(--c-ink);
+      transition:border-color .13s, background .13s, transform .13s;
+    }
+    #dnf-np .scale label:hover { border-color:var(--c-primary); transform:translateY(-2px); }
+    /* The whole styling mechanism, and why .vh cannot be removed. */
+    #dnf-np .vh:checked + label {
+      border-color:var(--c-primary); background:var(--c-primary); color:var(--c-on-primary);
+    }
+
+    #dnf-np .ends { display:flex; justify-content:space-between; margin-top:8px; }
+    #dnf-np .ends span { font-size:11px; color:var(--c-muted); }
+
+    #dnf-np .form-message { display:none; font-size:11.5px; color:var(--c-error); margin-top:9px; }
+    #dnf-np .form-block[data-dn-invalid="true"] .form-message { display:block; }
+    #dnf-np .form-block[data-dn-invalid="true"] .scale label { border-color:var(--c-error); }
+
+    #dnf-np .send {
+      display:block; width:100%; border:0; cursor:pointer; margin-top:16px;
+      background:var(--c-primary); color:var(--c-on-primary); border-radius:var(--c-radius);
+      padding:12px 18px; font-family:inherit; font-size:14px; font-weight:600;
+      transition:filter .15s;
+    }
+    #dnf-np .send:hover { filter:brightness(1.07); }
+    #dnf-np .foot { font-size:11px; color:var(--c-muted); text-align:center; margin-top:11px; line-height:1.5; }
+
+    #dnf-np .submitted-content { display:none; padding:34px 26px 38px; text-align:center; }
+    #dnf-np .submitted-content .tick {
+      width:42px; height:42px; margin:0 auto 14px; border-radius:50%;
+      background:#e7f6ee; color:var(--c-ok); font-size:22px; line-height:42px;
+    }
+    #dnf-np .container[data-dn-is-submitted="true"] .head,
+    #dnf-np .container[data-dn-is-submitted="true"] .body { display:none; }
+    #dnf-np .container[data-dn-is-submitted="true"] .submitted-content { display:block; }
+
+    @media (max-width:430px) {
+      #dnf-np .scale { grid-template-columns:repeat(6,1fr); }
+      #dnf-np .scale label { font-size:12px; }
+    }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-np');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="container">
+
+    <div class="head">
+      <svg class="mark" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
+        <path d="M11.3821 34.8307H6.61521V28.0187H11.3821C16.4408 27.824 20.4293 23.6395 20.2348 18.5791C20.1375 13.7133 16.1489 9.82066 11.3821 9.72334H6.61521V15.5623H12.3549V22.3744H0V2.91125H11.3821C20.2348 3.2032 27.1418 10.5019 26.85 19.3576C26.6554 27.824 19.8456 34.6361 11.3821 34.8307Z"/>
+        <path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>
+      </svg>
+      <h2>How likely are you to recommend us?</h2>
+      <p class="sub">One tap. It lands on your contact record as a score you can segment on.</p>
+    </div>
+
+    <div class="body">
+      <!-- THE FIRST .form-block IS THE QUESTION. data-dn-is-radio marks it single
+           choice, and data-dn-name is the tag the score is written to. -->
+      <div class="form-block" data-dn-name="nps_score" data-dn-is-radio="true">
+
+        <div class="scale">
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-0" value="0">
+          <label for="dnf-np-0">0</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-1" value="1">
+          <label for="dnf-np-1">1</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-2" value="2">
+          <label for="dnf-np-2">2</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-3" value="3">
+          <label for="dnf-np-3">3</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-4" value="4">
+          <label for="dnf-np-4">4</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-5" value="5">
+          <label for="dnf-np-5">5</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-6" value="6">
+          <label for="dnf-np-6">6</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-7" value="7">
+          <label for="dnf-np-7">7</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-8" value="8">
+          <label for="dnf-np-8">8</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-9" value="9">
+          <label for="dnf-np-9">9</label>
+          <input class="vh" type="radio" name="dnf-np-score" id="dnf-np-10" value="10">
+          <label for="dnf-np-10">10</label>
+        </div>
+
+        <div class="ends"><span>Not likely</span><span>Very likely</span></div>
+
+        <!-- A DIV, not a span: the engine's selector is div.form-message. -->
+        <div class="form-message">Choose a score first.</div>
+      </div>
+
+      <button type="button" class="send"
+              onclick="var f=document.getElementById('dnf-np'),b=f.querySelector('.form-block'),s=b.querySelector('input[type=radio]:checked');if(!s){b.setAttribute('data-dn-invalid','true');return;}b.removeAttribute('data-dn-invalid');this.disabled=true;Dn.sendClick('nps-popup__submit');Dn.setTags([{tag:b.getAttribute('data-dn-name'),value:s.value}]);f.querySelector('.container').setAttribute('data-dn-is-submitted','true');">
+        Send my score
+      </button>
+
+      <p class="foot">A demonstration storefront. Your score is used only to show how Dengage records it.</p>
+    </div>
+
+    <div class="submitted-content" data-dn-is-enabled="true"
+         data-dn-is-modal-auto-close-enabled="false" data-dn-modal-close-seconds="6">
+      <div class="tick">&#10003;</div>
+      <h2>Thank you</h2>
+      <p class="sub">Your score is on your contact record now, ready to segment on.</p>
+    </div>
+
+  </div>
+</form>
+
+</body>
+</html>

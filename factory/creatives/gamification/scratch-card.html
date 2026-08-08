@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo Factory | Scratch card (Dengage panel content)</title>
+<!-- =========================================================================
+     ONE OF THE SHARED CREATIVES. Paste the whole file into the campaign
+     whose trigger name is:
+
+         dengage_demo_scratch-card
+
+     ===================================================================
+     RECOGNISABLY THE PANEL'S MECHANIC, DELIBERATELY NOT ITS DESIGN
+     ===================================================================
+
+     Rewritten 7 August 2026. The first attempt reproduced the stock builder closely,
+     which was the wrong brief: a near copy is worth nothing when the stock template
+     already exists. What survives is the ANATOMY, so a prospect recognises the
+     capability instantly:
+
+       one large panel that stays covered until you act on it
+       a gift mark at its centre
+       the panel itself is the thing you press
+       win copy replacing the intro copy on reveal
+
+     Everything else is designed rather than copied:
+
+       THE PANEL IS A TICKET. A dashed keyline set in from the edge and two punched
+         notches at the waist, so it reads as something torn from a book rather than as
+         a coloured rectangle
+       A BRAND GRADIENT rather than a flat fill, with one specular sweep across it and a
+         fine diagonal hatch over that, so the panel reads as scratch off material
+       THE GIFT ON A SOLID MEDAL, a bright ringed disc sitting on the foil. Two earlier
+         versions made this disc a translucent wash of on-primary and drew the mark in
+         on-primary on top of it, which erased the mark on every brand: see the note
+         beside .disc
+       THE SCRATCH PROMPT IS A SOLID PILL, not bare capitals floating at the bottom
+       THE REVEALED CODE IS A PERFORATED TICKET with punched edges of its own, so the
+         reveal has somewhere to land
+       AN EYEBROW PILL AND A SHORT BRAND RULE under the head, which the stock template
+         has no equivalent of
+       LEFT ALIGNED HEAD, CENTRED PANEL, which reads as composed rather than as one
+         column of centred text
+       THE PANEL LIFTS ON HOVER, and it has a real focus ring
+
+     THE FOIL TAKES THE BRAND COLOUR. The reference defaults to amber and offers a
+     colour picker, so a fixed colour here would be a choice rather than a constraint,
+     and the point of these files is that fifty demos theme themselves. The mark and the
+     prompt use --c-on-primary, the one colour the generator guarantees is readable on
+     the brand colour, so they survive a pale brand where white would vanish.
+
+     THE PANEL IS A BUTTON ELEMENT, so it can be tabbed to and pressed from the
+     keyboard. The reference's reveal area cannot.
+
+     ===================================================================
+     THE GAME CONTRACT
+     ===================================================================
+
+     Dn.getGameWinner() posts to the parent, which calls the coupon draw endpoint, and
+     REJECTS AFTER THREE SECONDS if no game or coupon is configured. So there is a
+     .catch showing a plain fallback rather than a card that never resolves. The prize
+     text comes from the server and is read defensively, which is what keeps this file
+     shareable: the offer is configured per campaign, so one creative serves every demo
+     without naming a discount.
+     factory/creatives/gamification/README.md.
+
+     WHAT THIS FILE MAY NOT SAY: no brand, no product, no price, no currency, no
+     vertical. One campaign serves every demo forever.
+
+     PANEL SETTINGS, handoff 2.2:
+
+       Trigger              Data Layer Event
+       Event name           dengage_demo_scratch-card
+       Where to display     /.*/
+       Status               Active
+       Show every X minutes 1
+       Max show count       100
+       Layout               Popup, width 400 to 440
+       Design               padding 0, transparent background
+       Close button         Layout > Close Button > "Add close button to outside"
+       Game                 configure the coupon draw, or every reveal lands in `sorry`
+
+     NO SCRIPT TAG. CSS scoped under #dnf-scr.
+========================================================================== -->
+</head>
+<body>
+
+<div id="dnf-scr">
+  <style>
+    #dnf-scr * { margin:0; padding:0; box-sizing:border-box; }
+    /* THE NEUTRAL PALETTE. The bootstrap below overwrites these when the page answers
+       with a theme. --c-brand-text is the brand colour made safe as text on the card:
+       never --c-primary for that, because a pale brand is as low as 1.12:1 on white. */
+    #dnf-scr {
+      --c-primary:#125cfa; --c-on-primary:#ffffff; --c-brand-text:#125cfa;
+      --c-ink:#14181b; --c-muted:#667085; --c-surface:#ffffff; --c-radius:10px;
+      --c-display-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --c-body-font:Inter,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      /* Not themed: a win reads as a win on every demo. */
+      --c-ok:#0f7b45;
+      font-family:var(--c-body-font);
+      width:100%; display:block;
+    }
+    body > #dnf-scr { max-width:420px; margin:40px auto; }
+
+    #dnf-scr .card {
+      position:relative; width:100%; overflow:hidden;
+      background:var(--c-surface);
+      border-radius:calc(var(--c-radius) + 10px);
+      border:1px solid color-mix(in srgb, var(--c-ink) 8%, transparent);
+      box-shadow:0 24px 60px rgba(20,24,27,.22), 0 2px 6px rgba(20,24,27,.06);
+      box-shadow:0 24px 60px color-mix(in srgb, var(--c-ink) 22%, transparent),
+                 0 2px 6px color-mix(in srgb, var(--c-ink) 6%, transparent);
+      padding:26px 26px 24px;
+      animation:dnf-in .3s cubic-bezier(.2,.8,.3,1);
+    }
+    @keyframes dnf-in { from { opacity:0; transform:translateY(12px) scale(.97); } to { opacity:1; transform:none; } }
+
+    #dnf-scr .eyebrow {
+      display:inline-block;
+      font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--c-brand-text);
+      background:color-mix(in srgb, var(--c-primary) 10%, transparent);
+      border:1px solid color-mix(in srgb, var(--c-primary) 22%, transparent);
+      border-radius:999px; padding:5px 12px;
+    }
+    #dnf-scr h2 {
+      font-family:var(--c-display-font);
+      font-size:22px; font-weight:700; line-height:1.22; letter-spacing:-.02em;
+      color:var(--c-ink); margin-top:11px;
+    }
+    /* A short brand rule under the head, which separates the two blocks without a
+       full width divider across the card. */
+    #dnf-scr .rule {
+      width:44px; height:3px; border-radius:2px; margin:11px 0 0;
+      background:var(--c-primary);
+    }
+    #dnf-scr .lede { font-size:13.5px; line-height:1.55; color:var(--c-muted); margin-top:11px; }
+
+    /* ---- the ticket ---- */
+    #dnf-scr .panel {
+      position:relative; display:block; width:100%; margin:18px 0 0;
+      aspect-ratio:1 / 1;
+      border:0; padding:0; background:none; cursor:pointer;
+      border-radius:calc(var(--c-radius) + 8px);
+      -webkit-appearance:none; appearance:none;
+      box-shadow:0 10px 26px color-mix(in srgb, var(--c-ink) 14%, transparent);
+      transition:transform .16s cubic-bezier(.2,.8,.3,1), box-shadow .16s;
+    }
+    #dnf-scr .card[data-state="ready"] .panel:hover {
+      transform:translateY(-2px);
+      box-shadow:0 16px 34px color-mix(in srgb, var(--c-ink) 20%, transparent);
+    }
+    #dnf-scr .panel:focus-visible { outline:3px solid var(--c-brand-text); outline-offset:3px; }
+
+    /* Underneath: the prize. Above it: the foil, which wipes away. */
+    #dnf-scr .under {
+      position:absolute; inset:0; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:10px; padding:20px;
+      border-radius:inherit;
+      background:
+        radial-gradient(120% 90% at 50% 0%,
+          color-mix(in srgb, var(--c-primary) 8%, transparent) 0%, transparent 70%),
+        color-mix(in srgb, var(--c-ink) 4%, var(--c-surface));
+    }
+    /* THE CODE AS A PERFORATED TICKET, punched on both edges. Two radial gradients
+       rather than pseudo elements, because the reveal lives inside a button and nested
+       generated content there is not worth relying on. */
+    #dnf-scr .code {
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:19px; font-weight:700; letter-spacing:.08em; color:var(--c-ok);
+      background:
+        radial-gradient(circle at 0 50%, transparent 7px, #eefaf3 7px) left center / 51% 100% no-repeat,
+        radial-gradient(circle at 100% 50%, transparent 7px, #eefaf3 7px) right center / 51% 100% no-repeat;
+      border-radius:10px; padding:13px 26px;
+    }
+    #dnf-scr .under small {
+      font-size:12px;
+      /* Darker than muted, because this sits on a tinted panel rather than the card. */
+      color:color-mix(in srgb, var(--c-muted) 82%, var(--c-ink));
+    }
+
+    /* THE FOIL HAS TO READ AS METAL, not as a coloured rectangle. Five stops rather
+       than three: the corners go a little INTO the ink so the panel has edges, the
+       band across the middle goes toward on-primary so it has a highlight, and the
+       two sit far enough apart to read as a curved surface rather than a blur. The
+       first version ran primary to a light mix and back, which averaged out to a flat
+       wash on every brand. */
+    #dnf-scr .foil {
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background:linear-gradient(145deg,
+        color-mix(in srgb, var(--c-primary) 84%, var(--c-ink)) 0%,
+        var(--c-primary) 26%,
+        color-mix(in srgb, var(--c-primary) 74%, var(--c-on-primary)) 47%,
+        var(--c-primary) 68%,
+        color-mix(in srgb, var(--c-primary) 86%, var(--c-ink)) 100%);
+      /* Recessed rather than sitting on top: a bright top edge and a shadow gathered
+         along the bottom, both in the theme's own colours. */
+      box-shadow:
+        inset 0 1.5px 0 color-mix(in srgb, var(--c-on-primary) 26%, transparent),
+        inset 0 -18px 30px -18px color-mix(in srgb, var(--c-ink) 55%, transparent);
+      border-radius:inherit;
+      transition:clip-path .85s cubic-bezier(.4,.05,.25,1), opacity .85s ease-out;
+      clip-path:inset(0 0 0 0);
+    }
+    /* A specular sweep across the corner, and over it a fine diagonal hatch. The hatch
+       is what makes the panel read as scratch-off material rather than as a coloured
+       rectangle: 6px apart and 4 percent strong, so it is texture at arm's length and
+       invisible up close. Both live in one layer because a single element can stack as
+       many gradients as it likes. */
+    #dnf-scr .foil::before {
+      content:""; position:absolute; inset:0; border-radius:inherit;
+      background:
+        repeating-linear-gradient(58deg,
+          color-mix(in srgb, var(--c-on-primary) 4%, transparent) 0 1px,
+          transparent 1px 6px),
+        linear-gradient(118deg,
+          color-mix(in srgb, var(--c-on-primary) 22%, transparent) 0%,
+          color-mix(in srgb, var(--c-on-primary) 6%, transparent) 22%,
+          transparent 45%,
+          color-mix(in srgb, var(--c-on-primary) 10%, transparent) 100%);
+    }
+    /* THE TICKET TELL: a dashed keyline set in from the edge. With the notches below,
+       this is what stops it being a coloured square. */
+    #dnf-scr .foil::after {
+      content:""; position:absolute; inset:11px; border-radius:calc(var(--c-radius) + 2px);
+      border:1.5px dashed color-mix(in srgb, var(--c-on-primary) 42%, transparent);
+    }
+    #dnf-scr .notch {
+      position:absolute; top:50%; width:18px; height:18px; border-radius:50%;
+      background:var(--c-surface); transform:translateY(-50%); z-index:2;
+      box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 8%, transparent);
+    }
+    #dnf-scr .notch.l { left:-9px; }
+    #dnf-scr .notch.r { right:-9px; }
+
+    /* THE MARK SITS ON A SOLID MEDAL, and the reason is the same one that made the hint
+       pill solid. Two earlier versions tinted this disc with a wash of on-primary over
+       the foil and then drew the mark in on-primary on top of it. A wash always moves
+       the background TOWARD the colour it is mixed from, so tinting with on-primary and
+       then painting in on-primary reduces the contrast between them whichever brand it
+       is. Measured against the pixels: a dark mark on a darkened gold foil at 2.51:1, a
+       white mark on a lightened blue foil at 2.25:1. It looked like a considered detail
+       and it was quietly erasing the mark.
+
+       Solid surface with the derived brand text on it cannot do that, because both
+       values are fixed and the pair is derived to clear 4.5:1. It also reads better: a
+       bright coin sitting ON the foil rather than a smudge sunk into it, and it matches
+       the hint pill below it. */
+    #dnf-scr .disc {
+      position:relative; width:50%; aspect-ratio:1 / 1; border-radius:50%;
+      background:radial-gradient(circle at 50% 30%,
+        var(--c-surface) 0%,
+        color-mix(in srgb, var(--c-ink) 5%, var(--c-surface)) 100%);
+      box-shadow:
+        inset 0 0 0 1px color-mix(in srgb, var(--c-ink) 12%, transparent),
+        inset 0 0 0 6px color-mix(in srgb, var(--c-ink) 4%, transparent),
+        0 8px 20px color-mix(in srgb, var(--c-ink) 34%, transparent);
+      display:flex; align-items:center; justify-content:center;
+    }
+    #dnf-scr .disc svg { width:50%; height:auto; display:block; fill:var(--c-brand-text); }
+
+    /* A SOLID PILL, NOT A TRANSLUCENT ONE, and the reason is measurable. The first
+       version was on-primary text on an 18 percent wash of itself over the foil, which
+       comes out at 3.3:1 on a blue brand and 3.7:1 on orange: a wash of a colour over
+       that same colour barely separates from it, whichever brand it is. Solid surface
+       with brand-text on it is derived to clear 4.5:1 by construction, and it reads as
+       the thing you are meant to press rather than as a watermark. */
+    #dnf-scr .hint {
+      position:absolute; left:50%; bottom:20px; transform:translateX(-50%);
+      font-size:10.5px; font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+      color:var(--c-brand-text);
+      background:var(--c-surface);
+      border:1px solid color-mix(in srgb, var(--c-ink) 10%, transparent);
+      box-shadow:0 3px 10px color-mix(in srgb, var(--c-ink) 26%, transparent);
+      border-radius:999px; padding:7px 15px; white-space:nowrap;
+    }
+
+    #dnf-scr .foot { font-size:11px; color:var(--c-muted); margin-top:14px; line-height:1.5; }
+
+    /* ---- states ---- */
+    #dnf-scr .card[data-state="won"] .foil,
+    #dnf-scr .card[data-state="sorry"] .foil { clip-path:inset(0 0 0 100%); opacity:0; }
+    #dnf-scr .card[data-state="won"] .panel,
+    #dnf-scr .card[data-state="sorry"] .panel { cursor:default; box-shadow:none; }
+    #dnf-scr .card[data-state="sorry"] .code {
+      color:var(--c-muted);
+      background:
+        radial-gradient(circle at 0 50%, transparent 7px, #f6f7f8 7px) left center / 51% 100% no-repeat,
+        radial-gradient(circle at 100% 50%, transparent 7px, #f6f7f8 7px) right center / 51% 100% no-repeat;
+    }
+    #dnf-scr .win { display:none; }
+    #dnf-scr .card[data-state="won"] .intro,
+    #dnf-scr .card[data-state="sorry"] .intro { display:none; }
+    #dnf-scr .card[data-state="won"] .win,
+    #dnf-scr .card[data-state="sorry"] .win { display:block; }
+  </style>
+
+  <!-- THE THEME BOOTSTRAP. A 1x1 transparent GIF, so onload always fires and
+       onerror covers a policy that refuses a data URI. Both call the same routine
+       and it runs once: data-theme-state is set before any work and is the guard.
+
+       IT IS TAKEN OUT OF THE FLOW, and that is not tidiness. An <img> is inline, so
+       even a 1x1 one sits on a line box and reserves the line's full height, about
+       18px. On a centred popup that is invisible. On a BANNER pinned to the top of
+       the viewport it is 18px of nothing above the bar, which reads on screen as a
+       gap between the top of the page and the bar, and it also moved the bar's
+       bottom edge 18px below where its height said it was. Absolute, zero opacity
+       and no pointer events: it still loads, it still fires, it occupies nothing. -->
+  <img class="boot" alt="" aria-hidden="true"
+       style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none"
+       src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+       onload="(function(){
+    var root=document.getElementById('dnf-scr');
+    if(!root){return;}
+    if(root.getAttribute('data-theme-state')){return;}
+    root.setAttribute('data-theme-state','none');
+
+    var KEYS=['primary','on-primary','brand-text','ink','muted','line','surface',
+              'radius','display-font','body-font'];
+
+    function paint(map,how){
+      var painted=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=map[KEYS[i]];
+        if(v){root.style.setProperty('--c-'+KEYS[i],v);painted=true;}
+      }
+      if(painted){root.setAttribute('data-theme-state',how);}
+      return painted;
+    }
+
+    /* Routes 1 and 2. The same reader for both, because the only difference is
+       which document is asked, and asking a cross-origin one throws. */
+    function fromDocument(doc){
+      var view=doc.defaultView;
+      if(!view){return null;}
+      var cs=view.getComputedStyle(doc.documentElement),out={},got=false,i,v;
+      for(i=0;i&lt;KEYS.length;i++){
+        v=cs.getPropertyValue('--'+KEYS[i]).trim();
+        if(v){out[KEYS[i]]=v;got=true;}
+      }
+      return got?out:null;
+    }
+
+    /* A theme block, from wherever it came, in this file's own names. */
+    function fromTheme(t,how){
+      if(!t){return false;}
+      var stack=',ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+      var done=paint({
+        'primary':t.primary,'on-primary':t.onPrimary,'brand-text':t.brandText,
+        'ink':t.ink,'muted':t.muted,
+        'line':t.line,'surface':t.surface,'radius':t.radius,
+        'display-font':t.displayFont?t.displayFont+stack:'',
+        'body-font':t.bodyFont?t.bodyFont+stack:''
+      },how);
+      if(!done){return false;}
+      /* NO FONT FILE IS FETCHED. This used to append a Google Fonts link so a popup
+         matched the prospect's typeface. Removed 7 August 2026, Salil's call: a
+         creative may not depend on a host outside this repository at run time,
+         non-negotiable 4, and that was the only request any of these files made.
+
+         The family NAME still arrives and is still set on --c-display-font and
+         --c-body-font above, followed by a system stack. So a popup uses the
+         prospect's typeface when the browser already has it and falls back to the
+         system sans when it does not. Colour, radius and spacing are unaffected,
+         and they are what carries the theme. */
+      return true;
+    }
+
+    var here=fromDocument(document);
+    if(here){paint(here,'page');return;}
+    try{
+      var up=fromDocument(window.parent.document);
+      if(up){paint(up,'parent');return;}
+    }catch(err){/* cross-origin, which is the normal case for a popup */}
+
+    /* THERE IS NO ROUTE 4 ANY MORE. It fetched demo.config.json relative to
+       document.referrer, and it was removed on 7 August 2026 for two reasons that
+       both stand on their own.
+
+       It could not work. Chrome's default referrer policy is
+       strict-origin-when-cross-origin, so a cross-origin frame is handed the ORIGIN
+       and never the path. The route guarded against that by requiring a path before
+       fetching, which meant it correctly declined to run every single time rather
+       than requesting the wrong URL. Proven against a live demo's network panel.
+
+       And it named an outside host, which non-negotiable 4 does not allow in a
+       creative. That was the last such reference in these files.
+
+       Route 3 below replaced it and is what actually works: the page is the only
+       thing that knows which demo this is, so the page is asked. */
+
+    /* Route 3. The page is the only thing that knows which demo this is, because the
+       referrer policy withheld the path, so the page is asked. */
+    function onReply(e){
+      if(!e.data||e.data.dnTheme!=='reply'){return;}
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      if(fromTheme(e.data.theme,'message')){
+        window.removeEventListener('message',onReply);
+      }
+    }
+    window.addEventListener('message',onReply);
+
+    /* Asked more than once, a little apart, so a popup that renders before the page
+       has finished booting still gets an answer. Cheap: a message to a window with no
+       listener costs nothing, and the reply handler ignores everything after the
+       first. */
+    var tries=0;
+    function ask(){
+      tries++;
+      if(root.getAttribute('data-theme-state')!=='none'){return;}
+      try{window.parent.postMessage({dnTheme:'request'},'*');}catch(err){}
+      if(tries&lt;4){window.setTimeout(ask,180);return;}
+      /* Nobody answered after four tries, so this stays on the neutral palette, which
+         is a readable creative rather than a broken one. A demo published before the
+         parent half of the bridge existed lands here. */
+    }
+    ask();
+  })()"
+       onerror="var b=this;b.removeAttribute('onerror');if(b.onload){b.onload();}">
+
+  <div class="card" id="dnf-scr-card" data-state="ready">
+    <div class="intro">
+      <span class="eyebrow">One card, one reveal</span>
+      <h2>Scratch to see what is yours</h2>
+      <div class="rule"></div>
+      <p class="lede">Whatever is under the panel is applied at checkout. Press it once.</p>
+    </div>
+    <div class="win">
+      <span class="eyebrow">Revealed</span>
+      <h2 id="dnf-scr-wintitle">That one is yours</h2>
+      <div class="rule"></div>
+      <p class="lede" id="dnf-scr-winbody">It is on your basket now. Use it whenever you are ready.</p>
+    </div>
+
+    <button type="button" class="panel" id="dnf-scr-panel"
+            aria-label="Scratch to reveal your prize"
+            onclick="var c=document.getElementById('dnf-scr-card');if(c.getAttribute('data-state')!=='ready'){return;}Dn.sendClick('scratch-card__scratch');Dn.getGameWinner().then(function(p){var t=p&amp;&amp;(p.couponCode||p.code||p.prize||p.name||p.title)||'';document.getElementById('dnf-scr-code').textContent=t||'Applied to your basket';c.setAttribute('data-state','won');}).catch(function(){document.getElementById('dnf-scr-code').textContent='Nothing this time';document.getElementById('dnf-scr-msg').textContent='Another card tomorrow';document.getElementById('dnf-scr-wintitle').textContent='Not this time';document.getElementById('dnf-scr-winbody').textContent='The draw came back empty. There will be another card along shortly.';c.setAttribute('data-state','sorry');});">
+      <span class="under">
+        <span class="code" id="dnf-scr-code">&nbsp;</span>
+        <small id="dnf-scr-msg">Use it at checkout</small>
+      </span>
+      <span class="foil">
+        <span class="notch l"></span>
+        <span class="notch r"></span>
+        <span class="disc">
+          <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+            <rect x="3" y="12" width="34" height="9" rx="2.5"/>
+            <rect x="6" y="21" width="28" height="15" rx="2.5"/>
+            <rect x="16.6" y="12" width="6.8" height="24" rx="1.6"/>
+            <path d="M20 12c-4.4-1.1-9.6-3.2-9.6-7.5 0-3.2 4.3-4.3 6.4-2.1 2.1 2.1 3.2 6.4 3.2 9.6z"/>
+            <path d="M20 12c4.4-1.1 9.6-3.2 9.6-7.5 0-3.2-4.3-4.3-6.4-2.1-2.1 2.1-3.2 6.4-3.2 9.6z"/>
+          </svg>
+        </span>
+        <span class="hint">Scratch here</span>
+      </span>
+    </button>
+
+    <p class="foot">A demonstration storefront, built for this conversation.</p>
+  </div>
+</div>
+
+</body>
+</html>

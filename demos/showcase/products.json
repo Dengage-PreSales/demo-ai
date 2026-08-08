@@ -1,0 +1,204 @@
+{
+  "products": [
+    {
+      "id": "FSH-JKT-001",
+      "name": "Quilted Field Jacket",
+      "category": "Fashion",
+      "categoryPath": "Fashion > Outerwear",
+      "price": 189,
+      "discountedPrice": 149,
+      "stockCount": 12,
+      "attributes": {
+        "Sizes": "XS to XL",
+        "Material": "Waxed cotton",
+        "Colour": "Olive"
+      },
+      "motif": "jacket"
+    },
+    {
+      "id": "FSH-KNT-002",
+      "name": "Merino Crew Knit",
+      "category": "Fashion",
+      "categoryPath": "Fashion > Knitwear",
+      "price": 95,
+      "stockCount": 3,
+      "attributes": {
+        "Sizes": "S to XL",
+        "Material": "Merino wool"
+      },
+      "motif": "knit"
+    },
+    {
+      "id": "FSH-BOO-003",
+      "name": "Leather Chelsea Boot",
+      "category": "Fashion",
+      "categoryPath": "Fashion > Footwear",
+      "price": 240,
+      "attributes": {
+        "Sizes": "6 to 12",
+        "Material": "Full grain leather"
+      },
+      "motif": "boot"
+    },
+    {
+      "id": "FSH-SHT-004",
+      "name": "Oxford Shirt",
+      "category": "Fashion",
+      "categoryPath": "Fashion > Shirts",
+      "price": 68,
+      "discountedPrice": 54,
+      "stockCount": 40,
+      "attributes": {
+        "Sizes": "S to XXL",
+        "Fit": "Regular"
+      },
+      "motif": "shirt"
+    },
+    {
+      "id": "FSH-BAG-005",
+      "name": "Canvas Weekender",
+      "category": "Fashion",
+      "categoryPath": "Fashion > Bags",
+      "price": 130,
+      "stockCount": 7,
+      "attributes": {
+        "Capacity": "38 litres",
+        "Material": "Waxed canvas"
+      },
+      "motif": "bag"
+    },
+    {
+      "id": "ELC-LAP-101",
+      "name": "Studio Laptop 14",
+      "category": "Electronics",
+      "categoryPath": "Electronics > Laptops",
+      "price": 1450,
+      "stockCount": 5,
+      "attributes": {
+        "Display": "14 inch, 3K",
+        "Memory": "16GB",
+        "Storage": "512GB SSD"
+      },
+      "motif": "laptop"
+    },
+    {
+      "id": "ELC-HPH-102",
+      "name": "Over Ear Headphones",
+      "category": "Electronics",
+      "categoryPath": "Electronics > Audio",
+      "price": 279,
+      "discountedPrice": 229,
+      "stockCount": 22,
+      "attributes": {
+        "Battery": "30 hours",
+        "Noise cancelling": "Active"
+      },
+      "motif": "headphones"
+    },
+    {
+      "id": "ELC-WCH-103",
+      "name": "Fitness Watch",
+      "category": "Electronics",
+      "categoryPath": "Electronics > Wearables",
+      "price": 199,
+      "attributes": {
+        "Battery": "7 days",
+        "Water resistance": "50m"
+      },
+      "motif": "smartwatch"
+    },
+    {
+      "id": "ELC-CAM-104",
+      "name": "Compact Mirrorless Camera",
+      "category": "Electronics",
+      "categoryPath": "Electronics > Cameras",
+      "price": 899,
+      "stockCount": 2,
+      "attributes": {
+        "Sensor": "24MP",
+        "Mount": "Standard",
+        "Video": "4K 60fps"
+      },
+      "motif": "camera"
+    },
+    {
+      "id": "ELC-SPK-105",
+      "name": "Portable Speaker",
+      "category": "Electronics",
+      "categoryPath": "Electronics > Audio",
+      "price": 119,
+      "discountedPrice": 89,
+      "stockCount": 31,
+      "attributes": {
+        "Battery": "18 hours",
+        "Rating": "IP67"
+      },
+      "motif": "speaker"
+    },
+    {
+      "id": "HOM-CHR-201",
+      "name": "Oak Dining Chair",
+      "category": "Home",
+      "categoryPath": "Home > Furniture",
+      "price": 215,
+      "stockCount": 16,
+      "attributes": {
+        "Material": "Solid oak",
+        "Finish": "Natural oil"
+      },
+      "motif": "chair"
+    },
+    {
+      "id": "HOM-LMP-202",
+      "name": "Ceramic Table Lamp",
+      "category": "Home",
+      "categoryPath": "Home > Lighting",
+      "price": 145,
+      "attributes": {
+        "Height": "48cm",
+        "Shade": "Linen"
+      },
+      "motif": "lamp"
+    },
+    {
+      "id": "HOM-RUG-203",
+      "name": "Wool Flatweave Rug",
+      "category": "Home",
+      "categoryPath": "Home > Textiles",
+      "price": 320,
+      "discountedPrice": 265,
+      "stockCount": 9,
+      "attributes": {
+        "Size": "160 x 230cm",
+        "Material": "Wool"
+      },
+      "motif": "rug"
+    },
+    {
+      "id": "HOM-COO-204",
+      "name": "Cast Iron Casserole",
+      "category": "Home",
+      "categoryPath": "Home > Kitchen",
+      "price": 175,
+      "stockCount": 1,
+      "attributes": {
+        "Capacity": "4.5 litres",
+        "Material": "Enamelled cast iron"
+      },
+      "motif": "cookware"
+    },
+    {
+      "id": "HOM-THR-205",
+      "name": "Lambswool Throw",
+      "category": "Home",
+      "categoryPath": "Home > Textiles",
+      "price": 88,
+      "stockCount": 25,
+      "attributes": {
+        "Size": "130 x 180cm",
+        "Material": "Lambswool"
+      },
+      "motif": "scarf"
+    }
+  ]
+}

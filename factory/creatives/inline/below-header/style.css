@@ -1,0 +1,19 @@
+  #dnil-head { display:block; background:var(--tint); border-bottom:1px solid var(--line); }
+  #dnil-head .in {
+    max-width:1180px; margin:0 auto; padding:9px 20px;
+    display:flex; align-items:center; gap:14px;
+  }
+  #dnil-head .msg { font-size:12.5px; color:var(--ink); flex:0 0 auto; }
+  #dnil-head .msg b { font-weight:700; color:var(--primary); }
+  #dnil-head .row { display:flex; gap:8px; flex:1 1 auto; min-width:0; overflow:hidden; }
+  #dnil-head a.chip {
+    display:flex; align-items:center; gap:7px; flex:0 0 auto;
+    background:var(--surface); border:1px solid var(--line); border-radius:20px;
+    padding:4px 12px 4px 4px; text-decoration:none; transition:border-color .15s;
+  }
+  #dnil-head a.chip:hover { border-color:var(--primary); }
+  #dnil-head .thumb { width:24px; height:24px; border-radius:50%; overflow:hidden; background:var(--page); flex:0 0 auto; }
+  #dnil-head .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  #dnil-head .thumb .art { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:8px; }
+  #dnil-head .t { font-size:12px; font-weight:600; color:var(--ink); white-space:nowrap; max-width:150px; overflow:hidden; text-overflow:ellipsis; }
+  @media (max-width:760px) { #dnil-head .row { display:none; } }

@@ -1,0 +1,34 @@
+# Every change to this repository is reviewed by the account that owns it.
+#
+# WHAT THIS DOES AND, MORE IMPORTANTLY, WHAT IT DOES NOT DO. On its own a
+# CODEOWNERS file only requests a review; it cannot refuse a change. It becomes
+# enforcement when the default branch carries a rule requiring review from code
+# owners. Without that rule this file is a note about intent.
+#
+# The paths below are called out separately from the catch-all because they are
+# the parts a change can break invisibly: a generated demo either works or looks
+# wrong, whereas a change to how events are emitted, to a shared creative, or to
+# the guard can be wrong on every future demo at once and still pass a glance.
+
+*                               @Dengage-PreSales
+
+# Event emission. One module owns every call to the Dengage SDK, and a demo's
+# rows are only findable through the page view it sends.
+/template/js/dengageEvents.js   @Dengage-PreSales
+
+# Shared creatives. One file serves every live demo, so an edit here changes all
+# of them at once, including demos already in front of a prospect.
+/factory/creatives/             @Dengage-PreSales
+
+# The guard and the checks. If these stop being strict, nothing else notices.
+/factory/guard/                 @Dengage-PreSales
+/factory/checks/                @Dengage-PreSales
+
+# The factory itself: intake, generation and publication.
+/.github/workflows/             @Dengage-PreSales
+/factory/generate-demo.mjs      @Dengage-PreSales
+/factory/scrape/                @Dengage-PreSales
+
+# The operating rules and the specification.
+/CLAUDE.md                      @Dengage-PreSales
+/DEMO-FACTORY-HANDOFF.md        @Dengage-PreSales
