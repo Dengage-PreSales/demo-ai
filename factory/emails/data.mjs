@@ -38,6 +38,11 @@
    A TABLE IS ADDRESSED AS $db.<table>. $from('$db.shopping_cart_events'), not
    $from("shopping_cart_events"). Single quotes throughout, matching the same source.
 
+   AND $from OFFERS where, take AND get. Nothing else. orderByDescending was used
+   throughout this file and does not exist, which the engine reports as
+   "TypeError: Object doesn't support property or method". Ordering, filtering and
+   slicing all happen in JavaScript on the array get() returns.
+
    THE COLUMN NAMES ARE THE ONE THING TO CHECK PER ACCOUNT. The six standard
    ecommerce tables are standard, but a column can be named slightly differently
    between accounts, and no scrape can discover that. Each query below states the
@@ -143,10 +148,23 @@ export function productLookup(cursor, variable) {
    first and a small take, because an email shows a few things rather than a
    history, and a large take costs send time for rows nobody sees. */
 function query(spec, take) {
+    /* ONLY where, take AND get. Those three are the whole proven surface of $from,
+       taken from a snippet running in a live account. orderByDescending was used here
+       and does not exist: the engine answers
+       "TypeError: Object doesn't support property or method 'orderByDescending'".
+
+       So the ordering happens in JavaScript on the array get() returns, which is
+       ordinary Array.prototype and cannot be refused. The window is deliberately wider
+       than the number of rows wanted, because without server side ordering take(n)
+       returns SOME n rows rather than the newest n, so the sort needs something to
+       choose from. A contact with more cart events than the window may still miss the
+       very newest, and that is a real limit rather than a solved problem. */
     return "$from('$db." + spec.table + "')" +
         ".where('contact_key', '=', $Contact.contact_key)" +
-        ".orderByDescending('" + spec.time + "')" +
-        '.take(' + take + ').get()';
+        '.take(' + (take * 10) + ').get()' +
+        ".sort(function (a, b) { return new Date(b['" + spec.time +
+        "']) - new Date(a['" + spec.time + "']); })" +
+        '.slice(0, ' + take + ')';
 }
 
 export const QUERIES = {
@@ -162,6 +180,8 @@ export const QUERIES = {
     lastOrderLines: { spec: COLUMNS.orderLine, take: 3,
                       expr: "$from('$db." + COLUMNS.orderLine.table + "')" +
                             ".where('contact_key', '=', $Contact.contact_key).take(3).get()",
+                      /* No sort: the lines of one order share their event_date, so
+                         ordering them says nothing. */
                       what: 'the lines on the last order' },
     lastSearch: { spec: COLUMNS.search, take: 1, expr: query(COLUMNS.search, 1),
                   what: 'the last thing searched for' }

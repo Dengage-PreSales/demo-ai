@@ -1,12 +1,15 @@
 {%
   var lines = $from('$db.shopping_cart_events')
     .where('contact_key', '=', $Contact.contact_key)
-    .orderByDescending('event_date')
-    .take(3)
+    .take(30)
     .get();
 
+  lines.sort(function (a, b) {
+    return new Date(b.event_date) - new Date(a.event_date);
+  });
+
   var ids = [];
-  for (var n = 0; n < lines.length; n++) {
+  for (var n = 0; n < lines.length && ids.length < 3; n++) {
     var pid = (lines[n] && lines[n].product_id != null) ? String(lines[n].product_id).trim() : "";
     if (pid !== "" && ids.indexOf(pid) === -1) { ids.push(pid); }
   }
@@ -17,7 +20,6 @@
 
   var formatUrl = function (url) {
     var u = (url == null) ? "" : String(url).trim();
-    if (!u || u === "#") return "#";
     if (u.indexOf("http://") === 0 || u.indexOf("https://") === 0) return u;
     return "#";
   };

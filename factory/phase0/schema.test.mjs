@@ -153,6 +153,18 @@ for (const table of ['order_events', 'search_events']) {
     ok('nothing emits an output tag closing with =%}, which is a syntax error',
        offenders.length === 0, offenders);
 
+    /* $from OFFERS where, take AND get. Nothing else. orderByDescending was chained
+       onto every query in this repository and does not exist: the engine answers
+       "TypeError: Object doesn't support property or method 'orderByDescending'".
+       Ordering happens in JavaScript on the array get() returns.
+
+       Prose is excluded by looking only for the method call, so the paragraphs
+       explaining the mistake do not trip the check on the mistake. */
+    const chained = files.filter((f) =>
+        /\.orderByDescending\s*\(/.test(readFileSync(join(ROOT, f), 'utf8')));
+    ok('nothing chains orderByDescending, which $from does not have',
+       chained.length === 0, chained);
+
     /* A TABLE IS ADDRESSED AS $db.<table>. Taken from a snippet known to work in a live
        account: $from('$db.product'). A bare table name was what this repository used. */
     const { QUERIES, productLookup } = await import('../emails/data.mjs');

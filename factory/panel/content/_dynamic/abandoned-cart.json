@@ -1,12 +1,12 @@
-{% var lines = $from("shopping_cart_events")
+{% var lines = $from('$db.shopping_cart_events')
      .where("contact_key", "=", $Contact.contact_key)
-     .orderByDescending("event_date")
+     
      .take(3)
      .get(); %}
 {% var written = 0; %}
 {"items":[
 {% for (var i = 0; i < lines.length; i++) { %}
-  {% var p = $from("dps_product")
+  {% var p = $from('$db.dps_product')
        .where("product_id", "=", lines[i].product_id)
        .take(1)
        .get()[0]; %}
