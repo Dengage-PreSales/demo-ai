@@ -26,7 +26,8 @@
 
 import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { emailPalette } from './palette.mjs';
 import { JOURNEYS, renderJourney } from './journeys.mjs';
@@ -263,6 +264,66 @@ const built = await (async () => {
             ok('the AMP ' + label + ' passes the official validator',
                result.status === 'PASS', errors.map((e) => e.line + ': ' + e.message));
         }
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* The trending strategy must agree with the storefront's, exactly               */
+
+{
+    /* WHY THIS TEST IS THE WHOLE JUSTIFICATION FOR recommend.mjs EXISTING. The
+       ordering is implemented twice: once in template/js/recommend.js, which a
+       browser loads, and once in factory/emails/recommend.mjs, which the email build
+       imports. Duplication is the lesser evil there, because the storefront file is
+       an IIFE that the guard compares byte for byte against every demo's copy, so
+       restructuring it into a shared module touches all of that.
+
+       What makes the duplication safe is this test and nothing else. It lifts
+       seeded() out of the storefront file as text, runs it, and requires the same
+       order from both for the same catalogue. If either drifts, an email's strip and
+       the rail on the demo's own pages quietly stop matching, and a prospect who
+       clicks through sees different products from the ones that brought them. */
+    const { seeded, trending, TRENDING_LABEL } = await import('./recommend.mjs');
+    const here = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+    const storefront = readFileSync(join(here, 'template', 'js', 'recommend.js'), 'utf8');
+
+    const found = /    function seeded\(list, seed\) \{[\s\S]*?\n    \}/.exec(storefront);
+    ok('seeded() can still be found in the storefront module', found !== null);
+
+    if (found) {
+        /* Evaluated as an expression rather than imported: the storefront file is an
+           IIFE meant for a page, and loading it here would need a DOM. */
+        const theirs = new Function('return (' + found[0].trim() + ')')();
+
+        /* Ids of varied length and first character, because the comparator keys on
+           both. A fixture of A1..A9 would agree by accident. */
+        const catalogue = ['A1', 'BB22', 'c333', 'D4', 'ee55555', 'F6', 'g77', 'H888',
+                           'i9', 'JJ10', 'k11', 'L1212']
+            .map((id) => ({ id, name: 'Product ' + id }));
+
+        for (const slug of ['techiestore-in', 'a', 'some-longer-demo-slug-2026']) {
+            const mine = seeded(catalogue, slug).map((p) => p.id);
+            const yours = theirs(catalogue, slug).map((p) => p.id);
+            ok('the two implementations agree for slug "' + slug + '"',
+               mine.join(',') === yours.join(','), { mine, yours });
+        }
+
+        /* And the ordering has to actually do something. An implementation that
+           returned the list untouched would agree with itself and pass everything
+           above, which is the way this test could be worthless. */
+        const untouched = catalogue.map((p) => p.id).join(',');
+        ok('the ordering is not simply catalogue order',
+           seeded(catalogue, 'techiestore-in').map((p) => p.id).join(',') !== untouched);
+
+        ok('trending is stable across calls',
+           trending(catalogue, 'x', 4).map((p) => p.id).join(',') ===
+           trending(catalogue, 'x', 4).map((p) => p.id).join(','));
+        ok('trending respects the limit', trending(catalogue, 'x', 3).length === 3);
+        ok('a product with no id cannot reach a rail',
+           trending(catalogue.concat([{ name: 'no id' }]), 'x', 99)
+               .every((p) => p && p.id));
+        ok('the label is the one the storefront prints',
+           storefront.includes("label: '" + TRENDING_LABEL + "'"), TRENDING_LABEL);
     }
 }
 
