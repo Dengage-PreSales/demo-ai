@@ -5,7 +5,8 @@
   "snippets": {
     "abandonedCart": "5178aafe-5bec-4326-b3ed-890aff1ec867",
     "abandonedCartTotal": "50d50fcf-3e9a-4a4f-9143-fb17b1049e91",
-    "recommendations": "c3a50633-c5fb-4f49-8e72-e60083bf0437"
+    "recommendations": "c3a50633-c5fb-4f49-8e72-e60083bf0437",
+    "abandonedCartLine": "6ced3ab3-9187-4802-a52b-9ec5c69dfeec"
   },
 
   "_comment": [
@@ -34,8 +35,10 @@
     "",
     "THE SNIPPETS BLOCK IS THE SECOND HALF OF THAT ALLOWLIST, and it is deliberately",
     "a separate field rather than more app guids. Dengage issues a UUID when a",
-    "Dynamic Content asset is saved, and the shared email template has to name two of",
-    "them or it would import with empty blocks. They are content ids, not",
+    "Dynamic Content asset is saved, and the shared email template has to name every",
+    "one it calls or it imports with empty blocks. abandonedCartLine is the one that",
+    "is not only an email asset: the same saved object feeds SMS, WhatsApp, push copy",
+    "and the email subject line. They are content ids, not",
     "application ids: nothing sends to a device because of them. Listing them here",
     "rather than in the generator means the guardrails still reject every OTHER",
     "identifier, which is the property worth keeping, and the ids are written down",

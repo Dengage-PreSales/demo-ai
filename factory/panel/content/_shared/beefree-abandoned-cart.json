@@ -62,27 +62,24 @@
               "grid-columns": 12,
               "modules": [
                 {
-                  "type": "mailup-bee-newsletter-modules-text",
+                  "type": "mailup-bee-newsletter-modules-html",
                   "uuid": "dps-cart-02",
                   "descriptor": {
-                    "text": {
-                      "computedStyle": {
-                        "linkColor": "#125cfa"
-                      },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:1px;line-height:1.6;color:#f6f7f8;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\">Everything you added is one press away from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
+                    "html": {
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\"><snippet snippet_id=\"6ced3ab3-9187-4802-a52b-9ec5c69dfeec\" snippet_name=\"dps abandoned cart line\"></snippet>, one press from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
                       "style": {
-                        "color": "#f6f7f8",
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "1px",
-                        "line-height": "1.6"
+                        "font-size": "15px"
+                      },
+                      "computedStyle": {
+                        "hideContentOnMobile": false
                       }
                     },
                     "style": {
-                      "text-align": "left",
                       "padding-top": "0px",
-                      "padding-right": "24px",
+                      "padding-right": "0px",
                       "padding-bottom": "0px",
-                      "padding-left": "24px"
+                      "padding-left": "0px"
                     },
                     "computedStyle": {
                       "hideContentOnMobile": false
@@ -713,27 +710,24 @@
             "grid-columns": 12,
             "modules": [
               {
-                "type": "mailup-bee-newsletter-modules-text",
+                "type": "mailup-bee-newsletter-modules-html",
                 "uuid": "dps-cart-02",
                 "descriptor": {
-                  "text": {
-                    "computedStyle": {
-                      "linkColor": "#125cfa"
-                    },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:1px;line-height:1.6;color:#f6f7f8;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\">Everything you added is one press away from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
+                  "html": {
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\"><snippet snippet_id=\"6ced3ab3-9187-4802-a52b-9ec5c69dfeec\" snippet_name=\"dps abandoned cart line\"></snippet>, one press from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
                     "style": {
-                      "color": "#f6f7f8",
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "1px",
-                      "line-height": "1.6"
+                      "font-size": "15px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
                     }
                   },
                   "style": {
-                    "text-align": "left",
                     "padding-top": "0px",
-                    "padding-right": "24px",
+                    "padding-right": "0px",
                     "padding-bottom": "0px",
-                    "padding-left": "24px"
+                    "padding-left": "0px"
                   },
                   "computedStyle": {
                     "hideContentOnMobile": false

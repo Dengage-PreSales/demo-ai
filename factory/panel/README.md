@@ -44,10 +44,10 @@ answers "is it live" faster and more reliably than looking.
 
 ## Do these, in order. This is the whole list
 
-### 1. Three Dynamic Content assets. Content > Dynamic Content
+### 1. Four Dynamic Content assets. Content > Dynamic Content
 
-All three exist already and all three changed on 9 August, so **paste the current file
-over each one**. Type **HTML** for all of them.
+All four exist now. **The three HTML ones changed on 9 August, so paste the current file
+over each one.** Type **HTML**.
 
 | Asset name in the panel | Paste this file |
 |---|---|
@@ -55,42 +55,41 @@ over each one**. Type **HTML** for all of them.
 | `dps abandoned cart total` | `content/_dynamic/abandoned-cart-total.html` |
 | `dps recommendations` | `content/_dynamic/recommendations.html` |
 
-Nothing to attach and nothing to click. Their ids are recorded in
-`factory/sandbox.json`, so the template already calls all three by id.
+Nothing to attach and nothing to click. Every id is recorded in `factory/sandbox.json`,
+so the template calls all four by id.
 
-### 2. One more Dynamic Content asset, and it is the one four channels share
+### 2. The fourth asset is the one four channels share
 
-**New.** Everything consumes Dynamic Content snippets, which you confirmed on 9 August:
-the email preheader does, and so do push text, push image, SMS and on site content. This
-is the asset that renders as a phrase rather than as markup, so it is the one that goes
-everywhere.
+`dps abandoned cart line`, from `content/_dynamic/abandoned-cart.txt`, type **Plain Text**.
+Created 9 August, id recorded, **and the email preheader already calls it**. It is the only
+asset that renders as a phrase rather than as markup, which is why it goes everywhere:
 
-| Asset name in the panel | Type | Paste this file |
-|---|---|---|
-| `dps abandoned cart line` | **Plain Text** | `content/_dynamic/abandoned-cart.txt` |
+```
+Oxford Shirt and 3 more items
+```
 
-It emits one line, `Oxford Shirt and 3 more items`, correct at one item or six. Four
-places want it:
+Correct at one item, two or six. Four places want it, and one is already done:
 
 | Where | What to put there |
 |---|---|
-| Email **subject** | `Still yours: ` then the snippet |
-| Email **preheader** | already built. See the next paragraph |
+| Email **preheader** | done. The template carries the tag, hidden, with `, one press from checkout.` after it |
+| Email **subject** | `Still yours: ` then the snippet. A campaign field, so this one is a paste |
 | SMS and WhatsApp | the snippet on its own |
 | Push title or body | the snippet in the copy |
 
-**Then send me the id**, or add it yourself to `factory/sandbox.json` as
-`snippets.abandonedCartLine` and run `node factory/emails/build-beefree.mjs`. The preheader
-row of the template turns into a hidden Dynamic Content block naming the visitor's own
-products, with `, one press from checkout.` after it. Until then the preheader sends the
-static sentence it sends today, which is a correct preheader and not a broken one.
+**One thing to check on the first test send.** The tag is written into the template's HTML
+rather than picked in the builder, so the builder never validates it: the preview line of a
+real send is where a Plain Text asset inside an HTML email either resolves or does not.
+Forward that send to yourself and read the grey line beside the subject. If it shows the
+products, it works. If it shows the tag or nothing, create the same body again as type
+**HTML** and send me that id.
 
-**If the email editor will not offer a Plain Text asset**, create the same body again as
-type **HTML** and send me that id instead. The body has no markup in it either way. That is
-the only part of this I have not been able to see myself.
+**And check the body is the current file** while you are there. The version before 9 August
+built its line across five template tags, so its output opened and closed with a newline,
+which renders as `Oxford Shirt and 3 more items , one press from checkout.` The current file
+ends in a single `{%= line %}` and nothing after it.
 
-`factory/emails/BEEFREE.md` has the subject and preheader wording, including the three
-pairs that need no asset at all.
+`factory/emails/BEEFREE.md` has the subject and preheader wording.
 
 ### 3. Re-import the email template. Content > Email > Email Builder
 

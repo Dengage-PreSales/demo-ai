@@ -389,7 +389,7 @@ if [ -f "$SANDBOX_CFG" ]; then
     want_account="$(sed -n 's/.*"accountId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SANDBOX_CFG" | head -1)"
     # THE SNIPPET IDS, WHICH ARE CONTENT IDS AND NOT APPLICATION IDS. Dengage issues a
     # UUID when a Dynamic Content asset is saved, and the shared email template has to
-    # name two of them or it imports with two empty blocks. Read from the same file and
+    # name every one it calls or it imports with empty blocks. Read from the same file and
     # from its own field, so this stays an allowlist rather than becoming a pattern:
     # every OTHER identifier is still rejected, which is the property worth keeping.
     #

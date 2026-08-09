@@ -41,9 +41,10 @@
    attribute as a string, so nothing had to change to accept one, but a numeric example is
    worth not copying. They live in factory/sandbox.json beside the app guid.
 
-   Either can still be overridden, for a second account or a renamed asset:
+   Any of them can still be overridden, for a second account or a renamed asset:
 
      DPS_SNIPPET_CART=<id> DPS_SNIPPET_CART_TOTAL=<id> \
+       DPS_SNIPPET_RECOMMENDATIONS=<id> DPS_SNIPPET_CART_LINE=<id> \
        node factory/emails/build-beefree.mjs
 
    ITS OWN SCRIPT, ON PURPOSE. build-emails.mjs builds the ten Code Editor messages and

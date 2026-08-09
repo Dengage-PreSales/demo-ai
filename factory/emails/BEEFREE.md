@@ -29,10 +29,11 @@ which is what this repository assumed; the panel actually issues
 `5178aafe-5bec-4326-b3ed-890aff1ec867`. Both go in the same attribute as a string, so
 nothing had to change to accept one, but the numeric example is worth not copying.
 
-Either can be overridden for a second account or a renamed asset:
+Any of them can be overridden for a second account or a renamed asset:
 
 ```bash
 DPS_SNIPPET_CART=<id> DPS_SNIPPET_CART_TOTAL=<id> \
+  DPS_SNIPPET_RECOMMENDATIONS=<id> DPS_SNIPPET_CART_LINE=<id> \
   node factory/emails/build-beefree.mjs
 ```
 
@@ -210,22 +211,22 @@ reads in an inbox as
 > **Still yours: Oxford Shirt and 3 more items**
 > Oxford Shirt and 3 more items, one press from checkout.
 
-**The template already builds the preheader half.** Create the asset, type **Plain Text**,
-named `dps abandoned cart line`, put its id in `factory/sandbox.json` as
-`snippets.abandonedCartLine`, and rebuild: the preheader row becomes an HTML module with
-the tag in it, hidden, with the comma and the tail after it. Nothing to click in the
-builder. The subject half is a campaign field, so that one is a paste.
+**The preheader half is done.** The asset exists as `dps abandoned cart line`, its id is in
+`factory/sandbox.json`, and the committed template carries the tag: a hidden HTML module
+with the comma and the tail after it. Nothing to click in the builder. The subject half is a
+campaign field, so that one is a paste.
 
-**Until that id exists the preheader is the static sentence below**, which is a correct
-preheader and what ships today. It is a fallback rather than a dashed box on purpose: the
-other three blocks show a labelled box when their id is missing, because somebody has to
-attach them, and a box in a slot nobody can see would be the one place that advice is
-wrong.
+**Without that id the preheader falls back to the static sentence below**, which is a
+correct preheader rather than a broken one. A fallback rather than a dashed box on purpose:
+the other three blocks show a labelled box when their id is missing, because somebody has to
+attach them, and a box in a slot nobody can see would be the one place that advice is wrong.
 
-**If the email editor will not offer a Plain Text asset**, create the same body a second
-time as type **HTML** and give me that id instead. The body contains no markup either way,
-so both types render identically here. That is the only part of this I have not seen
-myself.
+**The one thing to check on a real send.** The tag is written into the template's HTML rather
+than picked in the builder, so the builder never validates it, and whether Dengage resolves a
+Plain Text asset inside an HTML email is a send time behaviour nothing here can reach.
+Forward a test send to yourself and read the grey line beside the subject: it either names
+the products or it does not, and both are obvious immediately. If it does not, create the
+same body again as type **HTML** and swap the id. The body has no markup in it either way.
 
 ### Three that need no asset at all. Paste and go
 

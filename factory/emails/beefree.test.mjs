@@ -171,8 +171,9 @@ function walk(template) {
         at(up(fromUrl(import.meta.url)), '..', 'sandbox.json'), 'utf8')).snippets || {};
     const CART = configured.abandonedCart;
     const TOTAL = configured.abandonedCartTotal;
-    ok('factory/sandbox.json names both saved assets',
-       Boolean(CART) && Boolean(TOTAL), configured);
+    ok('factory/sandbox.json names every saved asset the template calls',
+       ['abandonedCart', 'abandonedCartTotal', 'recommendations', 'abandonedCartLine']
+           .every((key) => Boolean(configured[key])), configured);
     /* ASSEMBLED, NOT WRITTEN, and for the same reason two patterns in this file are.
        The app-guid guardrail rejects every identifier in this repository that is not
        named in factory/sandbox.json, which is what keeps the core demos' application
@@ -522,17 +523,38 @@ function walk(template) {
     if (existsSync(path)) {
         const committed = JSON.parse(readFileSync(path, 'utf8'));
         const html = walk(committed).modules.filter((module) => module.descriptor.html);
-        ok('it has all three Dynamic Content blocks', html.length === 3, html.length);
 
-        /* ALL THREE ARE ATTACHED NOW, so the import needs no clicks at all. Left as an
-           equality rather than "at least two", because a block that quietly reverts to a
-           placeholder would otherwise pass and only show as an empty section in a send. */
+        /* FOUR NOW, and the count is asserted rather than described because the fourth
+           one is the preheader, which cannot be seen in the builder or in a send. A
+           block that quietly reverted to a placeholder would show as an empty section;
+           this one would show as nothing at all. */
+        const blocks = dynamicModules(committed);
+        ok('every Dynamic Content block is in the committed file',
+           ['line', 'items', 'total', 'recommendations']
+               .every((key) => Boolean(blocks[key])), blocks);
+        ok('and there are no others', html.length === 4, html.length);
+
+        /* ALL OF THEM ARE ATTACHED, so the import needs no clicks at all. An equality
+           rather than "at least three", for the same reason. */
         const attached = html.filter((module) =>
             module.descriptor.html.html.includes('<snippet '));
-        ok('all three are attached, so the import needs no clicks',
-           attached.length === 3, attached.length);
+        ok('all of them are attached, so the import needs no clicks',
+           attached.length === html.length, attached.length);
         ok('with no placeholder left behind',
            html.every((module) => !module.descriptor.html.html.includes('dashed')));
+
+        /* THE PREHEADER IS THE ONE THAT SENDS WITHOUT ANYBODY SEEING IT, so the two
+           things that make it work at all are pinned in the committed bytes: it is
+           hidden, and the tail follows the tag with no gap in front of the comma. */
+        const preheader = walk(committed).modules
+            .find((module) => module.uuid === blocks.line);
+        ok('the preheader is hidden and carries its tail',
+           preheader && preheader.descriptor.html.html.includes('display:none') &&
+           preheader.descriptor.html.html.includes('</snippet>, one press from checkout.'),
+           preheader && preheader.descriptor.html.html.slice(0, 200));
+        ok('and the static sentence is no longer in the file',
+           !JSON.stringify(committed).includes('Everything you added is one press away'));
+
         ok('and it still names no storefront',
            !JSON.stringify(committed).includes('/demos/'));
     }
