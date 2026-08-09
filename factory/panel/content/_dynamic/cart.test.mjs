@@ -92,6 +92,8 @@ const text = resolver('abandoned-cart.txt',
     '{ ids: ids, all: all }');
 const total = resolver('abandoned-cart-total.html',
     '{ subtotal: subtotal, discount: discount, counted: counted, priced: priced }');
+const recommend = resolver('recommendations.html',
+    '{ picks: picks, wanted: wanted, label: LABEL, cards: cards }');
 
 /* -------------------------------------------------------------------------- */
 /* Fixtures                                                                     */
@@ -565,6 +567,93 @@ function catalogue(ids) {
     }), CONTACT);
     ok('and the total is the scoped basket\'s total, not the combined one',
        scopedTotal.counted === 2, scopedTotal);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 14. THE RECOMMENDATIONS, which are the storefront's rail and not a new idea    */
+
+{
+    /* template/js/recommend.js computes five strategies in the browser from the demo's
+       own catalogue, and says why it is local: the Dengage engine is fed per application
+       and every demo shares one, so an engine rail would offer a fashion prospect
+       phones. An email cannot run that JavaScript, so the asset runs the same strategy
+       against dps_product. This section checks it picks the right things.
+
+       SCOPING IS THE HARD PART AND IT IS NOT store_name. That column is the same
+       constant for every demo, and the slug lives in a Supabase only column that never
+       reaches Dengage. What does reach it is link, which is absolute and contains the
+       slug, so the asset filters on it after the query rather than in it. */
+    const shirt = Object.assign(product('mine:shirt'), {
+        category_path: 'Fashion > Shirts',
+        link: 'https://dengage-presales.github.io/demo-ai/demos/mine/product.html?id=shirt'
+    });
+    const sameRange = ['mine:a', 'mine:b', 'mine:c', 'mine:d', 'mine:e'].map((id) =>
+        Object.assign(product(id), {
+            category_path: 'Fashion > Shirts',
+            link: 'https://dengage-presales.github.io/demo-ai/demos/mine/product.html?id=' + id
+        }));
+    /* Another demo, same category name. This is the case store_name could not have
+       caught and the link filter does. */
+    const otherDemo = Object.assign(product('theirs:x'), {
+        category_path: 'Fashion > Shirts',
+        link: 'https://dengage-presales.github.io/demo-ai/demos/theirs/product.html?id=x'
+    });
+    const withdrawn = Object.assign(product('mine:gone', false), {
+        category_path: 'Fashion > Shirts',
+        link: 'https://dengage-presales.github.io/demo-ai/demos/mine/product.html?id=gone'
+    });
+
+    const cart = [event('add_to_cart', 'mine:shirt', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-mine')];
+    const views = [view('session-mine', 'mine')];
+    const tables = {
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shirt].concat(sameRange, [otherDemo, withdrawn])
+    };
+
+    const out = recommend(stubFrom(tables), CONTACT);
+
+    ok('it looks in the categories the basket is in',
+       out.wanted.join(',') === 'Fashion > Shirts', out.wanted);
+    ok('it uses the label the storefront uses', out.label === 'More like this', out.label);
+    ok('it offers four, which is two rows of cards', out.picks.length === 4, out.picks.length);
+
+    const offered = out.picks.map((p) => p.product_id);
+    ok('nothing already in the basket is offered',
+       offered.indexOf('mine:shirt') === -1, offered);
+    ok('nothing from ANOTHER demo is offered, which store_name could not have prevented',
+       offered.indexOf('theirs:x') === -1, offered);
+    ok('and nothing withdrawn from the catalogue is offered',
+       offered.indexOf('mine:gone') === -1, offered);
+    ok('every offer is from this demo', offered.every((id) => id.indexOf('mine:') === 0), offered);
+
+    /* A NAME IS CLAMPED AND A CATEGORY IS ITS LEAF, the same as the basket cards, so the
+       two blocks read as one email rather than two. */
+    ok('the cards carry the leaf category only',
+       out.cards.every((card) => card.category === 'Shirts'),
+       out.cards.map((c) => c.category));
+
+    /* HALF A RAIL IS WORSE THAN NONE. With one candidate the block renders nothing, so
+       the assertion is on the guard the markup uses. */
+    const thin = recommend(stubFrom({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shirt, sameRange[0]]
+    }), CONTACT);
+    ok('one candidate is still offered but the block gates on more than one',
+       thin.picks.length === 1 &&
+       readFileSync(join(HERE, 'recommendations.html'), 'utf8')
+           .includes('{% if (cards.length > 1) { %}'), thin.picks.length);
+
+    /* An empty basket has no categories to look in, so there is nothing to offer. */
+    const empty = recommend(stubFrom({
+        master_device: devices, shopping_cart_events: [],
+        page_view_events: [], dps_product: [shirt].concat(sameRange)
+    }), CONTACT);
+    ok('an empty basket offers nothing rather than offering the catalogue',
+       empty.picks.length === 0, empty.picks.length);
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

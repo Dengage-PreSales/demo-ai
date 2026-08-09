@@ -16,13 +16,14 @@ anything is uploaded.
 1. **Content > Dynamic Content > New**, type **HTML**, name it `dps abandoned cart`,
    and paste `factory/panel/content/_dynamic/abandoned-cart.html`. Save.
 2. Same again for `dps abandoned cart total`, from `abandoned-cart-total.html`.
-3. **Content > Email > New > Email Builder**, and import the JSON.
-4. Build the campaign. **One campaign serves every demo**, so this is the last time.
+3. Same again for `dps recommendations`, from `recommendations.html`. **Send me its id**
+   and it gets attached like the other two; until then it imports as a labelled box.
+4. **Content > Email > New > Email Builder**, and import the JSON.
+5. Build the campaign. **One campaign serves every demo**, so this is the last time.
 
-**There is no step for attaching the Dynamic Content.** The ids are known and committed,
-so the imported template already calls both assets. It used to arrive with two dashed
-boxes to attach by hand, because Dengage issues an id when an asset is saved and nothing
-here could know it in advance.
+**The first two need no attaching.** Their ids are known and recorded in
+`factory/sandbox.json`, so the imported template already calls them. Add the third id
+there and nothing in the template is left to click.
 
 **The ids are UUIDs, not numbers.** Dengage's documentation shows `snippet_id="8835"`,
 which is what this repository assumed; the panel actually issues
@@ -120,7 +121,7 @@ one was settled by being shown something that worked.
 
 ## What is in it
 
-Eight rows:
+Nine rows:
 
 | Row | What it is |
 |---|---|
@@ -130,6 +131,7 @@ Eight rows:
 | Headline | One line, and one line of copy under it |
 | Basket | **Dynamic Content.** The visitor's own basket, replayed from their cart events |
 | Summary | **Dynamic Content.** Subtotal, total, and the button back to that basket |
+| Recommendations | **Dynamic Content.** The storefront's own rail. See below |
 | Urgency | One line, and it is true. See below |
 | Footer | The mark again, the disregard line, and the line saying this is a demonstration storefront |
 
@@ -166,6 +168,20 @@ rather than an invented one.
 bold and the original struck through at 45%, and the category is a 10px letter spaced
 eyebrow at 45%. It is the leaf category only, so "FASHION > SHIRTS" reads "SHIRTS" and
 stops competing with the name.
+
+## The recommendations at the bottom
+
+They are **the storefront's own rail**, not a new idea and not the Dengage engine.
+`template/js/recommend.js` computes five strategies in the browser from the demo's own
+catalogue, and it explains why they are local: the engine is fed per application, every
+demo shares one application, so an engine rail would offer a fashion prospect phones. An
+email cannot run that JavaScript, so `recommendations.html` runs the same strategy against
+`dps_product` at send time and carries the same label the site uses.
+
+**More like this** is the one built: the same categories the basket is in, which is what an
+abandoned cart email already knows. `factory/panel/content/_dynamic/README.md` has the
+table of which of the five are reproducible in an email and which need the engine, and why
+scoping to one demo goes through `link` rather than `store_name`.
 
 ## The hero image
 

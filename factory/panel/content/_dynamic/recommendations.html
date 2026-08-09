@@ -1,0 +1,223 @@
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
+
+  for (var d = 0; d < devices.length; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.shopping_cart_events').where('key', 'in', keys).take(100).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    return Number(a.id) - Number(b.id);
+  });
+
+  var sessions = [];
+  for (var s0 = 0; s0 < rows.length; s0++) {
+    var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";
+    if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }
+  }
+
+  var views = sessions.length
+    ? $from('$db.page_view_events').where('session_id', 'in', sessions).take(300).get()
+    : [];
+
+  var slugOf = function (url) {
+    var u = (url == null) ? "" : String(url);
+    var at = u.indexOf('/demos/');
+    if (at === -1) { return ""; }
+    var rest = u.slice(at + 7).split('?')[0].split('#')[0];
+    var cut = rest.indexOf('/');
+    return cut === -1 ? rest : rest.slice(0, cut);
+  };
+
+  var demoOf = {};
+  var rootOf = {};
+  for (var v = 0; v < views.length; v++) {
+    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
+    if (vs === "" || demoOf[vs]) { continue; }
+    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
+    var vslug = slugOf(vurl);
+    if (vslug !== "") {
+      demoOf[vs] = vslug;
+      if (!rootOf[vslug]) {
+        var mark = '/demos/' + vslug + '/';
+        var atRoot = vurl.indexOf(mark);
+        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }
+      }
+    }
+  }
+
+  var target = "";
+  for (var t = rows.length - 1; t >= 0; t--) {
+    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
+    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+  }
+
+  if (target !== "") {
+    var mine = [];
+    for (var m = 0; m < rows.length; m++) {
+      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
+      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+    }
+    rows = mine;
+  }
+
+  var present = {};
+  var seen = [];
+  for (var r = 0; r < rows.length; r++) {
+    var row = rows[r] || {};
+    var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
+    var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
+
+    if (kind === 'delete_cart') { present = {}; seen = []; }
+    else if (pid === "") { }
+    else if (kind === 'add_to_cart') {
+      present[pid] = { quantity: row.quantity };
+      seen.push(pid);
+    }
+    else if (kind === 'remove_from_cart') { present[pid] = null; }
+  }
+
+  var all = [];
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
+  }
+  var WINDOW = 50;
+  var ids = all.slice(0, WINDOW);
+
+  var products = ids.length
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(50).get()
+    : [];
+
+  var byId = {};
+  for (var p = 0; p < products.length; p++) {
+    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+  }
+
+  var basket = {};
+  for (var b0 = 0; b0 < ids.length; b0++) { basket[ids[b0]] = 1; }
+
+  var wanted = [];
+  for (var k0 = 0; k0 < ids.length; k0++) {
+    var owned = byId[ids[k0]];
+    if (!owned) { continue; }
+    var cat = (owned.category_path == null) ? "" : String(owned.category_path).trim();
+    if (cat !== "" && wanted.indexOf(cat) === -1) { wanted.push(cat); }
+  }
+
+  var candidates = wanted.length
+    ? $from('$db.dps_product').where('category_path', 'in', wanted).take(200).get()
+    : [];
+
+  var mark = (target === "") ? "" : '/demos/' + target + '/';
+  var picks = [];
+  for (var q = 0; q < candidates.length; q++) {
+    var cand = candidates[q] || {};
+    var cid = (cand.product_id == null) ? "" : String(cand.product_id);
+    if (cid === "" || basket[cid]) { continue; }
+    if (!cand.is_active) { continue; }
+    var clink = (cand.link == null) ? "" : String(cand.link);
+    if (mark !== "" && clink.indexOf(mark) === -1) { continue; }
+    if (picks.length < 4) { picks.push(cand); }
+  }
+
+  var LABEL = 'More like this';
+
+  var money = function (value) {
+    var n = Number(value);
+    if (!isFinite(n)) { return ""; }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+
+  var formatUrl = function (url) {
+    var u = (url == null) ? "" : String(url).trim();
+    if (u.indexOf("http://") === 0 || u.indexOf("https://") === 0) { return u; }
+    return "#";
+  };
+
+  var shortTitle = function (value) {
+    var t = String(value == null ? "" : value).replace(/^\s+|\s+$/g, '');
+    if (t === "") { return "Your item"; }
+    return t.length > 60 ? t.substring(0, 57).replace(/[\s,]+$/, '') + "..." : t;
+  };
+
+  var leafOf = function (path) {
+    var parts = String(path == null ? "" : path).split('>');
+    return parts[parts.length - 1].replace(/^\s+|\s+$/g, '');
+  };
+
+  var cards = [];
+  for (var c0 = 0; c0 < picks.length; c0++) {
+    cards.push({
+      link: formatUrl(picks[c0].link),
+      image: (picks[c0].image_link == null) ? "" : String(picks[c0].image_link).trim(),
+      title: shortTitle(picks[c0].title),
+      category: leafOf(picks[c0].category_path),
+      price: money(picks[c0].price),
+      cut: (picks[c0].discounted_price == null || picks[c0].discounted_price === "") ? "" : money(picks[c0].discounted_price)
+    });
+  }
+%}{% if (cards.length > 1) { %}
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-family:inherit;color:inherit;">
+  <tr>
+    <td colspan="2" align="center" style="padding:0 0 4px 0;">
+      <div style="border-top:1px solid rgba(128,128,128,0.18);width:100%;font-size:0;line-height:0;">&nbsp;</div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" style="padding:30px 0 26px 0;">
+      <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.5;padding:0 0 8px 0;">{%= LABEL %}</div>
+      <div style="font-size:20px;line-height:1.3;font-weight:bold;">More from the same range</div>
+    </td>
+  </tr>
+  {% for (var g = 0; g < cards.length; g += 2) { %}
+    <tr>
+      {% for (var col = 0; col < 2; col++) {
+           var card = cards[g + col];
+           if (!card) { %}
+        <td width="50%" style="font-size:0;line-height:0;">&nbsp;</td>
+      {%     continue;
+           }
+      %}
+      <td width="50%" align="center" valign="top" style="padding:0 9px 30px 9px;">
+        {% if (card.image !== "") { %}
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+            <tr>
+              <td height="200" align="center" valign="middle" style="height:200px;">
+                <a href="{%= card.link %}" target="_blank" style="text-decoration:none;">
+                  <img src="{%= card.image %}" alt="{%= card.title %}" width="200" style="max-width:200px;max-height:200px;width:100%;height:auto;border:0;display:block;margin:0 auto;border-radius:8px;">
+                </a>
+              </td>
+            </tr>
+          </table>
+        {% } %}
+        {% if (card.category !== "") { %}
+          <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.45;padding:16px 0 6px 0;">{%= card.category %}</div>
+        {% } %}
+        <div style="font-size:15px;line-height:1.4;font-weight:bold;padding:{%= card.category === "" ? 16 : 0 %}px 0 7px 0;">
+          <a href="{%= card.link %}" target="_blank" style="color:inherit;text-decoration:none;">{%= card.title %}</a>
+        </div>
+        <div style="font-size:14px;line-height:1.4;">
+          {% if (card.cut !== "") { %}
+            <span style="font-weight:bold;">{%= card.cut %}</span>
+            <span style="text-decoration:line-through;opacity:0.45;padding-left:7px;">{%= card.price %}</span>
+          {% } else { %}
+            <span style="font-weight:bold;">{%= card.price %}</span>
+          {% } %}
+        </div>
+      </td>
+      {% } %}
+    </tr>
+  {% } %}
+</table>
+{% } %}

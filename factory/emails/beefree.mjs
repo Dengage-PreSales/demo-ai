@@ -362,7 +362,23 @@ export function beefreeAbandonedCart(options) {
                 'The subtotal, the total and the button back to that basket.'))
     ]], { ground: palette.wash, top: 26, bottom: 28 }));
 
-    /* 7. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
+    /* 7. THE RECOMMENDATIONS, which are the storefront's own rail rather than a new
+       idea. template/js/recommend.js computes five strategies in the browser from the
+       demo's own catalogue, and it says why: the Dengage engine is fed per application
+       and every demo shares one, so an engine rail would offer a fashion prospect
+       phones. An email cannot run that JavaScript, so the asset runs the same strategy
+       against dps_product instead, and uses the same label the site uses.
+
+       Same cards as the basket, so the two blocks read as one email rather than two
+       stitched together. It renders nothing at all when it cannot find at least two
+       products, because half a rail is worse than none. */
+    rows.push(row(uid(), palette, [[
+        htmlModule(uid(), palette,
+            dynamicBlock(palette, 'dps recommendations', snippets.recommendations,
+                'More from the categories the basket is in, ranked the way the storefront ranks them.'))
+    ]], { top: 0, bottom: 0 }));
+
+    /* 8. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
        discount that expires would all be invented, and a prospect can see through
        every one of them. What is genuinely true of any store is that a basket is not a
        reservation, and saying so is the honest version of the same nudge. */
@@ -374,7 +390,7 @@ export function beefreeAbandonedCart(options) {
 
     if (flat) hairline();
 
-    /* 8. The footer, back on the canvas, closing the card.
+    /* 9. The footer, back on the canvas, closing the card.
 
        NO LINK TO THE STORE, for the same reason the masthead has no name: there is no
        one storefront this email belongs to until it is sent. The unsubscribe is the one

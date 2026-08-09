@@ -25,6 +25,7 @@ this repository mark that spot.
 | `abandoned-cart-total.html` | HTML | email. The subtotal, the total, and the button back to the basket |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
 | `abandoned-cart.txt` | Plain Text | SMS, WhatsApp |
+| `recommendations.html` | HTML | email. The storefront's own recommendation rail |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
 | `_diagnostic.html` | HTML | a throwaway asset for reading what a send can actually see |
 
@@ -74,6 +75,35 @@ The button appears whenever a basket URL resolved, even when the totals suppress
 themselves, because an abandoned cart email with no way back to the cart is not one. If no
 session resolved to a demo there is no URL to build and no button, which only happens when
 there are no cart rows at all.
+
+## The recommendations are the storefront's rail, not a new idea
+
+`template/js/recommend.js` computes **five** strategies in the browser from the demo's
+own catalogue, and it explains why they are local rather than from the Dengage engine:
+the engine is fed per application, every demo shares one application, so an engine rail
+would offer a fashion prospect phones. That reasoning has not changed.
+
+An email cannot run that JavaScript. So `recommendations.html` runs the same strategy
+against `dps_product` at send time and uses the same label the site uses.
+
+| The site's five | In an email |
+|---|---|
+| **Trending now** | possible. Same `seeded()` function, same seed, over that demo's rows. Needs a wide fetch, since it ranks the whole catalogue |
+| **More like this** | **this is the one built.** Same categories as the basket, which an abandoned cart email already knows |
+| Others also viewed | needs co-view data, which is what an engine is for |
+| Completes your basket | possible, but needs the categories the basket does NOT cover, so it needs the whole catalogue fetched |
+| Recently viewed | not possible. It reads `sessionStorage`, which no send can see. The nearest real equivalent is `page_view_events` for that contact |
+
+**Scoping is the hard part, and it is not `store_name`.** That column holds the same
+constant for every demo, and the slug lives in a Supabase only column that never reaches
+Dengage. What does reach it is `link`, which is absolute and contains the slug. So the
+asset queries by category, which is cheap, and then filters the results on `link` in
+JavaScript. That catches the case `store_name` never could: two demos with a category of
+the same name.
+
+It also drops anything already in the basket, anything withdrawn from the catalogue, and
+renders **nothing at all** when it cannot find at least two products, because half a rail
+is worse than none.
 
 ## The logic is tested by being run, not by being read
 

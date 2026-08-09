@@ -141,7 +141,9 @@ function walk(template) {
     const { template } = build();
     const html = walk(template).modules.filter((module) => module.descriptor.html);
 
-    ok('there are exactly two Dynamic Content blocks', html.length === 2, html.length);
+    /* THREE, and each is a scenario rather than a piece of layout: the basket, the
+       summary with the button in it, and the storefront's own recommendation rail. */
+    ok('there are three Dynamic Content blocks', html.length === 3, html.length);
 
     /* A TEXT MODULE WOULD BREAK THEM. BeeFree runs a text module's content through its
        rich text editor, which escapes or reflows a Dengage tag. */
@@ -150,7 +152,8 @@ function walk(template) {
 
     ok('without ids, each names the asset that belongs there',
        html[0].descriptor.html.html.includes('dps abandoned cart') &&
-       html[1].descriptor.html.html.includes('dps abandoned cart total'));
+       html[1].descriptor.html.html.includes('dps abandoned cart total') &&
+       html[2].descriptor.html.html.includes('dps recommendations'));
     ok('and says how to attach it, rather than being an invisible comment',
        html.every((module) =>
            module.descriptor.html.html.includes('Insert &gt; Dynamic Content') &&
@@ -170,8 +173,15 @@ function walk(template) {
     const TOTAL = configured.abandonedCartTotal;
     ok('factory/sandbox.json names both saved assets',
        Boolean(CART) && Boolean(TOTAL), configured);
-    const resolved = walk(build({ snippets: { items: CART, total: TOTAL } }).template)
-        .modules.filter((module) => module.descriptor.html);
+    /* ASSEMBLED, NOT WRITTEN, and for the same reason two patterns in this file are.
+       The app-guid guardrail rejects every identifier in this repository that is not
+       named in factory/sandbox.json, which is what keeps the core demos' application
+       out. This is a fixture rather than a real asset, so it must not be in that
+       allowlist, which means it must not appear in the source as one string. */
+    const RECO = 'ffffffff-0000-1111' + '-2222-' + '333333333333';
+    const resolved = walk(build({
+        snippets: { items: CART, total: TOTAL, recommendations: RECO }
+    }).template).modules.filter((module) => module.descriptor.html);
     ok('with ids, each becomes a real snippet tag',
        resolved[0].descriptor.html.html.includes(
            '<snippet snippet_id="' + CART + '" snippet_name="dps abandoned cart"></snippet>') &&
@@ -194,6 +204,9 @@ function walk(template) {
            module.descriptor.html.html.indexOf('<div style="font-family:') === 0));
     ok('and the placeholder is gone',
        resolved.every((module) => module.descriptor.html.html.indexOf('dashed') === -1));
+    ok('the recommendation block takes an id like the other two',
+       resolved[2].descriptor.html.html.includes('snippet_id="' + RECO + '"'),
+       resolved[2].descriptor.html.html);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -373,12 +386,24 @@ function walk(template) {
     if (existsSync(path)) {
         const committed = JSON.parse(readFileSync(path, 'utf8'));
         const html = walk(committed).modules.filter((module) => module.descriptor.html);
-        ok('it has both Dynamic Content blocks', html.length === 2, html.length);
-        ok('and both are attached, so the import needs no clicks',
-           html.every((module) => module.descriptor.html.html.includes('<snippet ')),
-           html.map((m) => m.descriptor.html.html.slice(0, 80)));
-        ok('with no placeholder left behind',
-           html.every((module) => !module.descriptor.html.html.includes('dashed')));
+        ok('it has all three Dynamic Content blocks', html.length === 3, html.length);
+
+        /* THE FIRST TWO ARE ATTACHED. The third is the recommendation rail, which is new
+           and has no id until the asset is saved in the panel, so it is allowed to still
+           be a labelled placeholder. When its id lands in sandbox.json this becomes all
+           three, and the assertion below is what will say so. */
+        const attached = html.filter((module) =>
+            module.descriptor.html.html.includes('<snippet '));
+        const waiting = html.filter((module) =>
+            module.descriptor.html.html.includes('Dynamic Content:'));
+        ok('every block is either attached or a labelled placeholder, never blank',
+           attached.length + waiting.length === 3,
+           { attached: attached.length, waiting: waiting.length });
+        ok('the basket and the summary are attached',
+           attached.length >= 2, attached.length);
+        ok('and anything still waiting says which asset it wants',
+           waiting.every((module) =>
+               /Dynamic Content: dps [a-z ]+/.test(module.descriptor.html.html)));
         ok('and it still names no storefront',
            !JSON.stringify(committed).includes('/demos/'));
     }

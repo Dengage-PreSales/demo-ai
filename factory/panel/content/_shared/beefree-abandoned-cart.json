@@ -484,8 +484,72 @@
               "grid-columns": 12,
               "modules": [
                 {
-                  "type": "mailup-bee-newsletter-modules-text",
+                  "type": "mailup-bee-newsletter-modules-html",
                   "uuid": "dps-cart-15",
+                  "descriptor": {
+                    "html": {
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps recommendations</strong><br>More from the categories the basket is in, ranked the way the storefront ranks them.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
+                      "style": {
+                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "15px"
+                      },
+                      "computedStyle": {
+                        "hideContentOnMobile": false
+                      }
+                    },
+                    "style": {
+                      "padding-top": "0px",
+                      "padding-right": "24px",
+                      "padding-bottom": "0px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "background-color": "transparent",
+                "border-bottom": "0px solid transparent",
+                "border-left": "0px solid transparent",
+                "border-right": "0px solid transparent",
+                "border-top": "0px solid transparent",
+                "padding-top": "0px",
+                "padding-right": "0px",
+                "padding-bottom": "0px",
+                "padding-left": "0px"
+              },
+              "uuid": "dps-cart-14-c1"
+            }
+          ]
+        },
+        {
+          "type": "one-column-empty",
+          "uuid": "dps-cart-16",
+          "container": {
+            "style": {
+              "background-color": "transparent"
+            }
+          },
+          "content": {
+            "computedStyle": {
+              "rowColStackOnMobile": true,
+              "rowReverseColStackOnMobile": false
+            },
+            "style": {
+              "background-color": "#ffffff",
+              "color": "#14181b",
+              "width": "600px"
+            }
+          },
+          "columns": [
+            {
+              "grid-columns": 12,
+              "modules": [
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-17",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -523,13 +587,13 @@
                 "padding-bottom": "30px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-14-c1"
+              "uuid": "dps-cart-16-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-16",
+          "uuid": "dps-cart-18",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -552,7 +616,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-17",
+                  "uuid": "dps-cart-19",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -580,7 +644,7 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-18",
+                  "uuid": "dps-cart-20",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -618,7 +682,7 @@
                 "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-16-c1"
+              "uuid": "dps-cart-18-c1"
             }
           ]
         }
@@ -1071,8 +1135,72 @@
             "grid-columns": 12,
             "modules": [
               {
-                "type": "mailup-bee-newsletter-modules-text",
+                "type": "mailup-bee-newsletter-modules-html",
                 "uuid": "dps-cart-15",
+                "descriptor": {
+                  "html": {
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps recommendations</strong><br>More from the categories the basket is in, ranked the way the storefront ranks them.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
+                    "style": {
+                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "15px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  },
+                  "style": {
+                    "padding-top": "0px",
+                    "padding-right": "24px",
+                    "padding-bottom": "0px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              }
+            ],
+            "style": {
+              "background-color": "transparent",
+              "border-bottom": "0px solid transparent",
+              "border-left": "0px solid transparent",
+              "border-right": "0px solid transparent",
+              "border-top": "0px solid transparent",
+              "padding-top": "0px",
+              "padding-right": "0px",
+              "padding-bottom": "0px",
+              "padding-left": "0px"
+            },
+            "uuid": "dps-cart-14-c1"
+          }
+        ]
+      },
+      {
+        "type": "one-column-empty",
+        "uuid": "dps-cart-16",
+        "container": {
+          "style": {
+            "background-color": "transparent"
+          }
+        },
+        "content": {
+          "computedStyle": {
+            "rowColStackOnMobile": true,
+            "rowReverseColStackOnMobile": false
+          },
+          "style": {
+            "background-color": "#ffffff",
+            "color": "#14181b",
+            "width": "600px"
+          }
+        },
+        "columns": [
+          {
+            "grid-columns": 12,
+            "modules": [
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-17",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1110,13 +1238,13 @@
               "padding-bottom": "30px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-14-c1"
+            "uuid": "dps-cart-16-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-16",
+        "uuid": "dps-cart-18",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1139,7 +1267,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-17",
+                "uuid": "dps-cart-19",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1167,7 +1295,7 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-18",
+                "uuid": "dps-cart-20",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1205,7 +1333,7 @@
               "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-16-c1"
+            "uuid": "dps-cart-18-c1"
           }
         ]
       }

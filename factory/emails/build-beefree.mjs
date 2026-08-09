@@ -81,7 +81,8 @@ function snippetIds() {
     const named = config.snippets || {};
     return {
         items: named.abandonedCart || null,
-        total: named.abandonedCartTotal || null
+        total: named.abandonedCartTotal || null,
+        recommendations: named.recommendations || null
     };
 }
 
@@ -129,6 +130,18 @@ function sampleBasket(products, locale) {
 
     return {
         basket,
+        /* FOUR MORE FROM THE SAME CATEGORIES, which is what the recommendation asset
+           does with real rows: the ones after the basket's own, so the preview shows a
+           rail that is plausibly what a send would pick rather than the basket again. */
+        recommended: products.slice(4, 8).map((product) => ({
+            name: product.name,
+            category: product.category || '',
+            image: product.image ? PAGES + product.slug + '/' + product.image : '',
+            price: format(product.price),
+            discounted: typeof product.discountedPrice === 'number'
+                ? format(product.discountedPrice) : '',
+            quantity: 1
+        })),
         totals: priced ? {
             subtotal: format(subtotal),
             discount: discount > 0 ? format(discount) : '',
@@ -152,7 +165,8 @@ export function buildBeefree(snippets) {
             : '',
         snippets: snippets || {
             items: process.env.DPS_SNIPPET_CART || configured.items,
-            total: process.env.DPS_SNIPPET_CART_TOTAL || configured.total
+            total: process.env.DPS_SNIPPET_CART_TOTAL || configured.total,
+            recommendations: process.env.DPS_SNIPPET_RECOMMENDATIONS || configured.recommendations
         }
     });
 
@@ -201,6 +215,20 @@ export function buildBeefree(snippets) {
             '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
             'style="border-collapse:collapse;">' + productRows(sample.basket, palette) +
             '</table>';
+    }
+    if (htmlModules[2] && sample.recommended && sample.recommended.length) {
+        filled[htmlModules[2]] =
+            '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
+            'style="border-collapse:collapse;font-family:inherit;color:inherit;">' +
+            '<tr><td colspan="2" style="padding:0 0 4px 0;"><div style="border-top:1px solid ' +
+            'rgba(128,128,128,0.18);width:100%;font-size:0;line-height:0;">&nbsp;</div>' +
+            '</td></tr>' +
+            '<tr><td colspan="2" align="center" style="padding:30px 0 26px 0;">' +
+            '<div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;' +
+            'opacity:0.5;padding:0 0 8px 0;">More like this</div>' +
+            '<div style="font-size:20px;line-height:1.3;font-weight:bold;">' +
+            'More from the same range</div></td></tr>' +
+            productRows(sample.recommended, palette) + '</table>';
     }
     if (htmlModules[1]) {
         /* The summary block carries the button now, so the preview has to as well or it
