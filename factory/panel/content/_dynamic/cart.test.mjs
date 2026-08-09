@@ -89,7 +89,7 @@ const html = resolver('abandoned-cart.html',
 const json = resolver('abandoned-cart.json',
     '{ ids: ids, more: more, all: all }');
 const text = resolver('abandoned-cart.txt',
-    '{ ids: ids, all: all }');
+    '{ ids: ids, all: all, line: line, count: count }');
 const total = resolver('abandoned-cart-total.html',
     '{ subtotal: subtotal, discount: discount, counted: counted, priced: priced }');
 const recommend = resolver('recommendations.html',
@@ -839,6 +839,84 @@ function catalogue(ids) {
     ok('no product views still fills, from the categories the basket is in',
        none.label === 'More like this' && none.picks.length === 4,
        { label: none.label, picks: none.picks.length });
+}
+
+/* -------------------------------------------------------------------------- */
+/* 16. THE ONE LINE, which is the most reused asset in the account               */
+
+{
+    /* SALIL, 9 AUGUST 2026: a preheader takes a Dynamic Content snippet, and so do push
+       text, push image, SMS and on site content. That makes this the asset that gets
+       reused most, because one saved object now feeds an SMS body, a push title, the
+       email's subject line and its hidden preheader. Four channels read it, so what it
+       emits is asserted exactly rather than by shape.
+
+       IT EMITS ONE LINE AND NOTHING AROUND IT, and that is a real fix rather than tidying.
+       The line used to be built across five template tags on five physical lines, so the
+       output opened and closed with a newline. Invisible in an SMS body. Not invisible in
+       the email, where the preheader follows the snippet with a comma: a collapsed newline
+       puts a space in front of it. The whole line is now computed in the resolution block
+       and emitted by one output tag, which the last assertion here pins. */
+    const basket = (of) => text(stubFrom({
+        master_device: devices,
+        shopping_cart_events: of.map((id, i) =>
+            event('add_to_cart', id, '2026-08-09T10:0' + i + ':00Z')),
+        dps_product: catalogue(of)
+    }), CONTACT);
+
+    const four = basket(['p1', 'p2', 'p3', 'p4']);
+    const two = basket(['p1', 'p2']);
+    const one = basket(['p1']);
+
+    ok('four items name the newest and count the rest',
+       four.line === 'Product p4 and 3 more items', four.line);
+    ok('two items say one more item, singular',
+       two.line === 'Product p2 and 1 more item', two.line);
+    ok('one item is the product and nothing else',
+       one.line === 'Product p1', one.line);
+    ok('and the count is the whole basket rather than a window',
+       four.count === 4 && two.count === 2 && one.count === 1,
+       [four.count, two.count, one.count]);
+
+    /* A BASKET THAT RESOLVES TO NOTHING STILL HAS TO READ AS A SENTENCE, in all four
+       channels, because a test send to yourself is exactly when it happens. */
+    const empty = text(stubFrom({
+        master_device: devices, shopping_cart_events: [], dps_product: []
+    }), CONTACT);
+    ok('an empty basket falls back to a phrase rather than nothing',
+       empty.line === 'the items you saved', empty.line);
+
+    const withdrawn = text(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'gone', '2026-08-09T10:00:00Z')],
+        dps_product: [product('gone', false)]
+    }), CONTACT);
+    ok('a basket holding only a withdrawn product falls back too',
+       withdrawn.line === 'the items you saved' && withdrawn.count === 0,
+       [withdrawn.line, withdrawn.count]);
+
+    /* THE PREHEADER PUTS A COMMA AFTER THIS, so a stray space at either end shows up in
+       the inbox as "items , one press from checkout". */
+    ok('every line composes with the preheader tail without a gap',
+       [four.line, two.line, one.line, empty.line, withdrawn.line]
+           .every((value) => value === value.trim() && value !== ''));
+
+    /* AND IT IS CLAMPED, because a preview line is about ninety characters and a real
+       product name here is ninety five. A display truncation of a real name, never an
+       invented one. */
+    const long = 'A product name that runs well past the width of any inbox preview line';
+    const clamped = text(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'p1', '2026-08-09T10:00:00Z')],
+        dps_product: [Object.assign(product('p1'), { title: long })]
+    }), CONTACT);
+    ok('a long product name is clamped rather than filling the whole line',
+       clamped.line.length <= 48 && /\.\.\.$/.test(clamped.line), clamped.line);
+
+    const source = readFileSync(join(HERE, 'abandoned-cart.txt'), 'utf8');
+    const after = source.slice(source.indexOf('%}') + 2);
+    ok('the asset emits one output tag and nothing else, not even a trailing newline',
+       after === '{%= line %}', JSON.stringify(after));
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

@@ -11,17 +11,17 @@
    without anybody styling anything: choosing a stock template means restyling it by
    hand on every build, which is the one thing this factory exists not to do.
 
-   IT IS DELIBERATELY SHORT. Masthead, one line of copy, the basket, the total, one
-   button, a footer. Eight rows, and every one of them is a block a salesperson can
-   point at and explain in a sentence. A long template demonstrates BeeFree; a short
-   one demonstrates that the products in it came from the visitor's own basket, which
-   is the thing being sold.
+   IT IS DELIBERATELY SHORT. Masthead, one line of copy, the basket, the total, the
+   rail, a footer, and every row is a block a salesperson can point at and explain in a
+   sentence. A long template demonstrates BeeFree; a short one demonstrates that the
+   products in it came from the visitor's own basket, which is the thing being sold.
+   beefree.test.mjs is the count, rather than a number written here that goes stale.
 
-   THE TWO DYNAMIC CONTENT BLOCKS ARE THE POINT OF THE WHOLE FILE. Everything else is
+   THE DYNAMIC CONTENT BLOCKS ARE THE POINT OF THE WHOLE FILE. Everything else is
    scaffolding around them. Pass their snippet ids and the template arrives finished;
    pass nothing and each one arrives as a labelled dashed box saying which asset goes
    there, because Dengage assigns snippet_id when an asset is saved and nothing here
-   can know it in advance.
+   can know it in advance. The preheader is the one exception, and says why below.
    ========================================================================== */
 
 /* BeeFree's own module type names. Wrong here and the import is rejected or, worse,
@@ -244,6 +244,16 @@ function themed(palette, inner) {
         'color:' + palette.text + ';padding:0 ' + GUTTER + 'px;">' + inner + '</div>';
 }
 
+/* THE SAVED ASSETS THIS TEMPLATE CALLS, NAMED ONCE. They are matched by name to find
+   a block again after the template is built, which is how the preview knows which
+   module to fill, so a name written twice would be a name that can drift. */
+const ASSETS = {
+    line: 'dps abandoned cart line',
+    items: 'dps abandoned cart',
+    total: 'dps abandoned cart total',
+    recommendations: 'dps recommendations'
+};
+
 function dynamicBlock(palette, asset, id, describe) {
     if (id) {
         return themed(palette,
@@ -259,6 +269,43 @@ function dynamicBlock(palette, asset, id, describe) {
         asset + '</strong><br>' + describe +
         '<br>Click this block, clear it, then use Insert &gt; Dynamic Content.' +
         '</td></tr></table>');
+}
+
+/* THE PREHEADER, and it is the one block that reads better as a snippet than as copy.
+
+   It is the grey line an inbox shows beside the subject, and it is hidden in the body:
+   display:none plus a zero height, which every client that shows a preview reads and
+   every client that renders the body skips.
+
+   WITH THE LINE ASSET ATTACHED it names the visitor's own products, which is the whole
+   value of the line: "Oxford Shirt and 3 more items, one press from checkout." Salil
+   confirmed on 9 August 2026 that a preheader takes a Dynamic Content snippet, as do
+   push, SMS and on site content, so the same saved asset serves all of them.
+
+   WITHOUT IT the static sentence below is what sends, which is what shipped before and
+   is still a correct preheader. It is a fallback rather than a placeholder on purpose:
+   the other three blocks show a dashed box when their id is missing, because somebody
+   has to attach them, and a dashed box at the top of the email in a slot nobody can see
+   would be the one place that advice is wrong.
+
+   IT MUST BE AN HTML MODULE ONCE THERE IS A TAG IN IT. BeeFree runs a text module's
+   content through its rich text editor, which escapes or reflows a Dengage tag.
+
+   THE TAIL IS IN THE TEMPLATE RATHER THAN THE ASSET because the asset is shared: SMS
+   wants the bare phrase, and only the email wants a sentence around it. The asset emits
+   exactly one line with no surrounding whitespace, which is what lets a comma follow it
+   without a gap in front. factory/panel/content/_dynamic/README.md says why.
+
+   AND IT IS PADDED, which is not decoration. With nothing after it, a client fills the
+   rest of the preview line with the next visible text, which here is "Dengage eComm
+   Demo". A run of zero width non joiners and non breaking spaces eats that space
+   without printing anything. */
+const PREHEADER_TAIL = ', one press from checkout.';
+const PREHEADER_PLAIN = 'Everything you added is one press away from checkout.';
+
+function hidden(inner) {
+    return '<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' +
+        inner + new Array(60).join('&zwnj;&nbsp;') + '</div>';
 }
 
 /* A Google Fonts entry, so the builder previews the demo's own typeface rather than
@@ -295,27 +342,19 @@ export function beefreeAbandonedCart(options) {
     const hairline = () => rows.push(
         row(uid(), palette, [[dividerModule(uid(), palette)]], { top: 0, bottom: 0 }));
 
-    /* 1. THE PREHEADER, hidden. It is the grey line an inbox shows beside the subject,
-       and with nothing in it the client picks the first words it can find, which here
-       would be "Dengage eComm Demo". Standard practice, and it is real text in a real
-       module rather than a trick: display:none plus a zero height, which every client
-       that shows a preview reads and every client that renders the body skips.
+    /* 1. THE PREHEADER, hidden, and personalized when the line asset is attached. See
+       the note above PREHEADER_TAIL for both halves.
 
-       IT DOES NOT REPEAT THE SUBJECT. A preheader that restates the subject wastes the
-       one extra line an inbox gives you, so this one adds the next most useful fact
-       instead: that the basket is one press from checkout.
-
-       THE PADDING AFTER IT IS NOT DECORATION. With nothing following it, a client fills
-       the rest of the preview line with whatever visible text comes next, which here is
-       "Dengage eComm Demo". A run of zero width non joiners and non breaking spaces eats
-       that space without printing anything, which is the standard way to stop it. */
+       IT DOES NOT REPEAT THE SUBJECT either way. That line is the one extra piece of
+       inbox real estate a subject gets, so restating it wastes the only thing it is
+       for. */
     rows.push(row(uid(), palette, [[
-        textModule(uid(), palette,
-            '<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' +
-            'Everything you added is one press away from checkout.' +
-            new Array(60).join('&zwnj;&nbsp;') +
-            '</div>',
-            { size: 1, colour: palette.canvas })
+        snippets.line
+            ? htmlModule(uid(), palette, themed(palette, hidden(
+                '<snippet snippet_id="' + snippets.line + '" snippet_name="' +
+                ASSETS.line + '"></snippet>' + PREHEADER_TAIL)))
+            : textModule(uid(), palette, hidden(PREHEADER_PLAIN),
+                { size: 1, colour: palette.canvas })
     ]], { ground: palette.canvas, top: 0, bottom: 0 }));
 
     /* 2. THE MASTHEAD, AND IT NAMES NOBODY BUT DENGAGE.
@@ -369,7 +408,7 @@ export function beefreeAbandonedCart(options) {
     /* 5. THE BASKET. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
-            dynamicBlock(palette, 'dps abandoned cart', snippets.items,
+            dynamicBlock(palette, ASSETS.items, snippets.items,
                 'The visitor\'s own basket, resolved from their cart events.'))
     ]], { top: 0, bottom: 10 }));
 
@@ -384,7 +423,7 @@ export function beefreeAbandonedCart(options) {
        of one pass over the same rows. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
-            dynamicBlock(palette, 'dps abandoned cart total', snippets.total,
+            dynamicBlock(palette, ASSETS.total, snippets.total,
                 'The subtotal, the total and the button back to that basket.'))
     ]], { ground: palette.wash, top: 26, bottom: 28 }));
 
@@ -400,7 +439,7 @@ export function beefreeAbandonedCart(options) {
        products, because half a rail is worse than none. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
-            dynamicBlock(palette, 'dps recommendations', snippets.recommendations,
+            dynamicBlock(palette, ASSETS.recommendations, snippets.recommendations,
                 'More from the categories the basket is in, ranked the way the storefront ranks them.'))
     ]], { top: 0, bottom: 0 }));
 
@@ -475,6 +514,40 @@ export function beefreeAbandonedCart(options) {
         comments: {}
     };
 }
+
+/* WHICH MODULE HOLDS WHICH SAVED ASSET, found by name rather than by counting.
+
+   The preview has to fill each Dynamic Content block with sample products, so it needs
+   to know which module is the basket and which is the rail. It used to take them in
+   document order, first, second, third, which was true until the preheader became a
+   fourth block and then silently pointed all three at the wrong module. Nothing would
+   have failed: the preview would simply have drawn a plausible email in the wrong order.
+
+   The names are prefixes of each other, so a plain substring test would match "dps
+   abandoned cart" inside "dps abandoned cart total". The delimiter is what separates
+   them: a name is always followed by the closing quote of snippet_name, or by the "<"
+   that ends the placeholder's label. */
+export function dynamicModules(template) {
+    const found = {};
+    for (const templateRow of templateRows(template)) {
+        for (const column of templateRow.columns) {
+            for (const module of column.modules) {
+                const source = module.descriptor && module.descriptor.html &&
+                    module.descriptor.html.html;
+                if (!source) continue;
+                for (const key of Object.keys(ASSETS)) {
+                    if (source.indexOf(ASSETS[key] + '"') !== -1 ||
+                        source.indexOf(ASSETS[key] + '<') !== -1) {
+                        found[key] = module.uuid;
+                    }
+                }
+            }
+        }
+    }
+    return found;
+}
+
+export { ASSETS };
 
 /* The rows, from whichever place a given template put them. Every reader in this
    repository goes through here, so the mirror above stays an implementation detail

@@ -124,7 +124,7 @@ Nine rows:
 
 | Row | What it is |
 |---|---|
-| Preheader | Hidden. The grey line an inbox shows beside the subject. Without it the client shows the first words it finds, which would be "Dengage eComm Demo" |
+| Preheader | Hidden. The grey line an inbox shows beside the subject. **Dynamic Content once the line asset is attached**, so it names the visitor's own products; a static sentence until then. Without either, the client shows the first words it finds, which would be "Dengage eComm Demo" |
 | Masthead | The Dengage mark and the eComm Demo subtext, and nothing else. Non-negotiable 3: never the prospect's logo, and now not their name either |
 | Hero | Drawn in the standard Dengage palette by `make-hero.mjs --shared`. Full bleed, and carries no text |
 | Headline | One line, and one line of copy under it |
@@ -183,7 +183,51 @@ failure an email has. **Do not personalize on the name.**
 What a demo genuinely has is the basket. So that is what to personalize on, and the only
 thing that can reach it from a subject field is a Dynamic Content asset.
 
-### Three that need nothing. Paste and go
+### The one worth using, which names the basket in the inbox
+
+**Everything consumes Dynamic Content snippets**, Salil, 9 August 2026: the preheader
+does, and so do push text, push image, SMS and on site content. That settles what was the
+last open question here, and it changes the recommendation rather than adding a footnote to
+it. A subject line and a preheader can both name the visitor's own products, before the
+email is opened at all.
+
+One asset does it, and it is one you want anyway for SMS.
+`content/_dynamic/abandoned-cart.txt` emits exactly one line and nothing around it:
+
+```
+Oxford Shirt and 3 more items
+```
+
+Which reads correctly whether the basket holds one item, two or six. So:
+
+| | |
+|---|---|
+| **Subject** | `Still yours: ` then the snippet |
+| **Preheader** | the snippet, then `, one press from checkout.` |
+
+reads in an inbox as
+
+> **Still yours: Oxford Shirt and 3 more items**
+> Oxford Shirt and 3 more items, one press from checkout.
+
+**The template already builds the preheader half.** Create the asset, type **Plain Text**,
+named `dps abandoned cart line`, put its id in `factory/sandbox.json` as
+`snippets.abandonedCartLine`, and rebuild: the preheader row becomes an HTML module with
+the tag in it, hidden, with the comma and the tail after it. Nothing to click in the
+builder. The subject half is a campaign field, so that one is a paste.
+
+**Until that id exists the preheader is the static sentence below**, which is a correct
+preheader and what ships today. It is a fallback rather than a dashed box on purpose: the
+other three blocks show a labelled box when their id is missing, because somebody has to
+attach them, and a box in a slot nobody can see would be the one place that advice is
+wrong.
+
+**If the email editor will not offer a Plain Text asset**, create the same body a second
+time as type **HTML** and give me that id instead. The body contains no markup either way,
+so both types render identically here. That is the only part of this I have not seen
+myself.
+
+### Three that need no asset at all. Paste and go
 
 | Subject | Preheader |
 |---|---|
@@ -195,27 +239,8 @@ The first pair is what the template ships with. The preheader in the template is
 one; change the subject to match whichever pair you use.
 
 **The preheader never repeats the subject.** That line is the one extra piece of inbox real
-estate you get, and restating the subject wastes it. Both rules are asserted.
-
-### One that is genuinely personalized, if the subject field takes a snippet
-
-`content/_dynamic/abandoned-cart.txt` is the plain text version of the same basket, and it
-outputs exactly one line:
-
-```
-Oxford Shirt and 3 more items
-```
-
-Which reads correctly whether the basket holds one item or six. So:
-
-> **Still yours: Oxford Shirt and 3 more items**
-
-To try it: create a fourth asset, type **Plain Text**, named `dps abandoned cart text`,
-from that file, then put its snippet tag in the subject field with `Still yours: ` in
-front. **Whether a subject field accepts a snippet is the one thing I cannot test from
-here**, so it is worth thirty seconds of yours: it either resolves or it prints the tag,
-and both are obvious immediately. If it resolves, tell me the id and it goes in
-`sandbox.json` with the other three.
+estate you get, and restating the subject wastes it. Both rules are asserted, for the
+static sentence and for the snippet.
 
 ### If you want the name as well
 
@@ -339,9 +364,9 @@ Mostly. Precisely:
 | Its hero image | yes, the build runs `make-hero.mjs` |
 | Brand colour, typeface, categories, currency, store name, links | yes, all from `demo.config.json` |
 | `dps_product` rows for the new demo | yes, within ten minutes. `refresh_dengage_catalogues()` reads the published `feed/products.json`, which every build regenerates, so it discovers a new slug with nothing to tell it |
-| The two Dynamic Content assets | nothing to do. They are shared, and they work out which demo a basket belongs to by themselves |
+| The Dynamic Content assets | nothing to do. They are shared, and they work out which demo a basket belongs to by themselves |
 | The template and the campaign | nothing to do. Both are shared now |
-| The snippet ids in the file | **once ever.** Set `DPS_SNIPPET_CART` and `DPS_SNIPPET_CART_TOTAL` and the import needs no clicks at all |
+| The snippet ids in the file | **once ever.** They live in `factory/sandbox.json`, so a rebuild needs nothing remembered. `DPS_SNIPPET_CART`, `DPS_SNIPPET_CART_TOTAL`, `DPS_SNIPPET_RECOMMENDATIONS` and `DPS_SNIPPET_CART_LINE` override them for a second account |
 
 **So there is no per demo panel work left for this email.** Publish a demo, wait ten
 minutes for its products to reach `dps_product`, and the campaign that already exists
@@ -392,8 +417,15 @@ answers whether the colours, the typeface and the proportions came out right, wh
 what a preview is for. It does not answer how a given mail client will render the
 export, and BeeFree owns the real one.
 
-The two Dynamic Content blocks are filled with four real products from the demo's
+The basket, the summary and the rail are filled with real products from the demo's
 catalogue rather than shown as dashed boxes, because a dashed box proves the block is
-in the right place and only a filled one shows whether the email looks right. Four,
-because four is the number that exposed the old three product cap. Prices are the
+in the right place and only a filled one shows whether the email looks right. Four in the
+basket, because four is the number that exposed the old three product cap. Prices are the
 scraped prices, and a product the scrape gave no price shows none.
+
+**Each block is found by the name of the asset in it, not by counting.** The preview used
+to take them in document order, first, second, third, which was correct until the preheader
+became a Dynamic Content block and moved to the front of the document. Counting would then
+have filled the basket with the rail and drawn a plausible email in the wrong order without
+failing anything, so `dynamicModules()` matches on the asset name instead. Three of the four
+names are a prefix of another, so it matches the delimiter after the name as well.

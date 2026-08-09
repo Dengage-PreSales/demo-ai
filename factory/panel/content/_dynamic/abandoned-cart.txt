@@ -93,15 +93,26 @@
   for (var p = 0; p < products.length; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
-%}{% var first = null; var count = 0; %}
-{% for (var i = 0; i < ids.length; i++) {
-     var product = byId[ids[i]];
-     if (!product || !product.is_active) { continue; }
-     count = count + 1;
-     if (!first) { first = product; }
-%}{% } %}
-{% if (first) { %}
-{%= String(first.title).length > 48 ? String(first.title).substring(0, 45) + "..." : first.title %}{% if (count > 2) { %} and {%= count - 1 %} more items{% } else if (count == 2) { %} and 1 more item{% } %}
-{% } else { %}
-the items you saved
-{% } %}
+
+  var first = null;
+  var count = 0;
+  for (var i = 0; i < ids.length; i++) {
+    var product = byId[ids[i]];
+    if (!product || !product.is_active) { continue; }
+    count = count + 1;
+    if (!first) { first = product; }
+  }
+
+  var name = "";
+  if (first) {
+    var title = String(first.title == null ? "" : first.title).trim();
+    name = title.length > 48 ? title.substring(0, 45).replace(/[\s,]+$/, "") + "..." : title;
+  }
+
+  var line = "the items you saved";
+  if (name !== "") {
+    line = name;
+    if (count > 2) { line = line + " and " + (count - 1) + " more items"; }
+    else if (count === 2) { line = line + " and 1 more item"; }
+  }
+%}{%= line %}

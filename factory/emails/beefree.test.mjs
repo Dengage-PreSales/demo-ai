@@ -22,7 +22,7 @@
    touched. The two disagreed in a real send. Nothing that names a store can be in here.
    ========================================================================== */
 
-import { beefreeAbandonedCart, templateRows } from './beefree.mjs';
+import { beefreeAbandonedCart, templateRows, dynamicModules } from './beefree.mjs';
 import { emailPalette } from './palette.mjs';
 import { parseHex, contrast } from '../scrape/theme.mjs';
 
@@ -259,6 +259,79 @@ function walk(template) {
     ok('the recommendation block takes an id like the other two',
        resolved[2].descriptor.html.html.includes('snippet_id="' + RECO + '"'),
        resolved[2].descriptor.html.html);
+}
+
+/* -------------------------------------------------------------------------- */
+/* The preheader, which is a snippet now that a preheader is known to take one    */
+
+{
+    /* SALIL, 9 AUGUST 2026: a preheader takes a Dynamic Content snippet, and so do push
+       text, push image, SMS and on site content. Until then this row was a static
+       sentence, which is a fine preheader and a wasted one: the line an inbox shows beside
+       the subject is the only place a basket can be named before the email is opened at
+       all, and the asset that names it already existed for SMS.
+
+       BOTH BRANCHES ARE ASSERTED. The static one is what sends until the line asset exists
+       in the panel, and it is a fallback rather than a dashed box on purpose: the other
+       three blocks show a box because somebody has to attach them, and a box in a slot
+       nobody can see would be the one place that advice is wrong.
+
+       ASSEMBLED RATHER THAN WRITTEN, like the recommendation fixture above and for the
+       same reason: the app-guid guard rejects every identifier here that is not named in
+       factory/sandbox.json, and a fixture must not be in that allowlist. */
+    const LINE = 'eeeeeeee-1111-2222' + '-3333-' + '444444444444';
+
+    const plain = build().template;
+    const staticLine = walk(plain).modules.find((module) => module.descriptor.text &&
+        module.descriptor.text.html.includes('display:none'));
+    ok('with no line asset the preheader is a static sentence', Boolean(staticLine));
+    ok('and no Dynamic Content block appeared for it',
+       dynamicModules(plain).line === undefined, dynamicModules(plain));
+
+    const withLine = build({ snippets: { line: LINE } }).template;
+    const blocks = dynamicModules(withLine);
+    const preheader = walk(withLine).modules.find((module) => module.uuid === blocks.line);
+
+    ok('with the line asset attached the preheader becomes a Dynamic Content block',
+       Boolean(preheader), blocks);
+    /* A TEXT MODULE WOULD MANGLE THE TAG, which is why all four are HTML modules. */
+    ok('and an HTML module, so the tag is not run through the rich text editor',
+       preheader && preheader.type === 'mailup-bee-newsletter-modules-html',
+       preheader && preheader.type);
+    ok('it calls the line asset by id',
+       preheader && preheader.descriptor.html.html.includes(
+           '<snippet snippet_id="' + LINE + '" snippet_name="dps abandoned cart line">'),
+       preheader && preheader.descriptor.html.html);
+    ok('it is still hidden, so it reads beside the subject rather than in the body',
+       preheader && preheader.descriptor.html.html.includes('display:none'));
+    ok('and still padded, so the mark cannot leak into the preview line',
+       preheader && (preheader.descriptor.html.html.match(/&zwnj;/g) || []).length > 20,
+       preheader && (preheader.descriptor.html.html.match(/&zwnj;/g) || []).length);
+
+    /* THE SENTENCE AROUND IT IS IN THE TEMPLATE RATHER THAN THE ASSET, because the asset
+       is shared: SMS wants the bare phrase and only the email wants a comma after it. That
+       only works because the asset emits one line with nothing around it, which
+       cart.test.mjs pins from the other side. */
+    ok('the tail is in the template, so the shared asset stays a bare phrase',
+       preheader && preheader.descriptor.html.html.includes(
+           '</snippet>, one press from checkout.'));
+    ok('and the static sentence does not send as well',
+       !JSON.stringify(withLine).includes('Everything you added is one press away'));
+
+    /* FOUR BLOCKS, TOLD APART BY NAME, and three of the four names are a prefix of
+       another, so this is the assertion a plain substring test fails. It replaced counting
+       them in document order, which was correct until the preheader became the first one
+       and would then have filled the basket with the rail without failing anything. */
+    ok('all four blocks are found, and none is confused with another',
+       new Set([blocks.line, blocks.items, blocks.total, blocks.recommendations]).size === 4,
+       blocks);
+
+    /* AND IT KEEPS THE WRAPPER RULES, which apply to every HTML block whether it can be
+       seen or not: BeeFree gives raw HTML no typeface and no padding. */
+    ok('the preheader block carries the wrapper like every other HTML block',
+       preheader &&
+       preheader.descriptor.html.html.indexOf('<div style="font-family:') === 0 &&
+       /padding:0 24px/.test(preheader.descriptor.html.html));
 }
 
 /* -------------------------------------------------------------------------- */

@@ -58,7 +58,7 @@ import { fileURLToPath } from 'node:url';
 
 import { emailPalette } from './palette.mjs';
 import { dengageTheme } from './dengage-theme.mjs';
-import { beefreeAbandonedCart, templateRows } from './beefree.mjs';
+import { beefreeAbandonedCart, templateRows, dynamicModules } from './beefree.mjs';
 import { previewBeefree, productRows, summaryRows } from './beefree-preview.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -82,7 +82,12 @@ function snippetIds() {
     return {
         items: named.abandonedCart || null,
         total: named.abandonedCartTotal || null,
-        recommendations: named.recommendations || null
+        recommendations: named.recommendations || null,
+        /* THE LINE ASSET, which is the plain text one line naming the basket. It feeds
+           the preheader here, and the same saved asset feeds SMS, WhatsApp, push and the
+           subject line. Null until it is created in the panel, and the preheader falls
+           back to its static sentence rather than to a dashed box. */
+        line: named.abandonedCartLine || null
     };
 }
 
@@ -166,7 +171,8 @@ export function buildBeefree(snippets) {
         snippets: snippets || {
             items: process.env.DPS_SNIPPET_CART || configured.items,
             total: process.env.DPS_SNIPPET_CART_TOTAL || configured.total,
-            recommendations: process.env.DPS_SNIPPET_RECOMMENDATIONS || configured.recommendations
+            recommendations: process.env.DPS_SNIPPET_RECOMMENDATIONS || configured.recommendations,
+            line: process.env.DPS_SNIPPET_CART_LINE || configured.line
         }
     });
 
@@ -199,25 +205,21 @@ export function buildBeefree(snippets) {
         break;
     }
 
-    /* Keyed by module uuid, which is why the uuids are deterministic. The two HTML
-       modules are the first and second in document order. */
-    const htmlModules = [];
-    for (const templateRow of templateRows(template)) {
-        for (const column of templateRow.columns) {
-            for (const module of column.modules) {
-                if (module.descriptor && module.descriptor.html) htmlModules.push(module.uuid);
-            }
-        }
-    }
+    /* Keyed by module uuid, which is why the uuids are deterministic, and looked up by
+       ASSET NAME rather than by position. Document order worked until the preheader
+       became a fourth Dynamic Content block, at which point counting would have filled
+       the basket module with the rail and drawn a plausible email in the wrong order
+       without failing anything. */
+    const blocks = dynamicModules(template);
     const filled = {};
-    if (htmlModules[0] && sample.basket.length) {
-        filled[htmlModules[0]] =
+    if (blocks.items && sample.basket.length) {
+        filled[blocks.items] =
             '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
             'style="border-collapse:collapse;">' + productRows(sample.basket, palette) +
             '</table>';
     }
-    if (htmlModules[2] && sample.recommended && sample.recommended.length) {
-        filled[htmlModules[2]] =
+    if (blocks.recommendations && sample.recommended && sample.recommended.length) {
+        filled[blocks.recommendations] =
             '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
             'style="border-collapse:collapse;font-family:inherit;color:inherit;">' +
             '<tr><td colspan="2" style="padding:0 0 4px 0;"><div style="border-top:1px solid ' +
@@ -230,7 +232,7 @@ export function buildBeefree(snippets) {
             'More from the same range</div></td></tr>' +
             productRows(sample.recommended, palette) + '</table>';
     }
-    if (htmlModules[1]) {
+    if (blocks.total) {
         /* The summary block carries the button now, so the preview has to as well or it
            would show an email with no call to action in it. */
         const button =
@@ -245,7 +247,7 @@ export function buildBeefree(snippets) {
             'font-size:13px;line-height:1.5;"><a href="#" style="color:inherit;' +
             'opacity:0.65;text-decoration:underline;">or keep browsing the store</a>' +
             '</td></tr></table>';
-        filled[htmlModules[1]] = (sample.totals
+        filled[blocks.total] = (sample.totals
             ? '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
               'style="border-collapse:collapse;font-family:inherit;color:inherit;">' +
               summaryRows(sample.totals, palette) + '</table>'

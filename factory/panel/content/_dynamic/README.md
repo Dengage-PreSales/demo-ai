@@ -24,13 +24,50 @@ this repository mark that spot.
 | `abandoned-cart.html` | HTML | email |
 | `abandoned-cart-total.html` | HTML | email. The subtotal, the total, and the button back to the basket |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
-| `abandoned-cart.txt` | Plain Text | SMS, WhatsApp |
+| `abandoned-cart.txt` | Plain Text | **four channels.** SMS, WhatsApp, push copy, and the email's subject line and preheader. See below |
 | `recommendations.html` | HTML | email. The storefront's own recommendation rail |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
 | `_diagnostic.html` | HTML | a throwaway asset for reading what a send can actually see |
 
-Same query in all three. Only the rendering differs, which is the point of one asset
+Same query in all of them. Only the rendering differs, which is the point of one asset
 per scenario rather than one per channel.
+
+## One line, four channels, and that is the whole reason it is a separate asset
+
+Salil, 9 August 2026: **a preheader takes a Dynamic Content snippet, and so do push text,
+push image, SMS and on site content.** Everything consumes them. That makes
+`abandoned-cart.txt` the most reused object in the account, because it is the one that
+renders as a phrase rather than as markup:
+
+| Where | What it becomes |
+|---|---|
+| SMS, WhatsApp | the body, on its own |
+| Push title or body | the same phrase, in the copy |
+| Email subject | `Still yours: Oxford Shirt and 3 more items` |
+| Email preheader | `Oxford Shirt and 3 more items, one press from checkout.` |
+
+It emits exactly one of these:
+
+```
+Oxford Shirt and 3 more items      four in the basket
+Oxford Shirt and 1 more item       two, and singular on purpose
+Oxford Shirt                       one
+the items you saved                nothing resolved, which a test send hits
+```
+
+**It emits one line and nothing around it, not even a trailing newline.** That is a real
+constraint rather than tidiness. The line used to be assembled across five template tags on
+five physical lines, so its output opened and closed with a newline. Invisible in an SMS
+body. Not invisible in the email, where the preheader puts a comma straight after the
+snippet: a collapsed newline lands a space in front of it, and
+`Oxford Shirt and 3 more items , one press from checkout.` is the first thing a recipient
+sees. So the whole line is computed inside the resolution block and emitted by a single
+`{%= line %}`, and both halves are asserted, from the asset's side in `cart.test.mjs` and
+from the template's side in `factory/emails/beefree.test.mjs`.
+
+**The sentence around it belongs to the channel, not to the asset.** SMS wants the bare
+phrase and only the email wants a comma after it, so the asset stays a phrase and the
+template supplies the rest. Which is only possible because of the paragraph above.
 
 ## The totals, because a correct product list next to an invented total is worse
 

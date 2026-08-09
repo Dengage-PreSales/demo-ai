@@ -58,7 +58,41 @@ over each one**. Type **HTML** for all of them.
 Nothing to attach and nothing to click. Their ids are recorded in
 `factory/sandbox.json`, so the template already calls all three by id.
 
-### 2. Re-import the email template. Content > Email > Email Builder
+### 2. One more Dynamic Content asset, and it is the one four channels share
+
+**New.** Everything consumes Dynamic Content snippets, which you confirmed on 9 August:
+the email preheader does, and so do push text, push image, SMS and on site content. This
+is the asset that renders as a phrase rather than as markup, so it is the one that goes
+everywhere.
+
+| Asset name in the panel | Type | Paste this file |
+|---|---|---|
+| `dps abandoned cart line` | **Plain Text** | `content/_dynamic/abandoned-cart.txt` |
+
+It emits one line, `Oxford Shirt and 3 more items`, correct at one item or six. Four
+places want it:
+
+| Where | What to put there |
+|---|---|
+| Email **subject** | `Still yours: ` then the snippet |
+| Email **preheader** | already built. See the next paragraph |
+| SMS and WhatsApp | the snippet on its own |
+| Push title or body | the snippet in the copy |
+
+**Then send me the id**, or add it yourself to `factory/sandbox.json` as
+`snippets.abandonedCartLine` and run `node factory/emails/build-beefree.mjs`. The preheader
+row of the template turns into a hidden Dynamic Content block naming the visitor's own
+products, with `, one press from checkout.` after it. Until then the preheader sends the
+static sentence it sends today, which is a correct preheader and not a broken one.
+
+**If the email editor will not offer a Plain Text asset**, create the same body again as
+type **HTML** and send me that id instead. The body has no markup in it either way. That is
+the only part of this I have not been able to see myself.
+
+`factory/emails/BEEFREE.md` has the subject and preheader wording, including the three
+pairs that need no asset at all.
+
+### 3. Re-import the email template. Content > Email > Email Builder
 
 ```
 factory/panel/content/_shared/beefree-abandoned-cart.json
@@ -69,23 +103,23 @@ so it can never contradict the basket inside it. `factory/emails/BEEFREE.md` say
 and what is in it. Open the `.preview.html` beside it first if you want to see it
 before uploading.
 
-### 3. One abandoned cart campaign, using that template
+### 4. One abandoned cart campaign, using that template
 
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 4. Confirm the ETL runs on a schedule
+### 5. Confirm the ETL runs on a schedule
 
 Postgres reloads every demo's catalogue every ten minutes by itself. The Dengage
 Automated Flow is what copies it into `dps_product`, and **if that flow is not on a
 recurring schedule, a new demo's products never arrive** and its emails have nothing
 to render. Set the frequency you want on the flow. `supabase/README.md` has the chain.
 
-### 5. Five inline creatives, when support enables Inline
+### 6. Five inline creatives, when support enables Inline
 
 Written and committed, nothing to build. The table is below.
 
-### 6. Watch the MP4 through once
+### 7. Watch the MP4 through once
 
 Detail below. It takes a minute and it is the one thing a URL check cannot answer.
 
@@ -116,7 +150,7 @@ else is waiting on anything.
 | App inbox | live. No campaign, by design |
 | `dps_product` | loaded, 28 of 28 columns type aligned |
 | Event definitions | the six standard tables, nothing to define |
-| The `.json` and `.txt` cart assets | written, but no push or SMS message calls them yet. Create them when that channel is built, not now |
+| The `.json` cart asset | written, and waiting for a push carousel to call it. Create it when that message exists, not now |
 
 ---
 
