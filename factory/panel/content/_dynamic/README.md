@@ -30,12 +30,33 @@ per scenario rather than one per channel.
 
 ---
 
-## Two things about the HTML that are deliberate
+## Two rules these files follow, both learned the hard way
 
-**It carries no colours.** Every element has a `dps-` class and nothing else. One
-asset serves every demo, and nothing in a send says which demo triggered it, so the
-asset cannot know the brand. Each generated email carries a `<style>` block that
-themes these classes with that demo's own palette and typeface:
+**NO COMMENTS INSIDE `{% %}`.** All three files originally opened with an explanatory
+block wrapped in `{% /* ... */ %}`. That is a JavaScript comment inside a template tag,
+and Dengage's engine parses it as code: the Test button returned
+`SyntaxError: Unexpected token '%s' after '%s'`, which is the engine failing on the
+commentary rather than on anything real. Explanation belongs in this file. A tag
+contains only code.
+
+**`is_active` IS A BOOLEAN.** All three tested `p.is_active == 1`. Dengage declares the
+column BOOLEAN, confirmed from its API, so that comparison was false for every product
+and the block would have rendered empty while looking like a data problem.
+
+## Styling: inline, and as little as possible
+
+Earlier these used `dps-` class names on the assumption that each generated email would
+carry a `<style>` block to theme them. **That is wrong for how this is actually used.**
+The asset drops into a Dengage system template in the Email Builder, and the builder owns
+that template's CSS: there is nowhere to add a class definition.
+
+So the HTML asset is inline styled and deliberately plain. No background, no border, no
+heading, no button, and `font-family: inherit` with `color: inherit` so it takes the
+surrounding template's typography instead of imposing its own. It is a product list and
+nothing else, because the template already supplies the heading above it and the call to
+action below it.
+
+The old class contract, kept only as a record of what it was:
 
 | Class | What it is |
 |---|---|

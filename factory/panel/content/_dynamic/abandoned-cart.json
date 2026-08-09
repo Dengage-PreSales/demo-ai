@@ -1,20 +1,3 @@
-{% /* ==========================================================================
-      dps abandoned cart, JSON.  Content > Dynamic Content > New > JSON.
-
-      The same basket as abandoned-cart.html, as data rather than markup. A push
-      carousel reads it through "Get from Dynamic Content", and anything else that
-      wants the products without a layout can use it too.
-
-      ONE ASSET PER SCENARIO, THREE RENDERINGS. The query below is identical to the
-      HTML one on purpose: a second copy of the query would be a second thing to keep
-      correct, and the failure would be a push and an email disagreeing about what is
-      in somebody's basket.
-
-      COMMAS ARE THE WHOLE DIFFICULTY IN A JSON TEMPLATE. A loop that writes a comma
-      after every item produces a trailing one and invalid JSON, which Dengage rejects
-      on save. So the comma is written BEFORE every item except the first, tracked with
-      a counter rather than the loop index, because skipped rows would leave gaps.
-      ====================================================================== */ %}
 {% var lines = $from("shopping_cart_events")
      .where("contact_key", "=", $Contact.contact_key)
      .orderByDescending("event_date")
@@ -27,7 +10,7 @@
        .where("product_id", "=", lines[i].product_id)
        .take(1)
        .get()[0]; %}
-  {% if (p && p.is_active == 1) { %}
+  {% if (p && p.is_active) { %}
     {% if (written > 0) { %},{% } %}
     {"id":"{%= p.product_id =%}",
      "title":"{%= p.title =%}",
