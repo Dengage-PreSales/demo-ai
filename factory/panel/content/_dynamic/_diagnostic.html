@@ -1,0 +1,45 @@
+{%
+  var out = [];
+
+  var keysOf = function (label, obj) {
+    if (!obj) { out.push(label + ': (null)'); return; }
+    var ks = [];
+    for (var k in obj) { ks.push(k); }
+    out.push(label + ' [' + ks.length + ']: ' + ks.join(', '));
+  };
+
+  keysOf('$Contact', $Contact);
+  out.push('$Contact.contact_key = [' + (($Contact && $Contact.contact_key) ? $Contact.contact_key : '') + ']');
+
+  try { keysOf('$Device', $Device); }
+  catch (e) { out.push('$Device: not available in this context'); }
+
+  var dev = [];
+  try {
+    dev = $from('$db.master_device').take(1).get();
+    keysOf('master_device row', dev.length ? dev[0] : null);
+  } catch (e) {
+    out.push('master_device: ' + e);
+  }
+
+  var cart = [];
+  try {
+    cart = $from('$db.shopping_cart_events').take(1).get();
+    keysOf('shopping_cart_events row', cart.length ? cart[0] : null);
+  } catch (e) {
+    out.push('shopping_cart_events: ' + e);
+  }
+
+  var mine = [];
+  try {
+    mine = $from('$db.shopping_cart_events')
+      .where('key', '=', $Contact.contact_key).take(5).get();
+    out.push('cart rows where key = contact_key: ' + mine.length);
+  } catch (e) {
+    out.push('cart by contact_key: ' + e);
+  }
+%}
+<pre style="font:12px/1.5 monospace;white-space:pre-wrap;">
+{% for (var i = 0; i < out.length; i++) { %}{%= out[i] %}
+{% } %}
+</pre>
