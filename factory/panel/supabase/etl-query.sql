@@ -1,0 +1,103 @@
+-- ============================================================================
+-- The query the Dengage Automated Flow runs against Supabase.
+--
+-- Flow shape, from Dengage's own documentation:
+--
+--   1. Trigger        recurring. Daily is right for a catalogue. You set this.
+--   2. Data Builder   "Execute a SQL Query", against the Supabase connection.
+--                     The query is the one line below.
+--   3. Data Space Update
+--                     Target: dps_product
+--                     Operation: UPSERT, matching on product_id
+--
+-- UPSERT, NOT INSERT, and it is not a preference. Insert on a daily run either
+-- duplicates every product or fails on the key, and neither state is recoverable
+-- without a delete, which needs written approval (CLAUDE.md 1a). Upsert on
+-- product_id makes a rerun free.
+-- ============================================================================
+
+select * from public.dengage_dps_product;
+
+
+-- ---------------------------------------------------------------------------
+-- WHY IT IS ONE LINE, AND WHY THAT IS THE POINT.
+--
+-- dengage_dps_product is a view over dps_product that projects exactly the 27
+-- columns Dengage holds, in order, with the same names. So there is nothing to map
+-- in the panel and nothing to alias.
+--
+-- The alternative was twenty seven aliases pasted into a flow, which is twenty
+-- seven things that can drift from the table with nothing to notice. A flow is the
+-- one place in this system nobody reviews.
+--
+-- The view deliberately does NOT project demo_slug, source_product_id or
+-- updated_at. Those are ours, for telling rows apart and catching a double load.
+-- They have no column on the Dengage side, so sending them fails the load.
+--
+-- ---------------------------------------------------------------------------
+-- IT INCLUDES WITHDRAWN PRODUCTS, ON PURPOSE.
+--
+-- Rows with is_active = 0 are in the result set and must stay there. A product
+-- removed from a demo's catalogue keeps its row here with is_active = 0, and the
+-- upsert is the only thing that can carry that across: filter them out and the
+-- upsert never touches the far side, so Dengage keeps a live row for something
+-- nobody can buy, and it appears in baskets and rails forever.
+--
+-- Filtering on is_active = 1 in this query is therefore a bug that looks like
+-- tidiness. The content decides what to show; the load carries the truth.
+--
+-- ---------------------------------------------------------------------------
+-- FULL LOAD RATHER THAN INCREMENTAL, and this is a judgement worth stating.
+--
+-- There is an updated_at column and it would work as a watermark:
+--
+--   select * from public.dengage_dps_product d
+--     join public.dps_product s using (product_id)
+--    where s.updated_at > :last_run
+--
+-- Do not bother yet. A few hundred products across five to seven demos is nothing
+-- to transfer, a full load is idempotent by construction, and a watermark has a
+-- failure mode a full load cannot have: one missed window silently leaves rows
+-- stale forever, and nothing downstream shows it. Reach for the incremental form
+-- when the row count makes a full pass expensive, not before.
+--
+-- ---------------------------------------------------------------------------
+-- ORDER OF THE CHAIN, WHICH MATTERS MORE THAN THE FREQUENCY.
+--
+--   the factory publishes demos/<slug>/products.json
+--     -> load_dps_product('<slug>')  refreshes Postgres from that
+--        -> this flow copies Postgres into dps_product
+--           -> email, push and on-site read dps_product with $from
+--
+-- Put the Postgres refresh comfortably ahead of the flow's window, not alongside
+-- it. Whatever the ETL reads is what a prospect sees, and a price is the one value
+-- on a demo that somebody checks.
+--
+-- To refresh Postgres on a schedule of its own, pg_cron is enabled in the project:
+--
+--   select cron.schedule('refresh-techiestore', '0 3 * * *',
+--                        $$select public.load_dps_product('techiestore-in')$$);
+--
+-- ---------------------------------------------------------------------------
+-- THE CONNECTION, AND THE TWO THINGS THAT USUALLY GO WRONG.
+--
+-- The role exists and is read only. It has no password until you give it one, which
+-- is deliberate: a password should not travel through a transcript.
+--
+--   alter role dengage_ro with login password '<generate one>';
+--
+--   host      copy it from Supabase's Connect dialog rather than typing it
+--   database  postgres
+--   user      dengage_ro
+--   schema    public
+--
+-- 1. IPv4. Direct connections to db.<ref>.supabase.co resolve over IPv6 on current
+--    projects. If the Dengage connector is IPv4 only, use the pooler hostname, or
+--    add Supabase's dedicated IPv4 add-on. This is the most likely reason a
+--    connection that should work does not.
+-- 2. Session mode, not transaction mode, if you go through the pooler. A flow
+--    issues ad hoc queries, and transaction mode does not support prepared
+--    statements.
+--
+-- dengage_ro can select from this view and from dps_product, and nothing else. An
+-- UPDATE as that role is refused, which was checked rather than assumed.

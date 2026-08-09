@@ -1,5 +1,5 @@
 -- ============================================================================
--- The product dimension, in Postgres, for Dengage to read as a remote table.
+-- The product dimension, in Postgres, for Dengage's ETL to load into dps_product.
 --
 -- Applied to the DPS Supabase project on 9 August 2026. Kept here so the setup is
 -- reproducible and reviewable rather than living only in one database.
@@ -13,9 +13,15 @@
 --
 -- WHY POSTGRES RATHER THAN LOADING DENGAGE DIRECTLY. The Dengage API is IP
 -- allowlisted and this repository's automation runs behind a rotating egress pool,
--- so nothing here can reliably reach it. A remote table inverts the direction:
--- Dengage connects out to this database and queries it, so no address on our side
--- has to be stable and no credential has to travel.
+-- so nothing here can reliably reach it. Dengage reaching out inverts that: no
+-- address on our side has to be stable and no credential has to travel.
+--
+-- AND AN ETL RATHER THAN A REMOTE TABLE, settled 9 August 2026 after trying it.
+-- Remote tables are documented for Interactive Segments and never mentioned for
+-- personalisation, which is the half the emails need, and a live passthrough would
+-- have meant one external query per recipient at send time. The ETL copies these rows
+-- into a real Data Space table, where $from is exactly what the documentation
+-- describes. factory/panel/supabase/etl-query.sql is the query the flow runs.
 -- ============================================================================
 
 create table public.dps_product (
@@ -130,10 +136,11 @@ security invoker
 set search_path = public, extensions
 as $$
 declare
-    v_base   text;
-    v_body   text;
-    v_status integer;
-    v_rows   integer;
+    v_base      text;
+    v_body      text;
+    v_status    integer;
+    v_rows      integer;
+    v_withdrawn integer;
 begin
     -- THE SLUG IS INTERPOLATED INTO A URL, SO IT IS VALIDATED RATHER THAN TRUSTED.
     -- The http extension gives this database outbound requests, which is exactly the
@@ -156,29 +163,45 @@ begin
         raise exception 'products.json for % returned HTTP %', p_slug, v_status;
     end if;
 
+    create temporary table _incoming on commit drop as
+    select x.id, nullif(x.name, '') as name, x.category, x.price,
+           x."discountedPrice" as discounted, x."stockCount" as stock, x.image
+    from jsonb_to_recordset((v_body::jsonb) -> 'products')
+        as x(id text, name text, category text, price numeric,
+             "discountedPrice" numeric, "stockCount" integer, image text)
+    where x.id is not null and x.id <> '';
+
+    -- A CATALOGUE THAT CAME BACK EMPTY IS A FAULT, NOT AN INSTRUCTION TO WITHDRAW
+    -- EVERYTHING. Without this, one bad publish would deactivate a whole demo and the
+    -- next send would show nothing at all.
+    if (select count(*) from _incoming) = 0 then
+        raise exception 'products.json for % parsed to zero products, refusing to withdraw the catalogue', p_slug;
+    end if;
+
     insert into public.dps_product (
         product_id, title, price, discounted_price,
         image_link, small_image_link, link,
         category_path, stock_count, availability,
         is_active, store_name, demo_slug, source_product_id)
     select
-        x.id,
-        nullif(x.name, ''),
-        x.price,
-        case when x.price is not null and x."discountedPrice" is not null
-                  and x."discountedPrice" < x.price
-             then x."discountedPrice" end,
-        case when x.image is not null and x.image <> '' then v_base || x.image end,
-        case when x.image is not null and x.image <> '' then v_base || x.image end,
-        v_base || 'product.html?id=' || x.id,
-        nullif(x.category, ''),
-        x."stockCount",
-        case when x."stockCount" = 0 then 'out of stock' else 'in stock' end,
-        1, 'Dengage eComm Demo', p_slug, x.id
-    from jsonb_to_recordset((v_body::jsonb) -> 'products')
-        as x(id text, name text, category text, price numeric,
-             "discountedPrice" numeric, "stockCount" integer, image text)
-    where x.id is not null and x.id <> ''
+        i.id,
+        i.name,
+        i.price,
+        -- A discount only exists if it is genuinely lower. The table's own check
+        -- constraint enforces this too, so a bad feed fails loudly rather than showing
+        -- a prospect a reduction that is not one.
+        case when i.price is not null and i.discounted is not null and i.discounted < i.price
+             then i.discounted end,
+        case when i.image is not null and i.image <> '' then v_base || i.image end,
+        case when i.image is not null and i.image <> '' then v_base || i.image end,
+        v_base || 'product.html?id=' || i.id,
+        nullif(i.category, ''),
+        -- Left null when the scrape found none. Null means the catalogue does not
+        -- track stock; zero means none left.
+        i.stock,
+        case when i.stock = 0 then 'out of stock' else 'in stock' end,
+        1, 'Dengage eComm Demo', p_slug, i.id
+    from _incoming i
     on conflict (product_id) do update set
         title            = excluded.title,
         price            = excluded.price,
@@ -192,9 +215,58 @@ begin
         is_active        = 1;
 
     get diagnostics v_rows = row_count;
+
+    -- A PRODUCT THAT LEAVES THE CATALOGUE IS WITHDRAWN, NOT FORGOTTEN. The loader used
+    -- to upsert only what it found, so a removed product kept is_active = 1 forever.
+    -- Downstream that is worse than a missing row: an upsert never touches it, so
+    -- Dengage keeps a live row for something nobody can buy and it goes on appearing in
+    -- baskets and rails.
+    --
+    -- The row is kept rather than deleted, deliberately. An upsert can carry a 0 across
+    -- and withdraw it in Dengage too, which a deletion here could never do.
+    update public.dps_product d
+       set is_active = 0,
+           availability = 'out of stock'
+     where d.demo_slug = p_slug
+       and d.is_active = 1
+       and not exists (select 1 from _incoming i where i.id = d.source_product_id);
+
+    get diagnostics v_withdrawn = row_count;
+
+    raise notice 'load_dps_product(%): % loaded, % withdrawn', p_slug, v_rows, v_withdrawn;
     return v_rows;
 end;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- What the Dengage ETL reads.
+--
+-- A VIEW RATHER THAN A LONG SELECT IN THE PANEL, for one reason: the column contract
+-- belongs in one place. Twenty seven aliases pasted into a flow are twenty seven
+-- things that can drift from the table with nothing to notice, and a flow is the one
+-- place in this system nobody reviews.
+--
+-- It projects EXACTLY Dengage's dps_product columns and nothing else. demo_slug,
+-- source_product_id and updated_at are ours and have no column on the far side, so
+-- sending them would fail the load.
+--
+-- IT INCLUDES WITHDRAWN PRODUCTS, and filtering them out would be a bug that looks
+-- like tidiness: the upsert is the only thing that can carry is_active = 0 across.
+--
+-- security_invoker so row level security on the base table still applies to whoever
+-- selects through it, rather than the view running with its owner's rights.
+-- ---------------------------------------------------------------------------
+
+create view public.dengage_dps_product
+with (security_invoker = true) as
+select
+    product_id, title, description, category_id, brand_id, link, image_link,
+    price, discounted_price, availability, availability_date, stock_count,
+    parent_id, trans_title, product_vendor, category_path, brand,
+    mobile_web_link, android_deep_link, ios_deep_link,
+    small_image_link, large_image_link, is_active, product_special_code,
+    store_name, legacy_resource_id, publish_date
+from public.dps_product;
 
 -- ---------------------------------------------------------------------------
 -- The role Dengage connects as.
@@ -214,6 +286,7 @@ create role dengage_ro nologin;
 grant connect on database postgres to dengage_ro;
 grant usage on schema public to dengage_ro;
 grant select on public.dps_product to dengage_ro;
+grant select on public.dengage_dps_product to dengage_ro;
 
 -- Nothing in this table is per contact and nothing in it is personal: it is a
 -- product catalogue already published on the storefront the demo serves. So a row
