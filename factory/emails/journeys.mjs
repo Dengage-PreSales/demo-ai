@@ -3,7 +3,7 @@
 
    Each journey is a function of (palette, ctx, mode). `mode` is 'panel' for the
    file that goes into the Dengage Code Editor, where every personalised value is
-   a real {%= =%} tag and every product list is a real $from query, or 'preview'
+   a real {%= %} tag and every product list is a real $from query, or 'preview'
    for the same layout with those resolved against this demo's own catalogue so it
    can be shown in a browser.
 
@@ -337,7 +337,7 @@ function winBack(p, ctx, mode) {
 /* -------------------------------------------------------------------------- */
 
 function orderSummary(p, ctx, mode) {
-    const reference = mode === 'panel' ? '{%= $Contact.contact_key =%}' : ctx.sampleOrderRef;
+    const reference = mode === 'panel' ? '{%= $Contact.contact_key %}' : ctx.sampleOrderRef;
     return `
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr><td style="font-family:${p.body};font-size:13px;color:${p.quiet};padding-bottom:12px">
@@ -351,7 +351,7 @@ function orderSummary(p, ctx, mode) {
 /* The code comes from a Dengage coupon list with Contact Key mapped on import, so
    it is unique to this contact and cannot be shared. */
 function couponPanel(p, mode) {
-    const code = mode === 'panel' ? '{%= $Coupon.code =%}' : 'WELCOME-4KJ9P';
+    const code = mode === 'panel' ? '{%= $Coupon.code %}' : 'WELCOME-4KJ9P';
     return `
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                       style="border-collapse:collapse;background-color:${p.wash};border-radius:${p.radius}px">

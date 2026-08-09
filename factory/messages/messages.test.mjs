@@ -74,7 +74,7 @@ const ctx = {
     ok('an emoji costs more than a letter', smsCost('\u{1F600}') > 1, smsCost('\u{1F600}'));
 
     /* A tag is measured by what it resolves to, not by its own length. */
-    const tag = '{% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}';
+    const tag = '{% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}';
     const out = resolved(tag);
     ok('a tag resolves to a realistic name rather than its own template',
        out === 'Christopher', out);
@@ -99,7 +99,7 @@ const ctx = {
        name is short and overruns when it is long, which is exactly the failure a
        naive counter misses. */
     const risky = 'Your basket is waiting for you, {% if ($Contact.first_name) { %}' +
-                  '{%= $Contact.first_name =%}{% } else { %}there{% } %}, come back';
+                  '{%= $Contact.first_name %}{% } else { %}there{% } %}, come back';
     const riskyResult = measure(CHANNELS.webPush, 'title', risky);
     ok('a title that only fits for short names is caught', riskyResult.over === true,
        { cost: riskyResult.cost, max: riskyResult.max, resolved: riskyResult.resolvedTo });
@@ -238,7 +238,10 @@ const ctx = {
         const panel = JSON.stringify(panelRaw);
         const preview = JSON.stringify(built(entry, 'preview', ctx));
         if (panel.includes('$from(')) queried++;
-        for (const hit of panel.matchAll(/\$from\(\\?"([a-z_]+)\\?"\)/g)) {
+        /* $from('$db.<table>'), single quoted, with the prefix. Matching the old
+           double quoted bare-name form found nothing and reported an empty set as a
+           mismatch, which is at least a failure rather than a false pass. */
+        for (const hit of panel.matchAll(/\$from\('\$db\.([a-z_]+)'\)/g)) {
             tablesRead.add(hit[1]);
         }
         if (panel.includes('{%')) tagged++;

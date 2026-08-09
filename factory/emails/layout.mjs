@@ -20,7 +20,7 @@
    handles both schemes so it does not apply its own inversion on top and land at
    dark text on a dark ground.
 
-   PERSONALISATION IS DENGAGE'S OWN SYNTAX. {%= =%} outputs, {% %} is a JavaScript
+   PERSONALISATION IS DENGAGE'S OWN SYNTAX. {%= %} outputs, {% %} is a JavaScript
    block, and $from("table") queries the Data Space at send time. That is what
    makes these panel-driven rather than static: the marketer edits the copy in the
    Code Editor and the data comes from the same tables the playbook describes.

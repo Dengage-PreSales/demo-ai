@@ -12,7 +12,7 @@
   {% if (p && p.is_active) { count = count + 1; if (!first) { first = p; } } %}
 {% } %}
 {% if (first) { %}
-{%= first.title.length > 48 ? first.title.substring(0, 45) + "..." : first.title =%}{% if (count > 2) { %} and {%= count - 1 =%} more items{% } else if (count == 2) { %} and 1 more item{% } %}
+{%= first.title.length > 48 ? first.title.substring(0, 45) + "..." : first.title %}{% if (count > 2) { %} and {%= count - 1 %} more items{% } else if (count == 2) { %} and 1 more item{% } %}
 {% } else { %}
 the items you saved
 {% } %}

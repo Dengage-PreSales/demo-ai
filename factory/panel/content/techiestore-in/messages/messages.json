@@ -143,7 +143,7 @@
           "category": "Utility",
           "messageType": "Blank Content",
           "header": "Your order is not complete",
-          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step.",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step.",
           "footer": "Reply STOP to opt out",
           "buttons": [
             {
@@ -244,7 +244,7 @@
       "journey": "Browse abandonment",
       "channels": {
         "webPush": {
-          "title": "Still looking at {% var r = $from(\"page_view_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_date\").take(3).get(); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + \"...\" : r[0].category_path =%}{% } else { %}these{% } %}?",
+          "title": "Still looking at {% var r = $from('$db.page_view_events').where('contact_key', '=', $Contact.contact_key).orderByDescending('event_date').take(3).get(); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + \"...\" : r[0].category_path %}{% } else { %}these{% } %}?",
           "body": "The one you spent time with is still there, along with a few alternatives.",
           "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
           "checks": [
@@ -331,7 +331,7 @@
       "channels": {
         "webPush": {
           "title": "Back in stock",
-          "body": "The {% var r = $from(\"search_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_date\").take(1).get(); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + \"...\" : r[0].keywords =%}{% } else { %}item you searched for{% } %} you looked for is available again.",
+          "body": "The {% var r = $from('$db.search_events').where('contact_key', '=', $Contact.contact_key).orderByDescending('event_date').take(1).get(); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + \"...\" : r[0].keywords %}{% } else { %}item you searched for{% } %} you looked for is available again.",
           "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
           "checks": [
             {
@@ -354,7 +354,7 @@
         },
         "inbox": {
           "title": "What you searched for is back",
-          "body": "You looked for {% var r = $from(\"search_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_date\").take(1).get(); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + \"...\" : r[0].keywords =%}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.",
+          "body": "You looked for {% var r = $from('$db.search_events').where('contact_key', '=', $Contact.contact_key).orderByDescending('event_date').take(1).get(); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + \"...\" : r[0].keywords %}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.",
           "expiryDays": 3,
           "priority": 2,
           "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
@@ -518,7 +518,7 @@
           "messageType": "Blank Content",
           "header": "Text",
           "headerText": "Early access",
-          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you.",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you.",
           "footer": "Reply STOP to opt out",
           "buttons": [
             {
@@ -627,7 +627,7 @@
       "channels": {
         "webPush": {
           "title": "A few things changed",
-          "body": "New ranges in {% var r = $from(\"page_view_events\").where(\"contact_key\", \"=\", $Contact.contact_key).orderByDescending(\"event_date\").take(3).get(); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + \"...\" : r[0].category_path =%}{% } else { %}your categories{% } %}, and your saved items are still saved.",
+          "body": "New ranges in {% var r = $from('$db.page_view_events').where('contact_key', '=', $Contact.contact_key).orderByDescending('event_date').take(3).get(); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + \"...\" : r[0].category_path %}{% } else { %}your categories{% } %}, and your saved items are still saved.",
           "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/",
           "checks": [
             {
@@ -649,7 +649,7 @@
           ]
         },
         "sms": {
-          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, it has been a while. New ranges are in at Techiestore, and your saved items are still saved: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, it has been a while. New ranges are in at Techiestore, and your saved items are still saved: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
           "senderName": "Techiestore",
           "checks": [
             {
@@ -667,7 +667,7 @@
           "messageType": "Copy Coupon",
           "header": "Text",
           "headerText": "Since you were last here",
-          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it.",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it.",
           "footer": "Reply STOP to opt out",
           "coupon": true,
           "buttons": [

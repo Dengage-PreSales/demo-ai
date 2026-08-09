@@ -123,5 +123,46 @@ for (const table of ['order_events', 'search_events']) {
     ok(table + ' carries no product_id, by design', !schema[table].includes('product_id'));
 }
 
+/* -------------------------------------------------------------------------- */
+/* The two pieces of Dengage syntax that were wrong for a day                    */
+
+{
+    /* AN OUTPUT TAG CLOSES WITH %} AND NOT WITH =%}. Every tag the factory emitted
+       was written {%= value =%}, and that trailing equals makes the engine parse
+       "value =" as an incomplete assignment. The Test button returns
+       "SyntaxError: Unexpected token '%s' after '%s'" and nothing renders. 58 of them
+       across 14 files, and no test could see it because nothing here executed a
+       Dengage template.
+
+       This is a text check rather than a behavioural one, and that is the point: the
+       engine is not available to test against, so the shape of what gets emitted is
+       the only thing that can be asserted. */
+    const { readdirSync, statSync } = await import('node:fs');
+    const roots = ['factory/emails', 'factory/messages', 'factory/panel/content/_dynamic'];
+    const files = [];
+    const walk = (dir) => {
+        for (const entry of readdirSync(join(ROOT, dir))) {
+            const rel = dir + '/' + entry;
+            if (statSync(join(ROOT, rel)).isDirectory()) { walk(rel); continue; }
+            if (/\.(mjs|html|json|txt)$/.test(entry)) files.push(rel);
+        }
+    };
+    for (const root of roots) walk(root);
+
+    const offenders = files.filter((f) => readFileSync(join(ROOT, f), 'utf8').includes('=%}'));
+    ok('nothing emits an output tag closing with =%}, which is a syntax error',
+       offenders.length === 0, offenders);
+
+    /* A TABLE IS ADDRESSED AS $db.<table>. Taken from a snippet known to work in a live
+       account: $from('$db.product'). A bare table name was what this repository used. */
+    const { QUERIES, productLookup } = await import('../emails/data.mjs');
+    const emitted = Object.values(QUERIES).map((q) => q.expr)
+        .concat([productLookup('rows[i]', 'p')]);
+    const unprefixed = emitted.filter((e) => /\$from\(\s*['"](?!\$db\.)/.test(e));
+    ok('every $from addresses its table as $db.<table>', unprefixed.length === 0, unprefixed);
+    ok('and the queries are still scoped to the contact',
+       Object.values(QUERIES).every((q) => q.expr.includes('$Contact.contact_key')));
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

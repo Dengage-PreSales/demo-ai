@@ -44,7 +44,7 @@ export function textCost(text) {
 }
 
 /* A DENGAGE TAG COSTS WHAT IT RESOLVES TO, NOT WHAT IT LOOKS LIKE.
-   "{%= $Contact.first_name =%}" is 27 characters of template and perhaps 5 of
+   "{%= $Contact.first_name %}" is 27 characters of template and perhaps 5 of
    first name. Measuring the template would reject copy that sends perfectly, and
    measuring nothing would ship a push whose title is cut in half for anyone
    called Christopher. So a tag is replaced with a realistic worst case before

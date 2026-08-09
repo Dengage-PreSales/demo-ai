@@ -11,7 +11,7 @@
 
    So every journey is written ONCE and rendered TWICE, from the same markup:
 
-     panel    the file that goes into the Code Editor. Real {%= =%} tags and real
+     panel    the file that goes into the Code Editor. Real {%= %} tags and real
               $from queries. Nothing about the recipient is hardcoded.
      preview  the same layout with those queries already resolved against this
               demo's own committed catalogue, so it opens in a browser and looks
@@ -20,6 +20,23 @@
    The trick that keeps them honest is below: a field is either a literal string
    or the Dengage tag that produces it, and layout.mjs cannot tell the difference.
    One markup path, two sources, so the preview cannot drift from what sends.
+
+   TWO PIECES OF SYNTAX, BOTH LEARNED FROM A WORKING SNIPPET RATHER THAN FROM THE
+   DOCUMENTATION, and both were wrong here for a whole day.
+
+   AN OUTPUT TAG CLOSES WITH A BARE %}, WITH NO EQUALS SIGN BEFORE IT. Every tag this
+   file emitted carried a trailing equals, which makes the engine read the expression as
+   an incomplete assignment: the Test button returns
+   SyntaxError: Unexpected token '%s' after '%s' and nothing renders at all. 58 of them
+   across 14 files.
+
+   schema.test.mjs now fails on that sequence, and this paragraph deliberately describes
+   it in words rather than quoting it, because a check that scans for a character
+   sequence cannot have that sequence in the file it is meant to keep clean. The same
+   trap caught a dash detector containing a dash earlier in this repository.
+
+   A TABLE IS ADDRESSED AS $db.<table>. $from('$db.shopping_cart_events'), not
+   $from("shopping_cart_events"). Single quotes throughout, matching the same source.
 
    THE COLUMN NAMES ARE THE ONE THING TO CHECK PER ACCOUNT. The six standard
    ecommerce tables are standard, but a column can be named slightly differently
@@ -116,19 +133,19 @@ export const COLUMNS = {
    shows what remains instead of an empty slot. */
 export function productLookup(cursor, variable) {
     const p = COLUMNS.product;
-    return '{% var ' + variable + ' = $from("' + p.table + '")' +
-        '.where("' + p.id + '", "=", ' + cursor + '.' + COLUMNS.cart.product + ')' +
+    return '{% var ' + variable + " = $from('$db." + p.table + "')" +
+        ".where('" + p.id + "', '=', " + cursor + '.' + COLUMNS.cart.product + ')' +
         '.take(1).get()[0]; %}' +
-        '{% if (!' + variable + ' || ' + variable + '.' + p.active + ' != 1) { continue; } %}';
+        '{% if (!' + variable + ' || !' + variable + '.' + p.active + ') { continue; } %}';
 }
 
 /* A Dengage query, as the expression that goes inside a {% %} block. Newest
    first and a small take, because an email shows a few things rather than a
    history, and a large take costs send time for rows nobody sees. */
 function query(spec, take) {
-    return '$from("' + spec.table + '")' +
-        '.where("contact_key", "=", $Contact.contact_key)' +
-        '.orderByDescending("' + spec.time + '")' +
+    return "$from('$db." + spec.table + "')" +
+        ".where('contact_key', '=', $Contact.contact_key)" +
+        ".orderByDescending('" + spec.time + "')" +
         '.take(' + take + ').get()';
 }
 
@@ -139,9 +156,12 @@ export const QUERIES = {
                   what: 'the items saved for later' },
     viewedProducts: { spec: COLUMNS.view, take: 3, expr: query(COLUMNS.view, 3),
                       what: 'the products viewed recently' },
+    /* Hand written rather than from query(), because order lines have no event_date
+       ordering that means anything: the lines of one order all share it. That is also
+       how it escaped the $db. prefix when query() gained one. */
     lastOrderLines: { spec: COLUMNS.orderLine, take: 3,
-                      expr: '$from("' + COLUMNS.orderLine.table + '")' +
-                            '.where("contact_key", "=", $Contact.contact_key).take(3).get()',
+                      expr: "$from('$db." + COLUMNS.orderLine.table + "')" +
+                            ".where('contact_key', '=', $Contact.contact_key).take(3).get()",
                       what: 'the lines on the last order' },
     lastSearch: { spec: COLUMNS.search, take: 1, expr: query(COLUMNS.search, 1),
                   what: 'the last thing searched for' }
@@ -154,7 +174,7 @@ export const QUERIES = {
    layout.mjs receives a plain object either way and stays unaware of the
    difference, which is what stops the two versions diverging. */
 function field(mode, tag, literal) {
-    return mode === 'panel' ? '{%= ' + tag + ' =%}' : literal;
+    return mode === 'panel' ? '{%= ' + tag + ' %}' : literal;
 }
 
 /* A COLUMN THAT DOES NOT EXIST MUST STOP THE BUILD, NOT REACH A FILE. Before this
@@ -183,7 +203,7 @@ function column(spec, key) {
    currency symbol is a constant for the demo, so only the number comes from the
    row and the two versions format identically. */
 function priced(mode, symbol, tag, literal) {
-    return mode === 'panel' ? symbol + ' {%= ' + tag + ' =%}' : literal;
+    return mode === 'panel' ? symbol + ' {%= ' + tag + ' %}' : literal;
 }
 
 /* ONE PRODUCT, FROM EITHER SOURCE. `index` is the loop variable name in panel
@@ -204,8 +224,8 @@ export function itemFields(mode, options) {
         name: field(mode, at('name'), ''),
         meta: field(mode, at('category'), ''),
         price: priced(mode, symbol, at('price'), ''),
-        image: base + '{%= ' + at('image') + ' =%}',
-        href: base + 'product.html?id={%= ' + at('product') + ' =%}'
+        image: base + '{%= ' + at('image') + ' %}',
+        href: base + 'product.html?id={%= ' + at('product') + ' %}'
     };
 }
 
@@ -238,7 +258,7 @@ export function scalar(mode, options) {
     const { query: q, column, fallback, sample } = options;
     if (mode !== 'panel') return sample || fallback;
     return `{% var one = ${q.expr}; %}` +
-        `{% if (one.length && one[0].${column}) { %}{%= one[0].${column} =%}` +
+        `{% if (one.length && one[0].${column}) { %}{%= one[0].${column} %}` +
         `{% } else { %}${fallback}{% } %}`;
 }
 
@@ -246,6 +266,6 @@ export function scalar(mode, options) {
    "Hi ," on a real send is the most visible personalisation failure there is. */
 export function firstName(mode, sample) {
     if (mode !== 'panel') return sample || 'there';
-    return '{% if ($Contact.first_name) { %}{%= $Contact.first_name =%}' +
+    return '{% if ($Contact.first_name) { %}{%= $Contact.first_name %}' +
            '{% } else { %}there{% } %}';
 }

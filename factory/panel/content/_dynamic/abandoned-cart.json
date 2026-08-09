@@ -12,15 +12,15 @@
        .get()[0]; %}
   {% if (p && p.is_active) { %}
     {% if (written > 0) { %},{% } %}
-    {"id":"{%= p.product_id =%}",
-     "title":"{%= p.title =%}",
-     "category":"{%= p.category_path =%}",
-     "price":"{%= p.discounted_price || p.price =%}",
-     "was":"{%= p.discounted_price ? p.price : '' =%}",
-     "image":"{%= p.image_link =%}",
-     "link":"{%= p.mobile_web_link || p.link =%}",
-     "quantity":"{%= lines[i].quantity =%}"}
+    {"id":"{%= p.product_id %}",
+     "title":"{%= p.title %}",
+     "category":"{%= p.category_path %}",
+     "price":"{%= p.discounted_price || p.price %}",
+     "was":"{%= p.discounted_price ? p.price : '' %}",
+     "image":"{%= p.image_link %}",
+     "link":"{%= p.mobile_web_link || p.link %}",
+     "quantity":"{%= lines[i].quantity %}"}
     {% written = written + 1; %}
   {% } %}
 {% } %}
-],"count":"{%= written =%}"}
+],"count":"{%= written %}"}

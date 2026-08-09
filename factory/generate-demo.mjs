@@ -558,7 +558,7 @@ async function main() {
         /* THE EMAIL SET. Built from the config and products.json just written, so it
            carries this demo's own palette, typography, catalogue and currency.
 
-           Two files per journey: the panel file with live {%= =%} tags and $from
+           Two files per journey: the panel file with live {%= %} tags and $from
            queries to paste into the Dengage Code Editor, and a resolved preview so
            the set can be shown on a call without a send. Plus the AMP variant of
            the cart message for the panel's AMP tab.

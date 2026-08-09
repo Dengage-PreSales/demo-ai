@@ -42,7 +42,7 @@
    ========================================================================== */
 
 /* THE UNSUBSCRIBE LINK IS ABSOLUTE, AND THAT IS A VALIDATOR RULE RATHER THAN A
-   PREFERENCE. amp4email rejects a relative href, and a bare {%= =%} tag in an
+   PREFERENCE. amp4email rejects a relative href, and a bare {%= %} tag in an
    href reads as relative to the validator, so the AMP tab would refuse to save.
    The link below is therefore absolute with the contact key in the query, which
    validates and still resolves per recipient. Swap it for the Code Editor's own

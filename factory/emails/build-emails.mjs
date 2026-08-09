@@ -99,7 +99,7 @@ function context(config, products, slug, mode) {
         /* Absolute, because amp4email refuses a relative href. See amp.mjs. The
            preview resolves it so a browser shows a link rather than a tag. */
         unsubscribe: base + 'unsubscribe.html?c=' +
-            (mode === 'panel' ? '{%= $Contact.contact_key =%}' : 'DPS-1042'),
+            (mode === 'panel' ? '{%= $Contact.contact_key %}' : 'DPS-1042'),
         storeName: storeNameFrom(config, slug),
         storeUrl: base,
         products: shaped,
@@ -256,9 +256,9 @@ function ampSlots(ctx, spec, variable, count) {
         const open = '{% if (' + variable + '.length > ' + index + ') { %}';
         return {
             open, close: '{% } %}',
-            name: '{%= ' + at(c.name) + ' =%}',
-            price: ctx.symbol + ' {%= ' + at(c.price) + ' =%}',
-            image: ctx.storeUrl + '{%= ' + at(c.image) + ' =%}',
+            name: '{%= ' + at(c.name) + ' %}',
+            price: ctx.symbol + ' {%= ' + at(c.price) + ' %}',
+            image: ctx.storeUrl + '{%= ' + at(c.image) + ' %}',
             href: ctx.storeUrl + 'wishlist.html'
         };
     });
@@ -275,12 +275,12 @@ function ampContext(ctx, mode) {
     const rows = [0, 1, 2].map((index) => {
         const at = (column) => 'cartRows[' + index + '].' + column;
         return {
-            name: '{% if (cartRows.length > ' + index + ') { %}{%= ' + at(c.name) + ' =%}{% } %}',
-            meta: '{% if (cartRows.length > ' + index + ') { %}{%= ' + at(c.category) + ' =%}{% } %}',
+            name: '{% if (cartRows.length > ' + index + ') { %}{%= ' + at(c.name) + ' %}{% } %}',
+            meta: '{% if (cartRows.length > ' + index + ') { %}{%= ' + at(c.category) + ' %}{% } %}',
             price: '{% if (cartRows.length > ' + index + ') { %}' + ctx.symbol +
-                   ' {%= ' + at(c.price) + ' =%}{% } %}',
+                   ' {%= ' + at(c.price) + ' %}{% } %}',
             image: ctx.storeUrl + '{% if (cartRows.length > ' + index + ') { %}{%= ' +
-                   at(c.image) + ' =%}{% } %}',
+                   at(c.image) + ' %}{% } %}',
             href: ctx.storeUrl + 'cart.html'
         };
     });
@@ -290,7 +290,7 @@ function ampContext(ctx, mode) {
                     '{% var savedRows = ' + QUERIES.savedItems.expr + '; %}',
         ampCart: rows,
         ampSlides: ampSlots(ctx, COLUMNS.wishlist, 'savedRows', QUERIES.savedItems.take),
-        greetingName: '{% if ($Contact.first_name) { %}{%= $Contact.first_name =%}' +
+        greetingName: '{% if ($Contact.first_name) { %}{%= $Contact.first_name %}' +
                       '{% } else { %}there{% } %}'
     };
 }

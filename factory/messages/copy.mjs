@@ -32,7 +32,7 @@ function one(mode, spec, column, fallback, sample) {
     if (mode !== 'panel') return sample || fallback;
     const query = spec.expr;
     return '{% var r = ' + query + '; %}' +
-        '{% if (r.length && r[0].' + column + ') { %}{%= r[0].' + column + ' =%}' +
+        '{% if (r.length && r[0].' + column + ') { %}{%= r[0].' + column + ' %}' +
         '{% } else { %}' + fallback + '{% } %}';
 }
 
@@ -40,7 +40,7 @@ function one(mode, spec, column, fallback, sample) {
    the column as it is, which is right for a WhatsApp body with a thousand
    characters to spare and wrong for a push title with fifty. A store whose
    product names run to 120 characters can never fit one in a title, so the tag
-   itself does the cutting: Dengage's {%= =%} evaluates JavaScript, so a ternary
+   itself does the cutting: Dengage's {%= %} evaluates JavaScript, so a ternary
    and substring resolve at send time and the message fits by construction rather
    than by hoping the catalogue is tidy. */
 function short(mode, spec, column, max, fallback, sample) {
@@ -68,13 +68,13 @@ function short(mode, spec, column, max, fallback, sample) {
     return '{% var r = ' + spec.expr + '; %}' +
         '{% if (r.length && ' + at + ') { %}' +
         '{%= ' + at + '.length > ' + max + ' ? ' + at + '.substring(0, ' + (max - 3) +
-        ') + "..." : ' + at + ' =%}' +
+        ') + "..." : ' + at + ' %}' +
         '{% } else { %}' + fallback + '{% } %}';
 }
 
 function name(mode, ctx) {
     if (mode !== 'panel') return ctx.sampleFirstName;
-    return '{% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}';
+    return '{% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}';
 }
 
 /* -------------------------------------------------------------------------- */

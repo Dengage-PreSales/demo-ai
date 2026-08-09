@@ -123,7 +123,7 @@ renderChecks: {
 
     const ctx = (mode) => ({
         unsubscribe: base + 'unsubscribe.html?c=' +
-            (mode === 'panel' ? '{%= $Contact.contact_key =%}' : 'DPS-1042'),
+            (mode === 'panel' ? '{%= $Contact.contact_key %}' : 'DPS-1042'),
         storeName: 'Fixture Store', storeUrl: base, symbol: 'Rs',
         sampleFirstName: 'Alex', sampleCategory: 'Keyboards',
         sampleQuery: 'Alpha Keyboard', sampleOrderRef: 'DPS-1042',
@@ -184,7 +184,7 @@ renderChecks: {
        { queries: (allPanel.match(/\$from\("/g) || []).length });
 
     ok('a first name always has a fallback branch',
-       panels.every((p) => !p.html.includes('Hi {%= $Contact.first_name =%},') ||
+       panels.every((p) => !p.html.includes('Hi {%= $Contact.first_name %},') ||
                             p.html.includes('{% } else { %}there{% } %}')));
 
     const leaky = previews.filter((p) => /\{%/.test(p.html)).map((p) => p.file);
