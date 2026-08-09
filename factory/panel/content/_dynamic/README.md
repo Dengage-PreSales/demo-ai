@@ -30,6 +30,27 @@ per scenario rather than one per channel.
 
 ---
 
+## Testing one of these: open the demo with ?ck=
+
+**A message queries the CONTACT's rows, so the browsing session has to be that
+contact.** Browse a demo normally and the events still land, but
+`shopping_cart_events.key` holds the DEVICE id rather than the contact key, which
+`template/js/identity.js` states and Phase 0 established. The contact card still shows
+the activity, because the device is linked to the contact, so it looks as though the
+data is there and the query is broken. It is not: the rows simply are not keyed to the
+contact.
+
+```
+https://dengage-presales.github.io/demo-ai/demos/<slug>/?ck=<contact key>
+```
+
+identity.js resolves that before the SDK initializes, so every event from then on
+carries the contact key. Add to the basket AFTER opening it that way, then Test the
+email as the same contact.
+
+This cost an afternoon of looking for a bug in the query. Checking identity.js first
+would have been quicker, and it was already written down.
+
 ## Two rules these files follow, both learned the hard way
 
 **NO COMMENTS INSIDE `{% %}`.** All three files originally opened with an explanatory
