@@ -2,10 +2,9 @@
   var keys = [];
   if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
 
-  var devices = $from('$db.master_device')
-    .where('contact_key', '=', $Contact.contact_key)
-    .take(50)
-    .get();
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
 
   for (var d = 0; d < devices.length; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
@@ -38,31 +37,20 @@
     else if (kind === 'remove_from_cart') { present[pid] = null; }
   }
 
-  var ids = [];
-  for (var s = seen.length - 1; s >= 0 && ids.length < 3; s--) {
-    if (present[seen[s]] && ids.indexOf(seen[s]) === -1) { ids.push(seen[s]); }
+  var all = [];
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
   }
+  var ids = all.slice(0, 20);
 
   var products = ids.length
-    ? $from('$db.dps_product').where('product_id', 'in', ids).take(10).get()
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(20).get()
     : [];
 
   var byId = {};
   for (var p = 0; p < products.length; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
-
-  var formatUrl = function (url) {
-    var u = (url == null) ? "" : String(url).trim();
-    if (u.indexOf("http://") === 0 || u.indexOf("https://") === 0) { return u; }
-    return "#";
-  };
-
-  var money = function (value) {
-    var n = Number(value);
-    if (!isFinite(n)) { return ""; }
-    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-  };
 %}{% var first = null; var count = 0; %}
 {% for (var i = 0; i < ids.length; i++) {
      var product = byId[ids[i]];

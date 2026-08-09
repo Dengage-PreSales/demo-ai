@@ -73,6 +73,15 @@ jobs:
       - name: Product feed is up to date
         run: node factory/build-feed.mjs --check
 
+      # THE BASKET REPLAY RUNS INSIDE DENGAGE, where nothing here can reach it. No
+      # console, no breakpoint, and a mistake renders as an email that looks correct
+      # and is wrong: a removed product shown as still in the basket, or a fourth item
+      # silently missing. The resolution block is ordinary JavaScript apart from
+      # $from, so this lifts it out of the asset on disk, stubs $from and runs it
+      # against a synthetic event log. No credential, no network, under a second.
+      - name: Abandoned cart resolves a real basket
+        run: node factory/panel/content/_dynamic/cart.test.mjs
+
       # FOURTEEN POPUP CREATIVES SHARE ONE THEME BOOTSTRAP, and survey.html is where
       # it is written. Copying forty lines by hand into fourteen files produces
       # fourteen slightly different copies, and the one that matters is always the one

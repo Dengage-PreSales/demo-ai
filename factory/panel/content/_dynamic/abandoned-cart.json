@@ -2,10 +2,9 @@
   var keys = [];
   if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
 
-  var devices = $from('$db.master_device')
-    .where('contact_key', '=', $Contact.contact_key)
-    .take(50)
-    .get();
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
 
   for (var d = 0; d < devices.length; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
@@ -38,13 +37,16 @@
     else if (kind === 'remove_from_cart') { present[pid] = null; }
   }
 
-  var ids = [];
-  for (var s = seen.length - 1; s >= 0 && ids.length < 3; s--) {
-    if (present[seen[s]] && ids.indexOf(seen[s]) === -1) { ids.push(seen[s]); }
+  var all = [];
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
   }
+  var SHOW = 6;
+  var ids = all.slice(0, SHOW);
+  var more = all.length - ids.length;
 
   var products = ids.length
-    ? $from('$db.dps_product').where('product_id', 'in', ids).take(10).get()
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(20).get()
     : [];
 
   var byId = {};
@@ -73,4 +75,4 @@
 {"id":"{%= product.product_id %}","title":"{%= product.title %}","category":"{%= product.category_path %}","price":"{%= product.discounted_price || product.price %}","was":"{%= product.discounted_price ? product.price : '' %}","image":"{%= product.image_link %}","link":"{%= product.mobile_web_link || product.link %}","quantity":"{%= (present[ids[i]] && present[ids[i]].quantity) ? present[ids[i]].quantity : 1 %}"}
 {% written = written + 1; %}
 {% } %}
-],"count":"{%= written %}"}
+],"count":"{%= written %}","more":"{%= more %}","basket_count":"{%= all.length %}"}

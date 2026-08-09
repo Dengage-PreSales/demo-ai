@@ -2,10 +2,9 @@
   var keys = [];
   if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
 
-  var devices = $from('$db.master_device')
-    .where('contact_key', '=', $Contact.contact_key)
-    .take(50)
-    .get();
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
 
   for (var d = 0; d < devices.length; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
@@ -38,13 +37,16 @@
     else if (kind === 'remove_from_cart') { present[pid] = null; }
   }
 
-  var ids = [];
-  for (var s = seen.length - 1; s >= 0 && ids.length < 3; s--) {
-    if (present[seen[s]] && ids.indexOf(seen[s]) === -1) { ids.push(seen[s]); }
+  var all = [];
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
   }
+  var SHOW = 6;
+  var ids = all.slice(0, SHOW);
+  var more = all.length - ids.length;
 
   var products = ids.length
-    ? $from('$db.dps_product').where('product_id', 'in', ids).take(10).get()
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(20).get()
     : [];
 
   var byId = {};
@@ -83,27 +85,36 @@
          var qty = (present[ids[i]] && present[ids[i]].quantity) ? Number(present[ids[i]].quantity) : 1;
     %}
       <tr>
-        <td width="84" valign="top" style="padding:0 14px 16px 0;">
+        <td width="112" valign="top" style="padding:0 18px 22px 0;">
           <a href="{%= link %}" target="_blank" style="text-decoration:none;">
             {% if (image !== "") { %}
-              <img src="{%= image %}" alt="{%= title %}" width="72" height="72" style="width:72px;height:72px;border:0;display:block;">
+              <img src="{%= image %}" alt="{%= title %}" width="96" height="96" style="width:96px;height:96px;border:0;display:block;">
             {% } %}
           </a>
         </td>
-        <td valign="top" style="padding:0 0 16px 0;font-family:inherit;font-size:14px;line-height:1.45;color:inherit;">
-          <a href="{%= link %}" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">{%= title %}</a>
+        <td valign="top" style="padding:4px 0 22px 0;font-family:inherit;color:inherit;">
           {% if (product.category_path) { %}
-            <div style="font-size:12px;opacity:0.7;padding-top:3px;">{%= product.category_path %}</div>
+            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.6;padding:0 0 5px 0;">{%= product.category_path %}</div>
           {% } %}
-          <div style="font-weight:bold;padding-top:4px;">
+          <div style="font-size:16px;line-height:1.35;padding:0 0 7px 0;">
+            <a href="{%= link %}" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">{%= title %}</a>
+          </div>
+          <div style="font-size:16px;font-weight:bold;line-height:1.3;">
             {% if (cut !== "") { %}
               <span>{%= cut %}</span>
-              <span style="text-decoration:line-through;opacity:0.6;font-size:13px;padding-left:6px;">{%= price %}</span>
+              <span style="text-decoration:line-through;font-weight:normal;opacity:0.55;font-size:14px;padding-left:8px;">{%= price %}</span>
             {% } else { %}
               <span>{%= price %}</span>
             {% } %}
-            {% if (qty > 1) { %}<span style="font-weight:normal;opacity:0.7;padding-left:6px;">&times; {%= qty %}</span>{% } %}
+            {% if (qty > 1) { %}<span style="font-weight:normal;opacity:0.65;font-size:14px;padding-left:8px;">Qty {%= qty %}</span>{% } %}
           </div>
+        </td>
+      </tr>
+    {% } %}
+    {% if (more > 0) { %}
+      <tr>
+        <td colspan="2" style="font-family:inherit;font-size:14px;line-height:1.5;opacity:0.7;color:inherit;padding:0 0 8px 0;">
+          and {%= more %} more item{% if (more > 1) { %}s{% } %} in your basket
         </td>
       </tr>
     {% } %}

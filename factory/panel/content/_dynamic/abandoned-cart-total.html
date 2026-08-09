@@ -1,0 +1,108 @@
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
+
+  for (var d = 0; d < devices.length; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.shopping_cart_events').where('key', 'in', keys).take(100).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    return Number(a.id) - Number(b.id);
+  });
+
+  var present = {};
+  var seen = [];
+  for (var r = 0; r < rows.length; r++) {
+    var row = rows[r] || {};
+    var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
+    var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
+
+    if (kind === 'delete_cart') { present = {}; seen = []; }
+    else if (pid === "") { }
+    else if (kind === 'add_to_cart') {
+      present[pid] = { quantity: row.quantity };
+      seen.push(pid);
+    }
+    else if (kind === 'remove_from_cart') { present[pid] = null; }
+  }
+
+  var all = [];
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
+  }
+  var WINDOW = 50;
+  var ids = all.slice(0, WINDOW);
+
+  var products = ids.length
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(50).get()
+    : [];
+
+  var byId = {};
+  for (var p = 0; p < products.length; p++) {
+    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+  }
+
+  var subtotal = 0;
+  var discount = 0;
+  var counted = 0;
+  var priced = true;
+
+  for (var i = 0; i < ids.length; i++) {
+    var product = byId[ids[i]];
+    if (!product || !product.is_active) { continue; }
+
+    var qty = (present[ids[i]] && present[ids[i]].quantity) ? Number(present[ids[i]].quantity) : 1;
+    if (!isFinite(qty) || qty < 1) { qty = 1; }
+
+    var full = Number(product.price);
+    if (!isFinite(full) || full <= 0) { priced = false; break; }
+
+    var now = full;
+    if (product.discounted_price != null && String(product.discounted_price) !== "") {
+      var cut = Number(product.discounted_price);
+      if (!isFinite(cut) || cut <= 0) { priced = false; break; }
+      if (cut < full) { now = cut; }
+    }
+
+    subtotal = subtotal + (full * qty);
+    discount = discount + ((full - now) * qty);
+    counted = counted + qty;
+  }
+
+  if (all.length > ids.length) { priced = false; }
+  if (counted === 0) { priced = false; }
+
+  var money = function (value) {
+    var n = Number(value);
+    if (!isFinite(n)) { return ""; }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+%}{% if (priced) { %}
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-family:inherit;color:inherit;">
+  <tr>
+    <td style="font-size:14px;line-height:1.6;padding:0 0 4px 0;">Subtotal</td>
+    <td align="right" style="font-size:14px;line-height:1.6;padding:0 0 4px 0;">{%= money(subtotal) %}</td>
+  </tr>
+  {% if (discount > 0) { %}
+  <tr>
+    <td style="font-size:14px;line-height:1.6;padding:0 0 4px 0;">Discount</td>
+    <td align="right" style="font-size:14px;line-height:1.6;padding:0 0 4px 0;">-{%= money(discount) %}</td>
+  </tr>
+  {% } %}
+  <tr>
+    <td style="font-size:16px;font-weight:bold;line-height:1.6;padding:8px 0 0 0;border-top:1px solid rgba(128,128,128,0.3);">Total</td>
+    <td align="right" style="font-size:16px;font-weight:bold;line-height:1.6;padding:8px 0 0 0;border-top:1px solid rgba(128,128,128,0.3);">{%= money(subtotal - discount) %}</td>
+  </tr>
+</table>
+{% } %}

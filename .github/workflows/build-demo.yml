@@ -267,6 +267,9 @@ jobs:
           # was read off the live account, so it can run on a runner that the
           # Dengage IP allowlist would refuse.
           node factory/phase0/schema.test.mjs
+          # And the saved Dynamic Content that every demo's email calls, executed
+          # against a synthetic event log rather than read.
+          node factory/panel/content/_dynamic/cart.test.mjs
           node factory/emails/emails.test.mjs
           # The short form pack: the length checker in both directions, SMS counted
           # the way Dengage charges it, WhatsApp's submission rules, and the on-site

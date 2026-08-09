@@ -22,11 +22,66 @@ this repository mark that spot.
 | File | Type | Used by |
 |---|---|---|
 | `abandoned-cart.html` | HTML | email |
+| `abandoned-cart-total.html` | HTML | email, where the template prints a subtotal and a total |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
 | `abandoned-cart.txt` | Plain Text | SMS, WhatsApp |
+| `cart.test.mjs` | test | CI. Not pasted into the panel |
+| `_diagnostic.html` | HTML | a throwaway asset for reading what a send can actually see |
 
 Same query in all three. Only the rendering differs, which is the point of one asset
 per scenario rather than one per channel.
+
+## The totals, because a correct product list next to an invented total is worse
+
+Dengage's abandoned cart system template ships with a subtotal, a discount and a total
+written into it as literal text. They send exactly as written. Before the product list
+worked that was one placeholder among several; with real products above it, an
+invented total is the thing a recipient checks first and the one number they can prove
+wrong against their own basket.
+
+So `abandoned-cart-total.html` replaces all three, computed from the same replay:
+
+```
+Subtotal   sum of price times quantity, at the full price
+Discount   sum of (price - discounted_price) times quantity, where there is a real reduction
+Total      subtotal minus discount
+```
+
+**It shows nothing rather than a number it cannot stand behind**, and that is the
+whole design. `Number(null)` is zero, so one product with no price makes a basket look
+cheaper and entirely plausible, which is CLAUDE.md rule 5 and the defect that has
+shipped twice on the core repository. So a single unpriced or non positive price in the
+basket suppresses the block, as does an empty basket and a basket wider than the
+lookup window. A discounted price above the full price is treated as a data fault and
+contributes no discount rather than a negative one. All four are pinned in the test.
+
+**It emits no currency symbol, because it cannot know one.** `dps_product` has no
+currency column, so the symbol stays in the template as static text beside the
+snippet, the same way the product rows already emit a bare number. Every demo the
+factory builds is one currency at a time, so the template is where that belongs.
+
+The discount row disappears when there is no reduction, rather than printing a zero.
+
+## The logic is tested by being run, not by being read
+
+`node factory/panel/content/_dynamic/cart.test.mjs`
+
+The resolution block is the only logic in this repository that executes inside
+Dengage, where there is no console and no breakpoint, and where a mistake renders as
+an email that looks right and is wrong. So the test lifts that block straight out of
+each asset on disk, stubs `$from` with the three methods it really has, and runs it
+against a synthetic event log: a basket of four, a basket of eight, a removal, a
+re-add, a `delete_cart`, seven events inside one minute, a signed out session, a
+withdrawn product, an empty basket and an event type that is not a cart change.
+
+It reads the assets rather than a copy of their logic, so it cannot pass against code
+the panel never sees. Each of the three defects it guards was checked by
+reintroducing it: capping at three fails four assertions, dropping the `id` tie break
+fails two, and treating a removal as a basket item fails three.
+
+`.take(n)` with no ordering returns SOME n rows, so the stub hands rows back in
+reverse insertion order on purpose. Nothing in the block may depend on the order it
+receives anything in.
 
 ---
 
@@ -71,6 +126,36 @@ session puts seven cart events in the same minute, and without the row id the or
 inside that minute is arbitrary, so adds and removes resolve at random. Proved against
 the actual rows from the panel before and after adding it.
 
+## It shows six products, and says so when there are more
+
+The first version showed three. A real basket held four, so the fourth vanished with
+nothing in the email to say it existed, which is worse than a longer list: the
+recipient's own basket is the one thing they can check.
+
+Six is the display window, not the basket. The whole basket is resolved first, then
+sliced, so the count of what is not shown is known and stated: **and 2 more items in
+your basket**. Six because the email is a reminder rather than a catalogue, and
+because each row is 96px tall, so six is about a screen on a phone.
+
+Each channel counts what suits it, and this is the one place the three assets
+deliberately differ:
+
+| Asset | Shows | Also carries |
+|---|---|---|
+| `abandoned-cart.html` | six rows, then the overflow line | nothing else needed |
+| `abandoned-cart.json` | six items | `count` shown, `more` held back, `basket_count` in total |
+| `abandoned-cart.txt` | the first product's name | the count of everything else |
+
+The text asset has no display window at all, because SMS names one product and then
+says how many others there are. Capped at three it told a four item basket it held
+three, which is the same defect wearing different clothes.
+
+One honest imprecision, and it is deliberate. `more` counts items past the window, so
+a product withdrawn from the catalogue inside the window is dropped from the list
+without being added to `more`. The list is then one item short, which is the same
+trade the `is_active` check already makes: a reminder for something nobody can buy is
+worse than a list one row short.
+
 ## Two rules these files follow, both learned the hard way
 
 **NO COMMENTS INSIDE `{% %}`.** All three files originally opened with an explanatory
@@ -96,6 +181,23 @@ heading, no button, and `font-family: inherit` with `color: inherit` so it takes
 surrounding template's typography instead of imposing its own. It is a product list and
 nothing else, because the template already supplies the heading above it and the call to
 action below it.
+
+**What each row is, and why.** The first pass was correct and looked like a receipt.
+The proportions are now the storefront's own, so the email and the site it came from
+read as one thing:
+
+| Part | Treatment | Why |
+|---|---|---|
+| image | 96px square in a 112px cell | 72px read as a thumbnail in a list. A product photograph is the reason the email works |
+| category | 11px, uppercase, letter spaced, 60% opacity | the same eyebrow the storefront puts above a product name |
+| name | 16px bold, inheriting the template's colour | not the client's default link blue, which is the single most common way an email looks unfinished |
+| price | 16px bold, reduction first, original struck through at 14% smaller and 55% opacity | a reduction shown honestly, and only when `discounted_price` is genuinely set |
+| quantity | `Qty 2`, and only above one | a quantity of one on every row is noise |
+| row spacing | 22px below each row | three products at 72px with 12px gaps was a dense block rather than a list |
+
+Nothing here sets a colour, a face or a background, so it themes itself from whatever
+template it is dropped into. Opacity does the work a grey would have done, which is
+what keeps it neutral against a dark template as well as a light one.
 
 The old class contract, kept only as a record of what it was:
 
