@@ -38,7 +38,6 @@ import { fileURLToPath } from 'node:url';
 import { emailPalette } from './palette.mjs';
 import { JOURNEYS, renderJourney } from './journeys.mjs';
 import { ampCartAbandonment } from './amp.mjs';
-import { buildBeefree } from './build-beefree.mjs';
 import { sourceBox, copyScript } from '../panel/copy-console.mjs';
 import { COLUMNS, QUERIES } from './data.mjs';
 import { demoLink } from '../demo-links.mjs';
@@ -359,15 +358,6 @@ export function buildEmails(slug) {
                      panelHtml: panel.html, previewHtml: preview.html, ampPanel, ampPreview });
     }
     writeFileSync(join(out, 'index.html'), previewPage(palette, built, slug, config));
-
-    /* AND THE BUILDER TEMPLATE, WHICH IS A DIFFERENT DELIVERABLE FROM THE FILES
-       ABOVE. Those are finished HTML for a Code Editor campaign; that one is BeeFree's
-       own JSON for the Email Builder. Built by its own script, which is the whole
-       point: this function currently throws on the journeys that still ask an event
-       table for a product name, and a template nobody can generate is no use.
-       build-beefree.mjs runs on its own and is called from here as well, so one
-       command produces everything once the journeys are back. */
-    buildBeefree(slug);
 
     return { slug, count: built.length, amp: built.filter((b) => b.amp).length, palette };
 }

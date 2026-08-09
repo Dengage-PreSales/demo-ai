@@ -1,7 +1,7 @@
 {
   "page": {
-    "title": "Abandoned cart, Showcase",
-    "description": "Dengage eComm Demo. Two Dynamic Content blocks, themed per demo.",
+    "title": "Abandoned cart, Dengage eComm Demo",
+    "description": "Two Dynamic Content blocks. Neutral shell, so one template serves every demo.",
     "template": {
       "name": "template-base",
       "type": "basic",
@@ -106,7 +106,7 @@
           ]
         },
         {
-          "type": "two-columns-empty",
+          "type": "one-column-empty",
           "uuid": "dps-cart-03",
           "container": {
             "style": {
@@ -126,7 +126,7 @@
           },
           "columns": [
             {
-              "grid-columns": 6,
+              "grid-columns": 12,
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
@@ -134,9 +134,9 @@
                   "descriptor": {
                     "text": {
                       "computedStyle": {
-                        "linkColor": "#14181b"
+                        "linkColor": "#125cfa"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#14181b;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"text-decoration:none;\"><strong style=\"font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#5a6375;padding-left:6px;\">eComm Demo</span></a></div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#14181b;\"><strong style=\"font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#5a6375;padding-left:6px;\">eComm Demo</span></div>",
                       "style": {
                         "color": "#14181b",
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -163,130 +163,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "22px",
+                "padding-top": "24px",
                 "padding-right": "0px",
-                "padding-bottom": "22px",
+                "padding-bottom": "24px",
                 "padding-left": "0px"
               },
               "uuid": "dps-cart-03-c1"
-            },
-            {
-              "grid-columns": 6,
-              "modules": [
-                {
-                  "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-05",
-                  "descriptor": {
-                    "text": {
-                      "computedStyle": {
-                        "linkColor": "#125cfa"
-                      },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">Showcase</div>",
-                      "style": {
-                        "color": "#5a6375",
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "12px",
-                        "line-height": "1.6"
-                      }
-                    },
-                    "style": {
-                      "text-align": "right",
-                      "padding-top": "0px",
-                      "padding-right": "24px",
-                      "padding-bottom": "0px",
-                      "padding-left": "24px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                }
-              ],
-              "style": {
-                "background-color": "transparent",
-                "border-bottom": "0px solid transparent",
-                "border-left": "0px solid transparent",
-                "border-right": "0px solid transparent",
-                "border-top": "0px solid transparent",
-                "padding-top": "22px",
-                "padding-right": "0px",
-                "padding-bottom": "22px",
-                "padding-left": "0px"
-              },
-              "uuid": "dps-cart-03-c2"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-06",
-          "container": {
-            "style": {
-              "background-color": "transparent"
-            }
-          },
-          "content": {
-            "computedStyle": {
-              "rowColStackOnMobile": true,
-              "rowReverseColStackOnMobile": false
-            },
-            "style": {
-              "background-color": "#ffffff",
-              "color": "#14181b",
-              "width": "600px"
-            }
-          },
-          "columns": [
-            {
-              "grid-columns": 12,
-              "modules": [
-                {
-                  "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-07",
-                  "descriptor": {
-                    "text": {
-                      "computedStyle": {
-                        "linkColor": "#14181b"
-                      },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#14181b;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Fashion\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Fashion</a><span style=\"color:#5a6375;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Electronics\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Electronics</a><span style=\"color:#5a6375;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Home\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Home</a></div>",
-                      "style": {
-                        "color": "#14181b",
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "12px",
-                        "line-height": "1.6"
-                      }
-                    },
-                    "style": {
-                      "text-align": "center",
-                      "padding-top": "0px",
-                      "padding-right": "24px",
-                      "padding-bottom": "0px",
-                      "padding-left": "24px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                }
-              ],
-              "style": {
-                "background-color": "transparent",
-                "border-bottom": "0px solid transparent",
-                "border-left": "0px solid transparent",
-                "border-right": "0px solid transparent",
-                "border-top": "0px solid transparent",
-                "padding-top": "16px",
-                "padding-right": "0px",
-                "padding-bottom": "18px",
-                "padding-left": "0px"
-              },
-              "uuid": "dps-cart-06-c1"
-            }
-          ]
-        },
-        {
-          "type": "one-column-empty",
-          "uuid": "dps-cart-08",
+          "uuid": "dps-cart-05",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -309,12 +197,12 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-image",
-                  "uuid": "dps-cart-09",
+                  "uuid": "dps-cart-06",
                   "descriptor": {
                     "image": {
                       "alt": "Your saved basket",
-                      "href": "https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=cart",
-                      "src": "https://dengage-presales.github.io/demo-ai/demos/showcase/images/email-hero.jpg",
+                      "href": "",
+                      "src": "https://dengage-presales.github.io/demo-ai/assets/email-hero-cart.jpg",
                       "width": "600px",
                       "dynamicSrc": ""
                     },
@@ -345,13 +233,13 @@
                 "padding-bottom": "0px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-08-c1"
+              "uuid": "dps-cart-05-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-10",
+          "uuid": "dps-cart-07",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -374,7 +262,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-11",
+                  "uuid": "dps-cart-08",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -402,7 +290,7 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-12",
+                  "uuid": "dps-cart-09",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -440,13 +328,13 @@
                 "padding-bottom": "24px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-10-c1"
+              "uuid": "dps-cart-07-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-13",
+          "uuid": "dps-cart-10",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -469,7 +357,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-14",
+                  "uuid": "dps-cart-11",
                   "descriptor": {
                     "html": {
                       "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart</strong><br>The visitor's own basket, resolved from their cart events.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
@@ -504,13 +392,13 @@
                 "padding-bottom": "6px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-13-c1"
+              "uuid": "dps-cart-10-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-15",
+          "uuid": "dps-cart-12",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -533,10 +421,10 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-16",
+                  "uuid": "dps-cart-13",
                   "descriptor": {
                     "html": {
-                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>Subtotal, discount and total, computed from the same basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>The subtotal, the total and the button back to that basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
                       "style": {
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                         "font-size": "15px"
@@ -568,13 +456,13 @@
                 "padding-bottom": "22px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-15-c1"
+              "uuid": "dps-cart-12-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-17",
+          "uuid": "dps-cart-14",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -597,185 +485,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-18",
-                  "descriptor": {
-                    "text": {
-                      "computedStyle": {
-                        "linkColor": "#125cfa"
-                      },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">All prices in $ (USD).</div>",
-                      "style": {
-                        "color": "#5a6375",
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "12px",
-                        "line-height": "1.6"
-                      }
-                    },
-                    "style": {
-                      "text-align": "left",
-                      "padding-top": "0px",
-                      "padding-right": "24px",
-                      "padding-bottom": "0px",
-                      "padding-left": "24px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                }
-              ],
-              "style": {
-                "background-color": "transparent",
-                "border-bottom": "0px solid transparent",
-                "border-left": "0px solid transparent",
-                "border-right": "0px solid transparent",
-                "border-top": "0px solid transparent",
-                "padding-top": "18px",
-                "padding-right": "0px",
-                "padding-bottom": "0px",
-                "padding-left": "0px"
-              },
-              "uuid": "dps-cart-17-c1"
-            }
-          ]
-        },
-        {
-          "type": "one-column-empty",
-          "uuid": "dps-cart-19",
-          "container": {
-            "style": {
-              "background-color": "transparent"
-            }
-          },
-          "content": {
-            "computedStyle": {
-              "rowColStackOnMobile": true,
-              "rowReverseColStackOnMobile": false
-            },
-            "style": {
-              "background-color": "#ffffff",
-              "color": "#14181b",
-              "width": "600px"
-            }
-          },
-          "columns": [
-            {
-              "grid-columns": 12,
-              "modules": [
-                {
-                  "type": "mailup-bee-newsletter-modules-button",
-                  "uuid": "dps-cart-20",
-                  "descriptor": {
-                    "button": {
-                      "label": "Return to your basket",
-                      "href": "https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=cart",
-                      "style": {
-                        "background-color": "#125cfa",
-                        "border-bottom": "0px solid transparent",
-                        "border-left": "0px solid transparent",
-                        "border-radius": "10px",
-                        "border-right": "0px solid transparent",
-                        "border-top": "0px solid transparent",
-                        "color": "#ffffff",
-                        "direction": "ltr",
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "16px",
-                        "font-weight": "700",
-                        "line-height": "120%",
-                        "max-width": "100%",
-                        "padding-bottom": "14px",
-                        "padding-left": "30px",
-                        "padding-right": "30px",
-                        "padding-top": "14px",
-                        "width": "auto"
-                      },
-                      "computedStyle": {
-                        "width": "auto",
-                        "hideContentOnMobile": false
-                      }
-                    },
-                    "style": {
-                      "text-align": "center",
-                      "padding-top": "0px",
-                      "padding-right": "24px",
-                      "padding-bottom": "0px",
-                      "padding-left": "24px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                },
-                {
-                  "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-21",
-                  "descriptor": {
-                    "text": {
-                      "computedStyle": {
-                        "linkColor": "#5a6375"
-                      },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"color:#5a6375;text-decoration:underline;\">or keep browsing the store</a></div>",
-                      "style": {
-                        "color": "#5a6375",
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "13px",
-                        "line-height": "1.6"
-                      }
-                    },
-                    "style": {
-                      "text-align": "center",
-                      "padding-top": "14px",
-                      "padding-right": "24px",
-                      "padding-bottom": "0px",
-                      "padding-left": "24px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                }
-              ],
-              "style": {
-                "background-color": "transparent",
-                "border-bottom": "0px solid transparent",
-                "border-left": "0px solid transparent",
-                "border-right": "0px solid transparent",
-                "border-top": "0px solid transparent",
-                "padding-top": "18px",
-                "padding-right": "0px",
-                "padding-bottom": "26px",
-                "padding-left": "0px"
-              },
-              "uuid": "dps-cart-19-c1"
-            }
-          ]
-        },
-        {
-          "type": "one-column-empty",
-          "uuid": "dps-cart-22",
-          "container": {
-            "style": {
-              "background-color": "transparent"
-            }
-          },
-          "content": {
-            "computedStyle": {
-              "rowColStackOnMobile": true,
-              "rowReverseColStackOnMobile": false
-            },
-            "style": {
-              "background-color": "#ffffff",
-              "color": "#14181b",
-              "width": "600px"
-            }
-          },
-          "columns": [
-            {
-              "grid-columns": 12,
-              "modules": [
-                {
-                  "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-23",
+                  "uuid": "dps-cart-15",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -808,18 +518,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "0px",
+                "padding-top": "24px",
                 "padding-right": "0px",
-                "padding-bottom": "28px",
+                "padding-bottom": "30px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-22-c1"
+              "uuid": "dps-cart-14-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-24",
+          "uuid": "dps-cart-16",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -842,7 +552,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-25",
+                  "uuid": "dps-cart-17",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -870,13 +580,13 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-26",
+                  "uuid": "dps-cart-18",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
                         "linkColor": "#5a6375"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=account\" style=\"color:#5a6375;text-decoration:underline;\">Manage your preferences</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"color:#5a6375;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>This is a demonstration storefront built for a sales conversation.</div>",
                       "style": {
                         "color": "#5a6375",
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -908,7 +618,7 @@
                 "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-24-c1"
+              "uuid": "dps-cart-16-c1"
             }
           ]
         }
@@ -983,7 +693,7 @@
         ]
       },
       {
-        "type": "two-columns-empty",
+        "type": "one-column-empty",
         "uuid": "dps-cart-03",
         "container": {
           "style": {
@@ -1003,7 +713,7 @@
         },
         "columns": [
           {
-            "grid-columns": 6,
+            "grid-columns": 12,
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
@@ -1011,9 +721,9 @@
                 "descriptor": {
                   "text": {
                     "computedStyle": {
-                      "linkColor": "#14181b"
+                      "linkColor": "#125cfa"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#14181b;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"text-decoration:none;\"><strong style=\"font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#5a6375;padding-left:6px;\">eComm Demo</span></a></div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#14181b;\"><strong style=\"font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#5a6375;padding-left:6px;\">eComm Demo</span></div>",
                     "style": {
                       "color": "#14181b",
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -1040,130 +750,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "22px",
+              "padding-top": "24px",
               "padding-right": "0px",
-              "padding-bottom": "22px",
+              "padding-bottom": "24px",
               "padding-left": "0px"
             },
             "uuid": "dps-cart-03-c1"
-          },
-          {
-            "grid-columns": 6,
-            "modules": [
-              {
-                "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-05",
-                "descriptor": {
-                  "text": {
-                    "computedStyle": {
-                      "linkColor": "#125cfa"
-                    },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">Showcase</div>",
-                    "style": {
-                      "color": "#5a6375",
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "12px",
-                      "line-height": "1.6"
-                    }
-                  },
-                  "style": {
-                    "text-align": "right",
-                    "padding-top": "0px",
-                    "padding-right": "24px",
-                    "padding-bottom": "0px",
-                    "padding-left": "24px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              }
-            ],
-            "style": {
-              "background-color": "transparent",
-              "border-bottom": "0px solid transparent",
-              "border-left": "0px solid transparent",
-              "border-right": "0px solid transparent",
-              "border-top": "0px solid transparent",
-              "padding-top": "22px",
-              "padding-right": "0px",
-              "padding-bottom": "22px",
-              "padding-left": "0px"
-            },
-            "uuid": "dps-cart-03-c2"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-06",
-        "container": {
-          "style": {
-            "background-color": "transparent"
-          }
-        },
-        "content": {
-          "computedStyle": {
-            "rowColStackOnMobile": true,
-            "rowReverseColStackOnMobile": false
-          },
-          "style": {
-            "background-color": "#ffffff",
-            "color": "#14181b",
-            "width": "600px"
-          }
-        },
-        "columns": [
-          {
-            "grid-columns": 12,
-            "modules": [
-              {
-                "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-07",
-                "descriptor": {
-                  "text": {
-                    "computedStyle": {
-                      "linkColor": "#14181b"
-                    },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#14181b;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Fashion\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Fashion</a><span style=\"color:#5a6375;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Electronics\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Electronics</a><span style=\"color:#5a6375;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?category=Home\" style=\"color:#14181b;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Home</a></div>",
-                    "style": {
-                      "color": "#14181b",
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "12px",
-                      "line-height": "1.6"
-                    }
-                  },
-                  "style": {
-                    "text-align": "center",
-                    "padding-top": "0px",
-                    "padding-right": "24px",
-                    "padding-bottom": "0px",
-                    "padding-left": "24px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              }
-            ],
-            "style": {
-              "background-color": "transparent",
-              "border-bottom": "0px solid transparent",
-              "border-left": "0px solid transparent",
-              "border-right": "0px solid transparent",
-              "border-top": "0px solid transparent",
-              "padding-top": "16px",
-              "padding-right": "0px",
-              "padding-bottom": "18px",
-              "padding-left": "0px"
-            },
-            "uuid": "dps-cart-06-c1"
-          }
-        ]
-      },
-      {
-        "type": "one-column-empty",
-        "uuid": "dps-cart-08",
+        "uuid": "dps-cart-05",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1186,12 +784,12 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-image",
-                "uuid": "dps-cart-09",
+                "uuid": "dps-cart-06",
                 "descriptor": {
                   "image": {
                     "alt": "Your saved basket",
-                    "href": "https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=cart",
-                    "src": "https://dengage-presales.github.io/demo-ai/demos/showcase/images/email-hero.jpg",
+                    "href": "",
+                    "src": "https://dengage-presales.github.io/demo-ai/assets/email-hero-cart.jpg",
                     "width": "600px",
                     "dynamicSrc": ""
                   },
@@ -1222,13 +820,13 @@
               "padding-bottom": "0px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-08-c1"
+            "uuid": "dps-cart-05-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-10",
+        "uuid": "dps-cart-07",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1251,7 +849,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-11",
+                "uuid": "dps-cart-08",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1279,7 +877,7 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-12",
+                "uuid": "dps-cart-09",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1317,13 +915,13 @@
               "padding-bottom": "24px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-10-c1"
+            "uuid": "dps-cart-07-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-13",
+        "uuid": "dps-cart-10",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1346,7 +944,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-14",
+                "uuid": "dps-cart-11",
                 "descriptor": {
                   "html": {
                     "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart</strong><br>The visitor's own basket, resolved from their cart events.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
@@ -1381,13 +979,13 @@
               "padding-bottom": "6px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-13-c1"
+            "uuid": "dps-cart-10-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-15",
+        "uuid": "dps-cart-12",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1410,10 +1008,10 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-16",
+                "uuid": "dps-cart-13",
                 "descriptor": {
                   "html": {
-                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>Subtotal, discount and total, computed from the same basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c9cbd0;border-radius:10px;padding:22px 20px;text-align:center;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><strong style=\"color:#14181b;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>The subtotal, the total and the button back to that basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table></div>",
                     "style": {
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                       "font-size": "15px"
@@ -1445,13 +1043,13 @@
               "padding-bottom": "22px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-15-c1"
+            "uuid": "dps-cart-12-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-17",
+        "uuid": "dps-cart-14",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1474,185 +1072,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-18",
-                "descriptor": {
-                  "text": {
-                    "computedStyle": {
-                      "linkColor": "#125cfa"
-                    },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">All prices in $ (USD).</div>",
-                    "style": {
-                      "color": "#5a6375",
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "12px",
-                      "line-height": "1.6"
-                    }
-                  },
-                  "style": {
-                    "text-align": "left",
-                    "padding-top": "0px",
-                    "padding-right": "24px",
-                    "padding-bottom": "0px",
-                    "padding-left": "24px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              }
-            ],
-            "style": {
-              "background-color": "transparent",
-              "border-bottom": "0px solid transparent",
-              "border-left": "0px solid transparent",
-              "border-right": "0px solid transparent",
-              "border-top": "0px solid transparent",
-              "padding-top": "18px",
-              "padding-right": "0px",
-              "padding-bottom": "0px",
-              "padding-left": "0px"
-            },
-            "uuid": "dps-cart-17-c1"
-          }
-        ]
-      },
-      {
-        "type": "one-column-empty",
-        "uuid": "dps-cart-19",
-        "container": {
-          "style": {
-            "background-color": "transparent"
-          }
-        },
-        "content": {
-          "computedStyle": {
-            "rowColStackOnMobile": true,
-            "rowReverseColStackOnMobile": false
-          },
-          "style": {
-            "background-color": "#ffffff",
-            "color": "#14181b",
-            "width": "600px"
-          }
-        },
-        "columns": [
-          {
-            "grid-columns": 12,
-            "modules": [
-              {
-                "type": "mailup-bee-newsletter-modules-button",
-                "uuid": "dps-cart-20",
-                "descriptor": {
-                  "button": {
-                    "label": "Return to your basket",
-                    "href": "https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=cart",
-                    "style": {
-                      "background-color": "#125cfa",
-                      "border-bottom": "0px solid transparent",
-                      "border-left": "0px solid transparent",
-                      "border-radius": "10px",
-                      "border-right": "0px solid transparent",
-                      "border-top": "0px solid transparent",
-                      "color": "#ffffff",
-                      "direction": "ltr",
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "16px",
-                      "font-weight": "700",
-                      "line-height": "120%",
-                      "max-width": "100%",
-                      "padding-bottom": "14px",
-                      "padding-left": "30px",
-                      "padding-right": "30px",
-                      "padding-top": "14px",
-                      "width": "auto"
-                    },
-                    "computedStyle": {
-                      "width": "auto",
-                      "hideContentOnMobile": false
-                    }
-                  },
-                  "style": {
-                    "text-align": "center",
-                    "padding-top": "0px",
-                    "padding-right": "24px",
-                    "padding-bottom": "0px",
-                    "padding-left": "24px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              },
-              {
-                "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-21",
-                "descriptor": {
-                  "text": {
-                    "computedStyle": {
-                      "linkColor": "#5a6375"
-                    },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#5a6375;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"color:#5a6375;text-decoration:underline;\">or keep browsing the store</a></div>",
-                    "style": {
-                      "color": "#5a6375",
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "13px",
-                      "line-height": "1.6"
-                    }
-                  },
-                  "style": {
-                    "text-align": "center",
-                    "padding-top": "14px",
-                    "padding-right": "24px",
-                    "padding-bottom": "0px",
-                    "padding-left": "24px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              }
-            ],
-            "style": {
-              "background-color": "transparent",
-              "border-bottom": "0px solid transparent",
-              "border-left": "0px solid transparent",
-              "border-right": "0px solid transparent",
-              "border-top": "0px solid transparent",
-              "padding-top": "18px",
-              "padding-right": "0px",
-              "padding-bottom": "26px",
-              "padding-left": "0px"
-            },
-            "uuid": "dps-cart-19-c1"
-          }
-        ]
-      },
-      {
-        "type": "one-column-empty",
-        "uuid": "dps-cart-22",
-        "container": {
-          "style": {
-            "background-color": "transparent"
-          }
-        },
-        "content": {
-          "computedStyle": {
-            "rowColStackOnMobile": true,
-            "rowReverseColStackOnMobile": false
-          },
-          "style": {
-            "background-color": "#ffffff",
-            "color": "#14181b",
-            "width": "600px"
-          }
-        },
-        "columns": [
-          {
-            "grid-columns": 12,
-            "modules": [
-              {
-                "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-23",
+                "uuid": "dps-cart-15",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1685,18 +1105,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "0px",
+              "padding-top": "24px",
               "padding-right": "0px",
-              "padding-bottom": "28px",
+              "padding-bottom": "30px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-22-c1"
+            "uuid": "dps-cart-14-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-24",
+        "uuid": "dps-cart-16",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1719,7 +1139,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-25",
+                "uuid": "dps-cart-17",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1747,13 +1167,13 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-26",
+                "uuid": "dps-cart-18",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
                       "linkColor": "#5a6375"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/index.html?open=account\" style=\"color:#5a6375;text-decoration:underline;\">Manage your preferences</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/showcase/\" style=\"color:#5a6375;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>This is a demonstration storefront built for a sales conversation.</div>",
                     "style": {
                       "color": "#5a6375",
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -1785,7 +1205,7 @@
               "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-24-c1"
+            "uuid": "dps-cart-16-c1"
           }
         ]
       }

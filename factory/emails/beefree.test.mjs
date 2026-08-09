@@ -10,11 +10,16 @@
    that looks nearly right in the one place nobody has time to check it, which is on a
    call.
 
-   So the structural invariants are asserted here, and so are the four rules that
-   matter more than structure: the mark is Dengage, the currency is stated once because
-   no shared asset can print a symbol, the Dynamic Content blocks are HTML modules
-   rather than text modules, and every colour pair clears the contrast bar the rest of
-   the factory uses.
+   So the structural invariants are asserted here, and so are the rules that matter more
+   than structure: the mark is Dengage and nobody else, the shell names no storefront at
+   all so it cannot contradict the basket inside it, the Dynamic Content blocks are HTML
+   modules rather than text modules, and every colour pair clears the contrast bar the
+   rest of the factory uses.
+
+   MOST OF THIS FILE ASSERTS AN ABSENCE, which is unusual and is the design. The template
+   used to carry the demo's store name, category nav and currency, baked in at build time,
+   while the basket is resolved at send time from whichever storefront the visitor last
+   touched. The two disagreed in a real send. Nothing that names a store can be in here.
    ========================================================================== */
 
 import { beefreeAbandonedCart, templateRows } from './beefree.mjs';
@@ -51,17 +56,9 @@ function build(overrides) {
         template: beefreeAbandonedCart({
             palette,
             theme,
-            storeName: 'Techiestore',
-            storeUrl: 'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/',
-            unsubscribe: 'https://dengage-presales.github.io/demo-ai/demos/' +
-                'techiestore-in/unsubscribe.html?c={%= $Contact.contact_key %}',
-            symbol: overrides && 'symbol' in overrides ? overrides.symbol : '₹',
-            currency: overrides && 'currency' in overrides ? overrides.currency : 'INR',
             snippets: (overrides && overrides.snippets) || {},
-            categories: overrides && 'categories' in overrides ? overrides.categories
-                : ['Laptop Keyboard', 'Laptop Battery', 'Mouse', 'More'],
             heroImage: overrides && 'heroImage' in overrides ? overrides.heroImage
-                : 'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/email-hero.jpg'
+                : 'https://dengage-presales.github.io/demo-ai/assets/email-hero-cart.jpg'
         })
     };
 }
@@ -186,79 +183,53 @@ function walk(template) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* The rules that outrank the layout                                           */
+/* The shell names no storefront, which is the whole reason it is shared         */
 
 {
     const { template } = build();
+    const modules = walk(template).modules;
     const text = JSON.stringify(template);
 
-    /* NON-NEGOTIABLE 3. The mark is Dengage with the eComm Demo subtext, and the
-       store's name appears only as text beside it. */
+    /* THE DEFECT THIS SECTION EXISTS FOR. The template used to carry the demo's store
+       name, its category nav and its currency, all baked in when the demo was built. The
+       basket inside it is resolved at send time from whichever storefront the visitor
+       last touched, so the two could disagree, and they did: a Techiestore masthead and a
+       laptop nav around four garments, above a rupee line against dollar prices.
+
+       Every assertion here is the absence of something, which is unusual and is the
+       point. A shell that names no store cannot contradict a basket. */
+    ok('no link addresses a particular demo',
+       !text.includes('/demos/'), (text.match(/\/demos\/[a-z0-9-]+/g) || []).slice(0, 3));
+    ok('there is no category nav', !text.includes('?category='));
+    ok('there is no currency line', !text.includes('All prices in'));
+    ok('and no currency symbol anywhere',
+       !/[₹€£¥₺]/.test(text), (text.match(/[₹€£¥₺]/g) || []).slice(0, 3));
+
+    /* NO BUTTON MODULE EITHER, and that surprises people, so it is asserted. A BeeFree
+       button holds one literal href, and a basket link needs a demo in it, so in a shared
+       template it could only ever point at the wrong storefront. The saved asset works
+       out the demo and builds the URL, so the button lives there. */
+    ok('there is no button module, because only the asset can address a basket',
+       modules.filter((module) => module.descriptor.button).length === 0);
+
+    /* THE MARK IS STILL DENGAGE'S, twice, and it is the only name in the file. */
     ok('the masthead is the Dengage mark with its subtext',
        text.includes('Dengage') && text.includes('eComm Demo'));
-    ok('and no image is embedded at all, so no logo can be the wrong one',
-       text.indexOf('<img') === -1);
+    ok('the footer repeats it',
+       (text.match(/>Dengage</g) || []).length >= 2,
+       (text.match(/>Dengage</g) || []).length);
+    ok('no image is embedded except the hero, so no logo can be the wrong one',
+       (text.match(/<img/g) || []).length === 0);
 
-    /* NON-NEGOTIABLE 10, and the same reason the closing tag below is assembled: the
-       guard sweeps this file for those two characters, so writing them in the pattern
-       would fail the guard on the check for them. Escapes, not literals. */
+    /* NON-NEGOTIABLE 10. Escapes rather than literals: the guard sweeps this file for
+       those two characters, so writing them in the pattern would fail the check for
+       them. Two guards here have already contained the defect they detect. */
     const longDashes = new RegExp('[\\u2013\\u2014]', 'g');
     ok('no em dash and no en dash',
        !longDashes.test(text), (text.match(longDashes) || []).slice(0, 3));
 
-    /* The currency, stated once, because neither shared asset can print a symbol.
-       COUNTED OVER THE MODULES RATHER THAN THE SERIALISED FILE. The rows are emitted at
-       two paths on purpose, so every string in the document appears twice and a naive
-       count of the JSON text reports two of everything. */
-    const moneyLines = (template) => walk(template).modules
-        .filter((module) => module.descriptor.text &&
-            module.descriptor.text.html.includes('All prices in'));
-
-    ok('the currency is stated once', moneyLines(template).length === 1,
-       moneyLines(template).length);
-    ok('and it names both the symbol and the code',
-       moneyLines(template)[0].descriptor.text.html.includes('₹ (INR)'));
-
-    ok('a demo whose locale names neither gets no currency line',
-       moneyLines(build({ symbol: '', currency: '' }).template).length === 0);
-    ok('a symbol with no code still reads correctly',
-       moneyLines(build({ symbol: '₹', currency: '' }).template)[0]
-           .descriptor.text.html.includes('All prices in ₹.'));
-
-    /* THE BUTTON GOES TO A PAGE THAT EXISTS, and the first version did not. A demo is
-       index.html and product.html; the basket is an overlay on the first one, so
-       cart.html was a 404 and the primary call to action in the whole email landed on
-       one. It now asks the storefront to open the basket from the URL. */
-    const button = walk(template).modules.find((module) => module.descriptor.button);
-    ok('the button opens the demo\'s basket, on a page that exists',
-       button.descriptor.button.href ===
-       'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart',
-       button.descriptor.button.href);
-    ok('and names no page the storefront does not have',
-       !/\/(cart|checkout|wishlist|account|search)\.html/.test(text),
-       (text.match(/\/[a-z]+\.html/g) || []).filter((m) => m !== '/index.html' && m !== '/product.html'));
-
-    ok('the unsubscribe link carries the panel\'s contact tag',
-       text.includes('unsubscribe.html?c={%= $Contact.contact_key %}'));
-    /* THE TRAILING EQUALS THAT COST FIVE ROUNDS. Asserted here as well as in the
-       schema test, because this file is generated rather than written by hand and a
-       generator repeats a mistake in every demo at once.
-
-       THE PATTERN IS ASSEMBLED RATHER THAN WRITTEN, and that is not fussiness. The
-       schema test sweeps this directory for that exact string, so spelling it here
-       would make this file the thing it is checking for. Two guards in this repository
-       have already contained the defect they detect. */
     const badClose = '=' + '%}';
     ok('no output tag closes with a trailing equals', !text.includes(badClose));
-}
-
-/* -------------------------------------------------------------------------- */
-/* The parts a best practice email has, and this one did not                    */
-
-{
-    const { template, palette } = build();
-    const modules = walk(template).modules;
-    const text = JSON.stringify(template);
 
     /* THE PREHEADER. Without one an inbox shows the first words of the body beside the
        subject, which here would be "Dengage eComm Demo". */
@@ -268,54 +239,23 @@ function walk(template) {
     ok('and it says something about the basket rather than repeating the mark',
        preheader && /basket/i.test(preheader.descriptor.text.html));
 
-    /* THE CATEGORY NAV, and every link in it has to be a real filtered page. */
-    const nav = modules.find((module) => module.descriptor.text &&
-        module.descriptor.text.html.includes('index.html?category='));
-    ok('the nav carries the demo\'s own categories', Boolean(nav));
-    ok('all four of them',
-       nav && (nav.descriptor.text.html.match(/index\.html\?category=/g) || []).length === 4,
-       nav && (nav.descriptor.text.html.match(/index\.html\?category=/g) || []).length);
-    ok('and each is encoded, because a category name has spaces in it',
-       nav && nav.descriptor.text.html.includes('category=Laptop%20Keyboard'));
-
-    /* FOUR AT MOST. A nav that wraps to two lines on a phone stops reading as a nav. */
-    const many = build({ categories: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] });
-    const manyNav = walk(many.template).modules.find((module) => module.descriptor.text &&
-        module.descriptor.text.html.includes('index.html?category='));
-    ok('seven categories are trimmed to four',
-       manyNav && (manyNav.descriptor.text.html.match(/\?category=/g) || []).length === 4);
-
-    const none = build({ categories: [] });
-    ok('a demo with no categories gets no nav row rather than an empty one',
-       !JSON.stringify(none.template).includes('index.html?category='));
-
-    /* THE HERO. Generated per demo, on our own origin, and never referenced when it is
-       not there: a broken image in an email is worse than no image. */
+    /* THE HERO, shared and in the standard palette rather than a prospect's. */
     const hero = modules.find((module) => module.descriptor.image);
     ok('the hero is an image module', Boolean(hero));
-    ok('it points at this demo\'s own generated file',
-       hero && hero.descriptor.image.src.endsWith('/images/email-hero.jpg'));
+    ok('it points at the shared artwork, not a demo folder',
+       hero && hero.descriptor.image.src.endsWith('/assets/email-hero-cart.jpg'));
     ok('it is full bleed, so 600px of image meets 600px of column',
        hero && hero.descriptor.image.width === '600px' &&
        hero.descriptor.style['padding-left'] === '0px' &&
        hero.descriptor.style['padding-right'] === '0px');
     ok('it carries alt text, for the third of recipients who block images',
        hero && hero.descriptor.image.alt.length > 0, hero && hero.descriptor.image.alt);
-    ok('and it links to the basket like the button does',
-       hero && hero.descriptor.image.href.endsWith('index.html?open=cart'));
+    ok('and it links nowhere, because there is no demo to link to',
+       hero && hero.descriptor.image.href === '');
 
     const noHero = build({ heroImage: '' });
-    ok('a demo whose hero was never rendered gets no image module at all',
+    ok('with no hero rendered there is no image module at all',
        walk(noHero.template).modules.filter((module) => module.descriptor.image).length === 0);
-
-    /* ONE PRIMARY ACTION, CENTRED, with a quiet second choice rather than a second
-       button. Two buttons of equal weight is how a call to action stops being one. */
-    const buttons = modules.filter((module) => module.descriptor.button);
-    ok('there is exactly one button', buttons.length === 1, buttons.length);
-    ok('and it is centred', buttons[0].descriptor.style['text-align'] === 'center');
-    ok('the second choice is a link, not a button',
-       modules.some((module) => module.descriptor.text &&
-           module.descriptor.text.html.includes('keep browsing')));
 
     /* THE URGENCY LINE HAS TO BE TRUE. A countdown, a reserved basket or an expiring
        discount would all be invented, and non-negotiable 5 is about exactly this. */
@@ -325,11 +265,6 @@ function walk(template) {
                             'selling fast', 'limited time']) {
         ok('nothing claims "' + invented + '"', !text.toLowerCase().includes(invented));
     }
-
-    /* The footer names the sender, because a footer with no sender reads as a fragment. */
-    ok('the footer repeats the mark',
-       (text.match(/>Dengage</g) || []).length >= 2,
-       (text.match(/>Dengage</g) || []).length);
 }
 
 /* -------------------------------------------------------------------------- */

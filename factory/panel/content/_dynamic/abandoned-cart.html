@@ -131,27 +131,27 @@
     %}
       <tr>
         {% if (image !== "") { %}
-        <td width="112" valign="top" style="padding:{%= gap %}px 18px 0 0;">
+        <td width="112" valign="top" style="padding:{%= gap %}px 18px 0 0;{% if (gap) { %}border-top:1px solid rgba(128,128,128,0.16);{% } %}">
           <a href="{%= link %}" target="_blank" style="text-decoration:none;">
             <img src="{%= image %}" alt="{%= title %}" width="96" style="width:96px;height:auto;border:0;display:block;border-radius:6px;">
           </a>
         </td>
         {% } %}
-        <td valign="top" style="padding:{%= gap + 3 %}px 0 0 0;font-family:inherit;color:inherit;">
+        <td valign="top" style="padding:{%= gap + 3 %}px 0 0 0;font-family:inherit;color:inherit;{% if (gap) { %}border-top:1px solid rgba(128,128,128,0.16);{% } %}">
           {% if (product.category_path) { %}
-            <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.6;padding:0 0 5px 0;">{%= product.category_path %}</div>
+            <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;opacity:0.45;padding:0 0 6px 0;">{%= product.category_path %}</div>
           {% } %}
-          <div style="font-size:16px;line-height:1.35;padding:0 0 7px 0;">
+          <div style="font-size:17px;line-height:1.35;padding:0 0 9px 0;">
             <a href="{%= link %}" target="_blank" style="color:inherit;text-decoration:none;font-weight:bold;">{%= title %}</a>
           </div>
-          <div style="font-size:16px;font-weight:bold;line-height:1.3;">
+          <div style="font-size:14px;line-height:1.4;">
             {% if (cut !== "") { %}
-              <span>{%= cut %}</span>
-              <span style="text-decoration:line-through;font-weight:normal;opacity:0.55;font-size:14px;padding-left:8px;">{%= price %}</span>
+              <span style="font-weight:bold;">{%= cut %}</span>
+              <span style="text-decoration:line-through;opacity:0.45;padding-left:7px;">{%= price %}</span>
             {% } else { %}
-              <span>{%= price %}</span>
+              <span style="font-weight:bold;">{%= price %}</span>
             {% } %}
-            {% if (qty > 1) { %}<span style="font-weight:normal;opacity:0.65;font-size:14px;padding-left:8px;">Qty {%= qty %}</span>{% } %}
+            {% if (qty > 1) { %}<span style="opacity:0.55;padding-left:7px;">Qty {%= qty %}</span>{% } %}
           </div>
         </td>
       </tr>

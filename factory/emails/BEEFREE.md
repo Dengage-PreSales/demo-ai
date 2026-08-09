@@ -1,25 +1,26 @@
 # The Email Builder template
 
-One file per demo, imported rather than pasted:
+**One file, for every demo, imported once ever:**
 
 ```
-factory/panel/content/<slug>/emails/beefree-abandoned-cart.json
-factory/panel/content/<slug>/emails/beefree-abandoned-cart.preview.html
+factory/panel/content/_shared/beefree-abandoned-cart.json
+factory/panel/content/_shared/beefree-abandoned-cart.preview.html
 ```
 
-Open the preview first. It is what the email looks like, filled with real products
-from that demo's catalogue, so a wrong colour or a wrong typeface shows in one glance
-before anything is uploaded.
+Open the preview first. It is what the email looks like, filled with real products from
+a real catalogue, so a wrong colour or a wrong typeface shows in one glance before
+anything is uploaded.
 
-## Setting it up, once
+## Setting it up, once, for all demos
 
 1. **Content > Dynamic Content > New**, type **HTML**, name it `dps abandoned cart`,
    and paste `factory/panel/content/_dynamic/abandoned-cart.html`. Save.
 2. Same again for `dps abandoned cart total`, from `abandoned-cart-total.html`.
 3. **Content > Email > New > Email Builder**, and import the JSON.
-4. The template arrives with two dashed boxes where the products and the total go.
+4. The template arrives with two dashed boxes where the products and the summary go.
    Click each one, clear it, then **Insert > Dynamic Content** and pick the asset the
    box names.
+5. Build the campaign. **One campaign serves every demo**, so this is the last time.
 
 Step 4 exists because Dengage assigns `snippet_id` when an asset is saved, so nothing
 in this repository can know it in advance. Once the panel has told you the two ids, a
@@ -27,11 +28,50 @@ rebuild puts the real tags straight into the file and there is nothing to click:
 
 ```bash
 DPS_SNIPPET_CART=8835 DPS_SNIPPET_CART_TOTAL=8836 \
-  node factory/emails/build-beefree.mjs --slug <slug>
+  node factory/emails/build-beefree.mjs
 ```
 
-The ids are per account, not per demo, so once they are known every demo built
-afterwards imports finished.
+## Why one shared template rather than one per demo
+
+Settled 9 August 2026, Salil's call, after a real send showed the problem.
+
+**The chrome is baked at build time. The basket is resolved at send time.** An email
+carries no custom properties and no stylesheet, so a colour or a store name in the
+template is a literal, fixed when the demo is built. The basket inside it is worked out
+when the email is sent, from whichever storefront the visitor last touched. Those two
+can disagree, and they did: a Techiestore masthead and a laptop keyboard nav wrapped
+around four garments, above the line "All prices in (INR)" against dollar prices. The
+currency was the worst of it. A wrong symbol beside a real price is more damaging on a
+call than a wrong name.
+
+**A shell that names no store cannot contradict a basket.** So everything that
+identified a storefront is gone:
+
+| Gone | Why |
+|---|---|
+| The store's name in the masthead | It is a claim about whose email this is |
+| The category nav | Its links pointed at one demo's filtered pages |
+| The currency line | The sharpest contradiction of the three |
+| The link to the store in the footer | Same reason |
+| The per demo brand colour and typeface | A brand colour is as much a claim as a name |
+| The per demo hero | Drawn in the standard Dengage palette instead |
+
+What is left is what was always the point: real products, at real prices, out of the
+visitor's own basket. Those come from the saved assets, which resolve the demo
+themselves, so they are always right.
+
+**The button moved into the summary asset**, and that is forced rather than chosen. A
+basket link needs a demo in it, and a BeeFree button module holds one literal href, so
+in a shared template it could only ever point at the wrong storefront or at nothing. The
+asset already works out which demo the basket belongs to, so it is the only thing in the
+email that can address the right basket. It builds the URL from the page the visitor was
+actually on rather than from a hardcoded origin.
+
+**What this costs.** The email is Dengage blue rather than the prospect's colour. If a
+particular call wants the prospect's own theming, duplicate the campaign for that demo
+and point it at a per demo template: `make-hero.mjs --slug <slug>` still draws the
+themed hero, and the per demo path is one function argument away. That is a deliberate
+exception, not the default, and it comes with the mismatch risk back in.
 
 ## If it imports as an empty canvas
 
@@ -63,31 +103,44 @@ shown something that worked rather than by reasoning about it.
 
 ## What is in it
 
-Eleven rows, and every one of them is doing a job an abandoned cart email is expected
-to do:
+Eight rows:
 
 | Row | What it is |
 |---|---|
 | Preheader | Hidden. The grey line an inbox shows beside the subject. Without it the client shows the first words it finds, which would be "Dengage eComm Demo" |
-| Masthead | The Dengage mark and the eComm Demo subtext, with the store's name as text beside it. Non-negotiable 3: never the prospect's logo |
-| Category nav | The demo's own categories, each linking to the storefront filtered to it. Four at most, because five wrap on a phone and stop reading as a nav |
-| Hero | Drawn per demo from its brand colour by `make-hero.mjs`. Full bleed, and carries no text |
+| Masthead | The Dengage mark and the eComm Demo subtext, and nothing else. Non-negotiable 3: never the prospect's logo, and now not their name either |
+| Hero | Drawn in the standard Dengage palette by `make-hero.mjs --shared`. Full bleed, and carries no text |
 | Headline | One line, and one line of copy under it |
 | Basket | **Dynamic Content.** The visitor's own basket, replayed from their cart events |
-| Total | **Dynamic Content.** Subtotal, discount and total, computed from that same basket |
-| Currency | Stated once. See below |
-| Button | Centred, opens the demo's basket, with a quiet second choice under it rather than a second button |
+| Summary | **Dynamic Content.** Subtotal, total, and the button back to that basket |
 | Urgency | One line, and it is true. See below |
-| Footer | The mark again, manage preferences, and the line saying this is a demonstration storefront |
+| Footer | The mark again, and the line saying this is a demonstration storefront |
 
-**Still short on purpose.** A long template demonstrates BeeFree, which nobody is
-buying. What is being shown is that the products came out of the visitor's own basket,
-so every row that is not those products has to justify itself.
+**Short on purpose.** A long template demonstrates BeeFree, which nobody is buying. What
+is being shown is that the products came out of the visitor's own basket, so every row
+that is not those products has to justify itself.
+
+## The product rows
+
+Two changes on 9 August 2026, both from a look at a real send:
+
+**Hierarchy.** The name was 17px bold and the price was 16px bold directly under it, so
+the row had two things shouting and nothing leading. The name now leads at 17px bold and
+the price supports at 14px, with the reduction bold and the original struck through at
+45% opacity. The category eyebrow dropped to 10px at 45%, so it labels the row instead
+of competing with it.
+
+**Separation.** Four items read as one undifferentiated block. There is now a hairline
+above every row but the first, at `rgba(128,128,128,0.16)` so it works on a light ground
+and a dark one, with the gap split around it. It is on the top rather than the bottom, so
+the list ends flush against the summary band below rather than pushing a gap into it.
 
 ## The hero image
 
-`node factory/emails/make-hero.mjs --slug <slug>` writes
-`demos/<slug>/images/email-hero.jpg`, 600x240 at 2x, about 20KB.
+`node factory/emails/make-hero.mjs --shared` writes `assets/email-hero-cart.jpg`,
+600x240 at 2x, about 24KB. The per demo variants still build with `--slug` or `--all`,
+because a per demo template is one duplicated campaign away and the artwork should be
+ready if that is ever wanted.
 
 It is **drawn, not sourced**, and that is forced rather than stylistic: a demo carries
 the prospect's product names and never their imagery, and it may not depend on a third
@@ -114,7 +167,7 @@ the other six phrasings.
 
 ## Where the buttons go
 
-`index.html?open=cart`, not `cart.html`.
+`index.html?open=cart`, not `cart.html`, and it is the saved asset that builds it.
 
 A demo is two pages, `index.html` and `product.html`. The basket, the checkout, the
 search and the saved items are overlays on the first one, so `cart.html` has never
@@ -125,10 +178,14 @@ URLs, `template/js/storefront.js` opens an overlay from `?open=`, and
 `factory/panel/links.test.mjs` resolves every link in the panel content back to a file
 on disk so it cannot happen again.
 
-The footer link says "Manage your preferences" rather than "Unsubscribe" and goes to the
-account overlay, because there is no `unsubscribe.html` either. If Dengage injects its
-own unsubscribe URL or exposes a tag for it, that is the right value and it is one line
-to change.
+The footer of the shared template carries **no link at all**, for the same reason the
+masthead carries no name: until the email is sent there is no one storefront it belongs
+to. That leaves it with no unsubscribe, which is the one link that genuinely should be
+there. It goes in the moment an unsubscribe URL or tag for this account is known.
+
+The generated Code Editor emails still have a footer link, and there it says "Manage your
+preferences" and opens the account overlay, because those are built per demo and there is
+no `unsubscribe.html` to point at.
 
 ## Does it adapt to a new demo on its own
 
@@ -140,18 +197,14 @@ Mostly. Precisely:
 | Its hero image | yes, the build runs `make-hero.mjs` |
 | Brand colour, typeface, categories, currency, store name, links | yes, all from `demo.config.json` |
 | `dps_product` rows for the new demo | yes, within ten minutes. `refresh_dengage_catalogues()` reads the published `feed/products.json`, which every build regenerates, so it discovers a new slug with nothing to tell it |
-| The two Dynamic Content assets | nothing to do. They are shared, and they now work out which demo a basket belongs to by themselves |
-| Importing the template into the Email Builder | **no. One upload per demo** |
-| The snippet ids in the file | **once ever.** Set `DPS_SNIPPET_CART` and `DPS_SNIPPET_CART_TOTAL` and every demo built afterwards imports finished |
+| The two Dynamic Content assets | nothing to do. They are shared, and they work out which demo a basket belongs to by themselves |
+| The template and the campaign | nothing to do. Both are shared now |
+| The snippet ids in the file | **once ever.** Set `DPS_SNIPPET_CART` and `DPS_SNIPPET_CART_TOTAL` and the import needs no clicks at all |
 
-So the per demo manual work is one import. Everything the repository can do without the
-panel, it does.
-
-**Why the import cannot be avoided.** The theming is literal hex in the JSON, because an
-email cannot carry custom properties or a stylesheet. One shared email campaign would
-therefore be one colour for every prospect. The parts that CAN theme themselves at send
-time are exactly the parts inside a Dynamic Content asset, and a button's background is
-not one of them.
+**So there is no per demo panel work left for this email.** Publish a demo, wait ten
+minutes for its products to reach `dps_product`, and the campaign that already exists
+sends the right basket with the right prices and a button that lands on the right
+storefront.
 
 ## What the demo's own theme supplies
 

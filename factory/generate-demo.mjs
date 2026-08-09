@@ -577,21 +577,20 @@ async function main() {
             console.error('Run this afterwards:  node factory/emails/build-emails.mjs --slug ' + slug);
         }
 
-        /* THE BEEFREE TEMPLATE, IN ITS OWN STEP, AND THAT IS THE WHOLE REASON IT IS
-           HERE TWICE. buildEmails calls it too, but buildEmails is allowed to fail and
-           currently does on the journeys that still ask an event table for a product
-           name. Inside that try block, one broken journey would take the template with
-           it and a new demo would arrive with nothing to upload. This is the one
-           deliverable a salesperson opens the Email Builder for. */
+        /* THE EMAIL BUILDER TEMPLATE IS SHARED, so a new demo does not get one of its
+           own and this step is idempotent. It runs anyway, because the shared template
+           is drawn from template/style.css and should be rebuilt whenever the standard
+           palette moves. Its own try block: buildEmails is allowed to fail, and one
+           broken journey must not take the template with it. */
         try {
             const { buildBeefree } = await import('./emails/build-beefree.mjs');
-            const beefree = buildBeefree(slug);
-            console.error('Email Builder: template for ' + beefree.rows + ' rows, ' +
+            const beefree = buildBeefree();
+            console.error('Email Builder: shared template, ' + beefree.rows + ' rows, ' +
                 (beefree.resolved ? 'snippet ids applied'
                                   : 'Dynamic Content left for the panel to attach'));
         } catch (err) {
             console.error('Email Builder: none (' + err.message + ')');
-            console.error('Run this afterwards:  node factory/emails/build-beefree.mjs --slug ' + slug);
+            console.error('Run this afterwards:  node factory/emails/build-beefree.mjs');
         }
 
         /* THE SHORT FORM CONTENT PACK, for the five channels that are not email.

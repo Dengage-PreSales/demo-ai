@@ -1,10 +1,19 @@
 /* ============================================================================
    Renders one email hero image per demo, from that demo's own theme.
 
+     node factory/emails/make-hero.mjs --shared
      node factory/emails/make-hero.mjs --slug <slug>
      node factory/emails/make-hero.mjs --all
 
-   Output: demos/<slug>/images/email-hero.jpg, 1200x480, which is 600x240 at 2x.
+   Output: assets/email-hero-cart.jpg for the shared one, and
+   demos/<slug>/images/email-hero.jpg per demo. 1200x480, which is 600x240 at 2x.
+
+   THE SHARED ONE IS WHAT THE EMAIL USES. Settled 9 August 2026: the email template is
+   neutral rather than themed, because a template themed to one demo can wrap another
+   demo's basket, and it did. So the hero is drawn in the standard Dengage demo palette,
+   which template/style.css declares and dengage-theme.mjs reads. The per demo variants
+   still build, because a per demo template is one duplicated campaign away and the
+   artwork should be ready if that is ever wanted.
 
    WHY AN IMAGE AT ALL, AND WHY A GENERATED ONE. An email of nothing but text reads as a
    receipt, and the one thing this factory cannot do is put a stock photograph in it: a
@@ -32,6 +41,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 import { emailPalette } from './palette.mjs';
+import { dengageTheme } from './dengage-theme.mjs';
 import { launchOptions } from '../browser.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -126,11 +136,16 @@ function heroMarkup(palette) {
 </body></html>`;
 }
 
+/* slug null draws the shared one in the standard palette. */
 export async function makeHero(slug, browser) {
-    const configPath = join(ROOT, 'demos', slug, 'demo.config.json');
-    if (!existsSync(configPath)) throw new Error('no demo.config.json for ' + slug);
-    const config = JSON.parse(readFileSync(configPath, 'utf8'));
-    const palette = emailPalette(config.theme);
+    let palette;
+    if (slug) {
+        const configPath = join(ROOT, 'demos', slug, 'demo.config.json');
+        if (!existsSync(configPath)) throw new Error('no demo.config.json for ' + slug);
+        palette = emailPalette(JSON.parse(readFileSync(configPath, 'utf8')).theme);
+    } else {
+        palette = emailPalette(dengageTheme());
+    }
 
     const own = !browser;
     const chrome = browser || await chromium.launch(launchOptions());
@@ -146,12 +161,14 @@ export async function makeHero(slug, browser) {
         const bytes = await page.screenshot({ type: 'jpeg', quality: 88 });
         await page.close();
 
-        const dir = join(ROOT, 'demos', slug, 'images');
+        /* assets/ is the shared Dengage artwork path the guard's image-locations check
+           already allows, and demos/<slug>/images/ is the per demo one. */
+        const dir = slug ? join(ROOT, 'demos', slug, 'images') : join(ROOT, 'assets');
         mkdirSync(dir, { recursive: true });
-        const file = join(dir, 'email-hero.jpg');
+        const file = join(dir, slug ? 'email-hero.jpg' : 'email-hero-cart.jpg');
         writeFileSync(file, bytes);
 
-        return { slug, file, bytes: bytes.length, brand: palette.brand };
+        return { slug: slug || 'shared', file, bytes: bytes.length, brand: palette.brand };
     } finally {
         if (own) await chrome.close();
     }
@@ -164,12 +181,14 @@ const args = process.argv.slice(2);
 if (import.meta.url === 'file://' + process.argv[1]) {
     const at = args.indexOf('--slug');
     const slugs = args.includes('--all')
-        ? readdirSync(join(ROOT, 'demos'), { withFileTypes: true })
-            .filter((entry) => entry.isDirectory()).map((entry) => entry.name)
-        : (at === -1 ? [] : [args[at + 1]]).filter(Boolean);
+        ? [null].concat(readdirSync(join(ROOT, 'demos'), { withFileTypes: true })
+            .filter((entry) => entry.isDirectory()).map((entry) => entry.name))
+        : args.includes('--shared')
+            ? [null]
+            : (at === -1 ? [] : [args[at + 1]]).filter(Boolean);
 
     if (!slugs.length) {
-        console.error('usage: node factory/emails/make-hero.mjs --slug <slug> | --all');
+        console.error('usage: node factory/emails/make-hero.mjs --shared | --slug <slug> | --all');
         process.exit(2);
     }
 
@@ -180,11 +199,11 @@ if (import.meta.url === 'file://' + process.argv[1]) {
         for (const slug of slugs) {
             try {
                 const result = await makeHero(slug, browser);
-                console.error('Hero: ' + slug + ', ' + Math.round(result.bytes / 1024) +
+                console.error('Hero: ' + result.slug + ', ' + Math.round(result.bytes / 1024) +
                     'KB, brand ' + result.brand);
             } catch (err) {
                 failed++;
-                console.error('Hero: skipped ' + slug + ' (' + err.message + ')');
+                console.error('Hero: skipped ' + (slug || 'shared') + ' (' + err.message + ')');
             }
         }
     } finally {

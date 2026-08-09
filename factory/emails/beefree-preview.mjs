@@ -25,37 +25,42 @@ import { templateRows } from './beefree.mjs';
    abandoned-cart-total.html. Kept deliberately close to those files: this is a preview
    of them, so a divergence here is a preview that flatters the real thing. */
 function productRows(products, palette) {
-    return products.map((product) => {
+    return products.map((product, index) => {
         const price = product.price;
         const cut = product.discounted;
+        /* Same rhythm as the asset: the gap and the hairline are on the TOP of every row
+           but the first, so the list ends flush against whatever follows it. */
+        const gap = index === 0 ? 0 : 20;
+        const rule = gap ? 'border-top:1px solid rgba(128,128,128,0.16);' : '';
         /* THE IMAGE CELL DISAPPEARS WITH THE IMAGE. Keeping an empty 112px cell left a
            block of dead space beside every row on a catalogue the scrape got no pictures
            from, which is a real case: one of the demos in this repository has none. Same
            condition, same place, in abandoned-cart.html. */
         return '<tr>' +
             (product.image
-                ? '<td width="112" valign="top" style="padding:0 18px 22px 0;">' +
+                ? '<td width="112" valign="top" style="padding:' + gap + 'px 18px 0 0;' + rule + '">' +
                   '<img src="' + product.image + '" alt="" width="96" ' +
                   'style="width:96px;height:auto;border:0;display:block;">' +
                   '</td>'
                 : '') +
-            '<td valign="top" style="padding:4px 0 22px 0;font-family:inherit;color:inherit;">' +
+            '<td valign="top" style="padding:' + (gap + 3) + 'px 0 0 0;' + rule +
+            'font-family:inherit;color:inherit;">' +
             (product.category
-                ? '<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;' +
-                  'opacity:0.6;padding:0 0 5px 0;">' + product.category + '</div>'
+                ? '<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;' +
+                  'opacity:0.45;padding:0 0 6px 0;">' + product.category + '</div>'
                 : '') +
-            '<div style="font-size:16px;line-height:1.35;padding:0 0 7px 0;">' +
+            '<div style="font-size:17px;line-height:1.35;padding:0 0 9px 0;">' +
             '<span style="font-weight:bold;">' + product.name + '</span></div>' +
             (price
-                ? '<div style="font-size:16px;font-weight:bold;line-height:1.3;">' +
+                ? '<div style="font-size:14px;line-height:1.4;">' +
                   (cut
-                      ? '<span>' + cut + '</span><span style="text-decoration:line-through;' +
-                        'font-weight:normal;opacity:0.55;font-size:14px;padding-left:8px;">' +
-                        price + '</span>'
-                      : '<span>' + price + '</span>') +
+                      ? '<span style="font-weight:bold;">' + cut + '</span>' +
+                        '<span style="text-decoration:line-through;opacity:0.45;' +
+                        'padding-left:7px;">' + price + '</span>'
+                      : '<span style="font-weight:bold;">' + price + '</span>') +
                   (product.quantity > 1
-                      ? '<span style="font-weight:normal;opacity:0.65;font-size:14px;' +
-                        'padding-left:8px;">Qty ' + product.quantity + '</span>'
+                      ? '<span style="opacity:0.55;padding-left:7px;">Qty ' +
+                        product.quantity + '</span>'
                       : '') +
                   '</div>'
                 : '') +

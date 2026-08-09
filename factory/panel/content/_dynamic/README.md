@@ -22,7 +22,7 @@ this repository mark that spot.
 | File | Type | Used by |
 |---|---|---|
 | `abandoned-cart.html` | HTML | email |
-| `abandoned-cart-total.html` | HTML | email, where the template prints a subtotal and a total |
+| `abandoned-cart-total.html` | HTML | email. The subtotal, the total, and the button back to the basket |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
 | `abandoned-cart.txt` | Plain Text | SMS, WhatsApp |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
@@ -61,6 +61,19 @@ snippet, the same way the product rows already emit a bare number. Every demo th
 factory builds is one currency at a time, so the template is where that belongs.
 
 The discount row disappears when there is no reduction, rather than printing a zero.
+
+**It carries the button too**, added 9 August 2026, and that is forced rather than tidy.
+The email template is shared by every demo, and a BeeFree button module holds one literal
+href, so in a shared template it could only ever point at the wrong storefront. This asset
+already works out which demo the basket belongs to, so it is the only thing that can
+address the right basket. It builds the URL from the page the visitor was actually on,
+`page_url` up to and including `/demos/<slug>/`, so there is no origin hardcoded in a
+shared asset and it would still be right on a different domain.
+
+The button appears whenever a basket URL resolved, even when the totals suppressed
+themselves, because an abandoned cart email with no way back to the cart is not one. If no
+session resolved to a demo there is no URL to build and no button, which only happens when
+there are no cart rows at all.
 
 ## The logic is tested by being run, not by being read
 

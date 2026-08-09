@@ -373,8 +373,9 @@ jobs:
         run: |
           set -euo pipefail
           SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
+          node factory/emails/make-hero.mjs --shared
           node factory/emails/make-hero.mjs --slug "$SLUG"
-          node factory/emails/build-beefree.mjs --slug "$SLUG"
+          node factory/emails/build-beefree.mjs
 
       - name: Smoke test the demo
         if: steps.generate.outputs.outcome == 'built'
