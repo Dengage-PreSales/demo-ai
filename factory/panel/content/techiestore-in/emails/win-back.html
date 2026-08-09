@@ -6,7 +6,7 @@
 <meta name="x-apple-disable-message-reformatting">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
-<title>Back in stock</title>
+<title>A few things changed since you were last here</title>
 <!--[if mso]>
 <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
 <![endif]-->
@@ -24,7 +24,7 @@
 </style>
 </head>
 <body style="margin:0;padding:0;background-color:#ffffff">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">You looked for this when we had none. It is back.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">New ranges, faster delivery, and your saved items are still saved.</div>
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff">
     <tr>
       <td align="center" style="padding:26px 12px 40px">
@@ -44,13 +44,13 @@
             <td class="pad" style="padding:30px 32px 10px;background-color:#f5f5f7;border-radius:5px;border:1px solid #c3c3c4">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr><td style="padding:0 0 22px">
-                    <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:11.5px;letter-spacing:0.13em;text-transform:uppercase;color:#985400;font-weight:bold">Back in stock</div>
+                    <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:11.5px;letter-spacing:0.13em;text-transform:uppercase;color:#985400;font-weight:bold">Since you were last here</div>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <h1 class="h1" style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;line-height:1.18;font-weight:bold;color:#333333;letter-spacing:-0.015em">You searched for {% var one = $from("search_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(1).get(); %}{% if (one.length && one[0].search_query) { %}{%= one[0].search_query =%}{% } else { %}the one you were after{% } %}. It is back.</h1>
+                    <h1 class="h1" style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;line-height:1.18;font-weight:bold;color:#333333;letter-spacing:-0.015em">A few things have changed</h1>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15.5px;line-height:1.62;color:#333333">Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, you looked for this when we had none to show you. It is available again, and stock on a return like this tends not to last.</p>
+                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15.5px;line-height:1.62;color:#333333">Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, it has been a while. Rather than send you a code, here is what is actually different: new ranges in {% var one = $from("page_view_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (one.length && one[0].category) { %}{%= one[0].category =%}{% } else { %}what you were looking at{% } %}, and your saved items are still exactly where you left them.</p>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
                     {% var rows = $from("wishlist_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}
@@ -80,11 +80,11 @@
                             href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/" style="height:46px;v-text-anchor:middle;width:240px" arcsize="11%"
                             stroke="f" fillcolor="#ff8c00">
                             <w:anchorlock/>
-                            <center style="color:#000000;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold">See it now</center>
+                            <center style="color:#000000;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold">See what is new</center>
                           </v:roundrect>
                           <![endif]-->
                           <!--[if !mso]><!-- -->
-                          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/" style="display:inline-block;padding:14px 30px;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#000000;text-decoration:none;border-radius:5px;background-color:#ff8c00">See it now</a>
+                          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/" style="display:inline-block;padding:14px 30px;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#000000;text-decoration:none;border-radius:5px;background-color:#ff8c00">See what is new</a>
                           <!--<![endif]-->
                         </td>
                       </tr>
@@ -99,33 +99,49 @@
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                       style="border-collapse:collapse;background-color:#f6ede3;border-radius:5px">
                       <tr><td style="padding:20px 14px 22px">
-                        <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#333333;padding:0 6px 14px">Also popular in this category</div>
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
-                          <tr class="stack">
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/l18m4p72.jpg" width="168" height="168" alt="Techie Compatible Battery for Lenovo L18M4P72- ThinkPad X1 Carbon Gen 7/Gen 8 & ThinkPad X1 Yoga Gen 5 Series Laptops (3"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Compatible Battery for Lenovo L18M4P72- ThinkPad X1 Carbon Gen 7/Gen 8 & ThinkPad X1 Yoga Gen 5 Series Laptops (3</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 3,299.00</div>
-                          </td>
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/l16m4pb0-org.jpg" width="168" height="168" alt="Techie Compatible Battery for Lenovo L16M4PB0 - LEGION Y720-15IKB Series Laptops (3910mAh, 4-Cell)"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Compatible Battery for Lenovo L16M4PB0 - LEGION Y720-15IKB Series Laptops (3910mAh, 4-Cell)</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 4,999.00</div>
-                          </td>
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/bty-m492-black-connector-org.jpg" width="168" height="168" alt="Techie Compatible Battery for MSI BTY-M492 - KATANA GF66, GF76, 15 B13VFK, CYBORG 14 A13VE Series Laptops (4700mAh, 4-Ce"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Compatible Battery for MSI BTY-M492 - KATANA GF66, GF76, 15 B13VFK, CYBORG 14 A13VE Series Laptops (4700mAh, 4-Ce</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 4,299.00</div>
+                        <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#333333;padding:0 6px 14px">New in your categories</div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                          style="border-collapse:collapse;border:2px dashed #c3c3c4;border-radius:5px">
+                          <tr><td style="padding:16px 16px 17px">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+                              <tr>
+                                <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:10.5px;font-weight:bold;letter-spacing:0.09em;text-transform:uppercase;color:#985400;padding:0 0 9px">
+                                  Placeholder, replace in the panel
+                                </td>
+                              </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Insert &gt; Dynamic Content &gt; <span style="color:#333333;font-weight:bold">Product Box</span>
+                              </td>
+                            </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Model: <span style="color:#333333;font-weight:bold">Category New Arrivals (rule based)</span>
+                              </td>
+                            </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Context source: <span style="color:#333333;font-weight:bold">User attribute, the category</span>
+                              </td>
+                            </tr>
+                              <tr>
+                                <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.55;color:#616161;padding:9px 0 0">
+                                  Recommendations are computed by the engine rather than read from
+                                  a table, so this is the only block in this email placed by hand.
+                                  Delete this dashed box once the Product Box is in.
+                                </td>
+                              </tr>
+                            </table>
                           </td></tr>
                         </table>
                       </td></tr>
                     </table>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.55;color:#616161">You are only told about items you searched for or saved.</p>
+                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.55;color:#616161">If this is not for you any more, one click below stops it. No hard feelings.</p>
                 </td></tr>
               </table>
             </td>

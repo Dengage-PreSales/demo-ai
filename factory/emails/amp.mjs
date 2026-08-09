@@ -53,14 +53,17 @@
    the one amp-custom block or an attribute. Sizes are explicit because AMP has to
    know the layout before the image loads. */
 export function ampCartAbandonment(palette, ctx, mode) {
-    const slides = ctx.related.concat(ctx.similar).slice(0, 6).map((item) => `
-        <div class="slide">
+    /* The carousel reads wishlist_events rather than the catalogue: see ampSlots in
+       build-emails.mjs for why a Product Box cannot live on the AMP tab. open and
+       close are the row guard in panel mode and empty strings in the preview. */
+    const slides = ctx.ampSlides.map((item) => `
+        ${item.open || ''}<div class="slide">
           <a href="${item.href}" class="tile" target="_blank">
             <amp-img src="${item.image}" width="240" height="240" layout="fixed" alt="${item.name}"></amp-img>
             <div class="tname">${item.name}</div>
             <div class="tprice">${item.price}</div>
           </a>
-        </div>`).join('');
+        </div>${item.close || ''}`).join('');
 
     const cart = ctx.ampCart.map((item) => `
           <div class="row">
@@ -132,8 +135,8 @@ export function ampCartAbandonment(palette, ctx, mode) {
       <a class="cta" href="${ctx.storeUrl}cart.html" target="_blank">Return to basket</a>
 
       <div class="strip">
-        <div class="striphead">Often bought with these</div>
-        <amp-carousel height="300" layout="fixed-height" type="carousel" role="region" aria-label="Recommended products">
+        <div class="striphead">You saved these earlier</div>
+        <amp-carousel height="300" layout="fixed-height" type="carousel" role="region" aria-label="Items you saved">
 ${slides}
         </amp-carousel>
         <div class="swipe">Swipe to see more</div>

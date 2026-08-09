@@ -4,8 +4,14 @@
      node factory/emails/build-emails.mjs --slug <slug>
      node factory/emails/build-emails.mjs --all
 
-   Writes demos/<slug>/emails/: ten journey messages, the AMP variant of the cart
-   abandonment message, and a preview page that opens all of them side by side.
+   Writes factory/panel/content/<slug>/emails/: ten journey messages, the AMP variant
+   of the cart abandonment message, and index.html, a console that shows all of them
+   side by side with a copy button behind each one.
+
+   NOT UNDER demos/, DELIBERATELY. pages.yml publishes index.html, assets, demos and
+   feed, so anything written into a demo folder is served from a customer facing URL.
+   These files name panel locations and carry sample data, which is setup material
+   rather than something a prospect should be able to load. buildEmails says more.
 
    IT READS WHAT THE DEMO ALREADY PUBLISHES and nothing else: demo.config.json for
    the theme, the store name and the currency, products.json for real products with
@@ -18,10 +24,11 @@
    off-origin-assets check allows, and the bytes are already committed next to the
    storefront rather than hotlinked from the prospect.
 
-   THE PREVIEW PAGE IS FOR THE CALL. A presales colleague opens one address and
-   shows ten themed messages without a send, an inbox or a test list. It is also
-   how the theming gets checked: if a demo's colours are wrong, they are wrong on
-   that page in one glance.
+   THE CONSOLE IS FOR SETUP AND FOR THE CALL. Opening index.html shows ten themed
+   messages without a send, an inbox or a test list, and each one's panel source is one
+   press away. It is also how the theming gets checked: if a demo's colours are wrong,
+   they are wrong on that page in one glance. It is self contained, so it opens from
+   disk with no server.
    ========================================================================== */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
@@ -31,6 +38,7 @@ import { fileURLToPath } from 'node:url';
 import { emailPalette } from './palette.mjs';
 import { JOURNEYS, renderJourney } from './journeys.mjs';
 import { ampCartAbandonment } from './amp.mjs';
+import { sourceBox, copyScript } from '../panel/copy-console.mjs';
 import { COLUMNS, QUERIES } from './data.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -111,25 +119,59 @@ function context(config, products, slug, mode) {
     };
 }
 
-/* The preview page. Each message in an iframe at its real width, so what is on
-   screen is the message rather than a screenshot of it. */
+/* THE SETUP CONSOLE. One page that holds the rendered message AND the exact source
+   behind a copy button, because the job this page exists for is moving eleven files
+   into the panel rather than admiring them.
+
+   It replaced a page of links. A link to a .html file opens a RENDERED email, so
+   getting at the source meant view-source on every one of eleven files, eleven
+   times per demo. The source is now inline and one click puts it on the clipboard.
+
+   SELF CONTAINED ON PURPOSE, and this is the constraint that shapes the rest. These
+   files are no longer published (see buildEmails), so this page is opened from disk.
+   That rules out fetch, which file:// refuses, and it rules out iframe src pointing
+   at a sibling file, which some browsers also refuse. So every source is embedded
+   here and the previews are injected with srcdoc. Double clicking index.html works
+   with no server, and python3 -m http.server works too.
+
+   Sources live in a hidden <textarea> rather than a <script> block for one specific
+   reason: the AMP file contains </script>, which would terminate a script block and
+   truncate the source. A textarea holds it as text, and reading .value gives the
+   bytes back exactly, entity decoding included. */
+function sourceStore(built) {
+    return built.map((item) => [
+        sourceBox('p-' + item.file, item.file + '.html', item.panelHtml),
+        sourceBox('v-' + item.file, item.file + '.preview.html', item.previewHtml),
+        sourceBox('a-' + item.file, item.file + '.amp.html', item.ampPanel),
+        sourceBox('w-' + item.file, item.file + '.amp.preview.html', item.ampPreview)
+    ].join('')).join('');
+}
+
 function previewPage(palette, built, slug, config) {
-    const cards = built.map((item) => `
+    const slots = (item) => (item.html.match(/Placeholder, replace in the panel/g) || []).length;
+
+    const cards = built.map((item) => {
+        const count = slots(item);
+        return `
     <section class="msg">
       <header>
         <div>
           <h2>${item.journey}</h2>
           <p class="subj">${item.subject.replace(/\{%[^%]*%\}/g, '').trim()}</p>
         </div>
-        <div class="links">
-          <a href="${item.file}.html">Panel file</a>
-          <a href="${item.preview}" class="amp">Preview</a>${item.amp ? `
-          <a href="${item.file}.amp.preview.html" class="amp">AMP</a>` : ''}
+        <div class="acts">
+          <button class="copy" data-src="p-${item.file}">Copy panel HTML</button>${item.amp ? `
+          <button class="copy alt" data-src="a-${item.file}">Copy AMP</button>` : ''}
+          <span class="fname">${item.file}.html</span>
         </div>
       </header>
-      <iframe src="${item.preview}" title="${item.journey}" loading="lazy"></iframe>
-      <p class="reads">${item.reads}</p>
-    </section>`).join('');
+      <iframe data-src="v-${item.file}" title="${item.journey}" loading="lazy"></iframe>
+      <p class="reads"><b>Reads:</b> ${item.reads}${count ? `
+        <br><b>By hand:</b> ${count} recommendation block${count === 1 ? '' : 's'} to place with
+        Insert &gt; Dynamic Content &gt; Product Box. The dashed box in the message names the
+        model to choose.` : ''}</p>
+    </section>`;
+    }).join('');
 
     return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
@@ -153,10 +195,14 @@ function previewPage(palette, built, slug, config) {
               padding:15px 17px;border-bottom:1px solid ${palette.edge}}
   h2{font-family:${palette.display};font-size:15px;margin:0 0 3px;color:${palette.text}}
   .subj{margin:0;font-size:13px;color:${palette.quiet}}
-  .links{display:flex;flex-direction:column;gap:4px;text-align:right;white-space:nowrap}
-  .links a{font-size:12px;color:${palette.brand};text-decoration:none}
-  .links a:hover{text-decoration:underline}
-  .links .amp{color:${palette.quiet}}
+  .acts{display:flex;flex-direction:column;gap:6px;align-items:flex-end;white-space:nowrap}
+  .copy{font:inherit;font-size:12px;font-weight:bold;cursor:pointer;padding:7px 12px;
+        border-radius:6px;border:1px solid ${palette.brand};
+        background:${palette.brand};color:${palette.onBrand}}
+  .copy:hover{filter:brightness(0.94)}
+  .copy.alt{background:transparent;color:${palette.brandText};border-color:${palette.edge}}
+  .copy.done{background:${palette.wash};color:${palette.brandText};border-color:${palette.brandText}}
+  .fname{font-size:11px;color:${palette.quiet}}
   iframe{display:block;width:100%;height:600px;border:0;background:${palette.canvas}}
   .reads{margin:0;padding:11px 17px 13px;font-size:12px;line-height:1.5;
          color:${palette.quiet};border-top:1px solid ${palette.edge}}
@@ -166,8 +212,11 @@ function previewPage(palette, built, slug, config) {
     <h1>Email set for ${slug}</h1>
     <p class="sub">Ten journey messages plus one AMP variant, themed from this demo's own
       palette, typography and catalogue. Every colour below was derived from
-      demo.config.json and checked for contrast before it was written. Paste a file into
-      the Dengage Code Editor, or the AMP one into the AMP tab beside it.</p>
+      demo.config.json and checked for contrast before it was written.</p>
+    <p class="sub">Press <b>Copy panel HTML</b> and paste straight into the Dengage Code
+      Editor, or <b>Copy AMP</b> into the AMP tab beside it. What you copy is the panel
+      version, carrying the live queries; the message on screen is the preview, with
+      sample data, which is what to show on a call.</p>
     <div class="swatches">
       <span class="sw">brand ${palette.brand}</span>
       <span class="sw">on brand ${palette.onBrand}</span>
@@ -179,7 +228,7 @@ function previewPage(palette, built, slug, config) {
     </div>
   </div>
   <div class="grid">${cards}
-  </div>
+  </div>${sourceStore(built)}${copyScript()}
 </body></html>
 `;
 }
@@ -189,9 +238,38 @@ function previewPage(palette, built, slug, config) {
    number of rows, and in panel mode each row's values are Dengage tags reading
    the same shopping_cart_events row by index. Three rows covers the basket sizes
    a message should show; a longer basket is a link to the site rather than a list. */
+/* THE AMP CAROUSEL CANNOT HOLD A PRODUCT BOX, so it holds a real query instead.
+   Insert > Dynamic Content is a builder action on the HTML tab; the AMP tab is hand
+   written and validated on save, so there is nowhere for the engine's block to go.
+   Rather than freeze three catalogue products into a swipeable strip, the carousel
+   shows the contact's own saved items, which is a table this module can genuinely
+   read (wishlist_events) and is personal without the engine.
+
+   Indexed access rather than a loop, for the same reason the cart rows below use it:
+   the validator runs against the unresolved template, so every amp-img has to exist
+   in the document with explicit dimensions before any tag resolves. The guard wraps
+   the whole slide so an absent row emits no slide at all rather than an empty tile. */
+function ampSlots(ctx, spec, variable, count) {
+    const c = spec;
+    return Array.from({ length: count }, (unused, index) => {
+        const at = (column) => variable + '[' + index + '].' + column;
+        const open = '{% if (' + variable + '.length > ' + index + ') { %}';
+        return {
+            open, close: '{% } %}',
+            name: '{%= ' + at(c.name) + ' =%}',
+            price: ctx.symbol + ' {%= ' + at(c.price) + ' =%}',
+            image: ctx.storeUrl + '{%= ' + at(c.image) + ' =%}',
+            href: ctx.storeUrl + 'wishlist.html'
+        };
+    });
+}
+
 function ampContext(ctx, mode) {
     if (mode !== 'panel') {
-        return { ...ctx, ampCart: ctx.cart, greetingName: ctx.sampleFirstName };
+        return {
+            ...ctx, ampCart: ctx.cart, greetingName: ctx.sampleFirstName,
+            ampSlides: ctx.similar.slice(0, 3)
+        };
     }
     const c = COLUMNS.cart;
     const rows = [0, 1, 2].map((index) => {
@@ -208,8 +286,10 @@ function ampContext(ctx, mode) {
     });
     return {
         ...ctx,
-        ampPrelude: '{% var cartRows = ' + QUERIES.abandonedCart.expr + '; %}',
+        ampPrelude: '{% var cartRows = ' + QUERIES.abandonedCart.expr + '; %}' +
+                    '{% var savedRows = ' + QUERIES.savedItems.expr + '; %}',
         ampCart: rows,
+        ampSlides: ampSlots(ctx, COLUMNS.wishlist, 'savedRows', QUERIES.savedItems.take),
         greetingName: '{% if ($Contact.first_name) { %}{%= $Contact.first_name =%}' +
                       '{% } else { %}there{% } %}'
     };
@@ -229,7 +309,21 @@ export function buildEmails(slug) {
 
     const palette = emailPalette(config.theme);
     const ctxFor = (mode) => context(config, raw, slug, mode);
-    const out = join(dest, 'emails');
+
+    /* THE DEMO FOLDER IS THE INPUT. THE OUTPUT GOES TO THE FACTORY, and that is a
+       rule rather than a preference.
+
+       pages.yml publishes an allowlist, index.html assets demos feed, so anything
+       written under demos/ is served from a customer facing URL. These files are
+       setup material: they name panel locations and carry sample data. Serving that
+       from a demo a prospect is looking at is the same category the 6 August audit
+       removed from the published site, so they belong beside factory/creatives/,
+       the other content that is pasted into the panel and never served.
+
+       Co-location bought nothing anyway. Every image URL in these files is absolute,
+       because an email client fetches it remotely rather than relative to a page, so
+       the files resolve identically from any folder. */
+    const out = join(ROOT, 'factory', 'panel', 'content', slug, 'emails');
     mkdirSync(out, { recursive: true });
 
     /* TWO FILES PER JOURNEY, FROM ONE SOURCE. The panel file is the deliverable and
@@ -241,13 +335,18 @@ export function buildEmails(slug) {
         const preview = renderJourney(journey, palette, ctxFor('preview'), 'preview');
         writeFileSync(join(out, panel.file + '.html'), panel.html);
         writeFileSync(join(out, preview.file + '.preview.html'), preview.html);
+        let ampPanel = null;
+        let ampPreview = null;
         if (panel.amp) {
-            writeFileSync(join(out, panel.file + '.amp.html'),
-                ampCartAbandonment(palette, ampContext(ctxFor('panel'), 'panel'), 'panel'));
-            writeFileSync(join(out, panel.file + '.amp.preview.html'),
-                ampCartAbandonment(palette, ampContext(ctxFor('preview'), 'preview'), 'preview'));
+            ampPanel = ampCartAbandonment(palette, ampContext(ctxFor('panel'), 'panel'), 'panel');
+            ampPreview = ampCartAbandonment(palette, ampContext(ctxFor('preview'), 'preview'), 'preview');
+            writeFileSync(join(out, panel.file + '.amp.html'), ampPanel);
+            writeFileSync(join(out, panel.file + '.amp.preview.html'), ampPreview);
         }
-        built.push({ ...panel, preview: preview.file + '.preview.html' });
+        /* The sources travel with the entry so index.html can carry them inline and
+           hand them to a copy button. Same strings that were just written to disk. */
+        built.push({ ...panel, preview: preview.file + '.preview.html',
+                     panelHtml: panel.html, previewHtml: preview.html, ampPanel, ampPreview });
     }
     writeFileSync(join(out, 'index.html'), previewPage(palette, built, slug, config));
 

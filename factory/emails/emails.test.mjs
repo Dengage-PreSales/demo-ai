@@ -181,6 +181,41 @@ const built = await (async () => {
        !/[\u2013\u2014]/.test(allPanel + previews.map((p) => p.html).join('')));
     ok('Outlook gets a VML button', panels[0].html.includes('v:roundrect'));
     ok('both colour schemes are declared', panels[0].html.includes('supported-color-schemes'));
+
+    /* THE ASSERTION THIS SUITE WAS MISSING, and its absence shipped a real defect.
+       Every panel file passed the query checks above while nine of them also carried
+       three catalogue product names frozen into a recommendation strip, under headings
+       like "what people are buying this week". The queries were live and the strips
+       were not, and nothing here could tell the difference, because the tests only
+       ever asked whether tags were PRESENT.
+
+       So this asks the opposite question: is anything present that should not be. A
+       panel file is correct only when every product name in it arrives from a tag, and
+       the fixture's own catalogue names are the known-bad input. */
+    const catalogue = products.map((p) => p.name).filter(Boolean);
+    const baked = panels
+        .map((p) => ({ file: p.file, hits: catalogue.filter((name) => p.html.includes(name)) }))
+        .filter((entry) => entry.hits.length);
+    ok('no panel file hardcodes a catalogue product name', baked.length === 0,
+       baked.map((e) => e.file + ': ' + e.hits.length));
+
+    /* And the other direction, because a placeholder everywhere would also pass the
+       line above. The preview is sample data by definition and must still look like a
+       finished email on a call. */
+    ok('previews still show real products',
+       previews.some((p) => catalogue.some((name) => p.html.includes(name))));
+
+    /* A recommendation slot is only actionable if it names what to choose. An
+       unlabelled dashed box is a puzzle rather than an instruction. */
+    const slotted = panels.filter((p) => p.html.includes('Placeholder, replace in the panel'));
+    ok('some journeys carry a recommendation slot', slotted.length > 0);
+    ok('every slot names Product Box, a model and a context source',
+       slotted.every((p) => p.html.includes('Product Box') &&
+                            p.html.includes('Model:') &&
+                            p.html.includes('Context source:')),
+       slotted.map((p) => p.file));
+    ok('no preview shows a placeholder',
+       !previews.some((p) => p.html.includes('Placeholder, replace in the panel')));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -196,6 +231,9 @@ const built = await (async () => {
         storeName: 'Fixture Store', storeUrl: base, symbol: 'Rs',
         unsubscribe: base + 'unsubscribe.html?c=DPS-1042',
         ampCart: [row, row], greetingName: 'Alex',
+        /* The carousel reads wishlist_events in panel mode. In the preview it is plain
+           rows, which is what ampContext hands over, so that is what is passed here. */
+        ampSlides: [row, row, row],
         related: [row, row, row], similar: [row, row, row], cart: [row]
     };
     const html = ampCartAbandonment(palette, ctx, 'preview');

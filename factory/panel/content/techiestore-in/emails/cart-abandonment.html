@@ -6,7 +6,7 @@
 <meta name="x-apple-disable-message-reformatting">
 <meta name="color-scheme" content="light dark">
 <meta name="supported-color-schemes" content="light dark">
-<title>Running low?</title>
+<title>You left something behind</title>
 <!--[if mso]>
 <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
 <![endif]-->
@@ -24,7 +24,7 @@
 </style>
 </head>
 <body style="margin:0;padding:0;background-color:#ffffff">
-  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">Reordering what you bought last time takes one tap.</div>
+  <div style="display:none;max-height:0;overflow:hidden;mso-hide:all">Still in your basket, and a few things that go with it.</div>
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#ffffff">
     <tr>
       <td align="center" style="padding:26px 12px 40px">
@@ -44,16 +44,16 @@
             <td class="pad" style="padding:30px 32px 10px;background-color:#f5f5f7;border-radius:5px;border:1px solid #c3c3c4">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr><td style="padding:0 0 22px">
-                    <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:11.5px;letter-spacing:0.13em;text-transform:uppercase;color:#985400;font-weight:bold">Time to reorder</div>
+                    <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:11.5px;letter-spacing:0.13em;text-transform:uppercase;color:#985400;font-weight:bold">Your basket</div>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <h1 class="h1" style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;line-height:1.18;font-weight:bold;color:#333333;letter-spacing:-0.015em">About time for another?</h1>
+                    <h1 class="h1" style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;line-height:1.18;font-weight:bold;color:#333333;letter-spacing:-0.015em">Still here whenever you are</h1>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15.5px;line-height:1.62;color:#333333">Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, judging by when you last ordered this, you are probably near the end of it. Reordering the same thing takes one tap.</p>
+                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15.5px;line-height:1.62;color:#333333">Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, your basket is saved. Here is what is in it.</p>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    {% var rows = $from("order_events_detail").where("contact_key", "=", $Contact.contact_key).take(3).get(); %}
+                    {% var rows = $from("shopping_cart_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}
                     {% for (var i = 0; i < rows.length; i++) { var row = rows[i]; %}
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
                       <tr>
@@ -81,11 +81,11 @@
                             href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html" style="height:46px;v-text-anchor:middle;width:240px" arcsize="11%"
                             stroke="f" fillcolor="#ff8c00">
                             <w:anchorlock/>
-                            <center style="color:#000000;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold">Reorder in one tap</center>
+                            <center style="color:#000000;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold">Return to basket</center>
                           </v:roundrect>
                           <![endif]-->
                           <!--[if !mso]><!-- -->
-                          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html" style="display:inline-block;padding:14px 30px;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#000000;text-decoration:none;border-radius:5px;background-color:#ff8c00">Reorder in one tap</a>
+                          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html" style="display:inline-block;padding:14px 30px;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#000000;text-decoration:none;border-radius:5px;background-color:#ff8c00">Return to basket</a>
                           <!--<![endif]-->
                         </td>
                       </tr>
@@ -100,33 +100,49 @@
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
                       style="border-collapse:collapse;background-color:#f6ede3;border-radius:5px">
                       <tr><td style="padding:20px 14px 22px">
-                        <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#333333;padding:0 6px 14px">Others also restock these</div>
-                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
-                          <tr class="stack">
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kby700.jpg" width="168" height="168" alt="Techie Laptop Keyboard for Lenovo IdeaPad Y700-15ISK & Y700-17ISK Series with Backlight"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Laptop Keyboard for Lenovo IdeaPad Y700-15ISK & Y700-17ISK Series with Backlight</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 2,999.00</div>
-                          </td>
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kb15-a4m-bkl-org.jpg" width="168" height="168" alt="Techie Laptop Keyboard for MSI MS-14C1, MS-1551, Modern 15 A10RAS with Backlight"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Laptop Keyboard for MSI MS-14C1, MS-1551, Modern 15 A10RAS with Backlight</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 2,699.00</div>
-                          </td>
-                          <td width="33%" valign="top" style="padding:0 6px">
-                            <img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kbflex-5-14itl.jpg" width="168" height="168" alt="Techie Laptop Keyboard for Lenovo IdeaPad 5 14IIL05, Flex 5 14ITL05, ThinkBook 14 G2 ACH, Yoga Slim 7 Pro 14ITL5 Series"
-                              style="display:block;width:100%;max-width:168px;height:auto;border:0;border-radius:5px;background-color:#f5f5f7">
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.45;color:#333333;padding-top:8px">Techie Laptop Keyboard for Lenovo IdeaPad 5 14IIL05, Flex 5 14ITL05, ThinkBook 14 G2 ACH, Yoga Slim 7 Pro 14ITL5 Series</div>
-                            <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;font-weight:bold;color:#333333;padding-top:2px">₹ 999.00</div>
+                        <div style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#333333;padding:0 6px 14px">Often bought with these</div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                          style="border-collapse:collapse;border:2px dashed #c3c3c4;border-radius:5px">
+                          <tr><td style="padding:16px 16px 17px">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+                              <tr>
+                                <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:10.5px;font-weight:bold;letter-spacing:0.09em;text-transform:uppercase;color:#985400;padding:0 0 9px">
+                                  Placeholder, replace in the panel
+                                </td>
+                              </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Insert &gt; Dynamic Content &gt; <span style="color:#333333;font-weight:bold">Product Box</span>
+                              </td>
+                            </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Model: <span style="color:#333333;font-weight:bold">Frequently Bought Together (Zeki AI)</span>
+                              </td>
+                            </tr>
+                              
+                            <tr>
+                              <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12.5px;line-height:1.6;color:#616161;padding:0 0 2px">
+                                Context source: <span style="color:#333333;font-weight:bold">Event attribute, the cart product</span>
+                              </td>
+                            </tr>
+                              <tr>
+                                <td style="font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.55;color:#616161;padding:9px 0 0">
+                                  Recommendations are computed by the engine rather than read from
+                                  a table, so this is the only block in this email placed by hand.
+                                  Delete this dashed box once the Product Box is in.
+                                </td>
+                              </tr>
+                            </table>
                           </td></tr>
                         </table>
                       </td></tr>
                     </table>
                 </td></tr>
                 <tr><td style="padding:0 0 22px">
-                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.55;color:#616161">Timed from your own order history, not from a fixed schedule.</p>
+                    <p style="margin:0;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13.5px;line-height:1.55;color:#616161">Prices and availability can change while an item sits in a basket.</p>
                 </td></tr>
               </table>
             </td>

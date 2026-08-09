@@ -40,7 +40,7 @@
   .foot a{color:#616161}
 </style>
 </head>
-<body>{% var cartRows = $from("shopping_cart_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}
+<body>
   <div class="wrap">
     <div class="head">
       <div class="brand">Dengage<span>eComm Demo</span></div>
@@ -50,62 +50,33 @@
     <div class="card">
       <div class="eyebrow">Your basket</div>
       <h1>Still here whenever you are</h1>
-      <p>Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %},
+      <p>Hi Alex,
          your basket is saved. Swipe the row below to see what goes with it, without leaving your inbox.</p>
 
       
           <div class="row">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/{% if (cartRows.length > 0) { %}{%= cartRows[0].product_image =%}{% } %}" width="88" height="88" layout="fixed" alt="{% if (cartRows.length > 0) { %}{%= cartRows[0].product_name =%}{% } %}" class="thumb"></amp-img>
+            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kbe580-mouse.jpg" width="88" height="88" layout="fixed" alt="Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580, L590, T590 Series with Mouse" class="thumb"></amp-img>
             <div class="rowtext">
-              <div class="rname">{% if (cartRows.length > 0) { %}{%= cartRows[0].product_name =%}{% } %}</div>
-              <div class="rmeta">{% if (cartRows.length > 0) { %}{%= cartRows[0].category =%}{% } %}</div>
-              <div class="rprice">{% if (cartRows.length > 0) { %}₹ {%= cartRows[0].unit_price =%}{% } %}</div>
+              <div class="rname">Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580, L590, T590 Series with Mouse</div>
+              <div class="rmeta">Laptop Keyboard</div>
+              <div class="rprice">₹ 1,999.00</div>
             </div>
           </div>
           <div class="row">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/{% if (cartRows.length > 1) { %}{%= cartRows[1].product_image =%}{% } %}" width="88" height="88" layout="fixed" alt="{% if (cartRows.length > 1) { %}{%= cartRows[1].product_name =%}{% } %}" class="thumb"></amp-img>
+            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kbl480-mouse-bkl.jpg" width="88" height="88" layout="fixed" alt="Techie Laptop Keyboard for Lenovo ThinkPad L480, L490, T490, E480, E495, L390 Yoga Series with Mouse & Backlight" class="thumb"></amp-img>
             <div class="rowtext">
-              <div class="rname">{% if (cartRows.length > 1) { %}{%= cartRows[1].product_name =%}{% } %}</div>
-              <div class="rmeta">{% if (cartRows.length > 1) { %}{%= cartRows[1].category =%}{% } %}</div>
-              <div class="rprice">{% if (cartRows.length > 1) { %}₹ {%= cartRows[1].unit_price =%}{% } %}</div>
-            </div>
-          </div>
-          <div class="row">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/{% if (cartRows.length > 2) { %}{%= cartRows[2].product_image =%}{% } %}" width="88" height="88" layout="fixed" alt="{% if (cartRows.length > 2) { %}{%= cartRows[2].product_name =%}{% } %}" class="thumb"></amp-img>
-            <div class="rowtext">
-              <div class="rname">{% if (cartRows.length > 2) { %}{%= cartRows[2].product_name =%}{% } %}</div>
-              <div class="rmeta">{% if (cartRows.length > 2) { %}{%= cartRows[2].category =%}{% } %}</div>
-              <div class="rprice">{% if (cartRows.length > 2) { %}₹ {%= cartRows[2].unit_price =%}{% } %}</div>
+              <div class="rname">Techie Laptop Keyboard for Lenovo ThinkPad L480, L490, T490, E480, E495, L390 Yoga Series with Mouse & Backlight</div>
+              <div class="rmeta">Laptop Keyboard</div>
+              <div class="rprice">₹ 3,299.00</div>
             </div>
           </div>
 
       <a class="cta" href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html" target="_blank">Return to basket</a>
 
       <div class="strip">
-        <div class="striphead">Often bought with these</div>
-        <amp-carousel height="300" layout="fixed-height" type="carousel" role="region" aria-label="Recommended products">
+        <div class="striphead">You saved these earlier</div>
+        <amp-carousel height="300" layout="fixed-height" type="carousel" role="region" aria-label="Items you saved">
 
-        <div class="slide">
-          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/product.html?id=KBY700" class="tile" target="_blank">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kby700.jpg" width="240" height="240" layout="fixed" alt="Techie Laptop Keyboard for Lenovo IdeaPad Y700-15ISK & Y700-17ISK Series with Backlight"></amp-img>
-            <div class="tname">Techie Laptop Keyboard for Lenovo IdeaPad Y700-15ISK & Y700-17ISK Series with Backlight</div>
-            <div class="tprice">₹ 2,999.00</div>
-          </a>
-        </div>
-        <div class="slide">
-          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/product.html?id=KB15-A4M-BKL-ORG" class="tile" target="_blank">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kb15-a4m-bkl-org.jpg" width="240" height="240" layout="fixed" alt="Techie Laptop Keyboard for MSI MS-14C1, MS-1551, Modern 15 A10RAS with Backlight"></amp-img>
-            <div class="tname">Techie Laptop Keyboard for MSI MS-14C1, MS-1551, Modern 15 A10RAS with Backlight</div>
-            <div class="tprice">₹ 2,699.00</div>
-          </a>
-        </div>
-        <div class="slide">
-          <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/product.html?id=KBFLEX-5-14ITL" class="tile" target="_blank">
-            <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/kbflex-5-14itl.jpg" width="240" height="240" layout="fixed" alt="Techie Laptop Keyboard for Lenovo IdeaPad 5 14IIL05, Flex 5 14ITL05, ThinkBook 14 G2 ACH, Yoga Slim 7 Pro 14ITL5 Series"></amp-img>
-            <div class="tname">Techie Laptop Keyboard for Lenovo IdeaPad 5 14IIL05, Flex 5 14ITL05, ThinkBook 14 G2 ACH, Yoga Slim 7 Pro 14ITL5 Series</div>
-            <div class="tprice">₹ 999.00</div>
-          </a>
-        </div>
         <div class="slide">
           <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/product.html?id=P-9CIPE1" class="tile" target="_blank">
             <amp-img src="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/p-9cipe1.jpg" width="240" height="240" layout="fixed" alt="Techie Laptop Keyboard for Lenovo ThinkPad T490S, T495S With Mouse"></amp-img>
@@ -149,7 +120,7 @@
 
     <div class="foot">
       You are receiving this because you shopped with us.
-      <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/unsubscribe.html?c={%= $Contact.contact_key =%}" target="_blank">Unsubscribe</a>.
+      <a href="https://dengage-presales.github.io/demo-ai/demos/techiestore-in/unsubscribe.html?c=DPS-1042" target="_blank">Unsubscribe</a>.
       <br>This is a demonstration storefront built for a sales conversation.
     </div>
   </div>

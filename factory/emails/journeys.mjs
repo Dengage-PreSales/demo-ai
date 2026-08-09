@@ -115,7 +115,9 @@ function welcome(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: Trending Products. A new contact has no history,
                which is the one case a user based model cannot serve. */
-            recommendationStrip(p, 'What people are buying this week', ctx.trending),
+            recommendationStrip(p, 'What people are buying this week', ctx.trending,
+                {name: 'Top Sellers (rule based)',
+                 context: 'Static'}, mode),
             quietLine(p, 'Prefer fewer emails? You can choose what you hear about at any time.')
         ]
     };
@@ -159,7 +161,9 @@ function cartAbandonment(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: Frequently Bought Together, context source
                Event Attribute set to the abandoned product. */
-            recommendationStrip(p, 'Often bought with these', ctx.related),
+            recommendationStrip(p, 'Often bought with these', ctx.related,
+                {name: 'Frequently Bought Together (Zeki AI)',
+                 context: 'Event attribute, the cart product'}, mode),
             quietLine(p, 'Prices and availability can change while an item sits in a basket.')
         ]
     };
@@ -183,7 +187,9 @@ function browseAbandonment(p, ctx, mode) {
             divider(p),
             /* Recommendation Rules: Similar Items answers "not quite right",
                Frequently Viewed Together answers "what else did people consider". */
-            recommendationStrip(p, 'Close alternatives', ctx.similar),
+            recommendationStrip(p, 'Close alternatives', ctx.similar,
+                {name: 'Similar Items (Zeki AI)',
+                 context: 'Event attribute, the viewed product'}, mode),
             quietLine(p, 'Shown because you viewed this recently. Nothing has been added to a basket.')
         ]
     };
@@ -205,7 +211,9 @@ function backInStock(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: Category Best Sellers, category from this
                contact's own last category path. */
-            recommendationStrip(p, 'Also popular in this category', ctx.trending),
+            recommendationStrip(p, 'Also popular in this category', ctx.trending,
+                {name: 'Category Best Sellers (rule based)',
+                 context: 'Event attribute, the category'}, mode),
             quietLine(p, 'You are only told about items you searched for or saved.')
         ]
     };
@@ -226,7 +234,9 @@ function priceDrop(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: Category Discounted Products, filtered to the
                categories this contact has actually saved from. */
-            recommendationStrip(p, 'Other reductions in your categories', ctx.discounted),
+            recommendationStrip(p, 'Other reductions in your categories', ctx.discounted,
+                {name: 'Category Discounted Products (rule based)',
+                 context: 'User attribute, the category'}, mode),
             quietLine(p, 'Sent only when a saved item genuinely changes price or comes back into stock.')
         ]
     };
@@ -247,7 +257,9 @@ function orderConfirmation(p, ctx, mode) {
             divider(p),
             /* The highest open rate in the programme, which is why a Frequently
                Bought Together strip earns its place here. */
-            recommendationStrip(p, 'Goes with what you just bought', ctx.related),
+            recommendationStrip(p, 'Goes with what you just bought', ctx.related,
+                {name: 'Frequently Bought Together (Zeki AI)',
+                 context: 'Event attribute, the ordered product'}, mode),
             quietLine(p, 'A confirmation is transactional, so it is sent regardless of marketing preferences.')
         ]
     };
@@ -266,7 +278,9 @@ function replenishment(p, ctx, mode) {
             orderLines(p, ctx, mode),
             button(p, 'Reorder in one tap', ctx.storeUrl + 'cart.html'),
             divider(p),
-            recommendationStrip(p, 'Others also restock these', ctx.related),
+            recommendationStrip(p, 'Others also restock these', ctx.related,
+                {name: 'Frequently Bought Together (Zeki AI)',
+                 context: 'Event attribute, the ordered product'}, mode),
             quietLine(p, 'Timed from your own order history, not from a fixed schedule.')
         ]
     };
@@ -287,7 +301,9 @@ function vipEarlyAccess(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: Recommended Items (User Based). This contact has
                the history that model is strongest on. */
-            recommendationStrip(p, 'Chosen from what you buy', ctx.similar),
+            recommendationStrip(p, 'Chosen from what you buy', ctx.similar,
+                {name: 'Recommended Items, User-Based (Zeki AI)',
+                 context: 'User attribute'}, mode),
             quietLine(p, 'Access rather than a discount, because you were always going to be looked after.')
         ]
     };
@@ -310,7 +326,9 @@ function winBack(p, ctx, mode) {
             divider(p),
             /* Recommendation Rule: New Arrivals, filtered to the categories this
                contact bought from before they went quiet. */
-            recommendationStrip(p, 'New in your categories', ctx.trending),
+            recommendationStrip(p, 'New in your categories', ctx.trending,
+                {name: 'Category New Arrivals (rule based)',
+                 context: 'User attribute, the category'}, mode),
             quietLine(p, 'If this is not for you any more, one click below stops it. No hard feelings.')
         ]
     };

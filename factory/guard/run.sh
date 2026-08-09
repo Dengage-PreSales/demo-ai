@@ -219,14 +219,19 @@ fi
 # purgeable, only because its page views exist. A page that skips pageView
 # writes cart and order rows that can never be attributed to it (handoff 13).
 # ---------------------------------------------------------------------------
-# EMAILS AND THE MESSAGE DECK ARE EXCLUDED, AND THEY HAVE TO BE. demos/<slug>/emails/
-# holds journey
-# messages, which are HTML but are not storefront pages: they are read in an inbox,
-# they cannot run the SDK, and requiring dengageEvents.js of them would be asking a
-# message to fire a page view. Their own attribution is Dengage's send and click
-# tracking, not the on-site event module.
+# THIS CHECK COVERS EVERY HTML FILE UNDER template AND demos, WITH NO EXCLUSIONS,
+# and it is worth keeping it that way. It briefly carried one, for the journey emails
+# and the message deck: both are HTML, neither is a storefront page, and requiring
+# dengageEvents.js of them would be asking an email to fire a page view.
+#
+# The exclusion is gone because the reason for it is gone. Those files are now
+# written to factory/panel/content/<slug>/, outside this find, because pages.yml
+# serves demos/ publicly and setup material has no business on a customer facing
+# URL. Deleting the exclusion with the folders restores the check to everything
+# under demos/: a pattern that exempts paths by name would go on exempting any
+# future demos/<slug>/emails/ that should have been caught.
 pages="$( ( cd "$ROOT" 2>/dev/null && find template demos -name '*.html' -type f 2>/dev/null \
-    | grep -vE '/(emails|messages)/' | sort ) )"
+    | sort ) )"
 if [ -z "$pages" ]; then
     skip pageview-required "no storefront pages in scope"
 else
@@ -271,7 +276,9 @@ fi
 # cdn.ampproject.org is on this list because amp4email REQUIRES it: an AMP email
 # must load the AMP runtime from the AMP CDN, there is no self hosted option, and
 # the validator refuses the document without it. It appears only in
-# demos/<slug>/emails/*.amp.html, never in a storefront page.
+# factory/panel/content/<slug>/emails/*.amp.html, never in a storefront page. That
+# path is outside the published site but still inside this check's scope, which walks
+# the whole repository rather than just what Pages serves.
 ALLOWED_HOSTS='pcdn\.dengage\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|dengage-presales\.github\.io|github\.com|cdn\.ampproject\.org|localhost(:[0-9]+)?|127\.0\.0\.1(:[0-9]+)?'
 urls="$(grep_list 'https?://[a-zA-Z0-9.:-]+' "$BROWSER_FILES" -o)"
 urls="$(printf '%s\n' "$urls" | grep -v '^$' | grep -vE "https?://(www\.)?w3\.org")"

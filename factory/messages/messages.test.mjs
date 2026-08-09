@@ -217,5 +217,50 @@ const ctx = {
     ok('most journeys personalise at all', tagged >= 8, tagged);
 }
 
+/* -------------------------------------------------------------------------- */
+/* The deck's copy button must hand over the PANEL copy, not what is on screen   */
+
+{
+    const { panelFields } = await import('./build-messages.mjs');
+
+    /* FOUND RATHER THAN NAMED, because a hardcoded journey and channel makes this
+       test a hostage to the copy. Pointed at one that happens not to use a first
+       name, the three assertions below pass trivially and prove nothing. So the pair
+       is chosen by the property being tested: the first channel anywhere in the pack
+       whose two modes actually differ. */
+    let panelOut = '';
+    let previewOut = '';
+    let where = '';
+    for (const entry of JOURNEY_COPY) {
+        const panel = entry.channels('panel', ctx);
+        const preview = entry.channels('preview', ctx);
+        for (const id of Object.keys(panel)) {
+            const a = panelFields(id, panel[id]);
+            const b = panelFields(id, preview[id]);
+            if (a !== b && b.includes(ctx.sampleFirstName) && !where) {
+                panelOut = a; previewOut = b; where = entry.id + ' / ' + id;
+            }
+        }
+    }
+    ok('at least one channel personalises by name', where !== '', where);
+
+    /* THE FAILURE THIS CATCHES IS SILENT AND TOTAL. Copying the preview instead of the
+       panel copy pastes a message that looks perfect and never personalises: the
+       sample name is baked in where the tag should be. Nothing downstream would
+       notice, because both strings are valid copy. */
+    /* Every line, not a named field: the channels do not share a field list. A push
+       has a title and a body, WhatsApp has a category, a header, a body and a footer,
+       and an assertion naming any of them tests the copy rather than the format. */
+    ok('every line is labelled so it maps onto a box in the content record',
+       panelOut.split('\n').filter(Boolean).every((line) => /^[a-zA-Z]+: ./.test(line)),
+       panelOut.slice(0, 120));
+    ok('the panel copy and the preview copy are not the same string',
+       panelOut !== previewOut);
+    ok('the preview copy resolves the sample name',
+       previewOut.includes(ctx.sampleFirstName));
+    ok('and the panel copy carries the tag instead',
+       panelOut.includes('$Contact.first_name') && !panelOut.includes(ctx.sampleFirstName));
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

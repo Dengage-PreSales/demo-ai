@@ -73,7 +73,36 @@ export function productRow(palette, product) {
    Rule is placed, so the loop below is illustrative of the shape the rule fills:
    the marketer swaps the array for the rule's own output without touching the
    markup around it. */
-export function recommendationStrip(palette, heading, items) {
+/* RECOMMENDATIONS ARE NOT A QUERY, AND THIS IS THE ONE BLOCK NOBODY CAN WRITE BY
+   HAND. Worth stating in full, because the strip looks like every other section here
+   and behaves nothing like them.
+
+   The other sections read the star schema: shopping_cart_events, page_view_events,
+   wishlist_events, order_events_detail, search_events. Those are this contact's own
+   history, $from reaches them, and data.mjs emits the query.
+
+   A recommendation is not in any of those tables. It is computed by the
+   recommendation engine from the catalogue plus everyone's behaviour, and Dengage
+   places it in an email one way only: Insert > Dynamic Content > Product Box. There
+   is no published tag for it, so writing one would be inventing syntax that renders
+   as nothing, which is worse than an obvious gap.
+
+   Two consequences, and both are the reason this function has a mode:
+
+     panel     a marked insertion point naming the model and context source to
+               choose. It cannot be a strip of real products: three names frozen at
+               build time under a heading that says "this week" is a claim that stops
+               being true the day after it is generated, and nothing in the file
+               would say so.
+     preview   the demo's own products, because the preview exists to look like a
+               finished email on a call and is sample data by definition.
+
+   Product Box is also parked for this application until Dengage holds the product
+   feed: factory/panel/PRODUCT-FEED.md, and factory/panel/README.md records the
+   decision. So the insertion point is the honest output today and becomes two clicks
+   the day the feed is plugged in. Neither state fabricates a recommendation. */
+export function recommendationStrip(palette, heading, items, model, mode) {
+    if (mode === 'panel') return recommendationSlot(palette, heading, model);
     const cells = items.map((item) => `
                           <td width="33%" valign="top" style="padding:0 6px">
                             <img src="${item.image}" width="168" height="168" alt="${item.name}"
@@ -88,6 +117,49 @@ export function recommendationStrip(palette, heading, items) {
                         <div style="font-family:${palette.display};font-size:15px;font-weight:bold;color:${palette.text};padding:0 6px 14px">${heading}</div>
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
                           <tr class="stack">${cells}</tr>
+                        </table>
+                      </td></tr>
+                    </table>`;
+}
+
+/* The insertion point itself. Deliberately unmistakable: a dashed edge and the word
+   PLACEHOLDER, because the one failure that matters here is sending this block by
+   accident. It keeps the wash panel and the heading around it so the email's rhythm
+   is already correct once the Product Box lands in the middle. */
+function recommendationSlot(palette, heading, model) {
+    const spec = model || {};
+    const line = (label, value) => `
+                            <tr>
+                              <td style="font-family:${palette.body};font-size:12.5px;line-height:1.6;color:${palette.quiet};padding:0 0 2px">
+                                ${label} <span style="color:${palette.text};font-weight:bold">${value}</span>
+                              </td>
+                            </tr>`;
+    return `
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                      style="border-collapse:collapse;background-color:${palette.wash};border-radius:${palette.radius}px">
+                      <tr><td style="padding:20px 14px 22px">
+                        <div style="font-family:${palette.display};font-size:15px;font-weight:bold;color:${palette.text};padding:0 6px 14px">${heading}</div>
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+                          style="border-collapse:collapse;border:2px dashed ${palette.edge};border-radius:${palette.radius}px">
+                          <tr><td style="padding:16px 16px 17px">
+                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse">
+                              <tr>
+                                <td style="font-family:${palette.body};font-size:10.5px;font-weight:bold;letter-spacing:0.09em;text-transform:uppercase;color:${palette.brandText};padding:0 0 9px">
+                                  Placeholder, replace in the panel
+                                </td>
+                              </tr>
+                              ${line('Insert &gt; Dynamic Content &gt;', 'Product Box')}
+                              ${line('Model:', spec.name || 'Top Sellers')}
+                              ${line('Context source:', spec.context || 'Static')}
+                              <tr>
+                                <td style="font-family:${palette.body};font-size:12px;line-height:1.55;color:${palette.quiet};padding:9px 0 0">
+                                  Recommendations are computed by the engine rather than read from
+                                  a table, so this is the only block in this email placed by hand.
+                                  Delete this dashed box once the Product Box is in.
+                                </td>
+                              </tr>
+                            </table>
+                          </td></tr>
                         </table>
                       </td></tr>
                     </table>`;

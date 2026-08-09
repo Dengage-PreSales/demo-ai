@@ -4,10 +4,15 @@
      node factory/messages/build-messages.mjs --slug <slug>
      node factory/messages/build-messages.mjs --all
 
-   Writes demos/<slug>/messages/:
+   Writes factory/panel/content/<slug>/messages/:
      index.html      a deck showing every message as it will appear, with its
-                     measured length against the limit that applies
+                     measured length against the limit that applies, and a copy
+                     button per channel that puts the panel copy on the clipboard
      messages.json   the same content as data, for pasting or for the content API
+
+   NOT UNDER demos/, DELIBERATELY, for the reason build-emails.mjs sets out: pages.yml
+   serves demos/ publicly, and a deck naming panel locations and listing character
+   limits is setup material rather than something a prospect should be able to load.
 
    WHY A DECK RATHER THAN FILES. An email is a document, so a file is the natural
    unit. A push notification is a title and one line; an SMS is a sentence. Ten
@@ -31,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 import { emailPalette } from '../emails/palette.mjs';
 import { CHANNELS, CHANNEL_ORDER, measure, resolved, smsCost, setAllowance } from './channels.mjs';
 import { JOURNEY_COPY } from './copy.mjs';
+import { sourceBox, copyScript } from '../panel/copy-console.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PAGES = 'https://dengage-presales.github.io/demo-ai/demos/';
@@ -188,8 +194,32 @@ function onsiteCard(p, content) {
         </div>`;
 }
 
-function channelBlock(p, id, content) {
+/* WHAT GOES ON THE CLIPBOARD IS THE PANEL COPY, NOT WHAT IS ON SCREEN, and the two
+   are deliberately different. The card renders the preview, with a realistic name and
+   product resolved in, because that is what reads properly on a call. The panel copy
+   carries the live tags and is the thing that has to reach the content record. Copying
+   what was on screen would paste a message that never personalises, and it would look
+   completely correct.
+
+   Fields are labelled, because a channel's content record has separate boxes for them:
+   a push has a title and a body, WhatsApp has a header, a body and a footer. */
+export function panelFields(id, content) {
     const channel = CHANNELS[id];
+    const lines = [];
+    for (const field of channel.fields) {
+        const value = content[field];
+        if (typeof value !== 'string' || !value) continue;
+        lines.push(field + ': ' + value);
+    }
+    for (const button of (content.buttons || [])) {
+        if (button && button.label) lines.push('button: ' + button.label);
+    }
+    return lines.join('\n');
+}
+
+function channelBlock(p, id, content, panelContent, key) {
+    const channel = CHANNELS[id];
+    const fields = panelContent ? panelFields(id, panelContent) : '';
     const body = id === 'webPush' ? pushCard(p, content, 'web')
         : id === 'mobilePush' ? pushCard(p, content, 'mob')
         : id === 'sms' ? smsCard(p, content)
@@ -201,20 +231,24 @@ function channelBlock(p, id, content) {
         <div class="chhead">
           <span class="chname">${channel.name}</span>
           <span class="chpanel">${esc(channel.panel)}</span>
-        </div>
+        </div>${fields ? `
+        <button class="copy" data-src="${key}">Copy ${esc(channel.name)} copy</button>
+        ${sourceBox(key, key, fields)}` : ''}
         ${body}
         ${counter(p, content.checks)}
       </div>`;
 }
 
-function deck(palette, journeys, slug, config, problems) {
+function deck(palette, journeys, panelJourneys, slug, config, problems) {
     const p = palette;
-    const cards = journeys.map((entry) => `
+    const cards = journeys.map((entry, index) => `
     <section class="j">
       <header><h2>${esc(entry.journey)}</h2>
         <span class="count">${Object.keys(entry.channels).length} channels</span></header>
       <div class="chs">${CHANNEL_ORDER.filter((id) => entry.channels[id])
-        .map((id) => channelBlock(p, id, entry.channels[id])).join('')}
+        .map((id) => channelBlock(p, id, entry.channels[id],
+            ((panelJourneys[index] || {}).channels || {})[id],
+            'm' + index + '-' + id)).join('')}
       </div>
     </section>`).join('');
 
@@ -304,9 +338,12 @@ function deck(palette, journeys, slug, config, problems) {
       that applies, with the tags resolved to a realistic worst case first. SMS is counted the way
       Dengage charges it, where a non-ANSI character costs two. messages.json beside this page carries
       the same content as data.</p>
+    <p class="sub">Each block has a <b>Copy</b> button. What it copies is the panel copy, carrying the
+      live Dengage tags, with one labelled line per field of the content record. What is drawn on the
+      card is the preview, resolved to sample values, which is what to show on a call.</p>
   </div>${warn}
   <div class="grid">${cards}
-  </div>
+  </div>${copyScript()}
 </body></html>
 `;
 }
@@ -356,9 +393,13 @@ export function buildMessages(slug) {
         }
     }
 
-    const out = join(dest, 'messages');
+    /* Written to the factory rather than into the demo, for the reason set out in
+       build-emails.mjs: pages.yml serves demos/ publicly, and a deck naming panel
+       locations and listing character limits is setup material rather than something
+       a prospect should be able to load. */
+    const out = join(ROOT, 'factory', 'panel', 'content', slug, 'messages');
     mkdirSync(out, { recursive: true });
-    writeFileSync(join(out, 'index.html'), deck(palette, preview, slug, config, problems));
+    writeFileSync(join(out, 'index.html'), deck(palette, preview, panel, slug, config, problems));
     writeFileSync(join(out, 'messages.json'), JSON.stringify({
         slug,
         note: 'Panel copy carries live Dengage tags. Paste into the channel content named in each entry.',

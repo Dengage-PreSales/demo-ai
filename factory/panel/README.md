@@ -4,6 +4,18 @@
 panel work, and this is all of it. Nothing here is per demo: do it once and every
 demo the factory generates from now on uses it.
 
+> **Looking for a demo's email and message content?** That part IS per demo, and it
+> is in `content/<slug>/`. Open `content/<slug>/emails/index.html` for the ten
+> journey emails plus the AMP variant, and `content/<slug>/messages/index.html` for
+> the push, SMS, WhatsApp, inbox and on-site copy. Both are one self contained page
+> showing every message rendered, with a copy button that puts the panel version on
+> the clipboard, and both open straight from disk with no server. They are generated
+> by the build, so a new demo arrives with its own set.
+>
+> They live here rather than in `demos/<slug>/` because `pages.yml` publishes
+> `demos/`, and a page naming panel locations next to sample data does not belong on
+> a customer facing URL.
+
 Last checked **6 August 2026**. To re-check any of it without opening the panel:
 
 ```bash
@@ -108,6 +120,7 @@ is not lost, for whenever it is picked up.
 | | Why it's parked | Written up at |
 |---|---|---|
 | Product Box | needs Dengage to hold this application's product list, and that is not plugged in yet | `factory/panel/PRODUCT-FEED.md` |
+| Product Box, in email | same blocker, and the email set already has a place for it. Nine of the ten journey emails carry a dashed placeholder where a recommendation strip belongs, naming the model and context source to choose. Plugging in the feed turns each one into `Insert > Dynamic Content > Product Box` and two clicks. Nothing is fabricated meanwhile: an email shows the slot rather than a strip of catalogue products frozen at build time | `factory/emails/layout.mjs` |
 | Smart Search | same reason, plus it needs two separate setup pieces once the list is plugged in | `factory/panel/PRODUCT-FEED.md`, `factory/panel/NATIVE-TEMPLATES.md` |
 | The 5 recommendation cards | not actually blocked, but showing a working recommendations section next to two cards saying "not ready" looked inconsistent | `template/js/panels.js` |
 | Typeform | it is real, but it is built differently in the panel than everything else here and deserved a second look before shipping it | see below |

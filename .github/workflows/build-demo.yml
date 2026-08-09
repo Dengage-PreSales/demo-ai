@@ -379,7 +379,15 @@ jobs:
           # The demo, the feed it added itself to, and the motif tiles the feed
           # points at. All three or none: a feed row whose image is not committed
           # is a broken tile in a Dengage rendered widget.
-          git add "demos/$SLUG" feed assets/motifs
+          #
+          # AND THE PANEL CONTENT, WHICH IS NOT UNDER demos/. The email set and the
+          # message pack are written to factory/panel/content/$SLUG, outside the
+          # published site, because they are setup material rather than pages a
+          # prospect should be able to load. A path list that assumed everything a
+          # build produces lives under demos/ would drop them here, silently: the
+          # build would pass, the demo would be live, and the colleague would open
+          # the issue to find nothing to paste.
+          git add "demos/$SLUG" "factory/panel/content/$SLUG" feed assets/motifs
           git commit -m "Add the $SLUG demo storefront" \
                      -m "Built from ${{ steps.request.outputs.url }} for issue #${{ github.event.issue.number || 0 }}." \
                      -m "Expires $(node -e "console.log(require('/tmp/report.json').expiresAt)")."
@@ -627,6 +635,18 @@ jobs:
               }[report.tier] || report.tier) + ' |',
               '| Themed from the store | ' + (themed.length ? themed.join(', ') + paletteHow : 'nothing, so the demo uses the standard palette') + ' |',
               '| Expires | ' + report.expiresAt + ' |',
+              '',
+              // WHERE THE PANEL CONTENT IS, SPELT OUT, because it is the one output of
+              // this build that has no address. The storefront has a URL a colleague
+              // can guess; the email set and the message pack sit in the repository
+              // on purpose, since they name panel locations and carry sample data and
+              // have no business on a customer facing origin. Unsaid, they are simply
+              // never found, and the build looks like it only produced a storefront.
+              '**Content to set up in the panel** is committed at '
+                + '`factory/panel/content/' + report.slug + '/`. Open '
+                + '`emails/index.html` and `messages/index.html` from the repository:'
+                + ' each one shows every message rendered with a copy button beside it,'
+                + ' and both open straight from disk with nothing to run.',
               '',
               // SAID CONDITIONALLY, BECAUSE IT WAS PREVIOUSLY SAID ALWAYS. The
               // riopneus comment on 7 August 2026 reported "Themed from the store:
