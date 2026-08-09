@@ -86,13 +86,54 @@ would offer a fashion prospect phones. That reasoning has not changed.
 An email cannot run that JavaScript. So `recommendations.html` runs the same strategy
 against `dps_product` at send time and uses the same label the site uses.
 
-| The site's five | In an email |
+**Three passes, in this order, and the first one is real behaviour.**
+
+| Pass | What it is |
 |---|---|
-| **More like this** | **built, and tried first.** Same categories as the basket, which an abandoned cart email already knows |
-| **Trending now** | **built, as the fallback.** Same `seeded()`, same seed, over that demo's rows. Needs a wide fetch, so it only runs when the first pass comes up short |
-| Others also viewed | needs co-view data, which is what an engine is for |
-| Completes your basket | possible, but needs the categories the basket does NOT cover, so it needs the whole catalogue fetched |
-| Recently viewed | not possible. It reads `sessionStorage`, which no send can see. The nearest real equivalent is `page_view_events` for that contact |
+| **Recently viewed** | **real.** The products this contact actually looked at, from `page_view_events` |
+| **More like this** | the same categories the basket is in |
+| **Trending now** | the site's `seeded()` over that demo's rows, seeded with the slug |
+
+Each falls through to the next when it cannot produce at least two products, so the rail
+always fills and always prefers the most real thing available.
+
+## Recently viewed is real, and better than the site's own version
+
+Salil's question, 9 August 2026: with page views landing in Dengage and every product in
+`dps_product`, can the recommendations be real rather than computed? **For anything
+anchored to the recipient, yes.**
+
+`pageview()` sends `product_id` and `category_path`, and the SDK fills `page_url` and
+`session_id` itself, so the products one contact looked at are recoverable directly:
+
+```
+page_view_events where key in [contact key + their device ids]
+     ->  product_id, newest first, deduplicated
+     ->  minus what is already in the basket
+     ->  dps_product for the name, the picture and the price
+```
+
+That is **better than the storefront's own Recently viewed**, which reads `sessionStorage`
+and forgets everything when the tab closes. This spans sessions and devices, because it is
+anchored on the same key set the basket uses: the contact key plus every device linked to
+it. Which also makes the query small and precise rather than a scan of a table shared with
+live traffic.
+
+**Why the other two are not real, and it is the same reason for both.** Audience wide
+strategies need to read everybody's rows, not the recipient's. `page_view_events` is shared
+with five live demo sites and two mobile apps, there is no demo column to filter on, and
+`$from` has no aggregation and no `like`, so a real Trending would mean fetching thousands
+of rows that mostly belong to other applications and counting them per send. Others also
+viewed and Frequently bought together are the same shape: they need co-occurrence across
+the audience. Those are what an engine is for.
+
+**Two filters, and the second looks redundant.** A viewed product is dropped if its
+`page_url` is not this demo's, and again if the product's own `link` is not. With a handful
+of views either alone gets the right answer. The list of viewed ids is capped at twelve
+though, and built before the link filter runs, so a contact who browsed another demo
+heavily would fill all twelve slots with that demo's products and starve the ones from
+this one. The rail would fall through to a shuffle while real behaviour sat in the table.
+Asserted with exactly that case.
 
 **Scoping is the hard part, and it is not `store_name`.** That column holds the same
 constant for every demo, and the slug lives in a Supabase only column that never reaches

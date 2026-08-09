@@ -129,6 +129,22 @@ function view(session, slug) {
     };
 }
 
+/* A PRODUCT PAGE VIEW, which is a real page_view_events row. pageview() in
+   template/js/dengageEvents.js sends product_id and category_path, and the SDK fills
+   page_url and session_id itself, so a view of a product is recoverable per contact
+   without any engine. */
+function viewProduct(session, slug, productId, when) {
+    return {
+        session_id: session,
+        key: DEVICE,
+        page_type: 'product',
+        product_id: productId,
+        page_url: 'https://dengage-presales.github.io/demo-ai/demos/' + slug +
+            '/product.html?id=' + productId,
+        event_date: when
+    };
+}
+
 function product(id, active) {
     return {
         product_id: id,
@@ -698,6 +714,131 @@ function catalogue(ids) {
     }), CONTACT);
     ok('with no demo resolved it offers nothing rather than another store\'s products',
        noDemo.picks.length === 0, noDemo.picks.length);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 15. THE RAIL IS REAL BEHAVIOUR FIRST, not a shuffle                           */
+
+{
+    /* SALIL'S QUESTION, 9 AUGUST 2026: with page views landing in Dengage and every
+       product in dps_product, can the recommendations be real rather than computed?
+
+       For anything anchored to the RECIPIENT, yes, and this is it. page_view_events
+       carries product_id, and the SDK fills page_url and session_id itself, so the
+       products a contact actually looked at are recoverable across sessions and across
+       devices. That is strictly better than the storefront's own Recently viewed, which
+       reads sessionStorage and forgets everything when the tab closes.
+
+       The query is anchored on the same key set the basket uses, so it is small and
+       precise rather than a scan of a table shared with live traffic. */
+    const demoRoot = 'https://dengage-presales.github.io/demo-ai/demos/mine/';
+    const rows = ['a', 'b', 'c', 'd'].map((id) =>
+        Object.assign(product('mine:' + id), {
+            category_path: 'Fashion > Shirts',
+            link: demoRoot + 'product.html?id=' + id
+        }));
+    const inBasket = Object.assign(product('mine:cart'), {
+        category_path: 'Fashion > Shirts',
+        link: demoRoot + 'product.html?id=cart'
+    });
+    const elsewhere = Object.assign(product('theirs:z'), {
+        category_path: 'Fashion > Shirts',
+        link: 'https://dengage-presales.github.io/demo-ai/demos/theirs/product.html?id=z'
+    });
+
+    const cart = [event('add_to_cart', 'mine:cart', '2026-08-09T12:00:00Z', 1, DEVICE, 'session-mine')];
+    const views = [
+        view('session-mine', 'mine'),
+        viewProduct('session-mine', 'mine', 'mine:a', '2026-08-09T11:00:00Z'),
+        viewProduct('session-mine', 'mine', 'mine:b', '2026-08-09T11:30:00Z'),
+        viewProduct('session-mine', 'mine', 'mine:c', '2026-08-09T10:00:00Z'),
+        /* Already in the basket, so it must not be offered back. */
+        viewProduct('session-mine', 'mine', 'mine:cart', '2026-08-09T11:45:00Z'),
+        /* Another demo entirely, which the page_url filter has to catch. */
+        viewProduct('session-other', 'theirs', 'theirs:z', '2026-08-09T11:50:00Z')
+    ];
+
+    const out = recommend(stubFrom({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: rows.concat([inBasket, elsewhere])
+    }), CONTACT);
+
+    ok('the rail is what the contact actually viewed',
+       out.label === 'Recently viewed' && out.lead === 'Still on your mind',
+       { label: out.label, lead: out.lead });
+    ok('newest view first',
+       out.picks.map((p) => String(p.product_id)).join(',') === 'mine:b,mine:a,mine:c',
+       out.picks.map((p) => String(p.product_id)));
+    ok('what is already in the basket is not offered back',
+       out.picks.every((p) => String(p.product_id) !== 'mine:cart'));
+    ok('a view on another demo is not offered',
+       out.picks.every((p) => String(p.product_id) !== 'theirs:z'));
+
+    /* THE PAGE URL FILTER LOOKS REDUNDANT AND IS NOT, which only shows past the cap.
+       mine() already drops another demo's products by their own link, so with a handful
+       of views either filter alone gets the right answer. The list of viewed ids is
+       capped at twelve, though, and it is built BEFORE mine() runs. A contact who
+       browsed another demo heavily would fill all twelve slots with that demo's products
+       and starve the two from this one, and the rail would fall through to a shuffle
+       while real behaviour was sitting in the table. */
+    const busyElsewhere = [];
+    for (let n = 0; n < 12; n++) {
+        busyElsewhere.push(viewProduct('session-other', 'theirs', 'theirs:' + n,
+            '2026-08-09T11:5' + (n % 10) + ':00Z'));
+    }
+    const crowded = recommend(stubFrom({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: [view('session-mine', 'mine')].concat(busyElsewhere, [
+            viewProduct('session-mine', 'mine', 'mine:a', '2026-08-09T09:00:00Z'),
+            viewProduct('session-mine', 'mine', 'mine:b', '2026-08-09T09:01:00Z')
+        ]),
+        dps_product: rows.concat([inBasket, elsewhere])
+    }), CONTACT);
+    ok('twelve views on another demo do not starve two on this one',
+       crowded.label === 'Recently viewed' &&
+       crowded.picks.map((p) => String(p.product_id)).join(',') === 'mine:b,mine:a',
+       { label: crowded.label, picks: crowded.picks.map((p) => String(p.product_id)) });
+
+    /* IT SPANS DEVICES, which sessionStorage cannot. Same contact, a view recorded
+       under a second device linked to them. */
+    const second = viewProduct('session-phone', 'mine', 'mine:d', '2026-08-09T11:59:00Z');
+    second.key = 'device-second';
+    const spanning = recommend(stubFrom({
+        master_device: devices.concat([{ device_id: 'device-second', contact_key: 'DPS-1' }]),
+        shopping_cart_events: cart,
+        page_view_events: views.concat([second]),
+        dps_product: rows.concat([inBasket])
+    }), CONTACT);
+    ok('a view from another of the contact\'s devices counts too',
+       spanning.picks.map((p) => String(p.product_id))[0] === 'mine:d',
+       spanning.picks.map((p) => String(p.product_id)));
+
+    /* ONE VIEW IS NOT A RAIL, so it falls through to the category pass rather than
+       showing a single card. */
+    const thin = recommend(stubFrom({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: [view('session-mine', 'mine'),
+                           viewProduct('session-mine', 'mine', 'mine:a', '2026-08-09T11:00:00Z')],
+        dps_product: rows.concat([inBasket])
+    }), CONTACT);
+    ok('one view falls through to the category pass',
+       thin.label === 'More like this', thin.label);
+
+    /* AND WITH NO PRODUCT VIEWS AT ALL, which is a visitor who added from a listing
+       page, the chain still ends somewhere that fills. */
+    const none = recommend(stubFrom({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: [view('session-mine', 'mine')],
+        dps_product: rows.concat([inBasket])
+    }), CONTACT);
+    ok('no product views still fills, from the categories the basket is in',
+       none.label === 'More like this' && none.picks.length === 4,
+       { label: none.label, picks: none.picks.length });
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

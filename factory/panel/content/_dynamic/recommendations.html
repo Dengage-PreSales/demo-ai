@@ -152,10 +152,46 @@
     return out;
   };
 
-  picks = mine(candidates).slice(0, 4);
+  var LABEL = '';
+  var LEAD = '';
 
-  var LABEL = 'More like this';
-  var LEAD = 'More from the same range';
+  var viewed = keys.length
+    ? $from('$db.page_view_events').where('key', 'in', keys).take(400).get()
+    : [];
+
+  viewed.sort(function (a, b) {
+    return new Date(b.event_date) - new Date(a.event_date);
+  });
+
+  var viewedIds = [];
+  for (var w = 0; w < viewed.length; w++) {
+    var vrow = viewed[w] || {};
+    var vpid = (vrow.product_id == null) ? "" : String(vrow.product_id).trim();
+    if (vpid === "" || basket[vpid] || viewedIds.indexOf(vpid) !== -1) { continue; }
+    var vpage = (vrow.page_url == null) ? "" : String(vrow.page_url);
+    if (mark !== "" && vpage.indexOf(mark) === -1) { continue; }
+    viewedIds.push(vpid);
+    if (viewedIds.length >= 12) { break; }
+  }
+
+  if (viewedIds.length > 1) {
+    var seenRows = $from('$db.dps_product').where('product_id', 'in', viewedIds).take(20).get();
+    var order = {};
+    for (var o = 0; o < viewedIds.length; o++) { order[viewedIds[o]] = o; }
+    var ranked = mine(seenRows);
+    ranked.sort(function (a, b) {
+      return order[String(a.product_id)] - order[String(b.product_id)];
+    });
+    picks = ranked.slice(0, 4);
+    LABEL = 'Recently viewed';
+    LEAD = 'Still on your mind';
+  }
+
+  if (picks.length < 2) {
+    picks = mine(candidates).slice(0, 4);
+    LABEL = 'More like this';
+    LEAD = 'More from the same range';
+  }
 
   if (picks.length < 2 && target !== "") {
     var everything = mine($from('$db.dps_product').where('is_active', '=', true).take(1000).get());

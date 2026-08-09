@@ -177,12 +177,18 @@ demo shares one application, so an engine rail would offer a fashion prospect ph
 email cannot run that JavaScript, so `recommendations.html` runs the same strategy against
 `dps_product` at send time and carries the same label the site uses.
 
-**Two of the five are built, and which one fires depends on the catalogue.**
+**Three passes, and the first one is real behaviour rather than a computation.**
 
-**More like this** first: the same categories the basket is in, which is what an abandoned
-cart email already knows. When that leaves fewer than two products it falls back to
-**Trending now**, the site's own first strategy, using the same `seeded()` function seeded
-with the same slug over that demo's rows.
+**Recently viewed** first: the products this contact actually looked at, out of
+`page_view_events`, newest first, minus what is already in the basket. It spans sessions
+and devices, because it is anchored on the same key set the basket uses, which makes it
+better than the storefront's own version of the same rail, which reads `sessionStorage` and
+forgets everything when the tab closes.
+
+Then **More like this**, the same categories the basket is in. Then **Trending now**, the
+site's own `seeded()` over that demo's rows. Each falls through when it cannot produce at
+least two products, so the rail always fills and always prefers the most real thing
+available.
 
 The fallback is not hypothetical. It was added because a real send rendered nothing: one
 demo's catalogue holds exactly **one** product in each of the four categories its basket
