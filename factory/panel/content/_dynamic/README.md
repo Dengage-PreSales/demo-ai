@@ -111,6 +111,37 @@ link. That combination is what makes it look like a broken query when it is not.
 `?ck=<contact key>` on a demo URL still works and is still useful for demonstrating as a
 named contact, but it is no longer required for the cart to resolve.
 
+## One demo's basket, not every demo's
+
+**All demos share one origin**, so the SDK's device id is the same on every one of them,
+and `DPS-` contact keys are shared on purpose. One key therefore carries the cart rows of
+every demo that browser has ever visited, and a send showed all of them mixed together:
+four garments from one storefront and a laptop keyboard from another, in one basket.
+
+There is no demo column to filter on and there never was, because columns cannot be
+added to the six standard tables. What there is, is **`session_id`**:
+
+```
+shopping_cart_events.session_id
+     ->  page_view_events for those sessions
+     ->  page_url, which contains /demos/<slug>/
+```
+
+Which is the same join CLAUDE.md 1b names as the only way back to a demo's rows. So the
+asset resolves session to demo, takes the demo of the **newest** cart row, and keeps only
+that demo's rows. The basket in the email is the basket of the storefront the visitor was
+last in, which is also what a sales call needs.
+
+**Scoping happens before the replay, not after**, and that ordering is the point. A
+`delete_cart` on one demo must not empty another demo's basket, and filtering afterwards
+would let it.
+
+**If no page view resolves, it does not filter at all.** An unscoped basket is a bad
+email; an empty one is a worse email, because the recipient sees nothing rather than
+seeing too much. `?debug=1` and the `pageview-required` guard are what keep the join
+available in the first place: a page that skips `pageView` writes cart rows that no demo
+can claim.
+
 ## The basket is replayed, not read off the newest rows
 
 `shopping_cart_events` is a log, not a basket. The same product appears once per

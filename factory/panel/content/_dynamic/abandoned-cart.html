@@ -21,6 +21,48 @@
     return Number(a.id) - Number(b.id);
   });
 
+  var sessions = [];
+  for (var s0 = 0; s0 < rows.length; s0++) {
+    var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";
+    if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }
+  }
+
+  var views = sessions.length
+    ? $from('$db.page_view_events').where('session_id', 'in', sessions).take(300).get()
+    : [];
+
+  var slugOf = function (url) {
+    var u = (url == null) ? "" : String(url);
+    var at = u.indexOf('/demos/');
+    if (at === -1) { return ""; }
+    var rest = u.slice(at + 7).split('?')[0].split('#')[0];
+    var cut = rest.indexOf('/');
+    return cut === -1 ? rest : rest.slice(0, cut);
+  };
+
+  var demoOf = {};
+  for (var v = 0; v < views.length; v++) {
+    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
+    if (vs === "" || demoOf[vs]) { continue; }
+    var vslug = slugOf(views[v].page_url);
+    if (vslug !== "") { demoOf[vs] = vslug; }
+  }
+
+  var target = "";
+  for (var t = rows.length - 1; t >= 0; t--) {
+    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
+    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+  }
+
+  if (target !== "") {
+    var mine = [];
+    for (var m = 0; m < rows.length; m++) {
+      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
+      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+    }
+    rows = mine;
+  }
+
   var present = {};
   var seen = [];
   for (var r = 0; r < rows.length; r++) {
@@ -69,11 +111,12 @@
 <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
   {% if (!ids.length) { %}
     <tr>
-      <td style="font-family:inherit;font-size:14px;line-height:1.5;color:inherit;padding:0 0 10px 0;">
+      <td style="font-family:inherit;font-size:14px;line-height:1.5;color:inherit;padding:0;">
         Your basket is waiting for you. Everything you added is still saved on your account.
       </td>
     </tr>
   {% } else { %}
+    {% var shown = 0; %}
     {% for (var i = 0; i < ids.length; i++) {
          var product = byId[ids[i]];
          if (!product || !product.is_active) { continue; }
@@ -83,16 +126,18 @@
          var price = money(product.price);
          var cut = (product.discounted_price == null || product.discounted_price === "") ? "" : money(product.discounted_price);
          var qty = (present[ids[i]] && present[ids[i]].quantity) ? Number(present[ids[i]].quantity) : 1;
+         var gap = (shown === 0) ? 0 : 20;
+         shown = shown + 1;
     %}
       <tr>
         {% if (image !== "") { %}
-        <td width="112" valign="top" style="padding:0 18px 22px 0;">
+        <td width="112" valign="top" style="padding:{%= gap %}px 18px 0 0;">
           <a href="{%= link %}" target="_blank" style="text-decoration:none;">
-            <img src="{%= image %}" alt="{%= title %}" width="96" style="width:96px;height:auto;border:0;display:block;">
+            <img src="{%= image %}" alt="{%= title %}" width="96" style="width:96px;height:auto;border:0;display:block;border-radius:6px;">
           </a>
         </td>
         {% } %}
-        <td valign="top" style="padding:4px 0 22px 0;font-family:inherit;color:inherit;">
+        <td valign="top" style="padding:{%= gap + 3 %}px 0 0 0;font-family:inherit;color:inherit;">
           {% if (product.category_path) { %}
             <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.6;padding:0 0 5px 0;">{%= product.category_path %}</div>
           {% } %}
@@ -113,7 +158,7 @@
     {% } %}
     {% if (more > 0) { %}
       <tr>
-        <td colspan="2" style="font-family:inherit;font-size:14px;line-height:1.5;opacity:0.7;color:inherit;padding:0 0 8px 0;">
+        <td colspan="2" style="font-family:inherit;font-size:14px;line-height:1.5;opacity:0.7;color:inherit;padding:20px 0 0 0;">
           and {%= more %} more item{% if (more > 1) { %}s{% } %} in your basket
         </td>
       </tr>

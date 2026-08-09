@@ -162,11 +162,25 @@ function walk(template) {
     const resolved = walk(build({ snippets: { items: '8835', total: '8836' } }).template)
         .modules.filter((module) => module.descriptor.html);
     ok('with ids, each becomes a real snippet tag',
-       resolved[0].descriptor.html.html ===
-           '<snippet snippet_id="8835" snippet_name="dps abandoned cart"></snippet>' &&
-       resolved[1].descriptor.html.html ===
-           '<snippet snippet_id="8836" snippet_name="dps abandoned cart total"></snippet>',
+       resolved[0].descriptor.html.html.includes(
+           '<snippet snippet_id="8835" snippet_name="dps abandoned cart"></snippet>') &&
+       resolved[1].descriptor.html.html.includes(
+           '<snippet snippet_id="8836" snippet_name="dps abandoned cart total"></snippet>'),
        resolved.map((m) => m.descriptor.html.html));
+
+    /* THE WRAPPER IS NOT DECORATION, so it is asserted rather than assumed. The saved
+       assets style themselves font-family:inherit because they are shared by every demo
+       and cannot name a face. In the builder nothing surrounded them, inherit resolved to
+       the client default, and every product name came out in Times under a sans headline.
+       This div is what it inherits from. */
+    ok('and both blocks are wrapped in the demo\'s typeface',
+       resolved.every((module) =>
+           module.descriptor.html.html.indexOf('<div style="font-family:') === 0 &&
+           module.descriptor.html.html.includes("'DM Sans'")),
+       resolved.map((m) => m.descriptor.html.html.slice(0, 60)));
+    ok('the placeholders carry the same wrapper, so the preview is not flattering',
+       html.every((module) =>
+           module.descriptor.html.html.indexOf('<div style="font-family:') === 0));
     ok('and the placeholder is gone',
        resolved.every((module) => module.descriptor.html.html.indexOf('dashed') === -1));
 }

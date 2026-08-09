@@ -130,6 +130,29 @@ account overlay, because there is no `unsubscribe.html` either. If Dengage injec
 own unsubscribe URL or exposes a tag for it, that is the right value and it is one line
 to change.
 
+## Does it adapt to a new demo on its own
+
+Mostly. Precisely:
+
+| Step | Automatic? |
+|---|---|
+| The template file, themed to the new demo | yes, the build runs `build-beefree.mjs` |
+| Its hero image | yes, the build runs `make-hero.mjs` |
+| Brand colour, typeface, categories, currency, store name, links | yes, all from `demo.config.json` |
+| `dps_product` rows for the new demo | yes, within ten minutes. `refresh_dengage_catalogues()` reads the published `feed/products.json`, which every build regenerates, so it discovers a new slug with nothing to tell it |
+| The two Dynamic Content assets | nothing to do. They are shared, and they now work out which demo a basket belongs to by themselves |
+| Importing the template into the Email Builder | **no. One upload per demo** |
+| The snippet ids in the file | **once ever.** Set `DPS_SNIPPET_CART` and `DPS_SNIPPET_CART_TOTAL` and every demo built afterwards imports finished |
+
+So the per demo manual work is one import. Everything the repository can do without the
+panel, it does.
+
+**Why the import cannot be avoided.** The theming is literal hex in the JSON, because an
+email cannot carry custom properties or a stylesheet. One shared email campaign would
+therefore be one colour for every prospect. The parts that CAN theme themselves at send
+time are exactly the parts inside a Dynamic Content asset, and a button's background is
+not one of them.
+
 ## What the demo's own theme supplies
 
 Nothing here is styled by hand. Every value comes from that demo's

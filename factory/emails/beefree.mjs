@@ -212,12 +212,32 @@ function row(uuid, palette, columns, options) {
    the builder shows a person who then clicks it and picks the asset from the list.
 
    The placeholder is not a comment, deliberately. An HTML comment is invisible in the
-   builder, so the block reads as an empty template rather than as a spot with a job. */
+   builder, so the block reads as an empty template rather than as a spot with a job.
+
+   IT IS WRAPPED IN A DIV THAT SETS THE TYPEFACE, AND THAT WRAPPER IS THE FIX FOR THE
+   ONE THING THAT LOOKED WRONG IN A REAL SEND. The saved assets are shared by every
+   demo, so they cannot name a font: they style themselves `font-family: inherit` and
+   take whatever surrounds them. In the builder nothing surrounded them, so inherit
+   resolved to the mail client's default and every product name came out in Times while
+   the headline above it was the demo's own sans face.
+
+   The module's own style did not carry: BeeFree owns the export, and what a module
+   declares is not reliably an ancestor of what an HTML module contains. A div written
+   into the block's own content is, because it is inside the snippet's own document.
+   That is also what makes the asset stay generic while the email stays themed, which is
+   the whole point of one asset serving every demo. */
+function themed(palette, inner) {
+    return '<div style="font-family:' + palette.body + ';font-size:15px;line-height:1.6;' +
+        'color:' + palette.text + ';">' + inner + '</div>';
+}
+
 function dynamicBlock(palette, asset, id, describe) {
     if (id) {
-        return '<snippet snippet_id="' + id + '" snippet_name="' + asset + '"></snippet>';
+        return themed(palette,
+            '<snippet snippet_id="' + id + '" snippet_name="' + asset + '"></snippet>');
     }
-    return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" ' +
+    return themed(palette,
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" ' +
         'style="border-collapse:collapse;"><tr><td style="border:2px dashed ' + palette.edge +
         ';border-radius:' + palette.radius + 'px;padding:22px 20px;text-align:center;' +
         'font-family:' + palette.body + ';font-size:13px;line-height:1.6;color:' +
@@ -225,7 +245,7 @@ function dynamicBlock(palette, asset, id, describe) {
         '<strong style="color:' + palette.text + ';font-size:14px;">Dynamic Content: ' +
         asset + '</strong><br>' + describe +
         '<br>Click this block, clear it, then use Insert &gt; Dynamic Content.' +
-        '</td></tr></table>';
+        '</td></tr></table>');
 }
 
 /* A Google Fonts entry, so the builder previews the demo's own typeface rather than

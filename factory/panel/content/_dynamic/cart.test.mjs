@@ -44,12 +44,17 @@ function ok(label, condition, detail) {
 /* The stub. where, take and get, because that is all $from has                */
 
 function stubFrom(tables) {
+    /* page_view_events defaults to empty, so a case that does not care about which demo
+       a row belongs to still runs. With no page views the asset cannot attribute any
+       row to a demo and deliberately does not filter, which is the fallback being
+       relied on here. */
+    const all = Object.assign({ page_view_events: [] }, tables);
     return function (name) {
         const table = String(name).replace('$db.', '');
-        if (!Object.prototype.hasOwnProperty.call(tables, table)) {
+        if (!Object.prototype.hasOwnProperty.call(all, table)) {
             throw new Error('the asset queried a table the test does not model: ' + table);
         }
-        let rows = tables[table].slice().reverse();
+        let rows = all[table].slice().reverse();
         const api = {
             where(column, operator, value) {
                 if (operator === '=') {
@@ -100,14 +105,25 @@ const devices = [
 ];
 
 let nextId = 100;
-function event(type, productId, date, quantity, key) {
+function event(type, productId, date, quantity, key, session) {
     return {
         id: nextId++,
         key: key || DEVICE,
+        session_id: session || 'session-1',
         event_date: date,
         event_type: type,
         product_id: productId,
         quantity: quantity === undefined ? 1 : quantity
+    };
+}
+
+/* A page view is what ties a session to a demo. The SDK fills page_url itself, and the
+   slug is in it. CLAUDE.md 1b: this join is the only way back to a demo's rows. */
+function view(session, slug) {
+    return {
+        session_id: session,
+        page_url: 'https://dengage-presales.github.io/demo-ai/demos/' + slug + '/index.html',
+        event_date: '2026-08-09T09:00:00Z'
     };
 }
 
@@ -420,6 +436,111 @@ function catalogue(ids) {
        1.26 and 1.50 aspect, so a forced square squashed the wide ones. */
     ok('the image has no forced height, so a wide photograph is not squashed',
        /width:96px;height:auto/.test(source) && !/height="96"/.test(source));
+}
+
+/* -------------------------------------------------------------------------- */
+/* 13. ONE DEMO'S BASKET, NOT EVERY DEMO'S                                      */
+
+{
+    /* THE DEFECT THIS SECTION EXISTS FOR. Every demo is served from one origin, so the
+       SDK's device id is the same on all of them, and DPS- contact keys are shared on
+       purpose. That means one key carries the cart rows of every demo the same browser
+       ever visited, and a send showed all of them mixed together: four garments from
+       one storefront and a laptop keyboard from another, in one basket.
+
+       There is no demo column to filter on and there never was: columns cannot be added
+       to the six standard tables. What there is, is session_id. A session belongs to one
+       page, page_view_events carries that page's URL, and the slug is in the URL. So the
+       asset resolves session to demo, takes the demo of the newest cart row, and keeps
+       only that demo's rows. */
+    const cart = [
+        event('add_to_cart', 'shirt', '2026-08-09T09:00:00Z', 1, DEVICE, 'session-fashion'),
+        event('add_to_cart', 'boot', '2026-08-09T09:01:00Z', 1, DEVICE, 'session-fashion'),
+        event('add_to_cart', 'keyboard', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-tech'),
+        event('add_to_cart', 'battery', '2026-08-09T10:01:00Z', 1, DEVICE, 'session-tech')
+    ];
+    const views = [
+        view('session-fashion', 'showcase'),
+        view('session-tech', 'techiestore-in')
+    ];
+    const products = catalogue(['shirt', 'boot', 'keyboard', 'battery']);
+
+    const out = html(stubFrom({
+        master_device: devices, shopping_cart_events: cart,
+        page_view_events: views, dps_product: products
+    }), CONTACT);
+
+    ok('only the newest demo\'s items are in the basket',
+       out.ids.join(',') === 'battery,keyboard', out.ids);
+    ok('the other demo\'s items are gone', out.ids.indexOf('shirt') === -1);
+    ok('and the count reflects the scoped basket, not the combined one',
+       out.all.length === 2, out.all.length);
+
+    /* AND IT FOLLOWS THE VISITOR. The same rows with the fashion session newest should
+       resolve the other way round, which is what proves it is scoping rather than
+       preferring one demo. */
+    const reversed = [
+        event('add_to_cart', 'keyboard', '2026-08-09T09:00:00Z', 1, DEVICE, 'session-tech'),
+        event('add_to_cart', 'shirt', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-fashion'),
+        event('add_to_cart', 'boot', '2026-08-09T10:01:00Z', 1, DEVICE, 'session-fashion')
+    ];
+    const other = html(stubFrom({
+        master_device: devices, shopping_cart_events: reversed,
+        page_view_events: views, dps_product: products
+    }), CONTACT);
+    ok('the newest activity decides which demo it is',
+       other.ids.join(',') === 'boot,shirt', other.ids);
+
+    /* A REMOVAL ON ONE DEMO MUST NOT EMPTY ANOTHER'S BASKET, which is why the scoping
+       happens before the replay rather than after it. delete_cart is the sharp case:
+       clearing a basket on one storefront used to clear the email's basket for all. */
+    const cleared = [
+        event('add_to_cart', 'shirt', '2026-08-09T09:00:00Z', 1, DEVICE, 'session-fashion'),
+        event('add_to_cart', 'keyboard', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-tech'),
+        event('delete_cart', null, '2026-08-09T10:05:00Z', 1, DEVICE, 'session-fashion'),
+        event('add_to_cart', 'battery', '2026-08-09T10:06:00Z', 1, DEVICE, 'session-tech')
+    ];
+    const survived = html(stubFrom({
+        master_device: devices, shopping_cart_events: cleared,
+        page_view_events: views, dps_product: products
+    }), CONTACT);
+    ok('a delete_cart on one demo leaves the other demo\'s basket alone',
+       survived.ids.join(',') === 'battery,keyboard', survived.ids);
+
+    /* THE FALLBACK, and it has to be this way round. If no page view resolves, the asset
+       cannot attribute anything, and an empty email is a worse failure than an
+       unscoped one: the recipient sees nothing rather than seeing too much. */
+    const unresolved = html(stubFrom({
+        master_device: devices, shopping_cart_events: cart,
+        page_view_events: [], dps_product: products
+    }), CONTACT);
+    ok('with no page views it falls back to the whole basket rather than an empty one',
+       unresolved.ids.length === 4, unresolved.ids);
+
+    /* A URL that is not a demo URL yields no slug, so it cannot become a target. */
+    const foreign = html(stubFrom({
+        master_device: devices, shopping_cart_events: cart,
+        page_view_events: [{ session_id: 'session-tech', page_url: 'https://example.test/x' }],
+        dps_product: products
+    }), CONTACT);
+    ok('a page URL with no demo in it attributes nothing',
+       foreign.ids.length === 4, foreign.ids);
+
+    /* All four assets share this block, so all four have to scope. */
+    for (const [name, run] of [['JSON', json], ['text', text]]) {
+        const scoped = run(stubFrom({
+            master_device: devices, shopping_cart_events: cart,
+            page_view_events: views, dps_product: products
+        }), CONTACT);
+        ok('the ' + name + ' asset scopes to one demo too',
+           scoped.all.length === 2, scoped.all);
+    }
+    const scopedTotal = total(stubFrom({
+        master_device: devices, shopping_cart_events: cart,
+        page_view_events: views, dps_product: products
+    }), CONTACT);
+    ok('and the total is the scoped basket\'s total, not the combined one',
+       scopedTotal.counted === 2, scopedTotal);
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
