@@ -165,6 +165,18 @@ for (const table of ['order_events', 'search_events']) {
     ok('nothing chains orderByDescending, which $from does not have',
        chained.length === 0, chained);
 
+    /* THE CONTACT KEY COLUMN ON AN EVENT TABLE IS key, NOT contact_key. Read from the
+       API: all six have `key TEXT` first and no contact_key at all. Querying the wrong
+       one answers "42703: column contact_key does not exist", which also tells us $from
+       compiles to SQL, since 42703 is a Postgres error code.
+
+       $Contact.contact_key stays correct on the contact side, so this looks only for a
+       where clause naming the column. */
+    const wrongKey = files.filter((f) =>
+        /where\s*\(\s*['"]contact_key['"]/.test(readFileSync(join(ROOT, f), 'utf8')));
+    ok('no query filters on a contact_key column, which no event table has',
+       wrongKey.length === 0, wrongKey);
+
     /* A TABLE IS ADDRESSED AS $db.<table>. Taken from a snippet known to work in a live
        account: $from('$db.product'). A bare table name was what this repository used. */
     const { QUERIES, productLookup } = await import('../emails/data.mjs');

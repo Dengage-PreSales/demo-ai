@@ -38,6 +38,16 @@
    A TABLE IS ADDRESSED AS $db.<table>. $from('$db.shopping_cart_events'), not
    $from("shopping_cart_events"). Single quotes throughout, matching the same source.
 
+   THE CONTACT KEY COLUMN IS CALLED key, NOT contact_key. Read from the API: every one
+   of the six event tables has `key TEXT` as its first column and no contact_key at all.
+   Querying contact_key answers
+   "Error on sql execution: 42703: column contact_key does not exist", which also reveals
+   that $from compiles to SQL: 42703 is a Postgres error code.
+
+   $Contact.contact_key is still correct on the CONTACT side. It is the column on the
+   event table that is named differently, which is why assuming they matched was easy
+   and wrong.
+
    AND $from OFFERS where, take AND get. Nothing else. orderByDescending was used
    throughout this file and does not exist, which the engine reports as
    "TypeError: Object doesn't support property or method". Ordering, filtering and
@@ -77,18 +87,21 @@
 export const COLUMNS = {
     cart: {
         table: 'shopping_cart_events',
+        contactKey: 'key',
         product: 'product_id', variant: 'product_variant_id',
         price: 'unit_price', discounted: 'discounted_price',
         quantity: 'quantity', time: 'event_date'
     },
     view: {
         table: 'page_view_events',
+        contactKey: 'key',
         url: 'page_url', title: 'page_title',
         categoryPath: 'category_path', categoryId: 'category_id',
         product: 'product_id', price: 'price', time: 'event_date'
     },
     wishlist: {
         table: 'wishlist_events',
+        contactKey: 'key',
         product: 'product_id', variant: 'product_variant_id',
         /* price, not unit_price. The one table that differs. */
         price: 'price', discounted: 'discounted_price',
@@ -96,11 +109,13 @@ export const COLUMNS = {
     },
     search: {
         table: 'search_events',
+        contactKey: 'key',
         query: 'keywords', results: 'result_count',
         filters: 'filters', time: 'event_date'
     },
     orderLine: {
         table: 'order_events_detail',
+        contactKey: 'key',
         order: 'order_id', product: 'product_id', variant: 'product_variant_id',
         price: 'unit_price', discounted: 'discounted_price',
         quantity: 'quantity', time: 'event_date'
@@ -160,7 +175,7 @@ function query(spec, take) {
        choose from. A contact with more cart events than the window may still miss the
        very newest, and that is a real limit rather than a solved problem. */
     return "$from('$db." + spec.table + "')" +
-        ".where('contact_key', '=', $Contact.contact_key)" +
+        ".where('" + spec.contactKey + "', '=', $Contact.contact_key)" +
         '.take(' + (take * 10) + ').get()' +
         ".sort(function (a, b) { return new Date(b['" + spec.time +
         "']) - new Date(a['" + spec.time + "']); })" +
@@ -179,7 +194,7 @@ export const QUERIES = {
        how it escaped the $db. prefix when query() gained one. */
     lastOrderLines: { spec: COLUMNS.orderLine, take: 3,
                       expr: "$from('$db." + COLUMNS.orderLine.table + "')" +
-                            ".where('contact_key', '=', $Contact.contact_key).take(3).get()",
+                            ".where('" + COLUMNS.orderLine.contactKey + "', '=', $Contact.contact_key).take(3).get()",
                       /* No sort: the lines of one order share their event_date, so
                          ordering them says nothing. */
                       what: 'the lines on the last order' },

@@ -1,6 +1,6 @@
 {%
   var lines = $from('$db.shopping_cart_events')
-    .where('contact_key', '=', $Contact.contact_key)
+    .where('key', '=', $Contact.contact_key)
     .take(30)
     .get();
 

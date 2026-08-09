@@ -95,7 +95,8 @@ these:
 
 | It used | The column is | Effect at send time |
 |---|---|---|
-| `event_time` | `event_date` | every `orderByDescending` referenced a column that does not exist, on all five queries |
+| `contact_key` | **`key`** | the query fails outright: `42703: column contact_key does not exist`. Every one of the six event tables has `key TEXT` as its first column and no `contact_key` at all. `$Contact.contact_key` is still correct on the contact side, which is what made assuming they matched so easy |
+| `event_time` | `event_date` | every ordering referenced a column that does not exist, on all five queries |
 | `search_query` | `keywords` | the searched words never appeared |
 | `unit_price` on wishlist | `price` | the saved item's price never appeared |
 | `category` on page views | `category_path` | the browsed category never appeared |
@@ -202,6 +203,24 @@ feed registered and no engine:
 It also settles the problem that a shared asset cannot know a demo's image base: the
 row carries `image_link` and `link` as absolute addresses, so the asset stays
 brand neutral and demo neutral while each demo's email supplies the styling.
+
+## $from is SQL underneath, and it has three methods
+
+Learned from the panel's own error messages, one round at a time, and worth having
+written down because none of it is in the documentation this repository could find.
+
+| What | Evidence |
+|---|---|
+| An output tag closes with a bare `%}` | a trailing equals gives `SyntaxError: Unexpected token '%s' after '%s'` |
+| A table is `$from('$db.<table>')` | the form used by a snippet running in a live account |
+| The contact key column is `key` | `42703: column contact_key does not exist` |
+| `where`, `take` and `get` are the only methods | `TypeError: Object doesn't support property or method 'orderByDescending'` |
+| It compiles to SQL | `42703` and `42804` are Postgres error codes |
+
+So ordering, deduplication and slicing all happen in JavaScript, on the array `get()`
+returns. That has one consequence worth knowing: `take(n)` without ordering returns SOME
+n rows rather than the newest n, so anything wanting the most recent rows takes a wider
+window and sorts it locally.
 
 ## Two things this read cannot tell anyone
 

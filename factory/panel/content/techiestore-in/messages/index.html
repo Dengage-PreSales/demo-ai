@@ -314,7 +314,7 @@ cta: Finish checkout</textarea>
         </div>
         <button class="copy" data-src="m3-webPush">Copy Web push copy</button>
         
-    <textarea hidden id="m3-webPush" data-name="m3-webPush">title: Still looking at {% var r = $from('$db.page_view_events').where('contact_key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + "..." : r[0].category_path %}{% } else { %}these{% } %}?
+    <textarea hidden id="m3-webPush" data-name="m3-webPush">title: Still looking at {% var r = $from('$db.page_view_events').where('key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + "..." : r[0].category_path %}{% } else { %}these{% } %}?
 body: The one you spent time with is still there, along with a few alternatives.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
@@ -399,7 +399,7 @@ cta: Keep looking</textarea>
         <button class="copy" data-src="m4-webPush">Copy Web push copy</button>
         
     <textarea hidden id="m4-webPush" data-name="m4-webPush">title: Back in stock
-body: The {% var r = $from('$db.search_events').where('contact_key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + "..." : r[0].keywords %}{% } else { %}item you searched for{% } %} you looked for is available again.
+body: The {% var r = $from('$db.search_events').where('key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + "..." : r[0].keywords %}{% } else { %}item you searched for{% } %} you looked for is available again.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
         <div class="notif web">
@@ -424,7 +424,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</tex
         <button class="copy" data-src="m4-inbox">Copy App Inbox copy</button>
         
     <textarea hidden id="m4-inbox" data-name="m4-inbox">title: What you searched for is back
-body: You looked for {% var r = $from('$db.search_events').where('contact_key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + "..." : r[0].keywords %}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.</textarea>
+body: You looked for {% var r = $from('$db.search_events').where('key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + "..." : r[0].keywords %}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.</textarea>
         
         <div class="inbox">
           <div class="ithumb" style="background:#f6ede3"></div>
@@ -679,7 +679,7 @@ cta: Shop early access</textarea>
         <button class="copy" data-src="m9-webPush">Copy Web push copy</button>
         
     <textarea hidden id="m9-webPush" data-name="m9-webPush">title: A few things changed
-body: New ranges in {% var r = $from('$db.page_view_events').where('contact_key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + "..." : r[0].category_path %}{% } else { %}your categories{% } %}, and your saved items are still saved.
+body: New ranges in {% var r = $from('$db.page_view_events').where('key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + "..." : r[0].category_path %}{% } else { %}your categories{% } %}, and your saved items are still saved.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
         <div class="notif web">
