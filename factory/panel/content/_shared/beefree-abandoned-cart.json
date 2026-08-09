@@ -323,9 +323,9 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "32px",
+                "padding-top": "36px",
                 "padding-right": "0px",
-                "padding-bottom": "24px",
+                "padding-bottom": "30px",
                 "padding-left": "0px"
               },
               "uuid": "dps-cart-07-c1"
@@ -389,7 +389,7 @@
                 "border-top": "0px solid transparent",
                 "padding-top": "0px",
                 "padding-right": "0px",
-                "padding-bottom": "6px",
+                "padding-bottom": "10px",
                 "padding-left": "0px"
               },
               "uuid": "dps-cart-10-c1"
@@ -451,9 +451,9 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "22px",
+                "padding-top": "26px",
                 "padding-right": "0px",
-                "padding-bottom": "22px",
+                "padding-bottom": "28px",
                 "padding-left": "0px"
               },
               "uuid": "dps-cart-12-c1"
@@ -586,7 +586,7 @@
                       "computedStyle": {
                         "linkColor": "#5a6375"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>If you have already completed your purchase, please disregard this email.<br>This is a demonstration storefront built for a sales conversation.</div>",
                       "style": {
                         "color": "#5a6375",
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -910,9 +910,9 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "32px",
+              "padding-top": "36px",
               "padding-right": "0px",
-              "padding-bottom": "24px",
+              "padding-bottom": "30px",
               "padding-left": "0px"
             },
             "uuid": "dps-cart-07-c1"
@@ -976,7 +976,7 @@
               "border-top": "0px solid transparent",
               "padding-top": "0px",
               "padding-right": "0px",
-              "padding-bottom": "6px",
+              "padding-bottom": "10px",
               "padding-left": "0px"
             },
             "uuid": "dps-cart-10-c1"
@@ -1038,9 +1038,9 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "22px",
+              "padding-top": "26px",
               "padding-right": "0px",
-              "padding-bottom": "22px",
+              "padding-bottom": "28px",
               "padding-left": "0px"
             },
             "uuid": "dps-cart-12-c1"
@@ -1173,7 +1173,7 @@
                     "computedStyle": {
                       "linkColor": "#5a6375"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#5a6375;\">You are receiving this because you shopped with us.<br>If you have already completed your purchase, please disregard this email.<br>This is a demonstration storefront built for a sales conversation.</div>",
                     "style": {
                       "color": "#5a6375",
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",

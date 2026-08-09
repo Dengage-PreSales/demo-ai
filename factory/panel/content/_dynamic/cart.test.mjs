@@ -420,22 +420,46 @@ function catalogue(ids) {
 {
     /* A TEXT CHECK, AND IT HAS TO BE. Everything above executes the resolution block,
        but the rendering below it is a Dengage template rather than JavaScript, so the
-       only thing assertable offline is its shape. These two are worth the assertion
-       because both were wrong and neither showed up in a test.
+       only thing assertable offline is its shape. Each of these is a defect that shipped
+       and that no test could see.
 
-       The image cell has to be inside the condition, not just the image. An empty 112px
-       cell beside every row is what a catalogue with no pictures looked like, and one of
-       the demos in this repository has none. */
+       PRODUCTS ARE CARDS, TWO ACROSS, NOT LINE ITEMS. A 96px thumbnail beside
+       left-aligned text reads as an order confirmation; the reference this was rebuilt
+       against merchandises them as centred cards with large images. */
     const source = readFileSync(join(HERE, 'abandoned-cart.html'), 'utf8');
-    const imageCell = source.indexOf('<td width="112"');
-    const condition = source.indexOf('{% if (image !== "") { %}');
-    ok('the image cell is inside the has-an-image condition',
-       condition !== -1 && condition < imageCell, { condition, imageCell });
+    ok('the products are laid out two across',
+       /for \(var g = 0; g < cards.length; g \+= 2\)/.test(source) &&
+       (source.match(/<td width="50%"/g) || []).length >= 2);
+    ok('and each card is centred',
+       /<td width="50%" align="center"/.test(source));
 
-    /* And the image must not be given a fixed height. The catalogue's images are 1.00,
-       1.26 and 1.50 aspect, so a forced square squashed the wide ones. */
-    ok('the image has no forced height, so a wide photograph is not squashed',
-       /width:96px;height:auto/.test(source) && !/height="96"/.test(source));
+    /* An odd number of cards must still close its row, or the table reflows. */
+    ok('an odd last row is padded rather than left short',
+       /if \(!card\) \{ %\}/.test(source));
+
+    /* The image is emitted only when there is one. A card with none starts at the
+       category instead, so there is no empty cell to leave dead space, which is what a
+       catalogue with no pictures used to look like. One demo here has none. */
+    ok('the image is inside a has-an-image condition',
+       source.indexOf('{% if (card.image !== "") { %}') !== -1);
+
+    /* THE IMAGE ITSELF MUST NOT BE GIVEN A HEIGHT, because the catalogue's images are
+       1.00, 1.26 and 1.50 aspect and a forced square squashed the wide ones. */
+    const img = (source.match(/<img [^>]*>/g) || [])[0] || '';
+    ok('the image is not given a height, so a wide photograph is not squashed',
+       /height:auto/.test(img) && !/\sheight="/.test(img), img);
+
+    /* BUT ITS FRAME IS, and that is the other half. Without a fixed height cell around
+       it, two cards in a row start their text at different heights, because their images
+       do not: the reference this was rebuilt against only avoids that because every one
+       of its images is the same 270x203. */
+    ok('the image sits in a fixed height frame, so a row of cards lines up',
+       /<td height="200" align="center" valign="middle"/.test(source));
+
+    /* AND THE NAME IS CLAMPED, for the same reason. A 95 character product name is four
+       lines in a 290px card, so the price under it lands somewhere different in each. */
+    ok('a long product name is clamped rather than wrapping to four lines',
+       /t\.length > 60 \? t\.substring\(0, 57\)/.test(source));
 }
 
 /* -------------------------------------------------------------------------- */

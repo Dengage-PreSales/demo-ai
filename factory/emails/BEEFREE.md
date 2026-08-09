@@ -131,26 +131,41 @@ Eight rows:
 | Basket | **Dynamic Content.** The visitor's own basket, replayed from their cart events |
 | Summary | **Dynamic Content.** Subtotal, total, and the button back to that basket |
 | Urgency | One line, and it is true. See below |
-| Footer | The mark again, and the line saying this is a demonstration storefront |
+| Footer | The mark again, the disregard line, and the line saying this is a demonstration storefront |
 
 **Short on purpose.** A long template demonstrates BeeFree, which nobody is buying. What
 is being shown is that the products came out of the visitor's own basket, so every row
 that is not those products has to justify itself.
 
-## The product rows
+## The product cards
 
-Two changes on 9 August 2026, both from a look at a real send:
+Rebuilt on 9 August 2026 against a reference SaleCycle abandoned cart email, which made
+the gap obvious: **a 96px thumbnail beside left-aligned text reads as an order
+confirmation.** The reference merchandises instead, and that is the whole difference.
 
-**Hierarchy.** The name was 17px bold and the price was 16px bold directly under it, so
-the row had two things shouting and nothing leading. The name now leads at 17px bold and
-the price supports at 14px, with the reduction bold and the original struck through at
-45% opacity. The category eyebrow dropped to 10px at 45%, so it labels the row instead
-of competing with it.
+**Cards, two across, centred.** A large image, then the category, the name and the price
+all centred under it. An odd last row pads its empty cell so the table cannot reflow. The
+cells are percentage width rather than fixed, so on a phone they land at about 160px each,
+which is what the reference deliberately targets with its own media query rather than
+something to avoid.
 
-**Separation.** Four items read as one undifferentiated block. There is now a hairline
-above every row but the first, at `rgba(128,128,128,0.16)` so it works on a light ground
-and a dark one, with the gap split around it. It is on the top rather than the bottom, so
-the list ends flush against the summary band below rather than pushing a gap into it.
+**Two things keep a row aligned, and neither is optional.**
+
+The image sits in a **fixed 200px frame**, centred in it, because the catalogue's images
+run 1.00 to 1.50 aspect. The reference gets away with no frame only because every one of
+its images is the same 270x203; ours are not, so without it the left card's text started
+40px below the right card's. The image itself is given a width and never a height, so a
+wide photograph is never squashed.
+
+The name is **clamped at 60 characters**. A real product name here is 95 characters, which
+is four lines in a 290px card, so the price under it landed somewhere different in every
+card. Same rule the SMS asset already used, and it is a display truncation of a real name
+rather than an invented one.
+
+**Hierarchy.** The name leads at 15px bold, the price supports at 14px with the reduction
+bold and the original struck through at 45%, and the category is a 10px letter spaced
+eyebrow at 45%. It is the leaf category only, so "FASHION > SHIRTS" reads "SHIRTS" and
+stops competing with the name.
 
 ## The hero image
 
@@ -171,6 +186,16 @@ in the email is a real module.
 
 The template references it only when the file is on disk, so a build that skipped the
 hero produces a template with no image rather than one with a broken image in it.
+
+## Two lines of copy that every serious abandoned cart email has
+
+> Prices and availability can change, and a basket is not a reservation.
+
+> If you have already completed your purchase, please disregard this email.
+
+The second was missing until 9 August 2026 and is in the reference. It costs a line and it
+is the difference between an email that reads as automated and one that reads as
+considered.
 
 ## The urgency line, and what is not in it
 

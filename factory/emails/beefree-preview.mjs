@@ -25,47 +25,58 @@ import { templateRows } from './beefree.mjs';
    abandoned-cart-total.html. Kept deliberately close to those files: this is a preview
    of them, so a divergence here is a preview that flatters the real thing. */
 function productRows(products, palette) {
-    return products.map((product, index) => {
-        const price = product.price;
-        const cut = product.discounted;
-        /* Same rhythm as the asset: the gap and the hairline are on the TOP of every row
-           but the first, so the list ends flush against whatever follows it. */
-        const gap = index === 0 ? 0 : 20;
-        const rule = gap ? 'border-top:1px solid rgba(128,128,128,0.16);' : '';
-        /* THE IMAGE CELL DISAPPEARS WITH THE IMAGE. Keeping an empty 112px cell left a
-           block of dead space beside every row on a catalogue the scrape got no pictures
-           from, which is a real case: one of the demos in this repository has none. Same
-           condition, same place, in abandoned-cart.html. */
-        return '<tr>' +
+    /* CARDS, TWO ACROSS, CENTRED, matching abandoned-cart.html row for row. A 96px
+       thumbnail beside left-aligned text read as an order confirmation; the reference
+       this was rebuilt against merchandises them instead. */
+    const leaf = (path) => String(path || '').split('>').pop().trim();
+    /* Same clamp and the same fixed height frame as the asset, or the preview would
+       flatter it: ragged card heights are exactly what these two fix. */
+    const short = (value) => {
+        const t = String(value || '').trim();
+        if (!t) return 'Your item';
+        return t.length > 60 ? t.substring(0, 57).replace(/[\s,]+$/, '') + '...' : t;
+    };
+
+    const card = (product) => {
+        if (!product) return '<td width="50%" style="font-size:0;line-height:0;">&nbsp;</td>';
+        const category = leaf(product.category);
+        return '<td width="50%" align="center" valign="top" ' +
+            'style="padding:0 9px 30px 9px;">' +
             (product.image
-                ? '<td width="112" valign="top" style="padding:' + gap + 'px 18px 0 0;' + rule + '">' +
-                  '<img src="' + product.image + '" alt="" width="96" ' +
-                  'style="width:96px;height:auto;border:0;display:block;">' +
-                  '</td>'
+                ? '<table cellpadding="0" cellspacing="0" border="0" width="100%" ' +
+                  'style="border-collapse:collapse;"><tr>' +
+                  '<td height="200" align="center" valign="middle" style="height:200px;">' +
+                  '<img src="' + product.image + '" alt="" width="200" style="max-width:200px;' +
+                  'max-height:200px;width:100%;height:auto;border:0;display:block;' +
+                  'margin:0 auto;border-radius:8px;"></td></tr></table>'
                 : '') +
-            '<td valign="top" style="padding:' + (gap + 3) + 'px 0 0 0;' + rule +
-            'font-family:inherit;color:inherit;">' +
-            (product.category
+            (category
                 ? '<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;' +
-                  'opacity:0.45;padding:0 0 6px 0;">' + product.category + '</div>'
+                  'opacity:0.45;padding:16px 0 6px 0;">' + category + '</div>'
                 : '') +
-            '<div style="font-size:17px;line-height:1.35;padding:0 0 9px 0;">' +
-            '<span style="font-weight:bold;">' + product.name + '</span></div>' +
-            (price
+            '<div style="font-size:15px;line-height:1.4;font-weight:bold;padding:' +
+            (category ? 0 : 16) + 'px 0 7px 0;">' + short(product.name) + '</div>' +
+            (product.price
                 ? '<div style="font-size:14px;line-height:1.4;">' +
-                  (cut
-                      ? '<span style="font-weight:bold;">' + cut + '</span>' +
+                  (product.discounted
+                      ? '<span style="font-weight:bold;">' + product.discounted + '</span>' +
                         '<span style="text-decoration:line-through;opacity:0.45;' +
-                        'padding-left:7px;">' + price + '</span>'
-                      : '<span style="font-weight:bold;">' + price + '</span>') +
+                        'padding-left:7px;">' + product.price + '</span>'
+                      : '<span style="font-weight:bold;">' + product.price + '</span>') +
                   (product.quantity > 1
                       ? '<span style="opacity:0.55;padding-left:7px;">Qty ' +
                         product.quantity + '</span>'
                       : '') +
                   '</div>'
                 : '') +
-            '</td></tr>';
-    }).join('');
+            '</td>';
+    };
+
+    let out = '';
+    for (let i = 0; i < products.length; i += 2) {
+        out += '<tr>' + card(products[i]) + card(products[i + 1]) + '</tr>';
+    }
+    return out;
 }
 
 function summaryRows(totals, palette) {

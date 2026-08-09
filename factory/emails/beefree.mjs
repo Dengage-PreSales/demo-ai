@@ -338,14 +338,14 @@ export function beefreeAbandonedCart(options) {
         textModule(uid(), palette,
             'Everything you added is still saved. Here is what is waiting in your basket.',
             { size: 15, colour: palette.quiet })
-    ]], { top: 32, bottom: 24 }));
+    ]], { top: 36, bottom: 30 }));
 
     /* 5. THE BASKET. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
             dynamicBlock(palette, 'dps abandoned cart', snippets.items,
                 'The visitor\'s own basket, resolved from their cart events.'))
-    ]], { top: 0, bottom: 6 }));
+    ]], { top: 0, bottom: 10 }));
 
     /* 6. THE SUMMARY, on the wash so it reads as a summary rather than another product.
 
@@ -360,7 +360,7 @@ export function beefreeAbandonedCart(options) {
         htmlModule(uid(), palette,
             dynamicBlock(palette, 'dps abandoned cart total', snippets.total,
                 'The subtotal, the total and the button back to that basket.'))
-    ]], { ground: palette.wash, top: 22, bottom: 22 }));
+    ]], { ground: palette.wash, top: 26, bottom: 28 }));
 
     /* 7. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
        discount that expires would all be invented, and a prospect can see through
@@ -389,6 +389,7 @@ export function beefreeAbandonedCart(options) {
             { size: 13, colour: palette.canvasText, bottom: 8 }),
         textModule(uid(), palette,
             'You are receiving this because you shopped with us.<br>' +
+            'If you have already completed your purchase, please disregard this email.<br>' +
             'This is a demonstration storefront built for a sales conversation.',
             { size: 12, colour: palette.canvasQuiet, linkColor: palette.canvasQuiet })
     ]], { ground: palette.canvas, top: 24, bottom: 28 }));
