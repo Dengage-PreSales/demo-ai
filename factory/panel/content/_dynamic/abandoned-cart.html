@@ -1,0 +1,59 @@
+{% /* ==========================================================================
+      dps abandoned cart, HTML.  Content > Dynamic Content > New > HTML.
+
+      The contact's basket, newest first, with the name, picture and price of each
+      item. Referenced from an email with Insert > Dynamic Content, which writes the
+      snippet tag for you.
+
+      TWO STEPS, AND THE SECOND ONE IS WHY THIS ASSET EXISTS. shopping_cart_events
+      records that something happened to a product_id and carries no name, picture or
+      category: no Dengage event table does. So each id is looked up in dps_product,
+      the dimension the ETL loads from Postgres.
+
+      NO COLOURS IN HERE, DELIBERATELY. One asset serves every demo, and nothing in a
+      send says which demo triggered it, so this cannot know the brand. Every element
+      carries a dps- class and the email supplies the palette. See the README beside
+      this file for the class list.
+      ====================================================================== */ %}
+{% var lines = $from("shopping_cart_events")
+     .where("contact_key", "=", $Contact.contact_key)
+     .orderByDescending("event_date")
+     .take(3)
+     .get(); %}
+{% if (lines.length) { %}
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" class="dps-items">
+{% for (var i = 0; i < lines.length; i++) { %}
+  {% var p = $from("dps_product")
+       .where("product_id", "=", lines[i].product_id)
+       .take(1)
+       .get()[0]; %}
+  {% /* A product withdrawn from the catalogue still has cart rows from before it
+        went. Reminding somebody about something they cannot buy is worse than being
+        one item short, so it is skipped rather than shown. */ %}
+  {% if (p && p.is_active == 1) { %}
+  <tr class="dps-row">
+    <td width="96" valign="top" class="dps-thumbcell">
+      <a href="{%= p.link =%}"><img src="{%= p.small_image_link || p.image_link =%}" width="96" height="96" alt="{%= p.title =%}" class="dps-thumb"></a>
+    </td>
+    <td valign="top" class="dps-text">
+      <div class="dps-name"><a href="{%= p.link =%}" class="dps-namelink">{%= p.title =%}</a></div>
+      {% if (p.category_path) { %}<div class="dps-meta">{%= p.category_path =%}</div>{% } %}
+      <div class="dps-price">
+        {% /* A reduction is only shown when there genuinely is one. The Postgres side
+              refuses a discounted_price at or above price with a check constraint, so
+              this is the second of two places that will not invent a saving. */ %}
+        {% if (p.discounted_price) { %}{%= p.discounted_price =%} <span class="dps-was">{%= p.price =%}</span>{% } else { %}{%= p.price =%}{% } %}
+      </div>
+      {% if (lines[i].quantity && lines[i].quantity > 1) { %}<div class="dps-meta">Quantity {%= lines[i].quantity =%}</div>{% } %}
+    </td>
+  </tr>
+  {% } %}
+{% } %}
+</table>
+{% } else { %}
+{% /* AN EMPTY BASKET IS A REAL CASE, not an error. A journey can fire moments after
+      somebody clears their cart, or after they finished buying on another device. The
+      fallback says something true and useful rather than leaving a blank space where
+      the products should be. */ %}
+<div class="dps-empty">Your basket is empty at the moment. Everything you saved earlier is still on your account.</div>
+{% } %}

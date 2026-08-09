@@ -82,8 +82,45 @@ export const COLUMNS = {
         order: 'order_id', product: 'product_id', variant: 'product_variant_id',
         price: 'unit_price', discounted: 'discounted_price',
         quantity: 'quantity', time: 'event_date'
+    },
+
+    /* THE PRODUCT DIMENSION, and the reason anything above can show a product at all.
+       The five specs above are facts: they record that something happened to a
+       product_id. This is the one that says what that id IS.
+
+       It is not one of the six standard tables. It is loaded by Dengage's ETL from
+       Postgres (factory/panel/supabase/), so unlike the six, its columns are ours and
+       can be relied on rather than discovered. Settled 9 August 2026 in preference to
+       a remote table, because remote tables are documented for Interactive Segments
+       and never mentioned for personalisation, and a live passthrough would have meant
+       one external query per recipient at send time.
+
+       link and image_link are absolute in the row itself. That is what lets one shared
+       piece of dynamic content serve every demo: nothing in a send says which demo
+       triggered it, so the demo's addresses have to arrive with the data. */
+    product: {
+        table: 'dps_product',
+        id: 'product_id', name: 'title', image: 'image_link',
+        thumb: 'small_image_link', price: 'price', discounted: 'discounted_price',
+        link: 'link', category: 'category_path', brand: 'brand',
+        availability: 'availability', stock: 'stock_count', active: 'is_active'
     }
 };
+
+/* THE LOOKUP THAT TURNS AN ID INTO A PRODUCT. Emitted inside a loop over an event
+   table, so each row's product_id becomes a row of dps_product.
+
+   is_active is checked rather than trusted. A product withdrawn from the catalogue
+   still has cart rows from before it went, and a basket reminder for something that
+   cannot be bought is worse than one item short. `continue` skips it, so the message
+   shows what remains instead of an empty slot. */
+export function productLookup(cursor, variable) {
+    const p = COLUMNS.product;
+    return '{% var ' + variable + ' = $from("' + p.table + '")' +
+        '.where("' + p.id + '", "=", ' + cursor + '.' + COLUMNS.cart.product + ')' +
+        '.take(1).get()[0]; %}' +
+        '{% if (!' + variable + ' || ' + variable + '.' + p.active + ' != 1) { continue; } %}';
+}
 
 /* A Dengage query, as the expression that goes inside a {% %} block. Newest
    first and a small take, because an email shows a few things rather than a

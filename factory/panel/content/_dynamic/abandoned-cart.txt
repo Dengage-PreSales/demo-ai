@@ -1,0 +1,35 @@
+{% /* ==========================================================================
+      dps abandoned cart, Plain Text.  Content > Dynamic Content > New > Plain Text.
+
+      One line naming what is in the basket, for SMS and for a WhatsApp body. Not a
+      list: an SMS has 400 characters, Dengage charges a non-ANSI character as two, and
+      a three item list would eat the message and the call to action with it.
+
+      SO IT NAMES THE FIRST ITEM AND COUNTS THE REST. "Your Wireless Mouse and 2 more
+      items" carries the same recognition as a list at a fraction of the length.
+
+      THE NAME IS TRUNCATED IN THE TAG, NOT HOPED ABOUT. Product names in a real
+      catalogue run past 100 characters, so substring caps it at send time and the
+      message fits by construction whatever the catalogue holds. 48 characters is
+      enough to be recognisable and leaves room for the rest of the sentence.
+
+      NO EMOJI ANYWHERE IN HERE, for the ANSI reason above.
+      ====================================================================== */ %}
+{% var lines = $from("shopping_cart_events")
+     .where("contact_key", "=", $Contact.contact_key)
+     .orderByDescending("event_date")
+     .take(3)
+     .get(); %}
+{% var first = null; var count = 0; %}
+{% for (var i = 0; i < lines.length; i++) { %}
+  {% var p = $from("dps_product")
+       .where("product_id", "=", lines[i].product_id)
+       .take(1)
+       .get()[0]; %}
+  {% if (p && p.is_active == 1) { count = count + 1; if (!first) { first = p; } } %}
+{% } %}
+{% if (first) { %}
+{%= first.title.length > 48 ? first.title.substring(0, 45) + "..." : first.title =%}{% if (count > 2) { %} and {%= count - 1 =%} more items{% } else if (count == 2) { %} and 1 more item{% } %}
+{% } else { %}
+the items you saved
+{% } %}

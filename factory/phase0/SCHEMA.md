@@ -111,6 +111,24 @@ Added 9 August 2026. This is the table that unblocks product personalisation, an
 is an ordinary Data Space table rather than one of the six, so this repository can
 be told about its columns and they can be relied on.
 
+**dps_product**, 27 columns
+
+```
+product_id  title  description  category_id  brand_id  link
+image_link  price  discounted_price  availability  availability_date
+stock_count  parent_id  trans_title  product_vendor  category_path
+brand  mobile_web_link  android_deep_link  ios_deep_link
+small_image_link  large_image_link  is_active  product_special_code
+store_name  legacy_resource_id  publish_date
+```
+
+Loaded by Dengage's ETL from Postgres, settled 9 August 2026 in preference to a
+remote table: remote tables are documented for Interactive Segments and never
+mentioned for personalisation, and a live passthrough would mean one external query
+per recipient at send time. Against a stored table, `$from` is exactly what the
+documentation describes. `factory/panel/supabase/README.md` has the chain and the
+freshness consequence.
+
 Its **`product_id` is the join to the star schema**, and it needs one relationship
 per event table that carries that column. Four of the six do:
 

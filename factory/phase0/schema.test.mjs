@@ -55,8 +55,11 @@ function readSchema() {
 
 const schema = readSchema();
 
-ok('SCHEMA.md records all six tables', Object.keys(schema).length === 6,
-   Object.keys(schema));
+/* Seven: the six standard tables plus dps_product, which is ours rather than the
+   platform's and is loaded by the ETL from Postgres. */
+ok('SCHEMA.md records the six standard tables and the product dimension',
+   Object.keys(schema).length === 7, Object.keys(schema));
+ok('and dps_product is one of them', Boolean(schema.dps_product));
 
 for (const [table, columns] of Object.entries(schema)) {
     ok(table + ' records its columns', columns.length >= 6,
@@ -85,8 +88,8 @@ for (const [key, spec] of Object.entries(COLUMNS)) {
    here rather than in a send nobody is watching. */
 const banned = [
     ['event_time', 'the column is event_date on every table'],
-    ['product_name', 'no table carries a product name. Product Box resolves the id'],
-    ['product_image', 'no table carries a product image. Product Box resolves the id'],
+    ['product_name', 'no EVENT table carries a product name. dps_product.title does'],
+    ['product_image', 'no EVENT table carries an image. dps_product.image_link does'],
     ['search_query', 'the column is keywords']
 ];
 for (const [column, why] of banned) {
@@ -96,13 +99,28 @@ for (const [column, why] of banned) {
     ok('nothing reads ' + column + ', because ' + why, used.length === 0, used);
 }
 
-/* And the absence is real rather than a spelling I missed: no table anywhere has a
-   column that looks like a product label or an image. */
-const everything = Object.values(schema).flat();
-for (const shape of ['product_name', 'product_image', 'name', 'title', 'image']) {
-    if (shape === 'title') continue;   /* page_title is a page, not a product */
-    ok('no table has a ' + shape + ' column', !everything.includes(shape),
-       everything.filter((c) => c === shape));
+/* The absence is still real on the EVENT tables, which is what made the dimension
+   necessary. Checked against the six only, because dps_product is where a title and
+   an image legitimately live now. */
+const eventTables = Object.entries(schema)
+    .filter(([name]) => name !== 'dps_product')
+    .flatMap(([, columns]) => columns);
+for (const shape of ['product_name', 'product_image', 'title', 'image_link']) {
+    ok('no event table has a ' + shape + ' column', !eventTables.includes(shape),
+       eventTables.filter((c) => c === shape));
+}
+
+/* And the join exists in both directions, which is the whole architecture in two
+   assertions: the dimension is keyed on product_id, and the event tables that need it
+   carry the same column. */
+ok('dps_product is keyed on product_id', schema.dps_product.includes('product_id'));
+for (const table of ['shopping_cart_events', 'page_view_events', 'wishlist_events',
+                     'order_events_detail']) {
+    ok(table + ' can join to it on product_id', schema[table].includes('product_id'));
+}
+/* And the two that cannot, so a future change does not quietly assume they can. */
+for (const table of ['order_events', 'search_events']) {
+    ok(table + ' carries no product_id, by design', !schema[table].includes('product_id'));
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

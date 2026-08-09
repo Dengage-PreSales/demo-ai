@@ -85,26 +85,39 @@ select cron.schedule('refresh-techiestore', '0 3 * * *',
 
 ---
 
-## The test that decides the architecture
+## Settled 9 August 2026: the ETL, not a remote table
 
-Segments over a remote table are documented. **Personalisation over one is not**, and
-that is the half the emails need. So before anything is built on it, create one
-Dynamic Content of type HTML containing only this, and preview it against a test
-contact:
+Salil's call, after trying it. Dengage's ETL copies this table into a real Data Space
+`dps_product`, and content queries that.
+
+**Nothing above changes.** The column names, the types, the constraints, the loader
+and the read only role are all exactly what an ETL source needs. Only the direction
+changes: instead of Dengage querying Postgres per recipient, the ETL copies rows in
+on a schedule and content reads local storage.
+
+**What it buys, and it is the reason the doubt existed.** Remote tables are
+documented for Interactive Segments and never mentioned for personalisation, which is
+the half the emails need. A remote table is also a live passthrough, so a `$from`
+inside an email would have meant one external query per recipient: fine for five
+contacts on a demo, not fine for a real send. Against a stored table, `$from` is
+exactly what the documentation describes, so the uncertainty is gone.
+
+**What it costs.** Freshness is now the ETL's schedule rather than live. That makes
+the order of the chain matter:
 
 ```
-{% var p = $from("dps_product").take(1).get(); %}
-{%= p.length ? p[0].title : "nothing came back" =%}
+factory publishes demos/<slug>/products.json
+   -> load_dps_product('<slug>') in Postgres        (pg_cron, or by hand)
+   -> the Dengage ETL copies Postgres to dps_product
+   -> content reads dps_product with $from
 ```
 
-A title means one mechanism serves everything. Empty output, an error or a timeout
-means content has to read a stored table, and the fallback is loading `dps_product`
-through the ETL that is already connected. Either way the queries written against it
-do not change, because the column names are identical.
+Put the Postgres refresh comfortably before the ETL window, not alongside it. A price
+that changed in the catalogue after the ETL ran shows the old figure until the next
+pass, and a price on screen is the one value a prospect checks.
 
-Worth knowing why the doubt is real rather than pedantic: a remote table is a live
-passthrough, and `$from` inside an email runs once per recipient. Five contacts on a
-demo is nothing; a real send is one external query per recipient.
+A remote table is still worth keeping alongside for **segments** if live matters
+there, since that use is documented. The two can point at the same table.
 
 ---
 
