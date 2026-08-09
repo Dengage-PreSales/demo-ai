@@ -1,18 +1,77 @@
-{% var lines = $from('$db.shopping_cart_events')
-     .where('key', '=', $Contact.contact_key)
-     
-     .take(3)
-     .get(); %}
-{% var first = null; var count = 0; %}
-{% for (var i = 0; i < lines.length; i++) { %}
-  {% var p = $from('$db.dps_product')
-       .where("product_id", "=", lines[i].product_id)
-       .take(1)
-       .get()[0]; %}
-  {% if (p && p.is_active) { count = count + 1; if (!first) { first = p; } } %}
-{% } %}
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = $from('$db.master_device')
+    .where('contact_key', '=', $Contact.contact_key)
+    .take(50)
+    .get();
+
+  for (var d = 0; d < devices.length; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.shopping_cart_events').where('key', 'in', keys).take(100).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    return Number(a.id) - Number(b.id);
+  });
+
+  var present = {};
+  var seen = [];
+  for (var r = 0; r < rows.length; r++) {
+    var row = rows[r] || {};
+    var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
+    var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
+
+    if (kind === 'delete_cart') { present = {}; seen = []; }
+    else if (pid === "") { }
+    else if (kind === 'add_to_cart') {
+      present[pid] = { quantity: row.quantity };
+      seen.push(pid);
+    }
+    else if (kind === 'remove_from_cart') { present[pid] = null; }
+  }
+
+  var ids = [];
+  for (var s = seen.length - 1; s >= 0 && ids.length < 3; s--) {
+    if (present[seen[s]] && ids.indexOf(seen[s]) === -1) { ids.push(seen[s]); }
+  }
+
+  var products = ids.length
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(10).get()
+    : [];
+
+  var byId = {};
+  for (var p = 0; p < products.length; p++) {
+    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+  }
+
+  var formatUrl = function (url) {
+    var u = (url == null) ? "" : String(url).trim();
+    if (u.indexOf("http://") === 0 || u.indexOf("https://") === 0) { return u; }
+    return "#";
+  };
+
+  var money = function (value) {
+    var n = Number(value);
+    if (!isFinite(n)) { return ""; }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+%}{% var first = null; var count = 0; %}
+{% for (var i = 0; i < ids.length; i++) {
+     var product = byId[ids[i]];
+     if (!product || !product.is_active) { continue; }
+     count = count + 1;
+     if (!first) { first = product; }
+%}{% } %}
 {% if (first) { %}
-{%= first.title.length > 48 ? first.title.substring(0, 45) + "..." : first.title %}{% if (count > 2) { %} and {%= count - 1 %} more items{% } else if (count == 2) { %} and 1 more item{% } %}
+{%= String(first.title).length > 48 ? String(first.title).substring(0, 45) + "..." : first.title %}{% if (count > 2) { %} and {%= count - 1 %} more items{% } else if (count == 2) { %} and 1 more item{% } %}
 {% } else { %}
 the items you saved
 {% } %}

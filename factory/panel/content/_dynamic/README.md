@@ -30,26 +30,46 @@ per scenario rather than one per channel.
 
 ---
 
-## Testing one of these: open the demo with ?ck=
+## No login required, and that is the point
 
-**A message queries the CONTACT's rows, so the browsing session has to be that
-contact.** Browse a demo normally and the events still land, but
-`shopping_cart_events.key` holds the DEVICE id rather than the contact key, which
-`template/js/identity.js` states and Phase 0 established. The contact card still shows
-the activity, because the device is linked to the contact, so it looks as though the
-data is there and the query is broken. It is not: the rows simply are not keyed to the
-contact.
+An abandoned cart programme that only works for signed-in visitors is not an abandoned
+cart programme. Salil's requirement, 9 August 2026, and it is right: once a device is
+linked to a contact, whatever happens on that device belongs to that contact. That
+relationship is what `master_contact` and `master_device` exist to express.
+
+So the asset resolves a SET of keys before it queries anything:
 
 ```
-https://dengage-presales.github.io/demo-ai/demos/<slug>/?ck=<contact key>
+$Contact.contact_key                          when the visitor identified
++ every device_id from master_device
+    where contact_key = $Contact.contact_key   which covers anonymous browsing
 ```
 
-identity.js resolves that before the SDK initializes, so every event from then on
-carries the contact key. Add to the basket AFTER opening it that way, then Test the
-email as the same contact.
+then `shopping_cart_events.where('key', 'in', thoseKeys)`.
 
-This cost an afternoon of looking for a bug in the query. Checking identity.js first
-would have been quicker, and it was already written down.
+**Why it has to.** `shopping_cart_events.key` holds the CONTACT key when the visitor
+identified and the DEVICE id when they did not, which `template/js/identity.js` states
+and Phase 0 established. Filtering on the contact key alone therefore finds nothing for
+an anonymous session, while the contact card still shows the activity through the device
+link. That combination is what makes it look like a broken query when it is not.
+
+`?ck=<contact key>` on a demo URL still works and is still useful for demonstrating as a
+named contact, but it is no longer required for the cart to resolve.
+
+## The basket is replayed, not read off the newest rows
+
+`shopping_cart_events` is a log, not a basket. The same product appears once per
+`add_to_cart`, again on `remove_from_cart`, and `begin_checkout` sits among them. Taking
+the newest three rows returns removals as though they were the contents.
+
+So the events are walked oldest to newest: `add_to_cart` puts a product in,
+`remove_from_cart` takes it out, `delete_cart` empties everything. What survives is the
+real basket, newest addition first.
+
+**Ordered by `event_date` and then by `id`.** The tie-break is not decoration: a real
+session puts seven cart events in the same minute, and without the row id the order
+inside that minute is arbitrary, so adds and removes resolve at random. Proved against
+the actual rows from the panel before and after adding it.
 
 ## Two rules these files follow, both learned the hard way
 

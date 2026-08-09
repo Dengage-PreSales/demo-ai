@@ -172,10 +172,31 @@ for (const table of ['order_events', 'search_events']) {
 
        $Contact.contact_key stays correct on the contact side, so this looks only for a
        where clause naming the column. */
-    const wrongKey = files.filter((f) =>
-        /where\s*\(\s*['"]contact_key['"]/.test(readFileSync(join(ROOT, f), 'utf8')));
-    ok('no query filters on a contact_key column, which no event table has',
+    /* NARROWED, because contact_key is not wrong everywhere. It is the correct column
+       on master_device and master_contact, and it is how a message reaches the devices
+       linked to a contact. It is only wrong on the six EVENT tables, whose column is
+       key. So the check looks for an event table followed by that filter rather than
+       for the column name on its own, which flagged the legitimate device join. */
+    const eventTableNames = ['page_view_events', 'shopping_cart_events', 'order_events',
+                             'order_events_detail', 'wishlist_events', 'search_events'];
+    const wrongKey = files.filter((f) => {
+        const text = readFileSync(join(ROOT, f), 'utf8');
+        return eventTableNames.some((t) =>
+            new RegExp(t + "['\"]\\s*\\)\\s*\\n?\\s*\\.where\\s*\\(\\s*['\"]contact_key").test(text));
+    });
+    ok('no event table is filtered on contact_key, whose column is key',
        wrongKey.length === 0, wrongKey);
+
+    /* And the other half of the same rule: reaching a contact's devices is how an
+       abandoned cart works without a login, so master_device IS filtered on
+       contact_key. Asserted so a future tightening of the check above cannot quietly
+       break it. */
+    const cartAsset = readFileSync(
+        join(ROOT, 'factory/panel/content/_dynamic/abandoned-cart.html'), 'utf8');
+    ok('the cart asset reaches the contact\'s devices, so no login is required',
+       /master_device['"]\s*\)\s*\n?\s*\.where\s*\(\s*['"]contact_key/.test(cartAsset));
+    ok('and it filters cart rows on key, not contact_key',
+       /shopping_cart_events['"]\s*\)\.where\s*\(\s*['"]key['"]/.test(cartAsset));
 
     /* A TABLE IS ADDRESSED AS $db.<table>. Taken from a snippet known to work in a live
        account: $from('$db.product'). A bare table name was what this repository used. */
