@@ -300,6 +300,41 @@ contains only code.
 column BOOLEAN, confirmed from its API, so that comparison was false for every product
 and the block would have rendered empty while looking like a data problem.
 
+## The typeface, and why `inherit` is not enough on its own
+
+**These assets never name a font, and they cannot.** One asset serves every demo and
+every template, so an explicit family in here would beat whatever the surrounding email
+said. They declare `font-family: inherit` and take what is around them.
+
+**Which is nothing, in BeeFree.** Read out of a real export from this account: all 67 of
+its `font-family` declarations are inline on individual blocks. Not one global CSS rule,
+and none on the `<body>`. BeeFree sets a typeface on every block and never on the email.
+So `inherit` inside an HTML block has nothing above it to inherit from, and every mail
+client falls back to its default, which is a serif. That is why the first real send put
+every product name in Times under a sans headline.
+
+**So the template supplies it, in the block's own content.** The generated template wraps
+each `<snippet>` tag in
+
+```html
+<div style="font-family:...;font-size:15px;line-height:1.6;color:...;">
+```
+
+which is inside the snippet's own document, so `inherit` resolves to it. The module's own
+`style.font-family` does not carry: BeeFree treats an HTML block as raw HTML and puts no
+typography around it, which is exactly why the first attempt failed.
+
+**It is the same face the text blocks use, and that is pinned.** `beefree.test.mjs`
+asserts every wrapper declares the identical family the headline and copy declare, so a
+change to one of them fails rather than shipping an email whose products are in a
+different typeface from its words.
+
+**One consequence worth knowing.** Change the template's typeface by hand in the Email
+Builder and the wrapper does not follow, because it is content rather than a block style.
+Change it in `template/style.css` and rebuild instead, which is where the standard
+palette lives and where both halves read it from. Pasting one of these assets into a
+template that has no wrapper gives the client default for the same reason.
+
 ## Styling: inline, and as little as possible
 
 Earlier these used `dps-` class names on the assumption that each generated email would

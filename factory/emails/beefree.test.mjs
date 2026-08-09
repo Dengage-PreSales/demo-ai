@@ -189,19 +189,45 @@ function walk(template) {
            '<snippet snippet_id="' + TOTAL + '" snippet_name="dps abandoned cart total"></snippet>'),
        resolved.map((m) => m.descriptor.html.html));
 
-    /* THE WRAPPER IS NOT DECORATION, so it is asserted rather than assumed. The saved
-       assets style themselves font-family:inherit because they are shared by every demo
-       and cannot name a face. In the builder nothing surrounded them, inherit resolved to
-       the client default, and every product name came out in Times under a sans headline.
-       This div is what it inherits from. */
-    ok('and both blocks are wrapped in the demo\'s typeface',
+    /* THE WRAPPER IS THE ONLY THING THAT GIVES A SNIPPET A TYPEFACE, and that is a fact
+       about BeeFree rather than a choice here. Read out of a real export from the
+       account: all 67 of its font-family declarations are inline on individual blocks,
+       there is not one global rule, and the body tag has none. So BeeFree sets a font on
+       every block and never on the email, which means font-family:inherit inside an HTML
+       block has nothing above it and falls through to the client default. That is why
+       every product name arrived in Times under a sans headline.
+
+       The saved assets cannot name a face themselves: they are shared by every demo, and
+       an explicit family on the content would beat anything the template said. So they
+       declare inherit, and this div is what they inherit from. */
+    ok('every block is wrapped in a typeface, because inherit alone resolves to Times',
        resolved.every((module) =>
-           module.descriptor.html.html.indexOf('<div style="font-family:') === 0 &&
-           module.descriptor.html.html.includes("'DM Sans'")),
+           module.descriptor.html.html.indexOf('<div style="font-family:') === 0),
        resolved.map((m) => m.descriptor.html.html.slice(0, 60)));
     ok('the placeholders carry the same wrapper, so the preview is not flattering',
        html.every((module) =>
            module.descriptor.html.html.indexOf('<div style="font-family:') === 0));
+
+    /* AND IT IS THE SAME FACE THE TEXT BLOCKS USE, pinned rather than hoped for. The
+       wrapper and the headline are written by two different functions from the same
+       palette, so they agree by construction today. This is what makes a future change to
+       one of them fail rather than ship an email whose products are in a different
+       typeface from its copy. */
+    const family = (declaration) => {
+        const found = /font-family:([^;"]+)/.exec(declaration || '');
+        return found ? found[1].trim() : '';
+    };
+    const textFamilies = walk(template).modules
+        .filter((module) => module.descriptor.text)
+        .map((module) => module.descriptor.text.style['font-family']);
+    const wrapperFamilies = html.map((module) => family(module.descriptor.html.html));
+
+    ok('the text blocks all declare one typeface',
+       new Set(textFamilies).size === 1, [...new Set(textFamilies)]);
+    ok('and every Dynamic Content wrapper declares exactly that one',
+       new Set(wrapperFamilies).size === 1 &&
+       wrapperFamilies[0] === textFamilies[0],
+       { wrapper: [...new Set(wrapperFamilies)], text: [...new Set(textFamilies)] });
     ok('and the placeholder is gone',
        resolved.every((module) => module.descriptor.html.html.indexOf('dashed') === -1));
     ok('the recommendation block takes an id like the other two',
