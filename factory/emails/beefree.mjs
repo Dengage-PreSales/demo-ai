@@ -92,7 +92,11 @@ function htmlModule(uuid, palette, html, bottom) {
                 style: { 'font-family': palette.body, 'font-size': '15px' },
                 computedStyle: { hideContentOnMobile: false }
             },
-            style: pad(0, 24, bottom === undefined ? 0 : bottom, 24),
+            /* NO SIDE PADDING HERE ON PURPOSE. BeeFree does not apply it to an HTML
+               block, and themed() puts it inside the content where it does apply, so
+               declaring it in both places would leave two sources and no way to tell
+               which one a client honoured. */
+            style: pad(0, 0, bottom === undefined ? 0 : bottom, 0),
             computedStyle: { hideContentOnMobile: false }
         }
     };
@@ -212,21 +216,32 @@ function row(uuid, palette, columns, options) {
    The placeholder is not a comment, deliberately. An HTML comment is invisible in the
    builder, so the block reads as an empty template rather than as a spot with a job.
 
-   IT IS WRAPPED IN A DIV THAT SETS THE TYPEFACE, AND THAT WRAPPER IS THE FIX FOR THE
-   ONE THING THAT LOOKED WRONG IN A REAL SEND. The saved assets are shared by every
-   demo, so they cannot name a font: they style themselves `font-family: inherit` and
-   take whatever surrounds them. In the builder nothing surrounded them, so inherit
-   resolved to the mail client's default and every product name came out in Times while
-   the headline above it was the demo's own sans face.
+   IT IS WRAPPED IN A DIV THAT CARRIES THE TYPEFACE AND THE SIDE PADDING, and that
+   wrapper is the fix for the two things that looked wrong in real sends. Both have the
+   same cause: BEEFREE DECORATES A BLOCK, BUT NOT AN HTML BLOCK. It writes a typeface
+   inline on every other block and puts padding on a td around it, and it does neither
+   for raw HTML, which it passes through untouched.
 
-   The module's own style did not carry: BeeFree owns the export, and what a module
-   declares is not reliably an ancestor of what an HTML module contains. A div written
-   into the block's own content is, because it is inside the snippet's own document.
-   That is also what makes the asset stay generic while the email stays themed, which is
-   the whole point of one asset serving every demo. */
+   So a module's own descriptor.style is not an ancestor of what an HTML module contains,
+   and two things followed from assuming it was:
+
+     1. The assets style themselves font-family:inherit, because one asset serves every
+        demo and an explicit family would beat whatever the email said. With nothing above
+        them declaring one, inherit resolved to the client default and every product name
+        came out in Times under a sans headline.
+     2. The module's 24px of side padding never applied either, so the totals table sat
+        flush against both edges of the email while the text blocks were inset. The
+        product cards escaped notice only because their content is centred, so they looked
+        inset when they were not.
+
+   A div written into the block's own content is an ancestor, because it is inside the
+   snippet's own document. So it carries both, and the module itself carries neither: one
+   source for each rather than two that can disagree about which one applied. */
+const GUTTER = 24;
+
 function themed(palette, inner) {
     return '<div style="font-family:' + palette.body + ';font-size:15px;line-height:1.6;' +
-        'color:' + palette.text + ';">' + inner + '</div>';
+        'color:' + palette.text + ';padding:0 ' + GUTTER + 'px;">' + inner + '</div>';
 }
 
 function dynamicBlock(palette, asset, id, describe) {

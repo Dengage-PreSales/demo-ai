@@ -106,14 +106,25 @@ function moduleHtml(module, palette, filled) {
             d.text.html + '</div>';
     }
     if (d.html) {
-        /* The dashed placeholder is replaced by the real thing when there is one to
-           show, which is what makes this a look and feel check rather than a layout
-           check. Otherwise the placeholder is shown exactly as the builder shows it. */
+        /* THE WRAPPER IS KEPT AND ONLY ITS CONTENTS ARE SUBSTITUTED, which is the whole
+           difference between a faithful preview and a flattering one. An earlier version
+           replaced the block's entire HTML with the rendered products, wrapper included,
+           and then supplied the typeface and the padding from the module's own style. That
+           made the preview look correct while a real send was in Times with the totals
+           flush against both edges, because BeeFree applies neither to an HTML block.
+
+           So the module contributes nothing here beyond its vertical padding, exactly as
+           it does in the real thing, and everything else has to come from inside the
+           block's own content or it does not appear. */
         const replacement = filled[module.uuid];
-        const body = replacement === undefined ? d.html.html : replacement;
-        return '<div style="padding:' + padding + ';font-family:' +
-            d.html.style['font-family'] + ';font-size:' + d.html.style['font-size'] +
-            ';">' + body + '</div>';
+        let body = d.html.html;
+        if (replacement !== undefined) {
+            const wrapper = /^(<div style="[^"]*">)([\s\S]*)(<\/div>)$/.exec(body);
+            body = wrapper ? wrapper[1] + replacement + wrapper[3] : replacement;
+        }
+        const vertical = (d.style && d.style['padding-top']) || '0px';
+        const below = (d.style && d.style['padding-bottom']) || '0px';
+        return '<div style="padding:' + vertical + ' 0 ' + below + ' 0;">' + body + '</div>';
     }
     if (d.button) {
         const b = d.button.style;

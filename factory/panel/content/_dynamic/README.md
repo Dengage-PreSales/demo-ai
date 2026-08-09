@@ -300,6 +300,41 @@ contains only code.
 column BOOLEAN, confirmed from its API, so that comparison was false for every product
 and the block would have rendered empty while looking like a data problem.
 
+## BeeFree decorates a block, but not an HTML block
+
+**One fact, and it caused both of the things that looked wrong in real sends.** BeeFree
+writes a typeface inline on every block and puts a block's padding on a `td` around it. It
+does neither for raw HTML: an HTML block is passed through untouched. So a module's own
+`descriptor.style` is not an ancestor of what an HTML module contains.
+
+Two consequences, and each shipped once:
+
+1. These assets declare `font-family: inherit`, so with nothing above them declaring one,
+   every client fell back to its default and the product names arrived in Times under a
+   sans headline.
+2. The module's 24px of side padding never applied either, so the totals table sat flush
+   against both edges of the email while the text blocks were inset. The product cards hid
+   it, because their content is centred, so they looked inset when they were not.
+
+**Both are fixed the same way: the generated template puts them inside the block's own
+content**, in one wrapper div per snippet, which IS an ancestor:
+
+```html
+<div style="font-family:...;font-size:15px;line-height:1.6;color:...;padding:0 24px;">
+  <snippet snippet_id="..." snippet_name="..."></snippet>
+</div>
+```
+
+The module itself now declares no side padding at all, so there is one source for each
+rather than two that can disagree about which one a client honoured. `beefree.test.mjs`
+asserts the wrapper carries both, that the module carries neither, and that the gutter and
+the typeface match the ones the text blocks use.
+
+**The preview was flattering this**, which is why it went unnoticed twice. It replaced the
+whole block including the wrapper and then supplied the font and padding from the module
+style, so it looked right while the send did not. It now substitutes only inside the
+wrapper and takes nothing from the module but vertical padding, exactly as BeeFree does.
+
 ## The typeface, and why `inherit` is not enough on its own
 
 **These assets never name a font, and they cannot.** One asset serves every demo and

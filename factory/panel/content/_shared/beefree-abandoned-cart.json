@@ -360,7 +360,7 @@
                   "uuid": "dps-cart-11",
                   "descriptor": {
                     "html": {
-                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
                       "style": {
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                         "font-size": "15px"
@@ -371,9 +371,9 @@
                     },
                     "style": {
                       "padding-top": "0px",
-                      "padding-right": "24px",
+                      "padding-right": "0px",
                       "padding-bottom": "0px",
-                      "padding-left": "24px"
+                      "padding-left": "0px"
                     },
                     "computedStyle": {
                       "hideContentOnMobile": false
@@ -424,7 +424,7 @@
                   "uuid": "dps-cart-13",
                   "descriptor": {
                     "html": {
-                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
                       "style": {
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                         "font-size": "15px"
@@ -435,9 +435,9 @@
                     },
                     "style": {
                       "padding-top": "0px",
-                      "padding-right": "24px",
+                      "padding-right": "0px",
                       "padding-bottom": "0px",
-                      "padding-left": "24px"
+                      "padding-left": "0px"
                     },
                     "computedStyle": {
                       "hideContentOnMobile": false
@@ -488,7 +488,7 @@
                   "uuid": "dps-cart-15",
                   "descriptor": {
                     "html": {
-                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
+                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
                       "style": {
                         "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                         "font-size": "15px"
@@ -499,9 +499,9 @@
                     },
                     "style": {
                       "padding-top": "0px",
-                      "padding-right": "24px",
+                      "padding-right": "0px",
                       "padding-bottom": "0px",
-                      "padding-left": "24px"
+                      "padding-left": "0px"
                     },
                     "computedStyle": {
                       "hideContentOnMobile": false
@@ -1011,7 +1011,7 @@
                 "uuid": "dps-cart-11",
                 "descriptor": {
                   "html": {
-                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
                     "style": {
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                       "font-size": "15px"
@@ -1022,9 +1022,9 @@
                   },
                   "style": {
                     "padding-top": "0px",
-                    "padding-right": "24px",
+                    "padding-right": "0px",
                     "padding-bottom": "0px",
-                    "padding-left": "24px"
+                    "padding-left": "0px"
                   },
                   "computedStyle": {
                     "hideContentOnMobile": false
@@ -1075,7 +1075,7 @@
                 "uuid": "dps-cart-13",
                 "descriptor": {
                   "html": {
-                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
                     "style": {
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                       "font-size": "15px"
@@ -1086,9 +1086,9 @@
                   },
                   "style": {
                     "padding-top": "0px",
-                    "padding-right": "24px",
+                    "padding-right": "0px",
                     "padding-bottom": "0px",
-                    "padding-left": "24px"
+                    "padding-left": "0px"
                   },
                   "computedStyle": {
                     "hideContentOnMobile": false
@@ -1139,7 +1139,7 @@
                 "uuid": "dps-cart-15",
                 "descriptor": {
                   "html": {
-                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
+                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
                     "style": {
                       "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
                       "font-size": "15px"
@@ -1150,9 +1150,9 @@
                   },
                   "style": {
                     "padding-top": "0px",
-                    "padding-right": "24px",
+                    "padding-right": "0px",
                     "padding-bottom": "0px",
-                    "padding-left": "24px"
+                    "padding-left": "0px"
                   },
                   "computedStyle": {
                     "hideContentOnMobile": false

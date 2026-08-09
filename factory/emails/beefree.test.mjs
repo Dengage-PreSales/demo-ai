@@ -208,6 +208,32 @@ function walk(template) {
        html.every((module) =>
            module.descriptor.html.html.indexOf('<div style="font-family:') === 0));
 
+    /* THE SIDE PADDING IS IN THE SAME WRAPPER, AND FOR THE SAME REASON. BeeFree puts a
+       block's padding on a td around it and does not do that for raw HTML, so the module's
+       24px never applied and the totals table sat flush against both edges of the email
+       while the text blocks were inset. The product cards hid it, because their content is
+       centred, so they looked inset when they were not.
+
+       Asserted in both directions: the wrapper has it, and the module does not, so there
+       is one source rather than two that can disagree about which one a client honoured. */
+    ok('every wrapper carries the side gutter, because the module cannot',
+       resolved.every((module) => /padding:0 24px/.test(module.descriptor.html.html)),
+       resolved.map((m) => m.descriptor.html.html.slice(0, 120)));
+    ok('and the HTML modules declare no side padding, so there is only one source',
+       html.every((module) =>
+           module.descriptor.style['padding-left'] === '0px' &&
+           module.descriptor.style['padding-right'] === '0px'),
+       html.map((m) => m.descriptor.style));
+
+    /* AND THE GUTTER MATCHES THE TEXT BLOCKS', or the snippets would line up with nothing.
+       The text modules get theirs from BeeFree, which does honour a text block's padding. */
+    const textGutters = walk(template).modules
+        .filter((module) => module.descriptor.text)
+        .map((module) => module.descriptor.style['padding-left']);
+    ok('the gutter is the one the text blocks use',
+       new Set(textGutters).size === 1 && textGutters[0] === '24px',
+       [...new Set(textGutters)]);
+
     /* AND IT IS THE SAME FACE THE TEXT BLOCKS USE, pinned rather than hoped for. The
        wrapper and the headline are written by two different functions from the same
        palette, so they agree by construction today. This is what makes a future change to
