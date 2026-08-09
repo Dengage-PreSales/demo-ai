@@ -398,5 +398,29 @@ function catalogue(ids) {
        backwards.priced && backwards.discount === 0, backwards);
 }
 
+/* -------------------------------------------------------------------------- */
+/* 12. The markup around the logic, for the two things that have no image        */
+
+{
+    /* A TEXT CHECK, AND IT HAS TO BE. Everything above executes the resolution block,
+       but the rendering below it is a Dengage template rather than JavaScript, so the
+       only thing assertable offline is its shape. These two are worth the assertion
+       because both were wrong and neither showed up in a test.
+
+       The image cell has to be inside the condition, not just the image. An empty 112px
+       cell beside every row is what a catalogue with no pictures looked like, and one of
+       the demos in this repository has none. */
+    const source = readFileSync(join(HERE, 'abandoned-cart.html'), 'utf8');
+    const imageCell = source.indexOf('<td width="112"');
+    const condition = source.indexOf('{% if (image !== "") { %}');
+    ok('the image cell is inside the has-an-image condition',
+       condition !== -1 && condition < imageCell, { condition, imageCell });
+
+    /* And the image must not be given a fixed height. The catalogue's images are 1.00,
+       1.26 and 1.50 aspect, so a forced square squashed the wide ones. */
+    ok('the image has no forced height, so a wide photograph is not squashed',
+       /width:96px;height:auto/.test(source) && !/height="96"/.test(source));
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

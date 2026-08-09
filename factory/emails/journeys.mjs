@@ -30,6 +30,7 @@ import {
     heading, paragraph, quietLine, eyebrow, divider
 } from './layout.mjs';
 import { QUERIES, COLUMNS, repeat, scalar, firstName } from './data.mjs';
+import { demoLink } from '../demo-links.mjs';
 
 function greeting(mode, ctx) {
     return 'Hi ' + firstName(mode, ctx.sampleFirstName) + ',';
@@ -134,7 +135,7 @@ function checkoutRescue(p, ctx, mode) {
             paragraph(p, greeting(mode, ctx) + ' you were one step from finishing. Nothing has ' +
                 'been lost, and picking up where you left off takes a moment.'),
             cartItems(p, ctx, mode),
-            button(p, 'Finish checkout', ctx.storeUrl + 'checkout.html'),
+            button(p, 'Finish checkout', demoLink(ctx.storeUrl, 'checkout')),
             divider(p),
             objections(p, [
                 ['Delivery', 'Standard delivery is calculated at checkout, with the arrival date shown before you pay.'],
@@ -157,7 +158,7 @@ function cartAbandonment(p, ctx, mode) {
             heading(p, 'Still here whenever you are'),
             paragraph(p, greeting(mode, ctx) + ' your basket is saved. Here is what is in it.'),
             cartItems(p, ctx, mode),
-            button(p, 'Return to basket', ctx.storeUrl + 'cart.html'),
+            button(p, 'Return to basket', demoLink(ctx.storeUrl, 'cart')),
             divider(p),
             /* Recommendation Rule: Frequently Bought Together, context source
                Event Attribute set to the abandoned product. */
@@ -230,7 +231,7 @@ function priceDrop(p, ctx, mode) {
             paragraph(p, greeting(mode, ctx) + ' this has been sitting on your saved list, and ' +
                 'it now costs less than it did then.'),
             savedItems(p, ctx, mode),
-            button(p, 'View your saved items', ctx.storeUrl + 'wishlist.html'),
+            button(p, 'View your saved items', demoLink(ctx.storeUrl, 'wishlist')),
             divider(p),
             /* Recommendation Rule: Category Discounted Products, filtered to the
                categories this contact has actually saved from. */
@@ -253,7 +254,7 @@ function orderConfirmation(p, ctx, mode) {
             paragraph(p, greeting(mode, ctx) + ' your order is placed. We will email again the ' +
                 'moment it ships.'),
             orderSummary(p, ctx, mode),
-            button(p, 'Track this order', ctx.storeUrl + 'account.html'),
+            button(p, 'Track this order', demoLink(ctx.storeUrl, 'account')),
             divider(p),
             /* The highest open rate in the programme, which is why a Frequently
                Bought Together strip earns its place here. */
@@ -276,7 +277,7 @@ function replenishment(p, ctx, mode) {
             paragraph(p, greeting(mode, ctx) + ' judging by when you last ordered this, you are ' +
                 'probably near the end of it. Reordering the same thing takes one tap.'),
             orderLines(p, ctx, mode),
-            button(p, 'Reorder in one tap', ctx.storeUrl + 'cart.html'),
+            button(p, 'Reorder in one tap', demoLink(ctx.storeUrl, 'cart')),
             divider(p),
             recommendationStrip(p, 'Others also restock these', ctx.related,
                 {name: 'Frequently Bought Together (Zeki AI)',

@@ -35,6 +35,8 @@ import { dirname, join } from 'node:path';
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright';
 
+import { launchOptions } from './browser.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT = join(ROOT, 'assets', 'motifs');
 const PORT = Number(process.env.MOTIF_PORT || 8123);
@@ -52,14 +54,6 @@ const HEIGHT = 300;
    reads as a product silhouette on any background. */
 const INK = '#5B6472';
 const PAPER = '#F4F5F7';
-
-function launchOptions() {
-    if (process.env.PW_CHROMIUM && existsSync(process.env.PW_CHROMIUM)) {
-        return { executablePath: process.env.PW_CHROMIUM };
-    }
-    if (existsSync('/opt/pw-browsers/chromium')) return { executablePath: '/opt/pw-browsers/chromium' };
-    return {};
-}
 
 /* template/ is served rather than opened from the filesystem, because the module
    is loaded by a page that fetches its own data files and a file:// origin cannot.

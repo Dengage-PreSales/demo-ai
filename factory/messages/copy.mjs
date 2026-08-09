@@ -25,6 +25,7 @@
    ========================================================================== */
 
 import { COLUMNS, QUERIES } from '../emails/data.mjs';
+import { demoLink } from '../demo-links.mjs';
 
 /* The value of a column for this contact, as a tag or as a sample. Short form has
    no room for a loop, so these are all scalars: the FIRST row, not a list. */
@@ -115,13 +116,13 @@ export const JOURNEY_COPY = [
             webPush: {
                 title: 'You were one step away',
                 body: 'Your basket is still saved. Picking up where you left off takes a moment.',
-                targetUrl: ctx.storeUrl + 'checkout.html'
+                targetUrl: demoLink(ctx.storeUrl, 'checkout')
             },
             mobilePush: {
                 title: 'Still want to finish?',
                 body: 'Everything is saved, including your delivery choice.',
                 subtitle: 'Your basket',
-                targetUrl: ctx.storeUrl + 'checkout.html'
+                targetUrl: demoLink(ctx.storeUrl, 'checkout')
             },
             whatsapp: {
                 category: 'Utility', messageType: 'Blank Content',
@@ -131,7 +132,7 @@ export const JOURNEY_COPY = [
                       'before you pay. Reply here if something went wrong at the payment step.',
                 footer: 'Reply STOP to opt out',
                 buttons: [
-                    { type: 'Visit Website', label: 'Finish checkout', url: ctx.storeUrl + 'checkout.html' },
+                    { type: 'Visit Website', label: 'Finish checkout', url: demoLink(ctx.storeUrl, 'checkout') },
                     { type: 'Quick Reply', label: 'Something went wrong' }
                 ]
             }
@@ -152,7 +153,7 @@ export const JOURNEY_COPY = [
                 body: short(mode, QUERIES.abandonedCart, COLUMNS.cart.name, 70,
                             'What you added', ctx.sampleProduct) +
                       ' is still in your basket.',
-                targetUrl: ctx.storeUrl + 'cart.html'
+                targetUrl: demoLink(ctx.storeUrl, 'cart')
             },
             inbox: {
                 title: 'Your basket is saved',
@@ -160,7 +161,7 @@ export const JOURNEY_COPY = [
                       short(mode, QUERIES.abandonedCart, COLUMNS.cart.name, 90,
                             'what you added', ctx.sampleProduct) +
                       ' for you. Prices and stock can move while an item sits in a basket.',
-                expiryDays: 7, priority: 2, targetUrl: ctx.storeUrl + 'cart.html'
+                expiryDays: 7, priority: 2, targetUrl: demoLink(ctx.storeUrl, 'cart')
             },
             sms: {
                 body: 'Hi ' + name(mode, ctx) + ', your basket at ' + ctx.storeName +
@@ -175,7 +176,7 @@ export const JOURNEY_COPY = [
                 footer: 'Reply STOP to opt out',
                 carousel: true,
                 buttons: [
-                    { type: 'Visit Website', label: 'Return to basket', url: ctx.storeUrl + 'cart.html' }
+                    { type: 'Visit Website', label: 'Return to basket', url: demoLink(ctx.storeUrl, 'cart') }
                 ]
             }
         })
@@ -241,20 +242,20 @@ export const JOURNEY_COPY = [
                 body: short(mode, QUERIES.savedItems, COLUMNS.wishlist.name, 60,
                             'A saved item', ctx.sampleProduct) +
                       ' now costs less than when you saved it.',
-                targetUrl: ctx.storeUrl + 'wishlist.html'
+                targetUrl: demoLink(ctx.storeUrl, 'wishlist')
             },
             mobilePush: {
                 title: 'Cheaper than when you saved it',
                 body: short(mode, QUERIES.savedItems, COLUMNS.wishlist.name, 70,
                             'Your saved item', ctx.sampleProduct) + ' has dropped in price.',
                 subtitle: 'Saved items',
-                targetUrl: ctx.storeUrl + 'wishlist.html'
+                targetUrl: demoLink(ctx.storeUrl, 'wishlist')
             },
             inbox: {
                 title: 'A saved item changed price',
                 body: 'One of the things on your saved list costs less than it did when you ' +
                       'saved it. Saved items stay in your account.',
-                expiryDays: 7, priority: 1, targetUrl: ctx.storeUrl + 'wishlist.html'
+                expiryDays: 7, priority: 1, targetUrl: demoLink(ctx.storeUrl, 'wishlist')
             },
             whatsapp: {
                 category: 'Marketing', messageType: 'Limited-Time Offer',
@@ -264,7 +265,7 @@ export const JOURNEY_COPY = [
                       'in price. Saved items are held in your account, so it is where you left it.',
                 footer: 'Reply STOP to opt out',
                 buttons: [
-                    { type: 'Visit Website', label: 'See saved items', url: ctx.storeUrl + 'wishlist.html' }
+                    { type: 'Visit Website', label: 'See saved items', url: demoLink(ctx.storeUrl, 'wishlist') }
                 ]
             }
         })
@@ -294,13 +295,13 @@ export const JOURNEY_COPY = [
                 title: 'Running low?',
                 body: 'Reordering ' + short(mode, QUERIES.lastOrderLines, COLUMNS.orderLine.name,
                                             75, 'your usual', ctx.sampleProduct) + ' takes one tap.',
-                targetUrl: ctx.storeUrl + 'cart.html'
+                targetUrl: demoLink(ctx.storeUrl, 'cart')
             },
             mobilePush: {
                 title: 'Time for another?',
                 body: 'Your usual is one tap away, at the same price.',
                 subtitle: 'Reorder',
-                targetUrl: ctx.storeUrl + 'cart.html'
+                targetUrl: demoLink(ctx.storeUrl, 'cart')
             },
             sms: {
                 body: 'Hi ' + name(mode, ctx) + ', running low? Reorder your usual from ' +
@@ -316,7 +317,7 @@ export const JOURNEY_COPY = [
                       'keeps the same delivery address.',
                 footer: 'Reply STOP to opt out',
                 buttons: [
-                    { type: 'Visit Website', label: 'Reorder', url: ctx.storeUrl + 'cart.html' },
+                    { type: 'Visit Website', label: 'Reorder', url: demoLink(ctx.storeUrl, 'cart') },
                     { type: 'Quick Reply', label: 'Not yet' }
                 ]
             }

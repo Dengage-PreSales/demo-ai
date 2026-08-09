@@ -41,6 +41,8 @@
    CSS. factory/emails/emails.test.mjs asserts each of those on the generated file.
    ========================================================================== */
 
+import { demoLink } from '../demo-links.mjs';
+
 /* THE UNSUBSCRIBE LINK IS ABSOLUTE, AND THAT IS A VALIDATOR RULE RATHER THAN A
    PREFERENCE. amp4email rejects a relative href, and a bare {%= %} tag in an
    href reads as relative to the validator, so the AMP tab would refuse to save.
@@ -132,7 +134,7 @@ export function ampCartAbandonment(palette, ctx, mode) {
 
       ${cart}
 
-      <a class="cta" href="${ctx.storeUrl}cart.html" target="_blank">Return to basket</a>
+      <a class="cta" href="${demoLink(ctx.storeUrl, 'cart')}" target="_blank">Return to basket</a>
 
       <div class="strip">
         <div class="striphead">You saved these earlier</div>

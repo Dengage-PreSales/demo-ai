@@ -85,13 +85,13 @@
          var qty = (present[ids[i]] && present[ids[i]].quantity) ? Number(present[ids[i]].quantity) : 1;
     %}
       <tr>
+        {% if (image !== "") { %}
         <td width="112" valign="top" style="padding:0 18px 22px 0;">
           <a href="{%= link %}" target="_blank" style="text-decoration:none;">
-            {% if (image !== "") { %}
-              <img src="{%= image %}" alt="{%= title %}" width="96" style="width:96px;height:auto;border:0;display:block;">
-            {% } %}
+            <img src="{%= image %}" alt="{%= title %}" width="96" style="width:96px;height:auto;border:0;display:block;">
           </a>
         </td>
+        {% } %}
         <td valign="top" style="padding:4px 0 22px 0;font-family:inherit;color:inherit;">
           {% if (product.category_path) { %}
             <div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.6;padding:0 0 5px 0;">{%= product.category_path %}</div>

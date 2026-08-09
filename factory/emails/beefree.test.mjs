@@ -33,7 +33,8 @@ const TYPES = [
     'mailup-bee-newsletter-modules-text',
     'mailup-bee-newsletter-modules-html',
     'mailup-bee-newsletter-modules-button',
-    'mailup-bee-newsletter-modules-divider'
+    'mailup-bee-newsletter-modules-divider',
+    'mailup-bee-newsletter-modules-image'
 ];
 
 const THEME = {
@@ -56,7 +57,11 @@ function build(overrides) {
                 'techiestore-in/unsubscribe.html?c={%= $Contact.contact_key %}',
             symbol: overrides && 'symbol' in overrides ? overrides.symbol : '₹',
             currency: overrides && 'currency' in overrides ? overrides.currency : 'INR',
-            snippets: (overrides && overrides.snippets) || {}
+            snippets: (overrides && overrides.snippets) || {},
+            categories: overrides && 'categories' in overrides ? overrides.categories
+                : ['Laptop Keyboard', 'Laptop Battery', 'Mouse', 'More'],
+            heroImage: overrides && 'heroImage' in overrides ? overrides.heroImage
+                : 'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/email-hero.jpg'
         })
     };
 }
@@ -206,13 +211,18 @@ function walk(template) {
        moneyLines(build({ symbol: '₹', currency: '' }).template)[0]
            .descriptor.text.html.includes('All prices in ₹.'));
 
-    /* The button goes to the cart, because the whole proposition is that the basket
-       survived. Absolute, because an email resolves nothing relative. */
+    /* THE BUTTON GOES TO A PAGE THAT EXISTS, and the first version did not. A demo is
+       index.html and product.html; the basket is an overlay on the first one, so
+       cart.html was a 404 and the primary call to action in the whole email landed on
+       one. It now asks the storefront to open the basket from the URL. */
     const button = walk(template).modules.find((module) => module.descriptor.button);
-    ok('the button goes to the demo\'s own cart page',
+    ok('the button opens the demo\'s basket, on a page that exists',
        button.descriptor.button.href ===
-       'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html',
+       'https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart',
        button.descriptor.button.href);
+    ok('and names no page the storefront does not have',
+       !/\/(cart|checkout|wishlist|account|search)\.html/.test(text),
+       (text.match(/\/[a-z]+\.html/g) || []).filter((m) => m !== '/index.html' && m !== '/product.html'));
 
     ok('the unsubscribe link carries the panel\'s contact tag',
        text.includes('unsubscribe.html?c={%= $Contact.contact_key %}'));
@@ -226,6 +236,86 @@ function walk(template) {
        have already contained the defect they detect. */
     const badClose = '=' + '%}';
     ok('no output tag closes with a trailing equals', !text.includes(badClose));
+}
+
+/* -------------------------------------------------------------------------- */
+/* The parts a best practice email has, and this one did not                    */
+
+{
+    const { template, palette } = build();
+    const modules = walk(template).modules;
+    const text = JSON.stringify(template);
+
+    /* THE PREHEADER. Without one an inbox shows the first words of the body beside the
+       subject, which here would be "Dengage eComm Demo". */
+    const preheader = modules.find((module) => module.descriptor.text &&
+        module.descriptor.text.html.includes('display:none'));
+    ok('there is a hidden preheader', Boolean(preheader));
+    ok('and it says something about the basket rather than repeating the mark',
+       preheader && /basket/i.test(preheader.descriptor.text.html));
+
+    /* THE CATEGORY NAV, and every link in it has to be a real filtered page. */
+    const nav = modules.find((module) => module.descriptor.text &&
+        module.descriptor.text.html.includes('index.html?category='));
+    ok('the nav carries the demo\'s own categories', Boolean(nav));
+    ok('all four of them',
+       nav && (nav.descriptor.text.html.match(/index\.html\?category=/g) || []).length === 4,
+       nav && (nav.descriptor.text.html.match(/index\.html\?category=/g) || []).length);
+    ok('and each is encoded, because a category name has spaces in it',
+       nav && nav.descriptor.text.html.includes('category=Laptop%20Keyboard'));
+
+    /* FOUR AT MOST. A nav that wraps to two lines on a phone stops reading as a nav. */
+    const many = build({ categories: ['A', 'B', 'C', 'D', 'E', 'F', 'G'] });
+    const manyNav = walk(many.template).modules.find((module) => module.descriptor.text &&
+        module.descriptor.text.html.includes('index.html?category='));
+    ok('seven categories are trimmed to four',
+       manyNav && (manyNav.descriptor.text.html.match(/\?category=/g) || []).length === 4);
+
+    const none = build({ categories: [] });
+    ok('a demo with no categories gets no nav row rather than an empty one',
+       !JSON.stringify(none.template).includes('index.html?category='));
+
+    /* THE HERO. Generated per demo, on our own origin, and never referenced when it is
+       not there: a broken image in an email is worse than no image. */
+    const hero = modules.find((module) => module.descriptor.image);
+    ok('the hero is an image module', Boolean(hero));
+    ok('it points at this demo\'s own generated file',
+       hero && hero.descriptor.image.src.endsWith('/images/email-hero.jpg'));
+    ok('it is full bleed, so 600px of image meets 600px of column',
+       hero && hero.descriptor.image.width === '600px' &&
+       hero.descriptor.style['padding-left'] === '0px' &&
+       hero.descriptor.style['padding-right'] === '0px');
+    ok('it carries alt text, for the third of recipients who block images',
+       hero && hero.descriptor.image.alt.length > 0, hero && hero.descriptor.image.alt);
+    ok('and it links to the basket like the button does',
+       hero && hero.descriptor.image.href.endsWith('index.html?open=cart'));
+
+    const noHero = build({ heroImage: '' });
+    ok('a demo whose hero was never rendered gets no image module at all',
+       walk(noHero.template).modules.filter((module) => module.descriptor.image).length === 0);
+
+    /* ONE PRIMARY ACTION, CENTRED, with a quiet second choice rather than a second
+       button. Two buttons of equal weight is how a call to action stops being one. */
+    const buttons = modules.filter((module) => module.descriptor.button);
+    ok('there is exactly one button', buttons.length === 1, buttons.length);
+    ok('and it is centred', buttons[0].descriptor.style['text-align'] === 'center');
+    ok('the second choice is a link, not a button',
+       modules.some((module) => module.descriptor.text &&
+           module.descriptor.text.html.includes('keep browsing')));
+
+    /* THE URGENCY LINE HAS TO BE TRUE. A countdown, a reserved basket or an expiring
+       discount would all be invented, and non-negotiable 5 is about exactly this. */
+    ok('the urgency line states something true of any store',
+       text.includes('a basket is not a reservation'));
+    for (const invented of ['reserved for', 'expires in', 'hours left', 'only 1 left',
+                            'selling fast', 'limited time']) {
+        ok('nothing claims "' + invented + '"', !text.toLowerCase().includes(invented));
+    }
+
+    /* The footer names the sender, because a footer with no sender reads as a fragment. */
+    ok('the footer repeats the mark',
+       (text.match(/>Dengage</g) || []).length >= 2,
+       (text.match(/>Dengage</g) || []).length);
 }
 
 /* -------------------------------------------------------------------------- */

@@ -61,25 +61,74 @@ Until then, guessing further at this engine is the wrong move. Five rounds have 
 been spent guessing at the template syntax, and every one of them was resolved by being
 shown something that worked rather than by reasoning about it.
 
-## What is in it, and why it is this short
+## What is in it
 
-Seven rows. Masthead, headline, the basket, the total, the currency line, one button,
-footer. That is the whole template.
-
-It is short deliberately. A long template demonstrates BeeFree, which nobody is
-buying. What is being shown is that the products in the email came out of the
-visitor's own basket, and every row that is not those products competes with them for
-attention on the call.
+Eleven rows, and every one of them is doing a job an abandoned cart email is expected
+to do:
 
 | Row | What it is |
 |---|---|
+| Preheader | Hidden. The grey line an inbox shows beside the subject. Without it the client shows the first words it finds, which would be "Dengage eComm Demo" |
 | Masthead | The Dengage mark and the eComm Demo subtext, with the store's name as text beside it. Non-negotiable 3: never the prospect's logo |
+| Category nav | The demo's own categories, each linking to the storefront filtered to it. Four at most, because five wrap on a phone and stop reading as a nav |
+| Hero | Drawn per demo from its brand colour by `make-hero.mjs`. Full bleed, and carries no text |
 | Headline | One line, and one line of copy under it |
 | Basket | **Dynamic Content.** The visitor's own basket, replayed from their cart events |
 | Total | **Dynamic Content.** Subtotal, discount and total, computed from that same basket |
 | Currency | Stated once. See below |
-| Button | Goes to the demo's cart page, because the proposition is that the basket survived |
-| Footer | Unsubscribe, and the line saying this is a demonstration storefront |
+| Button | Centred, opens the demo's basket, with a quiet second choice under it rather than a second button |
+| Urgency | One line, and it is true. See below |
+| Footer | The mark again, manage preferences, and the line saying this is a demonstration storefront |
+
+**Still short on purpose.** A long template demonstrates BeeFree, which nobody is
+buying. What is being shown is that the products came out of the visitor's own basket,
+so every row that is not those products has to justify itself.
+
+## The hero image
+
+`node factory/emails/make-hero.mjs --slug <slug>` writes
+`demos/<slug>/images/email-hero.jpg`, 600x240 at 2x, about 20KB.
+
+It is **drawn, not sourced**, and that is forced rather than stylistic: a demo carries
+the prospect's product names and never their imagery, and it may not depend on a third
+party CDN at runtime. A stock library breaks both rules at once. So the hero is flat
+geometry in the demo's own brand colour, which themes itself for every prospect with
+nothing to license and nothing that can be taken down between the build and the call.
+
+It carries no text. Text baked into an image cannot be read by a screen reader, does
+not reflow on a phone, and is invisible to a recipient with images blocked. Every word
+in the email is a real module.
+
+The template references it only when the file is on disk, so a build that skipped the
+hero produces a template with no image rather than one with a broken image in it.
+
+## The urgency line, and what is not in it
+
+> Prices and availability can change, and a basket is not a reservation.
+
+No countdown, no "reserved for 24 hours", no expiring discount, no "only 2 left". Every
+one of those would be invented, a prospect can see through all of them, and non
+negotiable 5 is about exactly this. What is genuinely true of any store is that a
+basket is not a reservation, so that is what it says. The test asserts the absence of
+the other six phrasings.
+
+## Where the buttons go
+
+`index.html?open=cart`, not `cart.html`.
+
+A demo is two pages, `index.html` and `product.html`. The basket, the checkout, the
+search and the saved items are overlays on the first one, so `cart.html` has never
+existed. Every generator in this repository linked to it anyway, which meant the
+primary button in ten emails, the AMP variant and all five short form channels landed
+on a GitHub Pages 404. `factory/demo-links.mjs` is now the only place that spells these
+URLs, `template/js/storefront.js` opens an overlay from `?open=`, and
+`factory/panel/links.test.mjs` resolves every link in the panel content back to a file
+on disk so it cannot happen again.
+
+The footer link says "Manage your preferences" rather than "Unsubscribe" and goes to the
+account overlay, because there is no `unsubscribe.html` either. If Dengage injects its
+own unsubscribe URL or exposes a tag for it, that is the right value and it is one line
+to change.
 
 ## What the demo's own theme supplies
 

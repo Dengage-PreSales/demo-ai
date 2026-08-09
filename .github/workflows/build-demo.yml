@@ -363,6 +363,19 @@ jobs:
           node factory/make-motif-images.mjs
           node factory/build-feed.mjs
 
+      # THE EMAIL HERO NEEDS THE SAME BROWSER, AND FOR THE SAME REASON. It is geometry
+      # in the demo's own brand colour, described in markup and drawn by Chromium, so it
+      # cannot run in the generate step before Playwright exists. The BeeFree template
+      # only references it when the file is on disk, so this runs before the template is
+      # rebuilt rather than after.
+      - name: Email hero and Email Builder template
+        if: steps.generate.outputs.outcome == 'built'
+        run: |
+          set -euo pipefail
+          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
+          node factory/emails/make-hero.mjs --slug "$SLUG"
+          node factory/emails/build-beefree.mjs --slug "$SLUG"
+
       - name: Smoke test the demo
         if: steps.generate.outputs.outcome == 'built'
         run: |

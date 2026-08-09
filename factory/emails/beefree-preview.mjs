@@ -28,13 +28,17 @@ function productRows(products, palette) {
     return products.map((product) => {
         const price = product.price;
         const cut = product.discounted;
+        /* THE IMAGE CELL DISAPPEARS WITH THE IMAGE. Keeping an empty 112px cell left a
+           block of dead space beside every row on a catalogue the scrape got no pictures
+           from, which is a real case: one of the demos in this repository has none. Same
+           condition, same place, in abandoned-cart.html. */
         return '<tr>' +
-            '<td width="112" valign="top" style="padding:0 18px 22px 0;">' +
             (product.image
-                ? '<img src="' + product.image + '" alt="" width="96" ' +
-                  'style="width:96px;height:auto;border:0;display:block;">'
+                ? '<td width="112" valign="top" style="padding:0 18px 22px 0;">' +
+                  '<img src="' + product.image + '" alt="" width="96" ' +
+                  'style="width:96px;height:auto;border:0;display:block;">' +
+                  '</td>'
                 : '') +
-            '</td>' +
             '<td valign="top" style="padding:4px 0 22px 0;font-family:inherit;color:inherit;">' +
             (product.category
                 ? '<div style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;' +
@@ -105,6 +109,14 @@ function moduleHtml(module, palette, filled) {
             ';line-height:' + b['line-height'] + ';padding:' + b['padding-top'] + ' ' +
             b['padding-right'] + ' ' + b['padding-bottom'] + ' ' + b['padding-left'] +
             ';text-decoration:none;">' + d.button.label + '</a></div>';
+    }
+    if (d.image) {
+        const img = '<img src="' + d.image.src + '" alt="' + d.image.alt +
+            '" width="' + parseInt(d.image.width, 10) + '" style="width:' +
+            d.image.width + ';max-width:100%;height:auto;border:0;display:block;">';
+        return '<div style="padding:' + padding + ';text-align:' + align + ';">' +
+            (d.image.href ? '<a href="' + d.image.href + '">' + img + '</a>' : img) +
+            '</div>';
     }
     if (d.divider) {
         return '<div style="padding:' + padding + ';"><div style="border-top:' +

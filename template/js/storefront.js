@@ -730,6 +730,43 @@
         if (window.Panels) window.Panels.init();
         if (window.Slots) window.Slots.init();
         if (window.Inbox) window.Inbox.boot();
+
+        openFromUrl();
+    }
+
+    /* ------------------------------------------------------------------ */
+    /* index.html?open=cart                                                */
+
+    /* WHY A URL HAS TO BE ABLE TO OPEN AN OVERLAY. The basket, the checkout, the
+       search and the saved items are overlays on this page rather than pages of
+       their own, so there is no cart.html to link to. Every message this factory
+       sends has a button, and the whole proposition of an abandoned cart email is
+       that pressing it lands on the basket that survived. Without this it lands on
+       a 404, which is the worst thing a demo can do on a call.
+
+       Named rather than open ended: the parameter selects from this list and
+       nothing else, so a link cannot be crafted to add a class to an arbitrary
+       element. */
+    var OPENABLE = {
+        cart: '#cart',
+        checkout: '#checkout',
+        search: '#search',
+        account: '#account',
+        wishlist: '#wishlist'
+    };
+
+    function openFromUrl() {
+        var wanted = String(param('open') || '').toLowerCase();
+        if (!wanted) return;
+        var id = OPENABLE[wanted];
+        if (!id) return;
+        /* After the render above, so the basket the email is about is already drawn
+           when the overlay appears rather than filling in a moment later. */
+        openOverlay(id);
+        if (wanted === 'search') {
+            var input = $('#search-input');
+            if (input) input.focus();
+        }
     }
 
     window.Storefront = {

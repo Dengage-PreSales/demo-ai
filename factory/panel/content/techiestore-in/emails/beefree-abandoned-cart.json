@@ -34,7 +34,7 @@
       ],
       "rows": [
         {
-          "type": "two-columns-empty",
+          "type": "one-column-empty",
           "uuid": "dps-cart-01",
           "container": {
             "style": {
@@ -54,7 +54,7 @@
           },
           "columns": [
             {
-              "grid-columns": 6,
+              "grid-columns": 12,
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
@@ -64,11 +64,11 @@
                       "computedStyle": {
                         "linkColor": "#985400"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;line-height:1.6;color:#333333;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;color:#333333;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:6px;\">eComm Demo</span></div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:1px;line-height:1.6;color:#ffffff;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\">Your basket is saved. Here is what is still in it.</div></div>",
                       "style": {
-                        "color": "#333333",
+                        "color": "#ffffff",
                         "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "17px",
+                        "font-size": "1px",
                         "line-height": "1.6"
                       }
                     },
@@ -91,19 +91,86 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "24px",
+                "padding-top": "0px",
                 "padding-right": "0px",
-                "padding-bottom": "24px",
+                "padding-bottom": "0px",
                 "padding-left": "0px"
               },
               "uuid": "dps-cart-01-c1"
+            }
+          ]
+        },
+        {
+          "type": "two-columns-empty",
+          "uuid": "dps-cart-03",
+          "container": {
+            "style": {
+              "background-color": "transparent"
+            }
+          },
+          "content": {
+            "computedStyle": {
+              "rowColStackOnMobile": true,
+              "rowReverseColStackOnMobile": false
+            },
+            "style": {
+              "background-color": "#ffffff",
+              "color": "#333333",
+              "width": "600px"
+            }
+          },
+          "columns": [
+            {
+              "grid-columns": 6,
+              "modules": [
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-04",
+                  "descriptor": {
+                    "text": {
+                      "computedStyle": {
+                        "linkColor": "#333333"
+                      },
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#333333;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"text-decoration:none;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#333333;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:6px;\">eComm Demo</span></a></div>",
+                      "style": {
+                        "color": "#333333",
+                        "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "18px",
+                        "line-height": "1.6"
+                      }
+                    },
+                    "style": {
+                      "text-align": "left",
+                      "padding-top": "0px",
+                      "padding-right": "24px",
+                      "padding-bottom": "0px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "background-color": "transparent",
+                "border-bottom": "0px solid transparent",
+                "border-left": "0px solid transparent",
+                "border-right": "0px solid transparent",
+                "border-top": "0px solid transparent",
+                "padding-top": "22px",
+                "padding-right": "0px",
+                "padding-bottom": "22px",
+                "padding-left": "0px"
+              },
+              "uuid": "dps-cart-03-c1"
             },
             {
               "grid-columns": 6,
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-03",
+                  "uuid": "dps-cart-05",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -136,18 +203,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "24px",
+                "padding-top": "22px",
                 "padding-right": "0px",
-                "padding-bottom": "24px",
+                "padding-bottom": "22px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-01-c2"
+              "uuid": "dps-cart-03-c2"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-04",
+          "uuid": "dps-cart-06",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -170,25 +237,157 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-05",
+                  "uuid": "dps-cart-07",
+                  "descriptor": {
+                    "text": {
+                      "computedStyle": {
+                        "linkColor": "#333333"
+                      },
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#333333;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Laptop%20Keyboard\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Laptop Keyboard</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Laptop%20Battery\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Laptop Battery</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Mouse\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Mouse</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=More\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">More</a></div>",
+                      "style": {
+                        "color": "#333333",
+                        "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "12px",
+                        "line-height": "1.6"
+                      }
+                    },
+                    "style": {
+                      "text-align": "center",
+                      "padding-top": "0px",
+                      "padding-right": "24px",
+                      "padding-bottom": "0px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "background-color": "transparent",
+                "border-bottom": "0px solid transparent",
+                "border-left": "0px solid transparent",
+                "border-right": "0px solid transparent",
+                "border-top": "0px solid transparent",
+                "padding-top": "16px",
+                "padding-right": "0px",
+                "padding-bottom": "18px",
+                "padding-left": "0px"
+              },
+              "uuid": "dps-cart-06-c1"
+            }
+          ]
+        },
+        {
+          "type": "one-column-empty",
+          "uuid": "dps-cart-08",
+          "container": {
+            "style": {
+              "background-color": "transparent"
+            }
+          },
+          "content": {
+            "computedStyle": {
+              "rowColStackOnMobile": true,
+              "rowReverseColStackOnMobile": false
+            },
+            "style": {
+              "background-color": "#f5f5f7",
+              "color": "#333333",
+              "width": "600px"
+            }
+          },
+          "columns": [
+            {
+              "grid-columns": 12,
+              "modules": [
+                {
+                  "type": "mailup-bee-newsletter-modules-image",
+                  "uuid": "dps-cart-09",
+                  "descriptor": {
+                    "image": {
+                      "alt": "Your saved basket",
+                      "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart",
+                      "src": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/email-hero.jpg",
+                      "width": "600px",
+                      "dynamicSrc": ""
+                    },
+                    "style": {
+                      "text-align": "center",
+                      "width": "100%",
+                      "padding-top": "0px",
+                      "padding-right": "0px",
+                      "padding-bottom": "0px",
+                      "padding-left": "0px"
+                    },
+                    "computedStyle": {
+                      "class": "center autowidth fullwidth",
+                      "width": "600px",
+                      "hideContentOnMobile": false
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "background-color": "transparent",
+                "border-bottom": "0px solid transparent",
+                "border-left": "0px solid transparent",
+                "border-right": "0px solid transparent",
+                "border-top": "0px solid transparent",
+                "padding-top": "0px",
+                "padding-right": "0px",
+                "padding-bottom": "0px",
+                "padding-left": "0px"
+              },
+              "uuid": "dps-cart-08-c1"
+            }
+          ]
+        },
+        {
+          "type": "one-column-empty",
+          "uuid": "dps-cart-10",
+          "container": {
+            "style": {
+              "background-color": "transparent"
+            }
+          },
+          "content": {
+            "computedStyle": {
+              "rowColStackOnMobile": true,
+              "rowReverseColStackOnMobile": false
+            },
+            "style": {
+              "background-color": "#f5f5f7",
+              "color": "#333333",
+              "width": "600px"
+            }
+          },
+          "columns": [
+            {
+              "grid-columns": 12,
+              "modules": [
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-11",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
                         "linkColor": "#985400"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:26px;line-height:1.25;color:#333333;\"><span style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:26px;font-weight:700;line-height:1.25;color:#333333;\">Still thinking it over?</span></div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;line-height:1.2;color:#333333;\"><span style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.2;color:#333333;\">Still thinking it over?</span></div>",
                       "style": {
                         "color": "#333333",
                         "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "26px",
-                        "line-height": "1.25"
+                        "font-size": "28px",
+                        "line-height": "1.2"
                       }
                     },
                     "style": {
                       "text-align": "left",
                       "padding-top": "0px",
                       "padding-right": "24px",
-                      "padding-bottom": "10px",
+                      "padding-bottom": "12px",
                       "padding-left": "24px"
                     },
                     "computedStyle": {
@@ -198,13 +397,13 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-06",
+                  "uuid": "dps-cart-12",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
                         "linkColor": "#985400"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#616161;\">Your basket is saved. Here is what is waiting in it.</div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#616161;\">Everything you added is still saved. Here is what is waiting in your basket.</div>",
                       "style": {
                         "color": "#616161",
                         "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -231,18 +430,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "30px",
+                "padding-top": "32px",
                 "padding-right": "0px",
-                "padding-bottom": "22px",
+                "padding-bottom": "24px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-04-c1"
+              "uuid": "dps-cart-10-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-07",
+          "uuid": "dps-cart-13",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -265,7 +464,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-08",
+                  "uuid": "dps-cart-14",
                   "descriptor": {
                     "html": {
                       "html": "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c3c3c4;border-radius:5px;padding:22px 20px;text-align:center;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><strong style=\"color:#333333;font-size:14px;\">Dynamic Content: dps abandoned cart</strong><br>The visitor's own basket, resolved from their cart events.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table>",
@@ -300,13 +499,13 @@
                 "padding-bottom": "6px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-07-c1"
+              "uuid": "dps-cart-13-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-09",
+          "uuid": "dps-cart-15",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -329,7 +528,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-10",
+                  "uuid": "dps-cart-16",
                   "descriptor": {
                     "html": {
                       "html": "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c3c3c4;border-radius:5px;padding:22px 20px;text-align:center;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><strong style=\"color:#333333;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>Subtotal, discount and total, computed from the same basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table>",
@@ -359,18 +558,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "20px",
+                "padding-top": "22px",
                 "padding-right": "0px",
-                "padding-bottom": "20px",
+                "padding-bottom": "22px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-09-c1"
+              "uuid": "dps-cart-15-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-11",
+          "uuid": "dps-cart-17",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -393,7 +592,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-12",
+                  "uuid": "dps-cart-18",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -426,18 +625,18 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "0px",
+                "padding-top": "18px",
                 "padding-right": "0px",
-                "padding-bottom": "22px",
+                "padding-bottom": "0px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-11-c1"
+              "uuid": "dps-cart-17-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-13",
+          "uuid": "dps-cart-19",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -460,11 +659,11 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-button",
-                  "uuid": "dps-cart-14",
+                  "uuid": "dps-cart-20",
                   "descriptor": {
                     "button": {
                       "label": "Return to your basket",
-                      "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+                      "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart",
                       "style": {
                         "background-color": "#ff8c00",
                         "border-bottom": "0px solid transparent",
@@ -491,7 +690,102 @@
                       }
                     },
                     "style": {
-                      "text-align": "left",
+                      "text-align": "center",
+                      "padding-top": "0px",
+                      "padding-right": "24px",
+                      "padding-bottom": "0px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                },
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-21",
+                  "descriptor": {
+                    "text": {
+                      "computedStyle": {
+                        "linkColor": "#616161"
+                      },
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">or keep browsing the store</a></div>",
+                      "style": {
+                        "color": "#616161",
+                        "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "13px",
+                        "line-height": "1.6"
+                      }
+                    },
+                    "style": {
+                      "text-align": "center",
+                      "padding-top": "14px",
+                      "padding-right": "24px",
+                      "padding-bottom": "0px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                }
+              ],
+              "style": {
+                "background-color": "transparent",
+                "border-bottom": "0px solid transparent",
+                "border-left": "0px solid transparent",
+                "border-right": "0px solid transparent",
+                "border-top": "0px solid transparent",
+                "padding-top": "18px",
+                "padding-right": "0px",
+                "padding-bottom": "26px",
+                "padding-left": "0px"
+              },
+              "uuid": "dps-cart-19-c1"
+            }
+          ]
+        },
+        {
+          "type": "one-column-empty",
+          "uuid": "dps-cart-22",
+          "container": {
+            "style": {
+              "background-color": "transparent"
+            }
+          },
+          "content": {
+            "computedStyle": {
+              "rowColStackOnMobile": true,
+              "rowReverseColStackOnMobile": false
+            },
+            "style": {
+              "background-color": "#f5f5f7",
+              "color": "#333333",
+              "width": "600px"
+            }
+          },
+          "columns": [
+            {
+              "grid-columns": 12,
+              "modules": [
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-23",
+                  "descriptor": {
+                    "text": {
+                      "computedStyle": {
+                        "linkColor": "#985400"
+                      },
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">Prices and availability can change, and a basket is not a reservation.</div>",
+                      "style": {
+                        "color": "#616161",
+                        "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "12px",
+                        "line-height": "1.6"
+                      }
+                    },
+                    "style": {
+                      "text-align": "center",
                       "padding-top": "0px",
                       "padding-right": "24px",
                       "padding-bottom": "0px",
@@ -511,16 +805,16 @@
                 "border-top": "0px solid transparent",
                 "padding-top": "0px",
                 "padding-right": "0px",
-                "padding-bottom": "32px",
+                "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-13-c1"
+              "uuid": "dps-cart-22-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-15",
+          "uuid": "dps-cart-24",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -543,13 +837,41 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-16",
+                  "uuid": "dps-cart-25",
+                  "descriptor": {
+                    "text": {
+                      "computedStyle": {
+                        "linkColor": "#985400"
+                      },
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#333333;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;color:#333333;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:5px;\">eComm Demo</span></div>",
+                      "style": {
+                        "color": "#333333",
+                        "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                        "font-size": "13px",
+                        "line-height": "1.6"
+                      }
+                    },
+                    "style": {
+                      "text-align": "left",
+                      "padding-top": "0px",
+                      "padding-right": "24px",
+                      "padding-bottom": "8px",
+                      "padding-left": "24px"
+                    },
+                    "computedStyle": {
+                      "hideContentOnMobile": false
+                    }
+                  }
+                },
+                {
+                  "type": "mailup-bee-newsletter-modules-text",
+                  "uuid": "dps-cart-26",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
                         "linkColor": "#616161"
                       },
-                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/unsubscribe.html?c={%= $Contact.contact_key %}\" style=\"color:#616161;text-decoration:underline;\">Unsubscribe</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                      "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=account\" style=\"color:#616161;text-decoration:underline;\">Manage your preferences</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
                       "style": {
                         "color": "#616161",
                         "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -576,12 +898,12 @@
                 "border-left": "0px solid transparent",
                 "border-right": "0px solid transparent",
                 "border-top": "0px solid transparent",
-                "padding-top": "20px",
+                "padding-top": "24px",
                 "padding-right": "0px",
-                "padding-bottom": "24px",
+                "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-15-c1"
+              "uuid": "dps-cart-24-c1"
             }
           ]
         }
@@ -589,7 +911,7 @@
     },
     "rows": [
       {
-        "type": "two-columns-empty",
+        "type": "one-column-empty",
         "uuid": "dps-cart-01",
         "container": {
           "style": {
@@ -609,7 +931,7 @@
         },
         "columns": [
           {
-            "grid-columns": 6,
+            "grid-columns": 12,
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
@@ -619,11 +941,11 @@
                     "computedStyle": {
                       "linkColor": "#985400"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;line-height:1.6;color:#333333;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;color:#333333;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:6px;\">eComm Demo</span></div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:1px;line-height:1.6;color:#ffffff;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\">Your basket is saved. Here is what is still in it.</div></div>",
                     "style": {
-                      "color": "#333333",
+                      "color": "#ffffff",
                       "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "17px",
+                      "font-size": "1px",
                       "line-height": "1.6"
                     }
                   },
@@ -646,19 +968,86 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "24px",
+              "padding-top": "0px",
               "padding-right": "0px",
-              "padding-bottom": "24px",
+              "padding-bottom": "0px",
               "padding-left": "0px"
             },
             "uuid": "dps-cart-01-c1"
+          }
+        ]
+      },
+      {
+        "type": "two-columns-empty",
+        "uuid": "dps-cart-03",
+        "container": {
+          "style": {
+            "background-color": "transparent"
+          }
+        },
+        "content": {
+          "computedStyle": {
+            "rowColStackOnMobile": true,
+            "rowReverseColStackOnMobile": false
+          },
+          "style": {
+            "background-color": "#ffffff",
+            "color": "#333333",
+            "width": "600px"
+          }
+        },
+        "columns": [
+          {
+            "grid-columns": 6,
+            "modules": [
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-04",
+                "descriptor": {
+                  "text": {
+                    "computedStyle": {
+                      "linkColor": "#333333"
+                    },
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.6;color:#333333;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"text-decoration:none;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#333333;letter-spacing:-0.01em;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:6px;\">eComm Demo</span></a></div>",
+                    "style": {
+                      "color": "#333333",
+                      "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "18px",
+                      "line-height": "1.6"
+                    }
+                  },
+                  "style": {
+                    "text-align": "left",
+                    "padding-top": "0px",
+                    "padding-right": "24px",
+                    "padding-bottom": "0px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              }
+            ],
+            "style": {
+              "background-color": "transparent",
+              "border-bottom": "0px solid transparent",
+              "border-left": "0px solid transparent",
+              "border-right": "0px solid transparent",
+              "border-top": "0px solid transparent",
+              "padding-top": "22px",
+              "padding-right": "0px",
+              "padding-bottom": "22px",
+              "padding-left": "0px"
+            },
+            "uuid": "dps-cart-03-c1"
           },
           {
             "grid-columns": 6,
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-03",
+                "uuid": "dps-cart-05",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -691,18 +1080,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "24px",
+              "padding-top": "22px",
               "padding-right": "0px",
-              "padding-bottom": "24px",
+              "padding-bottom": "22px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-01-c2"
+            "uuid": "dps-cart-03-c2"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-04",
+        "uuid": "dps-cart-06",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -725,25 +1114,157 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-05",
+                "uuid": "dps-cart-07",
+                "descriptor": {
+                  "text": {
+                    "computedStyle": {
+                      "linkColor": "#333333"
+                    },
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#333333;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Laptop%20Keyboard\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Laptop Keyboard</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Laptop%20Battery\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Laptop Battery</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=Mouse\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">Mouse</a><span style=\"color:#616161;padding:0 10px;opacity:0.5;\">&bull;</span><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?category=More\" style=\"color:#333333;text-decoration:none;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;\">More</a></div>",
+                    "style": {
+                      "color": "#333333",
+                      "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "12px",
+                      "line-height": "1.6"
+                    }
+                  },
+                  "style": {
+                    "text-align": "center",
+                    "padding-top": "0px",
+                    "padding-right": "24px",
+                    "padding-bottom": "0px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              }
+            ],
+            "style": {
+              "background-color": "transparent",
+              "border-bottom": "0px solid transparent",
+              "border-left": "0px solid transparent",
+              "border-right": "0px solid transparent",
+              "border-top": "0px solid transparent",
+              "padding-top": "16px",
+              "padding-right": "0px",
+              "padding-bottom": "18px",
+              "padding-left": "0px"
+            },
+            "uuid": "dps-cart-06-c1"
+          }
+        ]
+      },
+      {
+        "type": "one-column-empty",
+        "uuid": "dps-cart-08",
+        "container": {
+          "style": {
+            "background-color": "transparent"
+          }
+        },
+        "content": {
+          "computedStyle": {
+            "rowColStackOnMobile": true,
+            "rowReverseColStackOnMobile": false
+          },
+          "style": {
+            "background-color": "#f5f5f7",
+            "color": "#333333",
+            "width": "600px"
+          }
+        },
+        "columns": [
+          {
+            "grid-columns": 12,
+            "modules": [
+              {
+                "type": "mailup-bee-newsletter-modules-image",
+                "uuid": "dps-cart-09",
+                "descriptor": {
+                  "image": {
+                    "alt": "Your saved basket",
+                    "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart",
+                    "src": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/images/email-hero.jpg",
+                    "width": "600px",
+                    "dynamicSrc": ""
+                  },
+                  "style": {
+                    "text-align": "center",
+                    "width": "100%",
+                    "padding-top": "0px",
+                    "padding-right": "0px",
+                    "padding-bottom": "0px",
+                    "padding-left": "0px"
+                  },
+                  "computedStyle": {
+                    "class": "center autowidth fullwidth",
+                    "width": "600px",
+                    "hideContentOnMobile": false
+                  }
+                }
+              }
+            ],
+            "style": {
+              "background-color": "transparent",
+              "border-bottom": "0px solid transparent",
+              "border-left": "0px solid transparent",
+              "border-right": "0px solid transparent",
+              "border-top": "0px solid transparent",
+              "padding-top": "0px",
+              "padding-right": "0px",
+              "padding-bottom": "0px",
+              "padding-left": "0px"
+            },
+            "uuid": "dps-cart-08-c1"
+          }
+        ]
+      },
+      {
+        "type": "one-column-empty",
+        "uuid": "dps-cart-10",
+        "container": {
+          "style": {
+            "background-color": "transparent"
+          }
+        },
+        "content": {
+          "computedStyle": {
+            "rowColStackOnMobile": true,
+            "rowReverseColStackOnMobile": false
+          },
+          "style": {
+            "background-color": "#f5f5f7",
+            "color": "#333333",
+            "width": "600px"
+          }
+        },
+        "columns": [
+          {
+            "grid-columns": 12,
+            "modules": [
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-11",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
                       "linkColor": "#985400"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:26px;line-height:1.25;color:#333333;\"><span style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:26px;font-weight:700;line-height:1.25;color:#333333;\">Still thinking it over?</span></div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;line-height:1.2;color:#333333;\"><span style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.2;color:#333333;\">Still thinking it over?</span></div>",
                     "style": {
                       "color": "#333333",
                       "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "26px",
-                      "line-height": "1.25"
+                      "font-size": "28px",
+                      "line-height": "1.2"
                     }
                   },
                   "style": {
                     "text-align": "left",
                     "padding-top": "0px",
                     "padding-right": "24px",
-                    "padding-bottom": "10px",
+                    "padding-bottom": "12px",
                     "padding-left": "24px"
                   },
                   "computedStyle": {
@@ -753,13 +1274,13 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-06",
+                "uuid": "dps-cart-12",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
                       "linkColor": "#985400"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#616161;\">Your basket is saved. Here is what is waiting in it.</div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#616161;\">Everything you added is still saved. Here is what is waiting in your basket.</div>",
                     "style": {
                       "color": "#616161",
                       "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -786,18 +1307,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "30px",
+              "padding-top": "32px",
               "padding-right": "0px",
-              "padding-bottom": "22px",
+              "padding-bottom": "24px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-04-c1"
+            "uuid": "dps-cart-10-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-07",
+        "uuid": "dps-cart-13",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -820,7 +1341,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-08",
+                "uuid": "dps-cart-14",
                 "descriptor": {
                   "html": {
                     "html": "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c3c3c4;border-radius:5px;padding:22px 20px;text-align:center;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><strong style=\"color:#333333;font-size:14px;\">Dynamic Content: dps abandoned cart</strong><br>The visitor's own basket, resolved from their cart events.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table>",
@@ -855,13 +1376,13 @@
               "padding-bottom": "6px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-07-c1"
+            "uuid": "dps-cart-13-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-09",
+        "uuid": "dps-cart-15",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -884,7 +1405,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-10",
+                "uuid": "dps-cart-16",
                 "descriptor": {
                   "html": {
                     "html": "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\" style=\"border-collapse:collapse;\"><tr><td style=\"border:2px dashed #c3c3c4;border-radius:5px;padding:22px 20px;text-align:center;font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><strong style=\"color:#333333;font-size:14px;\">Dynamic Content: dps abandoned cart total</strong><br>Subtotal, discount and total, computed from the same basket.<br>Click this block, clear it, then use Insert &gt; Dynamic Content.</td></tr></table>",
@@ -914,18 +1435,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "20px",
+              "padding-top": "22px",
               "padding-right": "0px",
-              "padding-bottom": "20px",
+              "padding-bottom": "22px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-09-c1"
+            "uuid": "dps-cart-15-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-11",
+        "uuid": "dps-cart-17",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -948,7 +1469,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-12",
+                "uuid": "dps-cart-18",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -981,18 +1502,18 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "0px",
+              "padding-top": "18px",
               "padding-right": "0px",
-              "padding-bottom": "22px",
+              "padding-bottom": "0px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-11-c1"
+            "uuid": "dps-cart-17-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-13",
+        "uuid": "dps-cart-19",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1015,11 +1536,11 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-button",
-                "uuid": "dps-cart-14",
+                "uuid": "dps-cart-20",
                 "descriptor": {
                   "button": {
                     "label": "Return to your basket",
-                    "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html",
+                    "href": "https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=cart",
                     "style": {
                       "background-color": "#ff8c00",
                       "border-bottom": "0px solid transparent",
@@ -1046,7 +1567,102 @@
                     }
                   },
                   "style": {
-                    "text-align": "left",
+                    "text-align": "center",
+                    "padding-top": "0px",
+                    "padding-right": "24px",
+                    "padding-bottom": "0px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              },
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-21",
+                "descriptor": {
+                  "text": {
+                    "computedStyle": {
+                      "linkColor": "#616161"
+                    },
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#616161;\"><a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">or keep browsing the store</a></div>",
+                    "style": {
+                      "color": "#616161",
+                      "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "13px",
+                      "line-height": "1.6"
+                    }
+                  },
+                  "style": {
+                    "text-align": "center",
+                    "padding-top": "14px",
+                    "padding-right": "24px",
+                    "padding-bottom": "0px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              }
+            ],
+            "style": {
+              "background-color": "transparent",
+              "border-bottom": "0px solid transparent",
+              "border-left": "0px solid transparent",
+              "border-right": "0px solid transparent",
+              "border-top": "0px solid transparent",
+              "padding-top": "18px",
+              "padding-right": "0px",
+              "padding-bottom": "26px",
+              "padding-left": "0px"
+            },
+            "uuid": "dps-cart-19-c1"
+          }
+        ]
+      },
+      {
+        "type": "one-column-empty",
+        "uuid": "dps-cart-22",
+        "container": {
+          "style": {
+            "background-color": "transparent"
+          }
+        },
+        "content": {
+          "computedStyle": {
+            "rowColStackOnMobile": true,
+            "rowReverseColStackOnMobile": false
+          },
+          "style": {
+            "background-color": "#f5f5f7",
+            "color": "#333333",
+            "width": "600px"
+          }
+        },
+        "columns": [
+          {
+            "grid-columns": 12,
+            "modules": [
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-23",
+                "descriptor": {
+                  "text": {
+                    "computedStyle": {
+                      "linkColor": "#985400"
+                    },
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">Prices and availability can change, and a basket is not a reservation.</div>",
+                    "style": {
+                      "color": "#616161",
+                      "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "12px",
+                      "line-height": "1.6"
+                    }
+                  },
+                  "style": {
+                    "text-align": "center",
                     "padding-top": "0px",
                     "padding-right": "24px",
                     "padding-bottom": "0px",
@@ -1066,16 +1682,16 @@
               "border-top": "0px solid transparent",
               "padding-top": "0px",
               "padding-right": "0px",
-              "padding-bottom": "32px",
+              "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-13-c1"
+            "uuid": "dps-cart-22-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-15",
+        "uuid": "dps-cart-24",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1098,13 +1714,41 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-16",
+                "uuid": "dps-cart-25",
+                "descriptor": {
+                  "text": {
+                    "computedStyle": {
+                      "linkColor": "#985400"
+                    },
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;line-height:1.6;color:#333333;\"><strong style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:13px;color:#333333;\">Dengage</strong><span style=\"font-size:12px;color:#616161;padding-left:5px;\">eComm Demo</span></div>",
+                    "style": {
+                      "color": "#333333",
+                      "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
+                      "font-size": "13px",
+                      "line-height": "1.6"
+                    }
+                  },
+                  "style": {
+                    "text-align": "left",
+                    "padding-top": "0px",
+                    "padding-right": "24px",
+                    "padding-bottom": "8px",
+                    "padding-left": "24px"
+                  },
+                  "computedStyle": {
+                    "hideContentOnMobile": false
+                  }
+                }
+              },
+              {
+                "type": "mailup-bee-newsletter-modules-text",
+                "uuid": "dps-cart-26",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
                       "linkColor": "#616161"
                     },
-                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/unsubscribe.html?c={%= $Contact.contact_key %}\" style=\"color:#616161;text-decoration:underline;\">Unsubscribe</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
+                    "html": "<div class=\"txtTinyMce-wrapper\" style=\"font-family:'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif;font-size:12px;line-height:1.6;color:#616161;\">You are receiving this because you shopped with us. <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/index.html?open=account\" style=\"color:#616161;text-decoration:underline;\">Manage your preferences</a> or <a href=\"https://dengage-presales.github.io/demo-ai/demos/techiestore-in/\" style=\"color:#616161;text-decoration:underline;\">visit the store</a>.<br>This is a demonstration storefront built for a sales conversation.</div>",
                     "style": {
                       "color": "#616161",
                       "font-family": "'DM Sans', Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -1131,12 +1775,12 @@
               "border-left": "0px solid transparent",
               "border-right": "0px solid transparent",
               "border-top": "0px solid transparent",
-              "padding-top": "20px",
+              "padding-top": "24px",
               "padding-right": "0px",
-              "padding-bottom": "24px",
+              "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-15-c1"
+            "uuid": "dps-cart-24-c1"
           }
         ]
       }

@@ -566,6 +566,29 @@
         if (window.Panels) window.Panels.init();
         if (window.Slots) window.Slots.init();
         if (window.Inbox) window.Inbox.boot();
+
+        openFromUrl();
+    }
+
+    var OPENABLE = {
+        cart: '#cart',
+        checkout: '#checkout',
+        search: '#search',
+        account: '#account',
+        wishlist: '#wishlist'
+    };
+
+    function openFromUrl() {
+        var wanted = String(param('open') || '').toLowerCase();
+        if (!wanted) return;
+        var id = OPENABLE[wanted];
+        if (!id) return;
+
+        openOverlay(id);
+        if (wanted === 'search') {
+            var input = $('#search-input');
+            if (input) input.focus();
+        }
     }
 
     window.Storefront = {

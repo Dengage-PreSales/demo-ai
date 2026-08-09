@@ -185,7 +185,7 @@ function footer(palette, storeUrl, unsubscribe) {
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                       <tr><td style="font-family:${palette.body};font-size:12px;line-height:1.6;color:${palette.canvasQuiet};padding-top:6px">
                         You are receiving this because you shopped with us.
-                        <a href="${unsubscribe}" style="color:${palette.canvasQuiet};text-decoration:underline">Unsubscribe</a>
+                        <a href="${unsubscribe}" style="color:${palette.canvasQuiet};text-decoration:underline">Manage your preferences</a>
                         or <a href="${storeUrl}" style="color:${palette.canvasQuiet};text-decoration:underline">visit the store</a>.
                         <br>This is a demonstration storefront built for a sales conversation.
                       </td></tr>

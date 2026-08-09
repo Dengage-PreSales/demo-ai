@@ -24,12 +24,15 @@
    can know it in advance.
    ========================================================================== */
 
+import { demoLink, categoryLink } from '../demo-links.mjs';
+
 /* BeeFree's own module type names. Wrong here and the import is rejected or, worse,
    accepted with the block dropped, so they are named once. */
 const TEXT = 'mailup-bee-newsletter-modules-text';
 const HTML = 'mailup-bee-newsletter-modules-html';
 const BUTTON = 'mailup-bee-newsletter-modules-button';
 const DIVIDER = 'mailup-bee-newsletter-modules-divider';
+const IMAGE = 'mailup-bee-newsletter-modules-image';
 
 const WIDTH = 600;
 
@@ -97,7 +100,7 @@ function htmlModule(uuid, palette, html, bottom) {
     };
 }
 
-function buttonModule(uuid, palette, label, href) {
+function buttonModule(uuid, palette, label, href, align) {
     return {
         type: BUTTON,
         uuid,
@@ -127,8 +130,34 @@ function buttonModule(uuid, palette, label, href) {
                 },
                 computedStyle: { width: 'auto', hideContentOnMobile: false }
             },
-            style: Object.assign({ 'text-align': 'left' }, pad(0, 24, 0, 24)),
+            style: Object.assign({ 'text-align': align || 'left' }, pad(0, 24, 0, 24)),
             computedStyle: { hideContentOnMobile: false }
+        }
+    };
+}
+
+/* FULL BLEED BY DEFAULT, which is the whole reason an image module is worth having
+   rather than an HTML module with an img in it: BeeFree scales it to the column and the
+   builder gives it a picker, so the hero can be swapped on a call without leaving the
+   editor. No side padding, so 600px of image meets 600px of column. */
+function imageModule(uuid, src, alt, href, width) {
+    return {
+        type: IMAGE,
+        uuid,
+        descriptor: {
+            image: {
+                alt: alt || '',
+                href: href || '',
+                src,
+                width: (width || WIDTH) + 'px',
+                dynamicSrc: ''
+            },
+            style: Object.assign({ 'text-align': 'center', width: '100%' }, pad(0, 0, 0, 0)),
+            computedStyle: {
+                class: 'center autowidth fullwidth',
+                width: (width || WIDTH) + 'px',
+                hideContentOnMobile: false
+            }
         }
     };
 }
@@ -219,7 +248,8 @@ function webFonts(theme, palette) {
 export function beefreeAbandonedCart(options) {
     const {
         palette, storeName, storeUrl, unsubscribe,
-        theme = {}, symbol = '', currency = '', snippets = {}
+        theme = {}, symbol = '', currency = '', snippets = {},
+        categories = [], heroImage = ''
     } = options;
 
     const uid = ids('dps-cart');
@@ -234,7 +264,19 @@ export function beefreeAbandonedCart(options) {
     const hairline = () => rows.push(
         row(uid(), palette, [[dividerModule(uid(), palette)]], { top: 0, bottom: 0 }));
 
-    /* 1. THE MASTHEAD IS THE DENGAGE MARK AND THE STORE'S NAME AS TEXT BESIDE IT.
+    /* 1. THE PREHEADER, hidden. It is the grey line an inbox shows beside the subject,
+       and with nothing in it the client picks the first words it can find, which here
+       would be "Dengage eComm Demo". Standard practice, and it is real text in a real
+       module rather than a trick: display:none plus a zero height, which every client
+       that shows a preview reads and every client that renders the body skips. */
+    rows.push(row(uid(), palette, [[
+        textModule(uid(), palette,
+            '<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' +
+            'Your basket is saved. Here is what is still in it.</div>',
+            { size: 1, colour: palette.canvas })
+    ]], { ground: palette.canvas, top: 0, bottom: 0 }));
+
+    /* 2. THE MASTHEAD IS THE DENGAGE MARK AND THE STORE'S NAME AS TEXT BESIDE IT.
        Non-negotiable 3, and the same arrangement layout.mjs uses, so the generated
        HTML emails and this one do not disagree about whose email it is. Text rather
        than an image because the logo is an SVG and Gmail drops SVG entirely.
@@ -248,44 +290,86 @@ export function beefreeAbandonedCart(options) {
        contrast on the one row nobody re-reads. */
     rows.push(row(uid(), palette, [
         [textModule(uid(), palette,
-            '<strong style="font-family:' + palette.display + ';font-size:17px;color:' +
+            '<a href="' + demoLink(storeUrl, 'home') + '" style="text-decoration:none;">' +
+            '<strong style="font-family:' + palette.display + ';font-size:18px;color:' +
             palette.canvasText + ';letter-spacing:-0.01em;">Dengage</strong>' +
             '<span style="font-size:12px;color:' + palette.canvasQuiet + ';padding-left:6px;">' +
-            'eComm Demo</span>', { size: 17, colour: palette.canvasText })],
+            'eComm Demo</span></a>',
+            { size: 18, colour: palette.canvasText, linkColor: palette.canvasText })],
         [textModule(uid(), palette, storeName,
             { size: 12, colour: palette.canvasQuiet, align: 'right' })]
-    ], { ground: palette.canvas, top: 24, bottom: 24 }));
+    ], { ground: palette.canvas, top: 22, bottom: 22 }));
 
+    /* On a flat theme the masthead and the nav are the same colour, so the card has no
+       top edge. The footer end of the card has the same problem and the same fix. */
     if (flat) hairline();
 
-    /* 2. One headline and one line of copy. No paragraph explaining the offer,
+    /* 3. THE CATEGORY NAV, from the demo's own category structure. Every retail email
+       has one, and here it is doing real work rather than decorating: the links go to
+       the storefront filtered to that category, so on a call each one is a live page
+       and the prospect sees their own taxonomy in an email nobody built by hand.
+
+       Four at most. A nav that wraps to two lines on a phone stops looking like a nav,
+       and the demo's structure is four to six categories anyway. */
+    const nav = (categories || []).filter((name) => typeof name === 'string' && name.trim())
+        .slice(0, 4);
+    if (nav.length) {
+        rows.push(row(uid(), palette, [[
+            textModule(uid(), palette,
+                nav.map((name) =>
+                    '<a href="' + categoryLink(storeUrl, name) + '" style="color:' +
+                    palette.text + ';text-decoration:none;font-size:12px;' +
+                    'letter-spacing:0.06em;text-transform:uppercase;">' + name + '</a>'
+                ).join('<span style="color:' + palette.quiet +
+                       ';padding:0 10px;opacity:0.5;">&bull;</span>'),
+                { size: 12, align: 'center', colour: palette.text, linkColor: palette.text })
+        ]], { top: 16, bottom: 18 }));
+        /* NO RULE UNDER IT. A divider here sat inset by 24px directly above a full
+           bleed hero, so two edges of different widths stacked and the nav read as a
+           floating strip. The hero's own tinted band is the separation. */
+    }
+
+    /* 4. THE HERO. Drawn per demo from its own brand colour by make-hero.mjs, so it is
+       neither a stock photograph nor the prospect's own imagery, and it cannot 404
+       between the build and the call. Full bleed, and it carries no text: every word in
+       this email is a real module, which is what makes it readable with images off.
+
+       Its alt text is deliberately plain rather than a second headline. A client with
+       images blocked should show the shape of the email, not two competing sentences. */
+    if (heroImage) {
+        rows.push(row(uid(), palette, [[
+            imageModule(uid(), heroImage, 'Your saved basket', demoLink(storeUrl, 'cart'))
+        ]], { top: 0, bottom: 0 }));
+    }
+
+    /* 5. One headline and one line of copy. No paragraph explaining the offer,
        because there is no offer: the products are the message. */
     rows.push(row(uid(), palette, [[
         textModule(uid(), palette,
-            '<span style="font-family:' + palette.display + ';font-size:26px;font-weight:700;' +
-            'line-height:1.25;color:' + palette.text + ';">Still thinking it over?</span>',
-            { size: 26, leading: 1.25, bottom: 10 }),
+            '<span style="font-family:' + palette.display + ';font-size:28px;font-weight:700;' +
+            'line-height:1.2;color:' + palette.text + ';">Still thinking it over?</span>',
+            { size: 28, leading: 1.2, bottom: 12 }),
         textModule(uid(), palette,
-            'Your basket is saved. Here is what is waiting in it.',
+            'Everything you added is still saved. Here is what is waiting in your basket.',
             { size: 15, colour: palette.quiet })
-    ]], { top: 30, bottom: 22 }));
+    ]], { top: 32, bottom: 24 }));
 
-    /* 3. THE BASKET. */
+    /* 6. THE BASKET. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
             dynamicBlock(palette, 'dps abandoned cart', snippets.items,
                 'The visitor\'s own basket, resolved from their cart events.'))
     ]], { top: 0, bottom: 6 }));
 
-    /* 4. THE TOTAL, on the wash so it reads as a summary rather than another product.
+    /* 7. THE TOTAL, on the wash so it reads as a summary rather than another product.
        It disappears by itself when the basket has no honest total to show. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
             dynamicBlock(palette, 'dps abandoned cart total', snippets.total,
                 'Subtotal, discount and total, computed from the same basket.'))
-    ]], { ground: palette.wash, top: 20, bottom: 20 }));
+    ]], { ground: palette.wash, top: 22, bottom: 22 }));
 
-    /* 5. THE CURRENCY, STATED ONCE, BECAUSE NO NUMBER IN THIS EMAIL CARRIES A SYMBOL.
+    /* 8. THE CURRENCY, STATED ONCE, BECAUSE NO NUMBER IN THIS EMAIL CARRIES A SYMBOL.
        Both Dynamic Content assets are shared by every demo and dps_product has no
        currency column, so neither one can know which currency it is printing. It says
        so here instead, per demo, which is what an international retailer does anyway,
@@ -298,29 +382,57 @@ export function beefreeAbandonedCart(options) {
                 'All prices in ' + (symbol || currency) +
                 (symbol && currency ? ' (' + currency + ')' : '') + '.',
                 { size: 12, colour: palette.quiet })
-        ]], { top: 0, bottom: 22 }));
+        ]], { top: 18, bottom: 0 }));
     }
 
-    /* 6. ONE BUTTON, AND IT GOES TO THE CART. Not to the home page: the whole
-       proposition is that the basket survived. */
+    /* 9. ONE BUTTON, AND IT OPENS THE BASKET. Centred, because a centred primary action
+       is what a phone thumb expects, and with a quiet second choice under it rather than
+       a second button: two buttons of equal weight is how a call to action stops being
+       one.
+
+       It opens the basket rather than the home page. The whole proposition is that the
+       basket survived, and it goes to index.html?open=cart because a demo has no
+       cart.html and never did. See factory/demo-links.mjs. */
     rows.push(row(uid(), palette, [[
-        buttonModule(uid(), palette, 'Return to your basket', storeUrl + 'cart.html')
-    ]], { top: money ? 0 : 4, bottom: 32 }));
+        buttonModule(uid(), palette, 'Return to your basket', demoLink(storeUrl, 'cart'),
+                     'center'),
+        textModule(uid(), palette,
+            '<a href="' + demoLink(storeUrl, 'home') + '" style="color:' + palette.quiet +
+            ';text-decoration:underline;">or keep browsing the store</a>',
+            { size: 13, align: 'center', colour: palette.quiet, top: 14,
+              linkColor: palette.quiet })
+    ]], { top: money ? 18 : 8, bottom: 26 }));
+
+    /* 10. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
+        discount that expires would all be invented, and a prospect can see through
+        every one of them. What is genuinely true of any store is that a basket is not a
+        reservation, and saying so is the honest version of the same nudge. */
+    rows.push(row(uid(), palette, [[
+        textModule(uid(), palette,
+            'Prices and availability can change, and a basket is not a reservation.',
+            { size: 12, align: 'center', colour: palette.quiet })
+    ]], { top: 0, bottom: 28 }));
 
     if (flat) hairline();
 
-    /* 7. The footer, back on the canvas, closing the card. Same wording as the
-       generated HTML emails. */
+    /* 11. The footer, back on the canvas, closing the card. The mark repeats small,
+        because a footer with no sender in it reads as a fragment. */
     rows.push(row(uid(), palette, [[
+        textModule(uid(), palette,
+            '<strong style="font-family:' + palette.display + ';font-size:13px;color:' +
+            palette.canvasText + ';">Dengage</strong>' +
+            '<span style="font-size:12px;color:' + palette.canvasQuiet +
+            ';padding-left:5px;">eComm Demo</span>',
+            { size: 13, colour: palette.canvasText, bottom: 8 }),
         textModule(uid(), palette,
             'You are receiving this because you shopped with us. ' +
             '<a href="' + unsubscribe + '" style="color:' + palette.canvasQuiet +
-            ';text-decoration:underline;">Unsubscribe</a> or ' +
-            '<a href="' + storeUrl + '" style="color:' + palette.canvasQuiet +
+            ';text-decoration:underline;">Manage your preferences</a> or ' +
+            '<a href="' + demoLink(storeUrl, 'home') + '" style="color:' + palette.canvasQuiet +
             ';text-decoration:underline;">visit the store</a>.<br>' +
             'This is a demonstration storefront built for a sales conversation.',
             { size: 12, colour: palette.canvasQuiet, linkColor: palette.canvasQuiet })
-    ]], { ground: palette.canvas, top: 20, bottom: 24 }));
+    ]], { ground: palette.canvas, top: 24, bottom: 28 }));
 
     /* WHERE THE ROWS GO, AND THE FIRST VERSION PUT THEM IN THE WRONG PLACE. Nesting
        them under page.body imported as an empty canvas: the builder read page.rows,

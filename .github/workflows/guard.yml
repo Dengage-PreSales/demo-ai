@@ -90,6 +90,16 @@ jobs:
       - name: BeeFree template imports and stays themed
         run: node factory/emails/beefree.test.mjs
 
+      # EVERY BUTTON IN EVERY CHANNEL POINTED AT A 404 UNTIL 9 AUGUST 2026. Ten emails,
+      # the AMP variant and all five short form channels linked to cart.html,
+      # checkout.html, wishlist.html and account.html. A demo is index.html and
+      # product.html; those four are overlays. Nothing could catch it: the links are
+      # absolute strings, so no build step resolves them, and a preview is read to check
+      # a layout rather than clicked. This resolves every one of them back to a path on
+      # disk, which is exactly what a 404 on Pages is.
+      - name: Every link in the panel content exists
+        run: node factory/panel/links.test.mjs
+
       # FOURTEEN POPUP CREATIVES SHARE ONE THEME BOOTSTRAP, and survey.html is where
       # it is written. Copying forty lines by hand into fourteen files produces
       # fourteen slightly different copies, and the one that matters is always the one

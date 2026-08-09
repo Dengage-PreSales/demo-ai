@@ -41,6 +41,7 @@ import { ampCartAbandonment } from './amp.mjs';
 import { buildBeefree } from './build-beefree.mjs';
 import { sourceBox, copyScript } from '../panel/copy-console.mjs';
 import { COLUMNS, QUERIES } from './data.mjs';
+import { demoLink } from '../demo-links.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PAGES = 'https://dengage-presales.github.io/demo-ai/demos/';
@@ -97,10 +98,18 @@ function context(config, products, slug, mode) {
         .slice(0, count);
 
     return {
-        /* Absolute, because amp4email refuses a relative href. See amp.mjs. The
-           preview resolves it so a browser shows a link rather than a tag. */
-        unsubscribe: base + 'unsubscribe.html?c=' +
-            (mode === 'panel' ? '{%= $Contact.contact_key %}' : 'DPS-1042'),
+        /* Absolute, because amp4email refuses a relative href. See amp.mjs.
+
+           THERE IS NO unsubscribe.html, AND THERE NEVER WAS. This pointed at one, so
+           the footer link in every message was a 404. A demo is index.html and
+           product.html, so the nearest real surface is the account overlay, where this
+           storefront keeps a shopper's identity. The wording moved with it: the link
+           says "Manage your preferences", because a link labelled Unsubscribe that does
+           not unsubscribe is worse than one that says what it does.
+
+           If Dengage injects its own unsubscribe URL or exposes a tag for it, that is
+           the right value here and this becomes one line. */
+        unsubscribe: demoLink(base, 'account'),
         storeName: storeNameFrom(config, slug),
         storeUrl: base,
         products: shaped,
@@ -260,7 +269,7 @@ function ampSlots(ctx, spec, variable, count) {
             name: '{%= ' + at(c.name) + ' %}',
             price: ctx.symbol + ' {%= ' + at(c.price) + ' %}',
             image: ctx.storeUrl + '{%= ' + at(c.image) + ' %}',
-            href: ctx.storeUrl + 'wishlist.html'
+            href: demoLink(ctx.storeUrl, 'wishlist')
         };
     });
 }
@@ -282,7 +291,7 @@ function ampContext(ctx, mode) {
                    ' {%= ' + at(c.price) + ' %}{% } %}',
             image: ctx.storeUrl + '{% if (cartRows.length > ' + index + ') { %}{%= ' +
                    at(c.image) + ' %}{% } %}',
-            href: ctx.storeUrl + 'cart.html'
+            href: demoLink(ctx.storeUrl, 'cart')
         };
     });
     return {
