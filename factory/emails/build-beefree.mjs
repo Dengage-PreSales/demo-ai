@@ -31,15 +31,20 @@
    it builds the URL from the page the visitor was actually on rather than from a
    hardcoded origin.
 
-   WITH SNIPPET IDS IT IMPORTS FINISHED. Dengage assigns snippet_id when a Dynamic
-   Content asset is saved, so nothing here can know it. Pass what the panel shows and
-   both blocks become real tags:
+   IT IMPORTS FINISHED. Dengage assigns an id when a Dynamic Content asset is saved, so
+   for a while these were arguments and the template arrived with two dashed boxes to
+   attach by hand. The ids are known now and are below: they are per account rather than
+   per demo, so they never change again and nothing needs remembering.
 
-     DPS_SNIPPET_CART=8835 DPS_SNIPPET_CART_TOTAL=8836 \
+   THEY ARE UUIDS, NOT NUMBERS. Dengage's own documentation shows snippet_id="8835",
+   which is what this file assumed, and the panel issues a UUID. Both go in the same
+   attribute as a string, so nothing had to change to accept one, but a numeric example is
+   worth not copying. They live in factory/sandbox.json beside the app guid.
+
+   Either can still be overridden, for a second account or a renamed asset:
+
+     DPS_SNIPPET_CART=<id> DPS_SNIPPET_CART_TOTAL=<id> \
        node factory/emails/build-beefree.mjs
-
-   Without them each block imports as a labelled dashed box naming the asset that goes
-   there, which is visible in the builder and one click from the picker.
 
    ITS OWN SCRIPT, ON PURPOSE. build-emails.mjs builds the ten Code Editor messages and
    currently throws on the journeys that still ask an event table for a product name,
@@ -58,6 +63,27 @@ import { previewBeefree, productRows, summaryRows } from './beefree-preview.mjs'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const PAGES = 'https://dengage-presales.github.io/demo-ai/demos/';
+
+/* THE TWO SAVED ASSETS, READ FROM factory/sandbox.json RATHER THAN WRITTEN HERE.
+
+   Recorded rather than passed in, because they are per account and permanent, and
+   because the whole point of the shared template is that a rebuild needs nothing
+   remembered. They are content ids and not application ids: nothing sends to a device
+   because of them.
+
+   ONE PLACE, AND THAT PLACE IS THE ONE THE GUARD ALREADY READS. The app-guid check
+   rejects every identifier in this repository that is not in sandbox.json, which is what
+   keeps the core demos' application out. Putting the snippet ids in a literal here would
+   have meant either failing that check or loosening it into a pattern. Naming them in the
+   config keeps it an allowlist: these two pass, every other identifier still fails. */
+function snippetIds() {
+    const config = JSON.parse(readFileSync(join(ROOT, 'factory', 'sandbox.json'), 'utf8'));
+    const named = config.snippets || {};
+    return {
+        items: named.abandonedCart || null,
+        total: named.abandonedCartTotal || null
+    };
+}
 
 /* THE PREVIEW'S SAMPLE BASKET, FROM THE DEMO'S OWN CATALOGUE. Four products, because
    four is the number that exposed the old cap and is what a real basket looks like.
@@ -115,6 +141,7 @@ export function buildBeefree(snippets) {
     /* THE STANDARD DENGAGE PALETTE, read out of template/style.css rather than written
        down, so the email and a demo with no theme of its own cannot disagree. */
     const palette = emailPalette(dengageTheme());
+    const configured = snippetIds();
 
     const template = beefreeAbandonedCart({
         palette,
@@ -124,8 +151,8 @@ export function buildBeefree(snippets) {
             ? 'https://dengage-presales.github.io/demo-ai/assets/email-hero-cart.jpg'
             : '',
         snippets: snippets || {
-            items: process.env.DPS_SNIPPET_CART || null,
-            total: process.env.DPS_SNIPPET_CART_TOTAL || null
+            items: process.env.DPS_SNIPPET_CART || configured.items,
+            total: process.env.DPS_SNIPPET_CART_TOTAL || configured.total
         }
     });
 

@@ -2,6 +2,11 @@
   "accountId": "28",
   "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
 
+  "snippets": {
+    "abandonedCart": "5178aafe-5bec-4326-b3ed-890aff1ec867",
+    "abandonedCartTotal": "50d50fcf-3e9a-4a4f-9143-fb17b1049e91"
+  },
+
   "_comment": [
     "The Dengage web application every demo talks to. Handoff 2.1.",
     "",
@@ -25,6 +30,15 @@
     "application identifier appearing anywhere in this repository is rejected, so",
     "the identifier the core demos use never has to be written down here in order",
     "to be kept out.",
+    "",
+    "THE SNIPPETS BLOCK IS THE SECOND HALF OF THAT ALLOWLIST, and it is deliberately",
+    "a separate field rather than more app guids. Dengage issues a UUID when a",
+    "Dynamic Content asset is saved, and the shared email template has to name two of",
+    "them or it would import with two empty blocks. They are content ids, not",
+    "application ids: nothing sends to a device because of them. Listing them here",
+    "rather than in the generator means the guardrails still reject every OTHER",
+    "identifier, which is the property worth keeping, and the ids are written down",
+    "once. factory/emails/build-beefree.mjs reads them from here.",
     "",
     "The SDK loader URL these two compose is",
     "https://pcdn.dengage.com/p/push/28/99d9b8fb-0c62-5a85-3e43-2402554d93a5/dengage_sdk_loader.js",

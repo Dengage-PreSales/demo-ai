@@ -156,13 +156,27 @@ function walk(template) {
            module.descriptor.html.html.includes('Insert &gt; Dynamic Content') &&
            module.descriptor.html.html.indexOf('<!--') === -1));
 
-    const resolved = walk(build({ snippets: { items: '8835', total: '8836' } }).template)
+    /* A UUID, NOT A NUMBER. Dengage's documentation shows snippet_id="8835" and the
+       panel issues a UUID, so the fixture is the shape the panel really produces.
+
+       READ FROM factory/sandbox.json rather than spelled here, for the same reason the
+       generator reads it: one place, and it is the place the app-guid guard allowlists. */
+    const { readFileSync: read } = await import('node:fs');
+    const { join: at, dirname: up } = await import('node:path');
+    const { fileURLToPath: fromUrl } = await import('node:url');
+    const configured = JSON.parse(read(
+        at(up(fromUrl(import.meta.url)), '..', 'sandbox.json'), 'utf8')).snippets || {};
+    const CART = configured.abandonedCart;
+    const TOTAL = configured.abandonedCartTotal;
+    ok('factory/sandbox.json names both saved assets',
+       Boolean(CART) && Boolean(TOTAL), configured);
+    const resolved = walk(build({ snippets: { items: CART, total: TOTAL } }).template)
         .modules.filter((module) => module.descriptor.html);
     ok('with ids, each becomes a real snippet tag',
        resolved[0].descriptor.html.html.includes(
-           '<snippet snippet_id="8835" snippet_name="dps abandoned cart"></snippet>') &&
+           '<snippet snippet_id="' + CART + '" snippet_name="dps abandoned cart"></snippet>') &&
        resolved[1].descriptor.html.html.includes(
-           '<snippet snippet_id="8836" snippet_name="dps abandoned cart total"></snippet>'),
+           '<snippet snippet_id="' + TOTAL + '" snippet_name="dps abandoned cart total"></snippet>'),
        resolved.map((m) => m.descriptor.html.html));
 
     /* THE WRAPPER IS NOT DECORATION, so it is asserted rather than assumed. The saved
@@ -339,6 +353,35 @@ function walk(template) {
     const none = build({ theme: { displayFont: '', bodyFont: '' } });
     ok('a theme naming no face loads nothing, rather than guessing a URL',
        none.template.page.body.webFonts.length === 0);
+}
+
+/* -------------------------------------------------------------------------- */
+/* The committed file, which is what actually gets imported                     */
+
+{
+    /* THE TEST ABOVE BUILDS ITS OWN TEMPLATE. This reads the one on disk, because that is
+       the file somebody uploads, and a placeholder left in it would not show until a send
+       came out with two dashed boxes in it. */
+    const { readFileSync, existsSync } = await import('node:fs');
+    const { join, dirname } = await import('node:path');
+    const { fileURLToPath } = await import('node:url');
+    const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+    const path = join(root, 'factory', 'panel', 'content', '_shared',
+                      'beefree-abandoned-cart.json');
+
+    ok('the shared template is committed', existsSync(path), path);
+    if (existsSync(path)) {
+        const committed = JSON.parse(readFileSync(path, 'utf8'));
+        const html = walk(committed).modules.filter((module) => module.descriptor.html);
+        ok('it has both Dynamic Content blocks', html.length === 2, html.length);
+        ok('and both are attached, so the import needs no clicks',
+           html.every((module) => module.descriptor.html.html.includes('<snippet ')),
+           html.map((m) => m.descriptor.html.html.slice(0, 80)));
+        ok('with no placeholder left behind',
+           html.every((module) => !module.descriptor.html.html.includes('dashed')));
+        ok('and it still names no storefront',
+           !JSON.stringify(committed).includes('/demos/'));
+    }
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

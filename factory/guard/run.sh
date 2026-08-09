@@ -383,10 +383,20 @@ fi
 SANDBOX_CFG="$ROOT/factory/sandbox.json"
 UUID='[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}'
 
-want_guid=""; want_account=""
+want_guid=""; want_account=""; want_snippets=""
 if [ -f "$SANDBOX_CFG" ]; then
     want_guid="$(sed -n 's/.*"appGuid"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SANDBOX_CFG" | head -1)"
     want_account="$(sed -n 's/.*"accountId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$SANDBOX_CFG" | head -1)"
+    # THE SNIPPET IDS, WHICH ARE CONTENT IDS AND NOT APPLICATION IDS. Dengage issues a
+    # UUID when a Dynamic Content asset is saved, and the shared email template has to
+    # name two of them or it imports with two empty blocks. Read from the same file and
+    # from its own field, so this stays an allowlist rather than becoming a pattern:
+    # every OTHER identifier is still rejected, which is the property worth keeping.
+    #
+    # Taken only from inside the "snippets" object, so a UUID sitting anywhere else in
+    # the config cannot widen the allowlist by accident.
+    want_snippets="$(sed -n '/"snippets"[[:space:]]*:[[:space:]]*{/,/}/p' "$SANDBOX_CFG" \
+        | grep -oE "$UUID" || true)"
 fi
 
 guid_files="$(find_files html htm css js mjs)"
@@ -413,6 +423,10 @@ if [ -n "$hits" ]; then
         app_guid_failed=1
     else
         bad="$(printf '%s\n' "$hits" | grep -v ":${want_guid}\$")"
+        for allowed in $want_snippets; do
+            bad="$(printf '%s\n' "$bad" | grep -v ":${allowed}\$" || true)"
+        done
+        bad="$(printf '%s\n' "$bad" | grep -v '^$' || true)"
         if [ -n "$bad" ]; then
             fail app-guid "an identifier that is not the sandbox application"
             printf '%s\n' "$bad" | show

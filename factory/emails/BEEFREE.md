@@ -17,19 +17,28 @@ anything is uploaded.
    and paste `factory/panel/content/_dynamic/abandoned-cart.html`. Save.
 2. Same again for `dps abandoned cart total`, from `abandoned-cart-total.html`.
 3. **Content > Email > New > Email Builder**, and import the JSON.
-4. The template arrives with two dashed boxes where the products and the summary go.
-   Click each one, clear it, then **Insert > Dynamic Content** and pick the asset the
-   box names.
-5. Build the campaign. **One campaign serves every demo**, so this is the last time.
+4. Build the campaign. **One campaign serves every demo**, so this is the last time.
 
-Step 4 exists because Dengage assigns `snippet_id` when an asset is saved, so nothing
-in this repository can know it in advance. Once the panel has told you the two ids, a
-rebuild puts the real tags straight into the file and there is nothing to click:
+**There is no step for attaching the Dynamic Content.** The ids are known and committed,
+so the imported template already calls both assets. It used to arrive with two dashed
+boxes to attach by hand, because Dengage issues an id when an asset is saved and nothing
+here could know it in advance.
+
+**The ids are UUIDs, not numbers.** Dengage's documentation shows `snippet_id="8835"`,
+which is what this repository assumed; the panel actually issues
+`5178aafe-5bec-4326-b3ed-890aff1ec867`. Both go in the same attribute as a string, so
+nothing had to change to accept one, but the numeric example is worth not copying.
+
+Either can be overridden for a second account or a renamed asset:
 
 ```bash
-DPS_SNIPPET_CART=8835 DPS_SNIPPET_CART_TOTAL=8836 \
+DPS_SNIPPET_CART=<id> DPS_SNIPPET_CART_TOTAL=<id> \
   node factory/emails/build-beefree.mjs
 ```
+
+**If a block imports empty**, the tag form is what to check first. Attach one block by
+hand with **Insert > Dynamic Content**, then read what the panel wrote into that HTML
+block. That string is authoritative and this file should match it.
 
 ## Why one shared template rather than one per demo
 
@@ -84,22 +93,30 @@ The cause was the rows. They were nested under `page.body`, and the builder read
 `page.rows`. They are now emitted at `page.rows` and mirrored under `page.body`, so
 either reading finds them.
 
-**The mirror is temporary.** It exists because nothing in this repository can validate
-this format offline, so a wrong guess would cost another round trip. The way to remove
-it is an export from the account: build a template by hand in the Email Builder with a
-title, a button and a **Dynamic Content** block in it, export or download the JSON, and
-that file is the schema. Two things follow from having it:
+**The mirror is still here**, because the import works and nothing has proved which path
+the builder reads. Removing it needs the builder's **JSON**, and that is worth being
+precise about, because an export was tried on 9 August 2026 and did not answer it.
 
-1. The mirror goes, and `beefree.mjs` matches the real shape rather than a documented
-   one.
+**What the builder's HTML export does and does not give.** A template exported as HTML is
+the rendered message: `<table class="row row-2">` bands, `row-content` at a fixed width,
+`column-1` cells, and `heading_block`, `paragraph_block`, `text_block`, `button_block`,
+`image_block`, `icons_block`, `social_block` and `spacer_block` inside them. That is
+genuinely useful, and it confirmed the shape this repository's preview renderer
+approximates. What it contains none of is the JSON: no module type strings, no `page`
+object, and no `<snippet>` tag, because a rendered export has already resolved or dropped
+it. So it cannot settle either of the two open questions.
+
+Both need the **JSON** specifically, whichever control saves or downloads that rather
+than the HTML:
+
+1. The mirror goes, and `beefree.mjs` matches the real shape rather than a documented one.
 2. **The Dynamic Content block becomes native.** That block is in the builder's own
-   content panel, so there is a proper module type for it and the HTML module used here
-   is a workaround. Its type name is not in any documentation this repository could
-   find, and an export contains it.
+   content panel, so there is a proper module type for it, and the HTML module used here
+   is a workaround. Nothing found so far names that type.
 
-Until then, guessing further at this engine is the wrong move. Five rounds have already
-been spent guessing at the template syntax, and every one of them was resolved by being
-shown something that worked rather than by reasoning about it.
+Neither is urgent. The import works, both blocks resolve, and guessing further at this
+engine is the wrong move: five rounds were spent guessing at the template syntax and every
+one was settled by being shown something that worked.
 
 ## What is in it
 
