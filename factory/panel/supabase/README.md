@@ -10,11 +10,12 @@ So this table is what turns an id back into something a person can read, and it 
 the difference between an abandoned cart email that shows a basket and one that shows
 three broken images.
 
-**Why Postgres rather than loading Dengage directly.** The Dengage API is IP
-allowlisted, and this repository's automation runs behind a rotating egress pool.
-Forty consecutive attempts from a session got nothing through. A remote table
-inverts the direction: Dengage connects out and queries this database, so no address
-on our side has to be stable and no credential has to travel.
+**Why Postgres in the middle at all.** The Dengage API is allowlisted per address and
+this repository's automation runs behind a rotating egress pool: forty consecutive
+attempts from a session got nothing through. This database presents one address,
+`13.231.95.28`, and that address is already accepted. So Postgres is the only part of
+the chain that can talk to Dengage, which is why it holds both the catalogue and the
+trigger.
 
 ---
 
@@ -23,18 +24,58 @@ on our side has to be stable and no credential has to travel.
 | | |
 |---|---|
 | Table | `public.dps_product`, 27 Dengage columns plus 3 for our own bookkeeping |
-| Rows | 30, the whole `techiestore-in` catalogue |
-| Keys | natural catalogue ids, not namespaced. **One demo only**, see below |
-| Loader | `select public.load_dps_product('techiestore-in');` |
+| View | `public.dengage_dps_product`, exactly the 27, for the ETL to select |
+| Rows | 45. `techiestore-in` 30, `showcase` 15, all active |
+| Keys | natural catalogue ids, not namespaced. See the last section |
+| Loader | `select public.load_dps_product('<slug>');` idempotent |
+| Schedule | `refresh-dengage-catalogues`, pg_cron, every 10 minutes, active |
+| History | `public.dengage_sync_log` |
 | Read role | `dengage_ro`, read only, **no password set yet** |
+| Vault | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, **not set yet** |
 
-Verified rather than assumed: the loader run twice leaves 30 rows and 30 distinct
-ids, `dengage_ro` reads all 30 through RLS, and an `UPDATE` as `dengage_ro` is
-refused.
+Verified rather than assumed: a repeat load changes nothing, a withdrawn product comes
+back `is_active = 0`, `dengage_ro` reads every row through RLS while an `UPDATE` as that
+role is refused, no product id is claimed by two demos, and the change gate reports
+exactly one row when exactly one row differs.
 
 ---
 
-## Loading a demo
+## It runs itself now
+
+Settled 9 August 2026, and it needs nothing from GitHub Actions. `autonomous-refresh.sql`
+has the whole thing; the short version:
+
+```
+the factory publishes demos/<slug>/products.json and feed/products.json
+  -> pg_cron, every 10 minutes, reloads whatever changed
+     -> Postgres triggers the Dengage flow, but only if something did
+        -> the flow copies Postgres into dps_product
+```
+
+**Why it is here and not in CI.** The Dengage API is allowlisted per address and a
+GitHub runner rotates through a pool. This database presents one address,
+`13.231.95.28`, measured across separate statements, and it is already accepted: a real
+login from Postgres returned 200 with a token and a flow trigger returned `code 0`,
+`HasError false`. So the Dengage half of the chain lives in Postgres.
+
+**Nothing has to be told about a new demo.** The demo list is read from the factory's
+own `feed/products.json`, which every build regenerates.
+
+**It is armed but idle** until the Vault secrets exist. Until then every pass that finds
+a change records `rows changed but vault secrets are missing` in `dengage_sync_log`, so
+the gap is visible rather than silent.
+
+```sql
+select vault.create_secret('<api user key>', 'dengage_api_userkey');
+select vault.create_secret('<api password>', 'dengage_api_password');
+select vault.create_secret('<flow uuid>',    'dengage_flow_id');
+```
+
+Check it with `select * from public.dengage_sync_log order by id desc limit 5;`
+
+---
+
+## Loading one demo by hand
 
 ```sql
 select public.load_dps_product('<slug>');
@@ -44,12 +85,8 @@ Postgres fetches that demo's published `products.json` and upserts it. Idempoten
 running it again refreshes prices and images rather than duplicating anything. A slug
 that is not a demo raises rather than inserting a parsed 404 page.
 
-To keep it current without anyone remembering, `pg_cron` is available in this project:
-
-```sql
-select cron.schedule('refresh-techiestore', '0 3 * * *',
-                     $$select public.load_dps_product('techiestore-in')$$);
-```
+You rarely need this: the scheduled pass above already reloads every demo in the feed.
+It is here for checking one demo after a build without waiting for the next window.
 
 ---
 
@@ -73,9 +110,10 @@ select cron.schedule('refresh-techiestore', '0 3 * * *',
      session mode port. A remote table issues ad hoc queries, and transaction mode
      does not support prepared statements.
 
-3. **Data Space > Tables > New > Remote Data Table**, pick the connection, pick
-   `public.dps_product`, select the columns. Leave the contact key unset: it is
-   optional, and a product table has none.
+3. **Build the Automated Flow.** Trigger: recurring, plus the API Trigger node whose
+   Public ID Postgres calls. Data Builder: Execute a SQL Query, and the query is the one
+   line in `etl-query.sql`. Data Space Update: target `dps_product`, operation
+   **Upsert**, matching on `product_id`.
 
 4. **Relate it to the event tables on `product_id`.** Four of the six carry that
    column: `shopping_cart_events`, `page_view_events`, `wishlist_events` and

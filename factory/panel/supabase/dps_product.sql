@@ -16,6 +16,17 @@
 -- so nothing here can reliably reach it. Dengage reaching out inverts that: no
 -- address on our side has to be stable and no credential has to travel.
 --
+-- TYPES ARE READ FROM DENGAGE, NOT ASSUMED, and this is the hard-won part. The first
+-- ETL run failed with "42804: column availability is of type boolean but expression is
+-- of type character varying", and that was one misalignment of five. The other four
+-- would have surfaced later or not at all: a timestamptz written into a DATETIME shifts
+-- by hours and raises nothing.
+--
+-- public.check_dengage_alignment() now reads Dengage's declared schema over its own API
+-- and compares it column by column against what the view offers. Last run: 28 columns
+-- compared, 28 aligned, nothing missing, nothing extra. Run it after any change on
+-- either side rather than trusting this file.
+--
 -- AND AN ETL RATHER THAN A REMOTE TABLE, settled 9 August 2026 after trying it.
 -- Remote tables are documented for Interactive Segments and never mentioned for
 -- personalisation, which is the half the emails need, and a live passthrough would
@@ -53,8 +64,12 @@ create table public.dps_product (
     price                 numeric(12,2),
     discounted_price      numeric(12,2),
 
-    availability          text,
-    availability_date     date,
+    -- BOOLEAN, because that is what Dengage declares. This was text ('in stock') and it
+    -- is what failed the first ETL run with 42804. true is in stock.
+    availability          boolean,
+    -- DATETIME on the far side, so timestamp rather than date: a date cannot carry the
+    -- time of day the column exists to express.
+    availability_date     timestamp,
 
     -- NULL means the catalogue does not track stock. 0 means none left. Defaulting
     -- one to the other is the trap CLAUDE.md 3.5 names, so the column stays nullable
@@ -72,15 +87,22 @@ create table public.dps_product (
     small_image_link      text,
     large_image_link      text,
 
-    -- smallint rather than boolean, deliberately. Dengage's dps_product takes 1 and
-    -- 0 here, and boolean mapping through an external table reader is the kind of
-    -- thing that silently arrives as null.
-    is_active             smallint not null default 1,
+    -- BOOLEAN. An earlier version of this file said "smallint rather than boolean,
+    -- deliberately, Dengage's dps_product takes 1 and 0 here". That was an assumption
+    -- and it was wrong: the API declares BOOLEAN. Read, do not guess.
+    is_active             boolean not null default true,
 
-    product_special_code  text,
+    -- INTEGER on the far side, not text.
+    product_special_code  integer,
     store_name            text,
+    -- Free-form merchandising keywords, per Dengage's own description of the column.
+    -- Filled from the scraped attributes where a store publishes any. This column was
+    -- missing entirely: Dengage declares 28 columns and this table had 27.
+    tags                  text,
     legacy_resource_id    text,
-    publish_date          timestamptz,
+    -- DATETIME carries no zone, so timestamptz here would be converted on the way out
+    -- and silently shift by hours.
+    publish_date          timestamp,
 
     -- Not part of Dengage's dps_product. These stay on the Postgres side so a human
     -- can tell rows apart, and so loading a demo twice is caught by the database
@@ -102,7 +124,7 @@ create table public.dps_product (
 
 create index dps_product_demo_slug_idx on public.dps_product (demo_slug);
 create index dps_product_category_path_idx on public.dps_product (category_path);
-create index dps_product_active_idx on public.dps_product (is_active) where is_active = 1;
+create index dps_product_active_idx on public.dps_product (is_active) where is_active;
 
 create function public.dps_product_touch() returns trigger
 language plpgsql
