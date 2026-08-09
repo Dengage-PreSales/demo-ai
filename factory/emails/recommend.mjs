@@ -47,7 +47,15 @@ export function seeded(list, seed) {
     out.sort((a, b) => {
         const ha = (s + a.id.length * 7 + a.id.charCodeAt(0)) % 1000;
         const hb = (s + b.id.length * 7 + b.id.charCodeAt(0)) % 1000;
-        return ha - hb;
+        if (ha !== hb) return ha - hb;
+        /* A LAST RESORT ON THE ID ITSELF, so the result does not depend on the order the
+           list arrived in. Two ids of the same length starting with the same character
+           hash identically and are fully tied, and a stable sort then preserves the input
+           order. That is fine on a page, where the catalogue array is always in the same
+           order, and not fine where the same catalogue arrives differently: a Dengage
+           query returns rows in no promised order, so the email rail and the page rail
+           disagreed on exactly those ties. */
+        return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
     });
     return out;
 }

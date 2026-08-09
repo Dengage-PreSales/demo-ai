@@ -93,7 +93,7 @@ const text = resolver('abandoned-cart.txt',
 const total = resolver('abandoned-cart-total.html',
     '{ subtotal: subtotal, discount: discount, counted: counted, priced: priced }');
 const recommend = resolver('recommendations.html',
-    '{ picks: picks, wanted: wanted, label: LABEL, cards: cards }');
+    '{ picks: picks, wanted: wanted, label: LABEL, lead: LEAD, cards: cards }');
 
 /* -------------------------------------------------------------------------- */
 /* Fixtures                                                                     */
@@ -634,26 +634,70 @@ function catalogue(ids) {
        out.cards.every((card) => card.category === 'Shirts'),
        out.cards.map((c) => c.category));
 
-    /* HALF A RAIL IS WORSE THAN NONE. With one candidate the block renders nothing, so
-       the assertion is on the guard the markup uses. */
-    const thin = recommend(stubFrom({
+    /* THE FALLBACK, AND IT IS THE DEFECT THAT SHOWED IN A REAL SEND. One demo's
+       catalogue holds exactly ONE product in each of the four categories its basket
+       covered, so the same-category pass had nothing left after excluding the basket and
+       the rail rendered nothing at all. A catalogue shaped like that is not unusual.
+
+       So a thin category pass falls back to Trending now, which is the storefront's own
+       first strategy: the same seeded() function, seeded with the same slug, over that
+       demo's rows. product_id is the catalogue's own id, unprefixed, so the ordering is
+       the one the site shows rather than merely a similar one. */
+    const otherCats = ['mine:p', 'mine:q', 'mine:r', 'mine:s'].map((id) =>
+        Object.assign(product(id), {
+            category_path: 'Home > Lighting',
+            link: 'https://dengage-presales.github.io/demo-ai/demos/mine/product.html?id=' + id
+        }));
+    const oneEach = recommend(stubFrom({
         master_device: devices,
         shopping_cart_events: cart,
         page_view_events: views,
-        dps_product: [shirt, sameRange[0]]
+        dps_product: [shirt].concat(otherCats, [otherDemo])
     }), CONTACT);
-    ok('one candidate is still offered but the block gates on more than one',
-       thin.picks.length === 1 &&
-       readFileSync(join(HERE, 'recommendations.html'), 'utf8')
-           .includes('{% if (cards.length > 1) { %}'), thin.picks.length);
+    ok('one product per category falls back rather than rendering nothing',
+       oneEach.picks.length === 4, oneEach.picks.length);
+    ok('and it says Trending now, which is what the site calls that strategy',
+       oneEach.label === 'Trending now' && oneEach.lead === 'Popular across the store',
+       { label: oneEach.label, lead: oneEach.lead });
+    ok('the fallback is still scoped to this demo',
+       oneEach.picks.every((p) => String(p.product_id).indexOf('mine:') === 0),
+       oneEach.picks.map((p) => p.product_id));
 
-    /* An empty basket has no categories to look in, so there is nothing to offer. */
-    const empty = recommend(stubFrom({
+    /* THE ORDERING IS THE STOREFRONT'S, not something similar to it. recommend.js is
+       lifted and run here against the same rows, and the two must agree. */
+    {
+        const site = readFileSync(
+            join(HERE, '..', '..', '..', '..', 'template', 'js', 'recommend.js'), 'utf8');
+        const body = site.match(/function seeded\(list, seed\) \{[\s\S]*?\n    \}/);
+        ok('recommend.js still has a seeded() to compare against', Boolean(body));
+        if (body) {
+            /* eslint-disable-next-line no-new-func */
+            const siteSeeded = new Function('return (' + body[0] + ')')();
+            /* The same set the asset ranks in the oneEach case above: this demo's rows
+               with the basket's own excluded. The seed is the slug in both. */
+            const siteOrder = siteSeeded(
+                otherCats.map((p) => ({ id: String(p.product_id) })), 'mine')
+                .map((p) => p.id);
+            ok('the asset ranks trending exactly as the storefront does',
+               oneEach.picks.map((p) => String(p.product_id)).join(',') ===
+               siteOrder.slice(0, 4).join(','),
+               { asset: oneEach.picks.map((p) => String(p.product_id)), site: siteOrder });
+        }
+    }
+
+    /* HALF A RAIL IS STILL WORSE THAN NONE, so the markup gates on more than one. */
+    ok('the block gates on more than one card',
+       readFileSync(join(HERE, 'recommendations.html'), 'utf8')
+           .includes('{% if (cards.length > 1) { %}'));
+
+    /* NOTHING TO SCOPE TO MEANS NOTHING TO OFFER. Without a resolved demo the fallback
+       cannot tell one catalogue from another, so it does not run. */
+    const noDemo = recommend(stubFrom({
         master_device: devices, shopping_cart_events: [],
         page_view_events: [], dps_product: [shirt].concat(sameRange)
     }), CONTACT);
-    ok('an empty basket offers nothing rather than offering the catalogue',
-       empty.picks.length === 0, empty.picks.length);
+    ok('with no demo resolved it offers nothing rather than another store\'s products',
+       noDemo.picks.length === 0, noDemo.picks.length);
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

@@ -121,17 +121,48 @@
 
   var mark = (target === "") ? "" : '/demos/' + target + '/';
   var picks = [];
-  for (var q = 0; q < candidates.length; q++) {
-    var cand = candidates[q] || {};
-    var cid = (cand.product_id == null) ? "" : String(cand.product_id);
-    if (cid === "" || basket[cid]) { continue; }
-    if (!cand.is_active) { continue; }
-    var clink = (cand.link == null) ? "" : String(cand.link);
-    if (mark !== "" && clink.indexOf(mark) === -1) { continue; }
-    if (picks.length < 4) { picks.push(cand); }
-  }
+
+  var mine = function (list) {
+    var out = [];
+    for (var f = 0; f < list.length; f++) {
+      var one = list[f] || {};
+      var oid = (one.product_id == null) ? "" : String(one.product_id);
+      if (oid === "" || basket[oid] || !one.is_active) { continue; }
+      var olink = (one.link == null) ? "" : String(one.link);
+      if (mark !== "" && olink.indexOf(mark) === -1) { continue; }
+      out.push(one);
+    }
+    return out;
+  };
+
+  var seeded = function (list, seed) {
+    var out = list.slice();
+    var sum = 0;
+    for (var z = 0; z < String(seed).length; z++) {
+      sum = (sum * 31 + String(seed).charCodeAt(z)) % 100003;
+    }
+    out.sort(function (a, b) {
+      var ida = String(a.product_id);
+      var idb = String(b.product_id);
+      var ha = (sum + ida.length * 7 + ida.charCodeAt(0)) % 1000;
+      var hb = (sum + idb.length * 7 + idb.charCodeAt(0)) % 1000;
+      if (ha !== hb) { return ha - hb; }
+      return ida < idb ? -1 : (ida > idb ? 1 : 0);
+    });
+    return out;
+  };
+
+  picks = mine(candidates).slice(0, 4);
 
   var LABEL = 'More like this';
+  var LEAD = 'More from the same range';
+
+  if (picks.length < 2 && target !== "") {
+    var everything = mine($from('$db.dps_product').where('is_active', '=', true).take(1000).get());
+    picks = seeded(everything, target).slice(0, 4);
+    LABEL = 'Trending now';
+    LEAD = 'Popular across the store';
+  }
 
   var money = function (value) {
     var n = Number(value);
@@ -177,7 +208,7 @@
   <tr>
     <td colspan="2" align="center" style="padding:30px 0 26px 0;">
       <div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:0.5;padding:0 0 8px 0;">{%= LABEL %}</div>
-      <div style="font-size:20px;line-height:1.3;font-weight:bold;">More from the same range</div>
+      <div style="font-size:20px;line-height:1.3;font-weight:bold;">{%= LEAD %}</div>
     </td>
   </tr>
   {% for (var g = 0; g < cards.length; g += 2) { %}

@@ -43,7 +43,9 @@
         out.sort(function (a, b) {
             var ha = (s + a.id.length * 7 + a.id.charCodeAt(0)) % 1000;
             var hb = (s + b.id.length * 7 + b.id.charCodeAt(0)) % 1000;
-            return ha - hb;
+            if (ha !== hb) return ha - hb;
+
+            return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
         });
         return out;
     }

@@ -388,22 +388,15 @@ function walk(template) {
         const html = walk(committed).modules.filter((module) => module.descriptor.html);
         ok('it has all three Dynamic Content blocks', html.length === 3, html.length);
 
-        /* THE FIRST TWO ARE ATTACHED. The third is the recommendation rail, which is new
-           and has no id until the asset is saved in the panel, so it is allowed to still
-           be a labelled placeholder. When its id lands in sandbox.json this becomes all
-           three, and the assertion below is what will say so. */
+        /* ALL THREE ARE ATTACHED NOW, so the import needs no clicks at all. Left as an
+           equality rather than "at least two", because a block that quietly reverts to a
+           placeholder would otherwise pass and only show as an empty section in a send. */
         const attached = html.filter((module) =>
             module.descriptor.html.html.includes('<snippet '));
-        const waiting = html.filter((module) =>
-            module.descriptor.html.html.includes('Dynamic Content:'));
-        ok('every block is either attached or a labelled placeholder, never blank',
-           attached.length + waiting.length === 3,
-           { attached: attached.length, waiting: waiting.length });
-        ok('the basket and the summary are attached',
-           attached.length >= 2, attached.length);
-        ok('and anything still waiting says which asset it wants',
-           waiting.every((module) =>
-               /Dynamic Content: dps [a-z ]+/.test(module.descriptor.html.html)));
+        ok('all three are attached, so the import needs no clicks',
+           attached.length === 3, attached.length);
+        ok('with no placeholder left behind',
+           html.every((module) => !module.descriptor.html.html.includes('dashed')));
         ok('and it still names no storefront',
            !JSON.stringify(committed).includes('/demos/'));
     }

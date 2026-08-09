@@ -88,8 +88,8 @@ against `dps_product` at send time and uses the same label the site uses.
 
 | The site's five | In an email |
 |---|---|
-| **Trending now** | possible. Same `seeded()` function, same seed, over that demo's rows. Needs a wide fetch, since it ranks the whole catalogue |
-| **More like this** | **this is the one built.** Same categories as the basket, which an abandoned cart email already knows |
+| **More like this** | **built, and tried first.** Same categories as the basket, which an abandoned cart email already knows |
+| **Trending now** | **built, as the fallback.** Same `seeded()`, same seed, over that demo's rows. Needs a wide fetch, so it only runs when the first pass comes up short |
 | Others also viewed | needs co-view data, which is what an engine is for |
 | Completes your basket | possible, but needs the categories the basket does NOT cover, so it needs the whole catalogue fetched |
 | Recently viewed | not possible. It reads `sessionStorage`, which no send can see. The nearest real equivalent is `page_view_events` for that contact |
@@ -104,6 +104,22 @@ the same name.
 It also drops anything already in the basket, anything withdrawn from the catalogue, and
 renders **nothing at all** when it cannot find at least two products, because half a rail
 is worse than none.
+
+**Why there is a fallback at all.** A real send rendered nothing: one demo's catalogue holds
+exactly one product in each of the four categories its basket covered, so excluding the
+basket left no candidates. A catalogue shaped like that is not unusual, so a thin
+same-category pass now falls through to Trending now, which always fills.
+
+**The ordering is the storefront's, and that is provable.** `dps_product.product_id` is the
+catalogue's own id, unprefixed, so `seeded()` over the same ids with the same seed gives the
+same order the page shows. The test lifts `seeded()` out of `template/js/recommend.js` and
+compares the two.
+
+Doing that found a defect in the storefront, now fixed in all three copies of the function.
+It broke no ties, so two ids of the same length starting with the same character hashed
+identically and stayed fully tied, leaving the result dependent on the order the list
+arrived in. Fine on a page, where the catalogue array never changes order. Not fine against
+a Dengage query, which promises no order at all. Ties are now decided on the id.
 
 ## The logic is tested by being run, not by being read
 

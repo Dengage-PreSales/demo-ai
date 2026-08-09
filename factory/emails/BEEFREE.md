@@ -16,14 +16,13 @@ anything is uploaded.
 1. **Content > Dynamic Content > New**, type **HTML**, name it `dps abandoned cart`,
    and paste `factory/panel/content/_dynamic/abandoned-cart.html`. Save.
 2. Same again for `dps abandoned cart total`, from `abandoned-cart-total.html`.
-3. Same again for `dps recommendations`, from `recommendations.html`. **Send me its id**
-   and it gets attached like the other two; until then it imports as a labelled box.
+3. Same again for `dps recommendations`, from `recommendations.html`. Save.
 4. **Content > Email > New > Email Builder**, and import the JSON.
 5. Build the campaign. **One campaign serves every demo**, so this is the last time.
 
-**The first two need no attaching.** Their ids are known and recorded in
-`factory/sandbox.json`, so the imported template already calls them. Add the third id
-there and nothing in the template is left to click.
+**There is no step for attaching any of them.** All three ids are recorded in
+`factory/sandbox.json`, so the imported template already calls all three and there is
+nothing to click.
 
 **The ids are UUIDs, not numbers.** Dengage's documentation shows `snippet_id="8835"`,
 which is what this repository assumed; the panel actually issues
@@ -178,10 +177,32 @@ demo shares one application, so an engine rail would offer a fashion prospect ph
 email cannot run that JavaScript, so `recommendations.html` runs the same strategy against
 `dps_product` at send time and carries the same label the site uses.
 
-**More like this** is the one built: the same categories the basket is in, which is what an
-abandoned cart email already knows. `factory/panel/content/_dynamic/README.md` has the
-table of which of the five are reproducible in an email and which need the engine, and why
-scoping to one demo goes through `link` rather than `store_name`.
+**Two of the five are built, and which one fires depends on the catalogue.**
+
+**More like this** first: the same categories the basket is in, which is what an abandoned
+cart email already knows. When that leaves fewer than two products it falls back to
+**Trending now**, the site's own first strategy, using the same `seeded()` function seeded
+with the same slug over that demo's rows.
+
+The fallback is not hypothetical. It was added because a real send rendered nothing: one
+demo's catalogue holds exactly **one** product in each of the four categories its basket
+covered, so excluding the basket left nothing to offer. A catalogue shaped like that is not
+unusual.
+
+**The ordering is the storefront's, not merely similar to it.** `dps_product.product_id` is
+the catalogue's own id, unprefixed, so the same function over the same ids gives the same
+order. The test lifts `seeded()` out of `template/js/recommend.js` and compares.
+
+That comparison found a real defect in the storefront, now fixed in all three copies:
+`seeded()` broke no ties, so two ids of the same length starting with the same character
+were fully tied and the result depended on the order the list arrived in. That is fine on a
+page, where the catalogue array is always in the same order, and wrong anywhere the same
+catalogue arrives differently, which is exactly what a Dengage query does. It now decides
+ties on the id, so the ordering is a property of the ids and the seed alone.
+
+`factory/panel/content/_dynamic/README.md` has the table of which of the five are
+reproducible in an email and which need the engine, and why scoping to one demo goes
+through `link` rather than `store_name`.
 
 ## The hero image
 
