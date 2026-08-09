@@ -81,7 +81,21 @@ function context(config, products, slug) {
 function render(mode, ctx) {
     const out = [];
     for (const entry of JOURNEY_COPY) {
-        const channels = entry.channels(mode, ctx);
+        /* DROPPED PER JOURNEY, NOT PER PACK, and the granularity is the whole point.
+           No table carries a product name, so the journeys whose copy names a product
+           cannot be built (factory/phase0/SCHEMA.md). Letting that throw would take the
+           twenty nine messages that are perfectly sendable down with the seven that are
+           not. So the journey is dropped with its reason recorded, and the pack reports
+           what is missing instead of quietly being smaller than it should be. */
+        let channels;
+        try {
+            channels = entry.channels(mode, ctx);
+        } catch (err) {
+            if (!/no column for/.test(err.message)) throw err;
+            out.push({ id: entry.id, journey: entry.journey, channels: {},
+                       blocked: err.message });
+            continue;
+        }
         const rendered = {};
         for (const id of CHANNEL_ORDER) {
             if (!channels[id]) continue;
@@ -241,7 +255,20 @@ function channelBlock(p, id, content, panelContent, key) {
 
 function deck(palette, journeys, panelJourneys, slug, config, problems) {
     const p = palette;
-    const cards = journeys.map((entry, index) => `
+    /* A BLOCKED JOURNEY IS SHOWN, NOT OMITTED. A deck that silently carries seven
+       journeys where the playbook promises ten reads as though the other three were
+       never planned. Saying what is missing and why is the difference between a gap
+       and a mystery. */
+    const cards = journeys.map((entry, index) => entry.blocked ? `
+    <section class="j blocked">
+      <header><h2>${esc(entry.journey)}</h2>
+        <span class="count">needs the product feed</span></header>
+      <p class="why">This journey's copy names a product, and no Dengage table carries a
+        product name: every one identifies a product by id and stops there. Registering the
+        product feed against this application is what resolves an id into a name, a price
+        and an image. See <b>factory/panel/PRODUCT-FEED.md</b>, and
+        <b>factory/phase0/SCHEMA.md</b> for the column lists this was read from.</p>
+    </section>` : `
     <section class="j">
       <header><h2>${esc(entry.journey)}</h2>
         <span class="count">${Object.keys(entry.channels).length} channels</span></header>
@@ -324,6 +351,9 @@ function deck(palette, journeys, panelJourneys, slug, config, problems) {
   .octa{display:inline-block;font-size:12.5px;font-weight:bold;padding:8px 16px;border-radius:${p.radius}px}
   .ogeneric{font-size:10.5px;color:${p.quiet};padding-top:7px}
 
+  .j.blocked{opacity:0.92}
+  .j.blocked .count{color:${p.brandText}}
+  .why{margin:0;padding:14px 17px 17px;font-size:12.5px;line-height:1.6;color:${p.quiet}}
   .counts{display:flex;flex-wrap:wrap;gap:5px;padding-top:10px}
   .ct{font-size:10.5px;color:${p.quiet};border:1px solid ${p.edge};border-radius:999px;padding:2px 8px}
   .ct b{color:${p.text};font-variant-numeric:tabular-nums}
@@ -407,7 +437,8 @@ export function buildMessages(slug) {
     }, null, 2) + '\n');
 
     const count = panel.reduce((n, entry) => n + Object.keys(entry.channels).length, 0);
-    return { slug, journeys: panel.length, messages: count, problems, palette };
+    return { slug, journeys: panel.length, messages: count, problems, palette,
+             blocked: panel.filter((entry) => entry.blocked).length };
 }
 
 const args = process.argv.slice(2);
@@ -431,6 +462,7 @@ if (import.meta.url === 'file://' + process.argv[1]) {
             const result = buildMessages(slug);
             console.error('Messages: ' + result.messages + ' across ' + result.journeys +
                 ' journeys for ' + slug +
+                (result.blocked ? ', ' + result.blocked + ' JOURNEY(S) NEED THE PRODUCT FEED' : '') +
                 (result.problems.length ? ', ' + result.problems.length + ' OVER LIMIT' : ', all within limits'));
             for (const problem of result.problems) {
                 console.error('   over: ' + problem.journey + ' / ' + CHANNELS[problem.channel].name +

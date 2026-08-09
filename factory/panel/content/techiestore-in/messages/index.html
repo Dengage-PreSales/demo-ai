@@ -63,6 +63,9 @@
   .octa{display:inline-block;font-size:12.5px;font-weight:bold;padding:8px 16px;border-radius:5px}
   .ogeneric{font-size:10.5px;color:#616161;padding-top:7px}
 
+  .j.blocked{opacity:0.92}
+  .j.blocked .count{color:#985400}
+  .why{margin:0;padding:14px 17px 17px;font-size:12.5px;line-height:1.6;color:#616161}
   .counts{display:flex;flex-wrap:wrap;gap:5px;padding-top:10px}
   .ct{font-size:10.5px;color:#616161;border:1px solid #c3c3c4;border-radius:999px;padding:2px 8px}
   .ct b{color:#333333;font-variant-numeric:tabular-nums}
@@ -291,143 +294,14 @@ cta: Finish checkout</textarea>
       </div>
       </div>
     </section>
-    <section class="j">
+    <section class="j blocked">
       <header><h2>Cart abandonment</h2>
-        <span class="count">5 channels</span></header>
-      <div class="chs">
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">Web push</span>
-          <span class="chpanel">Content &gt; Push &gt; Web Push, then a Push node in the flow</span>
-        </div>
-        <button class="copy" data-src="m2-webPush">Copy Web push copy</button>
-        
-    <textarea hidden id="m2-webPush" data-name="m2-webPush">title: Still thinking about it?
-body: {% var r = $from("shopping_cart_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].product_name) { %}{%= r[0].product_name.length > 70 ? r[0].product_name.substring(0, 67) + "..." : r[0].product_name =%}{% } else { %}What you added{% } %} is still in your basket.
-targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html</textarea>
-        
-        <div class="notif web">
-          <div class="nicon" style="background:#ff8c00"></div>
-          <div class="ntext">
-            <div class="ntitle">Still thinking about it?</div>
-            <div class="nbody">Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580,... is still in your basket.</div>
-            <div class="nsrc">Chrome</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>24</b>/50</span>
-            <span class="ct " title="limit from: client">
-              body <b>94</b>/120</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">SMS</span>
-          <span class="chpanel">Content &gt; SMS, then an SMS node in the flow</span>
-        </div>
-        <button class="copy" data-src="m2-sms">Copy SMS copy</button>
-        
-    <textarea hidden id="m2-sms" data-name="m2-sms">senderName: Techiestore
-body: Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, your basket at Techiestore is still saved. Finish here: {{shortlink}} Reply {{unsubscribe-link}} to opt out.</textarea>
-        
-        <div class="sms">
-          <div class="sender">Techiestore</div>
-          <div class="bubble">Hi Alex, your basket at Techiestore is still saved. Finish here: {{shortlink}} Reply {{unsubscribe-link}} to opt out.</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: dengage">
-              body <b>130</b>/400</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">WhatsApp</span>
-          <span class="chpanel">Content &gt; WhatsApp, submitted to Meta for approval</span>
-        </div>
-        <button class="copy" data-src="m2-whatsapp">Copy WhatsApp copy</button>
-        
-    <textarea hidden id="m2-whatsapp" data-name="m2-whatsapp">category: Marketing
-messageType: Carousel
-header: None
-body: Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, your basket is still saved. Swipe to see what goes with it, or go straight to checkout.
-footer: Reply STOP to opt out
-button: Return to basket</textarea>
-        
-        <div class="wa">
-          <div class="wmeta"><span class="cat">Marketing</span><span class="typ">Carousel</span></div>
-          <div class="wbubble">
-            
-            <div class="wbody">Hi Alex, your basket is still saved. Swipe to see what goes with it, or go straight to checkout.</div>
-            
-            <div class="wcarousel"><span>card 1</span><span>card 2</span><span>card 3</span></div>
-            <div class="wfoot">Reply STOP to opt out</div>
-          </div>
-          
-            <div class="wbtn">&#8599; Return to basket</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: meta">
-              header <b>4</b>/60</span>
-            <span class="ct " title="limit from: meta">
-              body <b>96</b>/1024</span>
-            <span class="ct " title="limit from: meta">
-              footer <b>21</b>/60</span>
-            <span class="ct " title="limit from: dengage">
-              button "Return to basket" <b>16</b>/25</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">App Inbox</span>
-          <span class="chpanel">Content &gt; Inbox Message, then an Inbox node in the flow</span>
-        </div>
-        <button class="copy" data-src="m2-inbox">Copy App Inbox copy</button>
-        
-    <textarea hidden id="m2-inbox" data-name="m2-inbox">title: Your basket is saved
-body: We are holding {% var r = $from("shopping_cart_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].product_name) { %}{%= r[0].product_name.length > 90 ? r[0].product_name.substring(0, 87) + "..." : r[0].product_name =%}{% } else { %}what you added{% } %} for you. Prices and stock can move while an item sits in a basket.</textarea>
-        
-        <div class="inbox">
-          <div class="ithumb" style="background:#f6ede3"></div>
-          <div class="itext">
-            <div class="ititle">Your basket is saved</div>
-            <div class="ibody">We are holding Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580, L590, T590 Series wi... for you. Prices and stock can move while an item sits in a basket.</div>
-            <div class="imeta">expires in 7 days &middot; priority 2</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>20</b>/60</span>
-            <span class="ct " title="limit from: client">
-              body <b>172</b>/220</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">On-site</span>
-          <span class="chpanel">Content &gt; Onsite, placed by an Onsite campaign with targeting filters</span>
-        </div>
-        <button class="copy" data-src="m2-onsite">Copy On-site copy</button>
-        
-    <textarea hidden id="m2-onsite" data-name="m2-onsite">template: Sticky Bar, on return to the site
-heading: Your basket is still here
-body: Everything you added is saved and waiting.
-cta: Return to basket</textarea>
-        
-        <div class="onsite">
-          <div class="otemplate">Sticky Bar, on return to the site</div>
-          <div class="owidget">
-            <div class="oheading">Your basket is still here</div>
-            <div class="obody">Everything you added is saved and waiting.</div>
-            <div class="octa" style="background:#ff8c00;color:#000000">Return to basket</div>
-          </div>
-          <div class="ogeneric">Stays generic: shared by every live demo</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              heading <b>25</b>/48</span>
-            <span class="ct " title="limit from: client">
-              body <b>42</b>/140</span>
-            <span class="ct " title="limit from: client">
-              cta <b>16</b>/24</span></div>
-      </div>
-      </div>
+        <span class="count">needs the product feed</span></header>
+      <p class="why">This journey's copy names a product, and no Dengage table carries a
+        product name: every one identifies a product by id and stops there. Registering the
+        product feed against this application is what resolves an id into a name, a price
+        and an image. See <b>factory/panel/PRODUCT-FEED.md</b>, and
+        <b>factory/phase0/SCHEMA.md</b> for the column lists this was read from.</p>
     </section>
     <section class="j">
       <header><h2>Browse abandonment</h2>
@@ -440,7 +314,7 @@ cta: Return to basket</textarea>
         </div>
         <button class="copy" data-src="m3-webPush">Copy Web push copy</button>
         
-    <textarea hidden id="m3-webPush" data-name="m3-webPush">title: Still looking at {% var r = $from("page_view_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].category) { %}{%= r[0].category.length > 24 ? r[0].category.substring(0, 21) + "..." : r[0].category =%}{% } else { %}these{% } %}?
+    <textarea hidden id="m3-webPush" data-name="m3-webPush">title: Still looking at {% var r = $from("page_view_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_date").take(3).get(); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + "..." : r[0].category_path =%}{% } else { %}these{% } %}?
 body: The one you spent time with is still there, along with a few alternatives.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
@@ -525,7 +399,7 @@ cta: Keep looking</textarea>
         <button class="copy" data-src="m4-webPush">Copy Web push copy</button>
         
     <textarea hidden id="m4-webPush" data-name="m4-webPush">title: Back in stock
-body: The {% var r = $from("search_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(1).get(); %}{% if (r.length &amp;&amp; r[0].search_query) { %}{%= r[0].search_query.length > 55 ? r[0].search_query.substring(0, 52) + "..." : r[0].search_query =%}{% } else { %}item you searched for{% } %} you looked for is available again.
+body: The {% var r = $from("search_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_date").take(1).get(); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + "..." : r[0].keywords =%}{% } else { %}item you searched for{% } %} you looked for is available again.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
         <div class="notif web">
@@ -550,7 +424,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</tex
         <button class="copy" data-src="m4-inbox">Copy App Inbox copy</button>
         
     <textarea hidden id="m4-inbox" data-name="m4-inbox">title: What you searched for is back
-body: You looked for {% var r = $from("search_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(1).get(); %}{% if (r.length &amp;&amp; r[0].search_query) { %}{%= r[0].search_query.length > 60 ? r[0].search_query.substring(0, 57) + "..." : r[0].search_query =%}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.</textarea>
+body: You looked for {% var r = $from("search_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_date").take(1).get(); %}{% if (r.length &amp;&amp; r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + "..." : r[0].keywords =%}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.</textarea>
         
         <div class="inbox">
           <div class="ithumb" style="background:#f6ede3"></div>
@@ -597,121 +471,14 @@ cta: Browse these</textarea>
       </div>
       </div>
     </section>
-    <section class="j">
+    <section class="j blocked">
       <header><h2>Wishlist triggers</h2>
-        <span class="count">4 channels</span></header>
-      <div class="chs">
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">Web push</span>
-          <span class="chpanel">Content &gt; Push &gt; Web Push, then a Push node in the flow</span>
-        </div>
-        <button class="copy" data-src="m5-webPush">Copy Web push copy</button>
-        
-    <textarea hidden id="m5-webPush" data-name="m5-webPush">title: Price drop on something you saved
-body: {% var r = $from("wishlist_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].product_name) { %}{%= r[0].product_name.length > 60 ? r[0].product_name.substring(0, 57) + "..." : r[0].product_name =%}{% } else { %}A saved item{% } %} now costs less than when you saved it.
-targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html</textarea>
-        
-        <div class="notif web">
-          <div class="nicon" style="background:#ff8c00"></div>
-          <div class="ntext">
-            <div class="ntitle">Price drop on something you saved</div>
-            <div class="nbody">Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E5... now costs less than when you saved it.</div>
-            <div class="nsrc">Chrome</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>33</b>/50</span>
-            <span class="ct " title="limit from: client">
-              body <b>99</b>/120</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">Mobile push</span>
-          <span class="chpanel">Content &gt; Push &gt; Mobile Push, then a Push node in the flow</span>
-        </div>
-        <button class="copy" data-src="m5-mobilePush">Copy Mobile push copy</button>
-        
-    <textarea hidden id="m5-mobilePush" data-name="m5-mobilePush">title: Cheaper than when you saved it
-body: {% var r = $from("wishlist_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].product_name) { %}{%= r[0].product_name.length > 70 ? r[0].product_name.substring(0, 67) + "..." : r[0].product_name =%}{% } else { %}Your saved item{% } %} has dropped in price.
-subtitle: Saved items
-targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/wishlist.html</textarea>
-        
-        <div class="notif mob">
-          <div class="nicon" style="background:#ff8c00"></div>
-          <div class="ntext">
-            <div class="ntitle">Cheaper than when you saved it</div>
-            <div class="nbody">Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580,... has dropped in price.</div>
-            <div class="nsrc">now &middot; Saved items</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>30</b>/40</span>
-            <span class="ct " title="limit from: client">
-              body <b>91</b>/110</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">WhatsApp</span>
-          <span class="chpanel">Content &gt; WhatsApp, submitted to Meta for approval</span>
-        </div>
-        <button class="copy" data-src="m5-whatsapp">Copy WhatsApp copy</button>
-        
-    <textarea hidden id="m5-whatsapp" data-name="m5-whatsapp">category: Marketing
-messageType: Limited-Time Offer
-header: Text
-body: Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, something on your saved list has come down in price. Saved items are held in your account, so it is where you left it.
-footer: Reply STOP to opt out
-button: See saved items</textarea>
-        
-        <div class="wa">
-          <div class="wmeta"><span class="cat">Marketing</span><span class="typ">Limited-Time Offer</span></div>
-          <div class="wbubble">
-            <div class="whead">Price drop on your saved item</div>
-            <div class="wbody">Hi Alex, something on your saved list has come down in price. Saved items are held in your account, so it is where you left it.</div>
-            
-            <div class="wfoot">Reply STOP to opt out</div>
-          </div>
-          
-            <div class="wbtn">&#8599; See saved items</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: meta">
-              header <b>4</b>/60</span>
-            <span class="ct " title="limit from: meta">
-              body <b>127</b>/1024</span>
-            <span class="ct " title="limit from: meta">
-              footer <b>21</b>/60</span>
-            <span class="ct " title="limit from: dengage">
-              button "See saved items" <b>15</b>/25</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">App Inbox</span>
-          <span class="chpanel">Content &gt; Inbox Message, then an Inbox node in the flow</span>
-        </div>
-        <button class="copy" data-src="m5-inbox">Copy App Inbox copy</button>
-        
-    <textarea hidden id="m5-inbox" data-name="m5-inbox">title: A saved item changed price
-body: One of the things on your saved list costs less than it did when you saved it. Saved items stay in your account.</textarea>
-        
-        <div class="inbox">
-          <div class="ithumb" style="background:#f6ede3"></div>
-          <div class="itext">
-            <div class="ititle">A saved item changed price</div>
-            <div class="ibody">One of the things on your saved list costs less than it did when you saved it. Saved items stay in your account.</div>
-            <div class="imeta">expires in 7 days &middot; priority 1</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>26</b>/60</span>
-            <span class="ct " title="limit from: client">
-              body <b>112</b>/220</span></div>
-      </div>
-      </div>
+        <span class="count">needs the product feed</span></header>
+      <p class="why">This journey's copy names a product, and no Dengage table carries a
+        product name: every one identifies a product by id and stops there. Registering the
+        product feed against this application is what resolves an id into a name, a price
+        and an image. See <b>factory/panel/PRODUCT-FEED.md</b>, and
+        <b>factory/phase0/SCHEMA.md</b> for the column lists this was read from.</p>
     </section>
     <section class="j">
       <header><h2>Basket building</h2>
@@ -772,119 +539,14 @@ cta: Add to basket</textarea>
       </div>
       </div>
     </section>
-    <section class="j">
+    <section class="j blocked">
       <header><h2>Replenishment</h2>
-        <span class="count">4 channels</span></header>
-      <div class="chs">
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">Web push</span>
-          <span class="chpanel">Content &gt; Push &gt; Web Push, then a Push node in the flow</span>
-        </div>
-        <button class="copy" data-src="m7-webPush">Copy Web push copy</button>
-        
-    <textarea hidden id="m7-webPush" data-name="m7-webPush">title: Running low?
-body: Reordering {% var r = $from("order_events_detail").where("contact_key", "=", $Contact.contact_key).take(3).get(); %}{% if (r.length &amp;&amp; r[0].product_name) { %}{%= r[0].product_name.length > 75 ? r[0].product_name.substring(0, 72) + "..." : r[0].product_name =%}{% } else { %}your usual{% } %} takes one tap.
-targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html</textarea>
-        
-        <div class="notif web">
-          <div class="nicon" style="background:#ff8c00"></div>
-          <div class="ntext">
-            <div class="ntitle">Running low?</div>
-            <div class="nbody">Reordering Techie Laptop Keyboard for Lenovo ThinkPad E580, E585, E590, L580, L590,... takes one tap.</div>
-            <div class="nsrc">Chrome</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>12</b>/50</span>
-            <span class="ct " title="limit from: client">
-              body <b>101</b>/120</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">Mobile push</span>
-          <span class="chpanel">Content &gt; Push &gt; Mobile Push, then a Push node in the flow</span>
-        </div>
-        <button class="copy" data-src="m7-mobilePush">Copy Mobile push copy</button>
-        
-    <textarea hidden id="m7-mobilePush" data-name="m7-mobilePush">title: Time for another?
-body: Your usual is one tap away, at the same price.
-subtitle: Reorder
-targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/cart.html</textarea>
-        
-        <div class="notif mob">
-          <div class="nicon" style="background:#ff8c00"></div>
-          <div class="ntext">
-            <div class="ntitle">Time for another?</div>
-            <div class="nbody">Your usual is one tap away, at the same price.</div>
-            <div class="nsrc">now &middot; Reorder</div>
-          </div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: client">
-              title <b>17</b>/40</span>
-            <span class="ct " title="limit from: client">
-              body <b>46</b>/110</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">SMS</span>
-          <span class="chpanel">Content &gt; SMS, then an SMS node in the flow</span>
-        </div>
-        <button class="copy" data-src="m7-sms">Copy SMS copy</button>
-        
-    <textarea hidden id="m7-sms" data-name="m7-sms">senderName: Techiestore
-body: Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, running low? Reorder your usual from Techiestore in one tap: {{shortlink}} Reply {{unsubscribe-link}} to opt out.</textarea>
-        
-        <div class="sms">
-          <div class="sender">Techiestore</div>
-          <div class="bubble">Hi Alex, running low? Reorder your usual from Techiestore in one tap: {{shortlink}} Reply {{unsubscribe-link}} to opt out.</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: dengage">
-              body <b>135</b>/400</span></div>
-      </div>
-      <div class="ch">
-        <div class="chhead">
-          <span class="chname">WhatsApp</span>
-          <span class="chpanel">Content &gt; WhatsApp, submitted to Meta for approval</span>
-        </div>
-        <button class="copy" data-src="m7-whatsapp">Copy WhatsApp copy</button>
-        
-    <textarea hidden id="m7-whatsapp" data-name="m7-whatsapp">category: Utility
-messageType: Blank Content
-header: Text
-body: Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name =%}{% } else { %}there{% } %}, judging by when you last ordered, you are probably near the end of it. Reordering the same thing takes one tap and keeps the same delivery address.
-footer: Reply STOP to opt out
-button: Reorder
-button: Not yet</textarea>
-        
-        <div class="wa">
-          <div class="wmeta"><span class="cat">Utility</span><span class="typ">Blank Content</span></div>
-          <div class="wbubble">
-            <div class="whead">Time to reorder</div>
-            <div class="wbody">Hi Alex, judging by when you last ordered, you are probably near the end of it. Reordering the same thing takes one tap and keeps the same delivery address.</div>
-            
-            <div class="wfoot">Reply STOP to opt out</div>
-          </div>
-          
-            <div class="wbtn">&#8599; Reorder</div>
-            <div class="wbtn">Not yet</div>
-        </div>
-        <div class="counts">
-            <span class="ct " title="limit from: meta">
-              header <b>4</b>/60</span>
-            <span class="ct " title="limit from: meta">
-              body <b>156</b>/1024</span>
-            <span class="ct " title="limit from: meta">
-              footer <b>21</b>/60</span>
-            <span class="ct " title="limit from: dengage">
-              button "Reorder" <b>7</b>/25</span>
-            <span class="ct " title="limit from: dengage">
-              button "Not yet" <b>7</b>/25</span></div>
-      </div>
-      </div>
+        <span class="count">needs the product feed</span></header>
+      <p class="why">This journey's copy names a product, and no Dengage table carries a
+        product name: every one identifies a product by id and stops there. Registering the
+        product feed against this application is what resolves an id into a name, a price
+        and an image. See <b>factory/panel/PRODUCT-FEED.md</b>, and
+        <b>factory/phase0/SCHEMA.md</b> for the column lists this was read from.</p>
     </section>
     <section class="j">
       <header><h2>RFM lifecycle</h2>
@@ -1017,7 +679,7 @@ cta: Shop early access</textarea>
         <button class="copy" data-src="m9-webPush">Copy Web push copy</button>
         
     <textarea hidden id="m9-webPush" data-name="m9-webPush">title: A few things changed
-body: New ranges in {% var r = $from("page_view_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_time").take(3).get(); %}{% if (r.length &amp;&amp; r[0].category) { %}{%= r[0].category.length > 30 ? r[0].category.substring(0, 27) + "..." : r[0].category =%}{% } else { %}your categories{% } %}, and your saved items are still saved.
+body: New ranges in {% var r = $from("page_view_events").where("contact_key", "=", $Contact.contact_key).orderByDescending("event_date").take(3).get(); %}{% if (r.length &amp;&amp; r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + "..." : r[0].category_path =%}{% } else { %}your categories{% } %}, and your saved items are still saved.
 targetUrl: https://dengage-presales.github.io/demo-ai/demos/techiestore-in/</textarea>
         
         <div class="notif web">

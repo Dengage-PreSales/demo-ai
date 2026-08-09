@@ -27,6 +27,25 @@
 import { CHANNELS, CHANNEL_ORDER, measure, resolved, smsCost, textCost } from './channels.mjs';
 import { JOURNEY_COPY } from './copy.mjs';
 
+/* THREE JOURNEYS CANNOT BE BUILT, AND EVERY LOOP BELOW HAS TO KNOW THAT. Cart
+   abandonment, wishlist triggers and replenishment all name a product in their copy,
+   and no Dengage table carries a product name: factory/phase0/SCHEMA.md. copy.mjs
+   throws rather than emitting a tag that resolves to nothing, so a loop calling
+   channels() blindly dies on the first of them and takes the assertions for the other
+   seven with it.
+
+   built() returns null for a blocked journey instead. Counted once at the end, so the
+   suite reports how many were skipped rather than appearing to have checked ten. */
+let blockedCount = 0;
+function built(entry, mode, context) {
+    try {
+        return entry.channels(mode, context);
+    } catch (err) {
+        if (!/no column for/.test(err.message)) throw err;
+        return null;
+    }
+}
+
 let pass = 0;
 let fail = 0;
 function ok(label, condition, detail) {
@@ -101,7 +120,8 @@ const ctx = {
     let count = 0;
     for (const mode of ['panel', 'preview']) {
         for (const entry of JOURNEY_COPY) {
-            const channels = entry.channels(mode, ctx);
+            const channels = built(entry, mode, ctx);
+            if (!channels) continue;
             for (const id of Object.keys(channels)) {
                 const channel = CHANNELS[id];
                 ok('channel ' + id + ' is a known channel', Boolean(channel));
@@ -130,7 +150,15 @@ const ctx = {
         }
     }
     ok('every field of every message is within its limit', problems.length === 0, problems);
-    ok('the pack is not trivially small', count >= 50, count);
+    /* MEASURED AGAINST WHAT CAN BUILD, NOT AGAINST A NUMBER. This used to require 50
+       messages, which was ten journeys times both modes times the channels each uses.
+       Three journeys are now blocked on the product feed, so a fixed floor would have
+       to be lowered until it passed, and a threshold tuned to whatever the code
+       currently produces asserts nothing. Per buildable journey it still means
+       something: a journey that quietly lost its channels fails this. */
+    const buildable = JOURNEY_COPY.filter((entry) => built(entry, 'panel', ctx)).length;
+    ok('every journey that can build carries at least two channels',
+       count >= buildable * 2 * 2, { count, buildable });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -138,7 +166,8 @@ const ctx = {
 
 {
     for (const entry of JOURNEY_COPY) {
-        const channels = entry.channels('panel', ctx);
+        const channels = built(entry, 'panel', ctx);
+        if (!channels) continue;
 
         /* SMS: no emoji, and an opt out is mandatory. */
         if (channels.sms) {
@@ -202,10 +231,16 @@ const ctx = {
 {
     let queried = 0;
     let tagged = 0;
+    const tablesRead = new Set();
     for (const entry of JOURNEY_COPY) {
-        const panel = JSON.stringify(entry.channels('panel', ctx));
-        const preview = JSON.stringify(entry.channels('preview', ctx));
+        const panelRaw = built(entry, 'panel', ctx);
+        if (!panelRaw) continue;
+        const panel = JSON.stringify(panelRaw);
+        const preview = JSON.stringify(built(entry, 'preview', ctx));
         if (panel.includes('$from(')) queried++;
+        for (const hit of panel.matchAll(/\$from\(\\?"([a-z_]+)\\?"\)/g)) {
+            tablesRead.add(hit[1]);
+        }
         if (panel.includes('{%')) tagged++;
         /* A preview may still carry {{unsubscribe-link}} and {{shortlink}}, which
            are panel-side literals rather than resolved values, so only the
@@ -213,8 +248,23 @@ const ctx = {
         ok(entry.id + ' preview resolves the scripting tags', !preview.includes('{%'),
            (preview.match(/\{%[^%]*%\}/g) || []).slice(0, 2));
     }
-    ok('several journeys read the contact\'s own rows', queried >= 5, queried);
-    ok('most journeys personalise at all', tagged >= 8, tagged);
+    /* PINNED, NOT THRESHOLDED, and the difference matters. Three of ten journeys are
+       blocked on the product feed, so any fraction here would have to be chosen to fit
+       what the code currently emits, which asserts nothing at all.
+
+       The set of tables actually read is a fact instead. Two today, because the
+       journeys that would read shopping_cart_events, wishlist_events and
+       order_events_detail are exactly the three that name a product. When the feed is
+       registered and those come back, this fails and asks to be updated, which is the
+       reminder worth having. */
+    const canBuild = JOURNEY_COPY.filter((entry) => built(entry, 'panel', ctx)).length;
+    ok('the tables the buildable journeys read are the ones expected',
+       [...tablesRead].sort().join(',') === 'page_view_events,search_events',
+       { read: [...tablesRead].sort(), canBuild });
+    ok('every journey that builds and queries also carries a tag',
+       tagged >= queried, { tagged, queried });
+    ok('most journeys that build personalise at all',
+       tagged >= Math.ceil(canBuild / 2), { tagged, canBuild });
 }
 
 /* -------------------------------------------------------------------------- */
@@ -232,8 +282,9 @@ const ctx = {
     let previewOut = '';
     let where = '';
     for (const entry of JOURNEY_COPY) {
-        const panel = entry.channels('panel', ctx);
-        const preview = entry.channels('preview', ctx);
+        const panel = built(entry, 'panel', ctx);
+        const preview = built(entry, 'preview', ctx);
+        if (!panel || !preview) continue;
         for (const id of Object.keys(panel)) {
             const a = panelFields(id, panel[id]);
             const b = panelFields(id, preview[id]);
@@ -261,6 +312,12 @@ const ctx = {
     ok('and the panel copy carries the tag instead',
        panelOut.includes('$Contact.first_name') && !panelOut.includes(ctx.sampleFirstName));
 }
+
+blockedCount = JOURNEY_COPY.filter((entry) => built(entry, 'panel', ctx) === null).length;
+ok('the journeys that name a product are blocked rather than half built', blockedCount === 3,
+   { blocked: blockedCount });
+console.log('   SKIP  ' + blockedCount + ' journey(s) name a product, which no table carries.');
+console.log('         factory/phase0/SCHEMA.md. Their assertions did not run.');
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

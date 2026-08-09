@@ -44,6 +44,22 @@ function one(mode, spec, column, fallback, sample) {
    and substring resolve at send time and the message fits by construction rather
    than by hoping the catalogue is tidy. */
 function short(mode, spec, column, max, fallback, sample) {
+    /* A COLUMN THAT DOES NOT EXIST MUST STOP THIS MESSAGE, NOT SHORTEN IT. Passing an
+       absent column used to emit "r[0].undefined" inside a live tag: valid syntax,
+       resolving to nothing, so the message sent its fallback branch every time and
+       read like copy that had simply chosen not to personalise. Seven of them, and
+       every length check passed, because a missing value is short.
+
+       No table carries a product name (factory/phase0/SCHEMA.md), so the journeys that
+       name a product throw here. build-messages.mjs catches it per journey and reports
+       what it dropped rather than writing a broken pack. */
+    if (!column) {
+        throw new Error(
+            'no column for this value on ' + spec.spec.table + '. ' +
+            'factory/phase0/SCHEMA.md lists what the table has. Product names are in ' +
+            'no table: Product Box resolves them from the product feed, see ' +
+            'factory/panel/PRODUCT-FEED.md');
+    }
     if (mode !== 'panel') {
         const value = sample || fallback;
         return value.length > max ? value.slice(0, max - 3).trimEnd() + '...' : value;
@@ -176,7 +192,7 @@ export const JOURNEY_COPY = [
             },
             webPush: {
                 title: 'Still looking at ' +
-                       short(mode, QUERIES.viewedProducts, COLUMNS.view.category, 24,
+                       short(mode, QUERIES.viewedProducts, COLUMNS.view.categoryPath, 24,
                              'these', ctx.sampleCategory) + '?',
                 body: 'The one you spent time with is still there, along with a few alternatives.',
                 targetUrl: ctx.storeUrl
@@ -346,7 +362,7 @@ export const JOURNEY_COPY = [
         channels: (mode, ctx) => ({
             webPush: {
                 title: 'A few things changed',
-                body: 'New ranges in ' + short(mode, QUERIES.viewedProducts, COLUMNS.view.category,
+                body: 'New ranges in ' + short(mode, QUERIES.viewedProducts, COLUMNS.view.categoryPath,
                                                30, 'your categories', ctx.sampleCategory) +
                       ', and your saved items are still saved.',
                 targetUrl: ctx.storeUrl

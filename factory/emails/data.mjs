@@ -28,32 +28,60 @@
    than ten. COLUMNS is that place.
    ========================================================================== */
 
-/* Every column this module reads, named once. If an account spells one of these
-   differently, change it here and every journey follows. */
+/* Every column this module reads, named once, and every one of these was READ OFF
+   THE LIVE ACCOUNT rather than assumed. factory/phase0/SCHEMA.md holds the full
+   column list per table with the date it was read, and schema.test.mjs pins this
+   object against it, so a name that does not exist cannot reach a generated file.
+
+   IT USED TO BE ASSUMED, AND IT WAS WRONG IN SIX PLACES. Worth listing, because
+   every one of them was invisible: a Dengage query naming a column that does not
+   exist resolves to nothing, the send still returns 200, and the message goes out
+   with an empty row where the product should be.
+
+     event_time      the column is event_date, on all six tables. So every
+                     orderByDescending in this file referenced nothing
+     search_query    the column is keywords
+     unit_price      wishlist_events spells it price, unlike cart and order lines
+     category        page_view_events has category_id and category_path, and no
+                     other table has anything category shaped at all
+
+   NO TABLE CARRIES A PRODUCT NAME OR A PRODUCT IMAGE. That is not a naming error
+   to correct, it is an absence: every table identifies a product by product_id and
+   stops there. Resolving an id into a name, a price and a picture is what the
+   product feed is for, and what Product Box does with it. So a name field and an
+   image field are deliberately absent below rather than guessed at, and until the
+   feed is registered against this application there is nothing a query can render.
+   factory/panel/PRODUCT-FEED.md, and SCHEMA.md for the reasoning. */
 export const COLUMNS = {
     cart: {
         table: 'shopping_cart_events',
-        product: 'product_id', name: 'product_name', price: 'unit_price',
-        image: 'product_image', category: 'category', time: 'event_time'
+        product: 'product_id', variant: 'product_variant_id',
+        price: 'unit_price', discounted: 'discounted_price',
+        quantity: 'quantity', time: 'event_date'
     },
     view: {
         table: 'page_view_events',
-        url: 'page_url', title: 'page_title', category: 'category',
-        product: 'product_id', time: 'event_time'
+        url: 'page_url', title: 'page_title',
+        categoryPath: 'category_path', categoryId: 'category_id',
+        product: 'product_id', price: 'price', time: 'event_date'
     },
     wishlist: {
         table: 'wishlist_events',
-        product: 'product_id', name: 'product_name', price: 'unit_price',
-        image: 'product_image', category: 'category', time: 'event_time'
+        product: 'product_id', variant: 'product_variant_id',
+        /* price, not unit_price. The one table that differs. */
+        price: 'price', discounted: 'discounted_price',
+        list: 'list_name', time: 'event_date'
     },
     search: {
         table: 'search_events',
-        query: 'search_query', results: 'result_count', time: 'event_time'
+        query: 'keywords', results: 'result_count',
+        filters: 'filters', time: 'event_date'
     },
     orderLine: {
         table: 'order_events_detail',
-        product: 'product_id', name: 'product_name', price: 'unit_price',
-        image: 'product_image', category: 'category', quantity: 'quantity'
+        order: 'order_id', product: 'product_id', variant: 'product_variant_id',
+        price: 'unit_price', discounted: 'discounted_price',
+        quantity: 'quantity', time: 'event_date'
     }
 };
 
@@ -92,6 +120,28 @@ function field(mode, tag, literal) {
     return mode === 'panel' ? '{%= ' + tag + ' =%}' : literal;
 }
 
+/* A COLUMN THAT DOES NOT EXIST MUST STOP THE BUILD, NOT REACH A FILE. Before this
+   existed, asking for a column the table does not have produced the string
+   "row.undefined" inside a live tag: valid template syntax, resolving to nothing,
+   in a message that looked complete. Four of them per email, in ten emails, and
+   every test still passed.
+
+   Throwing is the right severity. A build that cannot fill a field has nothing
+   useful to write, and the generator already reports a failed email set as a skip
+   with the command to rerun, so a demo build survives it. Silence does not survive
+   it: an empty product row is only discovered by a recipient. */
+function column(spec, key) {
+    const name = spec[key];
+    if (!name) {
+        throw new Error(
+            'no column for "' + key + '" on ' + spec.table + '. ' +
+            'factory/phase0/SCHEMA.md lists what the table actually has. ' +
+            'Product names and images are not in any table: Product Box resolves ' +
+            'them from the product feed, see factory/panel/PRODUCT-FEED.md');
+    }
+    return name;
+}
+
 /* The store's own money format, applied to a Dengage value in panel mode. The
    currency symbol is a constant for the demo, so only the number comes from the
    row and the two versions format identically. */
@@ -106,16 +156,19 @@ export function itemFields(mode, options) {
     if (mode !== 'panel') {
         return sample;
     }
-    const at = (column) => cursor + '.' + column;
+    const at = (key) => cursor + '.' + column(spec, key);
+    /* name, meta and image are asked for through column() on purpose. No table has
+       them, so this throws, and that is the intended behaviour rather than an
+       oversight: it is what stops a product row being written that cannot be filled.
+       When the product feed is registered these rows come from a Product Box, not
+       from here, so this function will render the id and the price and leave the
+       presentation to the block. */
     return {
-        name: field(mode, at(spec.name || spec.title), ''),
-        meta: field(mode, at(spec.category), ''),
-        price: priced(mode, symbol, at(spec.price), ''),
-        /* The image column holds whatever the store sent. Where an account stores
-           a path rather than a full address, prefixing it with the demo base is
-           what makes it resolve in an inbox. */
-        image: base + '{%= ' + at(spec.image) + ' =%}',
-        href: base + 'product.html?id={%= ' + at(spec.product) + ' =%}'
+        name: field(mode, at('name'), ''),
+        meta: field(mode, at('category'), ''),
+        price: priced(mode, symbol, at('price'), ''),
+        image: base + '{%= ' + at('image') + ' =%}',
+        href: base + 'product.html?id={%= ' + at('product') + ' =%}'
     };
 }
 

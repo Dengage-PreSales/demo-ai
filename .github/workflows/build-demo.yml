@@ -261,6 +261,12 @@ jobs:
           # The email set: contrast on a hostile theme, live queries in the panel
           # files, no tags left in a preview, and the AMP variant against the
           # official amp4email validator when it is installed.
+          # THE SCHEMA CHECK RUNS FIRST OF THE CONTENT SUITES, because everything
+          # after it assumes the column names are real. It needs no credentials and
+          # no network: it compares the code against factory/phase0/SCHEMA.md, which
+          # was read off the live account, so it can run on a runner that the
+          # Dengage IP allowlist would refuse.
+          node factory/phase0/schema.test.mjs
           node factory/emails/emails.test.mjs
           # The short form pack: the length checker in both directions, SMS counted
           # the way Dengage charges it, WhatsApp's submission rules, and the on-site
