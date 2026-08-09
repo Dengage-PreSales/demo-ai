@@ -270,6 +270,7 @@ jobs:
           # And the saved Dynamic Content that every demo's email calls, executed
           # against a synthetic event log rather than read.
           node factory/panel/content/_dynamic/cart.test.mjs
+          node factory/emails/beefree.test.mjs
           node factory/emails/emails.test.mjs
           # The short form pack: the length checker in both directions, SMS counted
           # the way Dengage charges it, WhatsApp's submission rules, and the on-site
@@ -656,6 +657,15 @@ jobs:
                 + '`emails/index.html` and `messages/index.html` from the repository:'
                 + ' each one shows every message rendered with a copy button beside it,'
                 + ' and both open straight from disk with nothing to run.',
+              '',
+              // THE ONE FILE THAT IS UPLOADED RATHER THAN PASTED, so it needs saying
+              // separately: everything else in that folder is copied into a Code
+              // Editor, and this one is imported into the Email Builder instead.
+              'For the **Email Builder**, `emails/beefree-abandoned-cart.json` imports'
+                + ' as an editable template already carrying this demo\'s colours,'
+                + ' typeface and currency, with both Dynamic Content blocks in position.'
+                + ' `emails/beefree-abandoned-cart.preview.html` shows what it looks'
+                + ' like, filled with real products from this catalogue.',
               '',
               // SAID CONDITIONALLY, BECAUSE IT WAS PREVIOUSLY SAID ALWAYS. The
               // riopneus comment on 7 August 2026 reported "Themed from the store:

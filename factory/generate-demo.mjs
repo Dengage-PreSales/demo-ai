@@ -577,6 +577,23 @@ async function main() {
             console.error('Run this afterwards:  node factory/emails/build-emails.mjs --slug ' + slug);
         }
 
+        /* THE BEEFREE TEMPLATE, IN ITS OWN STEP, AND THAT IS THE WHOLE REASON IT IS
+           HERE TWICE. buildEmails calls it too, but buildEmails is allowed to fail and
+           currently does on the journeys that still ask an event table for a product
+           name. Inside that try block, one broken journey would take the template with
+           it and a new demo would arrive with nothing to upload. This is the one
+           deliverable a salesperson opens the Email Builder for. */
+        try {
+            const { buildBeefree } = await import('./emails/build-beefree.mjs');
+            const beefree = buildBeefree(slug);
+            console.error('Email Builder: template for ' + beefree.rows + ' rows, ' +
+                (beefree.resolved ? 'snippet ids applied'
+                                  : 'Dynamic Content left for the panel to attach'));
+        } catch (err) {
+            console.error('Email Builder: none (' + err.message + ')');
+            console.error('Run this afterwards:  node factory/emails/build-beefree.mjs --slug ' + slug);
+        }
+
         /* THE SHORT FORM CONTENT PACK, for the five channels that are not email.
            Same shape as the email set: panel copy with live tags, a preview deck for
            the call, and every field measured against the limit that applies. It

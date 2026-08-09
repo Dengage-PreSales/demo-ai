@@ -82,6 +82,14 @@ jobs:
       - name: Abandoned cart resolves a real basket
         run: node factory/panel/content/_dynamic/cart.test.mjs
 
+      # A BEEFREE IMPORT FAILS SILENTLY IN PART. A module whose type name is wrong is
+      # dropped, a row whose columns do not sum to twelve reflows, and a duplicate uuid
+      # makes the builder edit two blocks at once, none of it with an error message.
+      # The result is a template that looks nearly right on a call, so the structure is
+      # asserted here along with the mark, the currency line and the contrast pairs.
+      - name: BeeFree template imports and stays themed
+        run: node factory/emails/beefree.test.mjs
+
       # FOURTEEN POPUP CREATIVES SHARE ONE THEME BOOTSTRAP, and survey.html is where
       # it is written. Copying forty lines by hand into fourteen files produces
       # fourteen slightly different copies, and the one that matters is always the one

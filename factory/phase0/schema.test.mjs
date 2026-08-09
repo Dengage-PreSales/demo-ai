@@ -138,7 +138,11 @@ for (const table of ['order_events', 'search_events']) {
        engine is not available to test against, so the shape of what gets emitted is
        the only thing that can be asserted. */
     const { readdirSync, statSync } = await import('node:fs');
-    const roots = ['factory/emails', 'factory/messages', 'factory/panel/content/_dynamic'];
+    /* THE WHOLE OF factory/panel/content, not just _dynamic. Everything under it is
+       pasted or uploaded into the panel verbatim, including the generated per demo
+       emails and the BeeFree template, and a generator repeats a syntax mistake in
+       every demo at once rather than in one file. */
+    const roots = ['factory/emails', 'factory/messages', 'factory/panel/content'];
     const files = [];
     const walk = (dir) => {
         for (const entry of readdirSync(join(ROOT, dir))) {
