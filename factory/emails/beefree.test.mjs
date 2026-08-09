@@ -316,7 +316,18 @@ function walk(template) {
         module.descriptor.text.html.includes('display:none'));
     ok('there is a hidden preheader', Boolean(preheader));
     ok('and it says something about the basket rather than repeating the mark',
-       preheader && /basket/i.test(preheader.descriptor.text.html));
+       preheader && /checkout|basket/i.test(preheader.descriptor.text.html));
+
+    /* IT MUST NOT REPEAT THE HEADLINE, which is the copy most likely to be reused as the
+       subject. A preheader that restates the subject wastes the extra line. */
+    ok('the preheader does not repeat the headline',
+       preheader && !preheader.descriptor.text.html.includes('Still thinking it over'));
+
+    /* AND IT HAS TO BE PADDED, or the client fills the rest of the preview line with the
+       next visible text, which here is the Dengage mark. */
+    ok('it is padded, so the mark does not leak into the preview line',
+       preheader && (preheader.descriptor.text.html.match(/&zwnj;/g) || []).length > 20,
+       preheader && (preheader.descriptor.text.html.match(/&zwnj;/g) || []).length);
 
     /* THE HERO, shared and in the standard palette rather than a prospect's. */
     const hero = modules.find((module) => module.descriptor.image);

@@ -168,6 +168,63 @@ bold and the original struck through at 45%, and the category is a 10px letter s
 eyebrow at 45%. It is the leaf category only, so "FASHION > SHIRTS" reads "SHIRTS" and
 stops competing with the name.
 
+## The subject line and the preheader
+
+The preheader is **in the template**, hidden at the top. The subject line is **on the
+campaign**, so it is the one piece of copy this repository cannot set for you.
+
+### What can actually be personalized, and what cannot
+
+A demo sets **only the contact key**. `template/js/identity.js` sends `contactKey` and no
+attributes at all, so `$Contact.first_name` is empty for every contact a demo creates. A
+subject line with a name in it renders as `Hi ,` on a call, which is the most visible
+failure an email has. **Do not personalize on the name.**
+
+What a demo genuinely has is the basket. So that is what to personalize on, and the only
+thing that can reach it from a subject field is a Dynamic Content asset.
+
+### Three that need nothing. Paste and go
+
+| Subject | Preheader |
+|---|---|
+| **Your basket is still saved** | Everything you added is one press away from checkout. |
+| **You left something behind** | Your basket is saved and waiting whenever you are. |
+| **Still thinking it over?** | Your basket is exactly as you left it. |
+
+The first pair is what the template ships with. The preheader in the template is the first
+one; change the subject to match whichever pair you use.
+
+**The preheader never repeats the subject.** That line is the one extra piece of inbox real
+estate you get, and restating the subject wastes it. Both rules are asserted.
+
+### One that is genuinely personalized, if the subject field takes a snippet
+
+`content/_dynamic/abandoned-cart.txt` is the plain text version of the same basket, and it
+outputs exactly one line:
+
+```
+Oxford Shirt and 3 more items
+```
+
+Which reads correctly whether the basket holds one item or six. So:
+
+> **Still yours: Oxford Shirt and 3 more items**
+
+To try it: create a fourth asset, type **Plain Text**, named `dps abandoned cart text`,
+from that file, then put its snippet tag in the subject field with `Still yours: ` in
+front. **Whether a subject field accepts a snippet is the one thing I cannot test from
+here**, so it is worth thirty seconds of yours: it either resolves or it prints the tag,
+and both are obvious immediately. If it resolves, tell me the id and it goes in
+`sandbox.json` with the other three.
+
+### If you want the name as well
+
+The storefront would have to send one. Signing up in a demo currently sets a contact key
+and nothing else, so a first name would mean the account overlay collecting it and the
+emitter sending it. That is a small change to `identity.js` and the storefront, not a
+panel setting, and it is worth doing only if a named greeting is part of the story you
+tell on the call.
+
 ## The recommendations at the bottom
 
 They are **the storefront's own rail**, not a new idea and not the Dengage engine.

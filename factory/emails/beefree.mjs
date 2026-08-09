@@ -299,11 +299,22 @@ export function beefreeAbandonedCart(options) {
        and with nothing in it the client picks the first words it can find, which here
        would be "Dengage eComm Demo". Standard practice, and it is real text in a real
        module rather than a trick: display:none plus a zero height, which every client
-       that shows a preview reads and every client that renders the body skips. */
+       that shows a preview reads and every client that renders the body skips.
+
+       IT DOES NOT REPEAT THE SUBJECT. A preheader that restates the subject wastes the
+       one extra line an inbox gives you, so this one adds the next most useful fact
+       instead: that the basket is one press from checkout.
+
+       THE PADDING AFTER IT IS NOT DECORATION. With nothing following it, a client fills
+       the rest of the preview line with whatever visible text comes next, which here is
+       "Dengage eComm Demo". A run of zero width non joiners and non breaking spaces eats
+       that space without printing anything, which is the standard way to stop it. */
     rows.push(row(uid(), palette, [[
         textModule(uid(), palette,
             '<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' +
-            'Your basket is saved. Here is what is still in it.</div>',
+            'Everything you added is one press away from checkout.' +
+            new Array(60).join('&zwnj;&nbsp;') +
+            '</div>',
             { size: 1, colour: palette.canvas })
     ]], { ground: palette.canvas, top: 0, bottom: 0 }));
 
