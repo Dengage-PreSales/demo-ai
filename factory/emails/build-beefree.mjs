@@ -32,7 +32,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { emailPalette } from './palette.mjs';
-import { beefreeAbandonedCart } from './beefree.mjs';
+import { beefreeAbandonedCart, templateRows } from './beefree.mjs';
 import { previewBeefree, productRows, summaryRows } from './beefree-preview.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -147,7 +147,7 @@ export function buildBeefree(slug, snippets) {
     /* Keyed by module uuid, which is why the uuids are deterministic. The two HTML
        modules are the first and second in document order. */
     const htmlModules = [];
-    for (const templateRow of template.page.body.rows) {
+    for (const templateRow of templateRows(template)) {
         for (const column of templateRow.columns) {
             for (const module of column.modules) {
                 if (module.descriptor && module.descriptor.html) htmlModules.push(module.uuid);
@@ -175,10 +175,10 @@ export function buildBeefree(slug, snippets) {
     return {
         slug,
         file,
-        rows: template.page.body.rows.length,
+        rows: templateRows(template).length,
         brand: palette.brand,
         currency: locale.currencySymbol || locale.currency || '',
-        resolved: Boolean(template.page.body.rows.some((row) => row.columns.some((column) =>
+        resolved: Boolean(templateRows(template).some((row) => row.columns.some((column) =>
             column.modules.some((module) =>
                 module.descriptor && module.descriptor.html &&
                 module.descriptor.html.html.indexOf('<snippet') === 0))))

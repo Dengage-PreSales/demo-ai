@@ -19,6 +19,8 @@
    with no price shows none.
    ========================================================================== */
 
+import { templateRows } from './beefree.mjs';
+
 /* The product row markup from abandoned-cart.html, and the summary from
    abandoned-cart-total.html. Kept deliberately close to those files: this is a preview
    of them, so a divergence here is a preview that flatters the real thing. */
@@ -117,7 +119,7 @@ export function previewBeefree(template, options) {
     const body = template.page.body;
     const filled = o.filled || {};
 
-    const bands = body.rows.map((row) => {
+    const bands = templateRows(template).map((row) => {
         const ground = row.content.style['background-color'];
         const cells = row.columns.map((column) => {
             const top = column.style['padding-top'];

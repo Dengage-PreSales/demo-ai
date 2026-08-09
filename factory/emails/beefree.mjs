@@ -322,26 +322,51 @@ export function beefreeAbandonedCart(options) {
             { size: 12, colour: palette.canvasQuiet, linkColor: palette.canvasQuiet })
     ]], { ground: palette.canvas, top: 20, bottom: 24 }));
 
+    /* WHERE THE ROWS GO, AND THE FIRST VERSION PUT THEM IN THE WRONG PLACE. Nesting
+       them under page.body imported as an empty canvas: the builder read page.rows,
+       found nothing, and drew "Drop content blocks here" with no error. That is the
+       failure mode this whole format has, so it is worth stating: a template BeeFree
+       cannot read does not complain, it arrives blank.
+
+       BeeFree's own description of the native format is page.body carrying container
+       and content, with rows following as a sibling. So rows are emitted at page.rows,
+       and mirrored under page.body as well. The mirror is belt and braces on a format
+       this repository has no way to validate offline: an importer reads one path and
+       ignores the other, so the wrong guess costs bytes rather than another round trip.
+       Remove it once an export from the account has confirmed which one is read. */
+    const body = {
+        type: 'mailup-bee-newsletter-layout-fixed-width',
+        container: { style: { 'background-color': palette.canvas } },
+        content: {
+            computedStyle: {
+                linkColor: palette.brandText,
+                messageBackgroundColor: 'transparent',
+                messageWidth: WIDTH + 'px'
+            },
+            style: { color: palette.text, 'font-family': palette.body }
+        },
+        webFonts: webFonts(theme, palette),
+        rows
+    };
+
     return {
         page: {
             title: 'Abandoned cart, ' + storeName,
             description: 'Dengage eComm Demo. Two Dynamic Content blocks, themed per demo.',
             template: { name: 'template-base', type: 'basic', version: '2.0.0' },
-            body: {
-                type: 'mailup-bee-newsletter-layout-fixed-width',
-                container: { style: { 'background-color': palette.canvas } },
-                content: {
-                    computedStyle: {
-                        linkColor: palette.brandText,
-                        messageBackgroundColor: 'transparent',
-                        messageWidth: WIDTH + 'px'
-                    },
-                    style: { color: palette.text, 'font-family': palette.body }
-                },
-                webFonts: webFonts(theme, palette),
-                rows
-            }
+            body,
+            rows
         },
         comments: {}
     };
+}
+
+/* The rows, from whichever place a given template put them. Every reader in this
+   repository goes through here, so the mirror above stays an implementation detail
+   rather than something four files have to remember. */
+export function templateRows(template) {
+    const page = (template && template.page) || {};
+    if (Array.isArray(page.rows)) return page.rows;
+    if (page.body && Array.isArray(page.body.rows)) return page.body.rows;
+    return [];
 }

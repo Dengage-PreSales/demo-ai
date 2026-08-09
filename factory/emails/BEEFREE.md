@@ -33,6 +33,34 @@ DPS_SNIPPET_CART=8835 DPS_SNIPPET_CART_TOTAL=8836 \
 The ids are per account, not per demo, so once they are known every demo built
 afterwards imports finished.
 
+## If it imports as an empty canvas
+
+That is this format's failure mode, and it happened on the first attempt: the builder
+drew "Drop content blocks here" and reported nothing at all. A template BeeFree cannot
+read arrives blank rather than complaining, so an empty canvas means a structural
+mismatch and never an empty template.
+
+The cause was the rows. They were nested under `page.body`, and the builder reads
+`page.rows`. They are now emitted at `page.rows` and mirrored under `page.body`, so
+either reading finds them.
+
+**The mirror is temporary.** It exists because nothing in this repository can validate
+this format offline, so a wrong guess would cost another round trip. The way to remove
+it is an export from the account: build a template by hand in the Email Builder with a
+title, a button and a **Dynamic Content** block in it, export or download the JSON, and
+that file is the schema. Two things follow from having it:
+
+1. The mirror goes, and `beefree.mjs` matches the real shape rather than a documented
+   one.
+2. **The Dynamic Content block becomes native.** That block is in the builder's own
+   content panel, so there is a proper module type for it and the HTML module used here
+   is a workaround. Its type name is not in any documentation this repository could
+   find, and an export contains it.
+
+Until then, guessing further at this engine is the wrong move. Five rounds have already
+been spent guessing at the template syntax, and every one of them was resolved by being
+shown something that worked rather than by reasoning about it.
+
 ## What is in it, and why it is this short
 
 Seven rows. Masthead, headline, the basket, the total, the currency line, one button,

@@ -17,7 +17,7 @@
    the factory uses.
    ========================================================================== */
 
-import { beefreeAbandonedCart } from './beefree.mjs';
+import { beefreeAbandonedCart, templateRows } from './beefree.mjs';
 import { emailPalette } from './palette.mjs';
 import { parseHex, contrast } from '../scrape/theme.mjs';
 
@@ -63,7 +63,7 @@ function build(overrides) {
 
 function walk(template) {
     const out = { rows: [], modules: [], uuids: [] };
-    for (const row of template.page.body.rows) {
+    for (const row of templateRows(template)) {
         out.rows.push(row);
         out.uuids.push(row.uuid);
         for (const column of row.columns) {
@@ -92,6 +92,23 @@ function walk(template) {
     ok('at 600px, and every row agrees',
        template.page.body.content.computedStyle.messageWidth === '600px' &&
        rows.every((row) => row.content.style.width === '600px'));
+
+    /* THE DEFECT THAT IMPORTED AN EMPTY CANVAS. The first version put the rows under
+       page.body only. The builder reads page.rows, found nothing, and drew "Drop
+       content blocks here" with no error at all, which is this format's whole failure
+       mode: a template it cannot read arrives blank rather than complaining.
+
+       Both paths are asserted because both are emitted, and they must be the same rows
+       rather than two drifting copies. */
+    ok('the rows are at page.rows, where the builder looks',
+       Array.isArray(template.page.rows) && template.page.rows.length > 0,
+       template.page.rows && template.page.rows.length);
+    ok('and mirrored under page.body for a build that reads there instead',
+       JSON.stringify(template.page.body.rows) === JSON.stringify(template.page.rows));
+    ok('a template with rows in neither place reads as empty rather than throwing',
+       templateRows({ page: {} }).length === 0);
+    ok('and the reader finds them under body when that is all there is',
+       templateRows({ page: { body: { rows: [1, 2] } } }).length === 2);
 
     const wrong = modules.filter((module) => TYPES.indexOf(module.type) === -1);
     ok('every module is a type BeeFree knows', wrong.length === 0,
@@ -170,16 +187,24 @@ function walk(template) {
     ok('no em dash and no en dash',
        !longDashes.test(text), (text.match(longDashes) || []).slice(0, 3));
 
-    /* The currency, stated once, because neither shared asset can print a symbol. */
-    ok('the currency is stated once', (text.match(/All prices in/g) || []).length === 1);
-    ok('and it names both the symbol and the code', text.includes('₹ (INR)'));
+    /* The currency, stated once, because neither shared asset can print a symbol.
+       COUNTED OVER THE MODULES RATHER THAN THE SERIALISED FILE. The rows are emitted at
+       two paths on purpose, so every string in the document appears twice and a naive
+       count of the JSON text reports two of everything. */
+    const moneyLines = (template) => walk(template).modules
+        .filter((module) => module.descriptor.text &&
+            module.descriptor.text.html.includes('All prices in'));
 
-    const noMoney = JSON.stringify(build({ symbol: '', currency: '' }).template);
+    ok('the currency is stated once', moneyLines(template).length === 1,
+       moneyLines(template).length);
+    ok('and it names both the symbol and the code',
+       moneyLines(template)[0].descriptor.text.html.includes('₹ (INR)'));
+
     ok('a demo whose locale names neither gets no currency line',
-       !noMoney.includes('All prices in'));
-    const symbolOnly = JSON.stringify(build({ symbol: '₹', currency: '' }).template);
+       moneyLines(build({ symbol: '', currency: '' }).template).length === 0);
     ok('a symbol with no code still reads correctly',
-       symbolOnly.includes('All prices in ₹.'), true);
+       moneyLines(build({ symbol: '₹', currency: '' }).template)[0]
+           .descriptor.text.html.includes('All prices in ₹.'));
 
     /* The button goes to the cart, because the whole proposition is that the basket
        survived. Absolute, because an email resolves nothing relative. */
