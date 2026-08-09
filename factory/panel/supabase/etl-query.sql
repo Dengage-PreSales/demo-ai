@@ -79,6 +79,35 @@ select * from public.dengage_dps_product;
 --                        $$select public.load_dps_product('techiestore-in')$$);
 --
 -- ---------------------------------------------------------------------------
+-- RUNNING THE FLOW ON DEMAND, WHICH IS THE CASE THAT ACTUALLY MATTERS.
+--
+-- A daily trigger is right for steady state and useless for a demo built twenty
+-- minutes before a call: waiting until tomorrow for the catalogue to arrive is not an
+-- option. The flow's API Trigger node carries a Public ID, and
+-- factory/panel/trigger-flow.mjs posts to it:
+--
+--   DENGAGE_API_USERKEY=... DENGAGE_API_PASSWORD=... \
+--     node factory/panel/trigger-flow.mjs --id <flow uuid>
+--
+-- So the full order for a new demo is:
+--
+--   1. the build publishes demos/<slug>/products.json
+--   2. select public.load_dps_product('<slug>');        refreshes Postgres
+--   3. node factory/panel/trigger-flow.mjs --id ...     runs the flow now
+--   4. check the flow's run history before showing anything
+--
+-- STEP 3 CANNOT RUN FROM CI OR FROM A SESSION CONTAINER, and that is not a
+-- configuration to find. Both sit behind rotating egress pools, and the Dengage API
+-- is allowlisted per address: attempts from here have been refused from
+-- 34.29.237.63, 146.148.98.137, 35.239.245.65, 35.253.239.132 and others, a
+-- different address almost every time. One allowlist entry cannot cover that. It
+-- needs a machine with a single fixed address, which is the same requirement as
+-- running tables.mjs --verify on a schedule.
+--
+-- Until that exists, step 3 is done by hand from somewhere allowlisted, or step 1 is
+-- simply done early enough that the daily pass covers it.
+--
+-- ---------------------------------------------------------------------------
 -- THE CONNECTION, AND THE TWO THINGS THAT USUALLY GO WRONG.
 --
 -- The role exists and is read only. It has no password until you give it one, which
