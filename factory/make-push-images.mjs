@@ -41,6 +41,12 @@
    asserts every product photograph has a banner, which is what keeps a derived URL from
    becoming a 404 in a notification.
 
+   THE SHARED MOTIF ARTWORK IS NOT DONE HERE, and it needs a banner for the same reason. A
+   demo whose scrape found no product photography carries assets/motifs/<motif>.jpg in
+   image_link, so that drawing is what its push shows. make-motif-images.mjs writes those,
+   because it still holds the vector and can render 1200x600 rather than enlarge a 400x300
+   JPEG by three. Both land at <dir>/push/<name>.jpg and bannerPathFor() names both.
+
    Chromium's own canvas does the work, as it does for the tiles themselves, so this adds
    no dependency this repository did not already have.
    ========================================================================== */
@@ -229,7 +235,12 @@ export function bannerPathFor(imagePath) {
     if (cut === -1) return '';
     const dir = path.slice(0, cut);
     const file = path.slice(cut + 1);
-    if (file === '' || !/(^|\/)images$/.test(dir)) return '';
+    /* TWO DIRECTORIES, because a demo has two kinds of product picture. images/ holds the
+       photographs this demo downloaded. assets/motifs/ holds the shared drawn artwork, which
+       is what image_link carries for a demo whose scrape found no photography at all, and
+       therefore what a push for that demo shows. Their banners are made by different
+       scripts and both land at <dir>/push/<name>.jpg. */
+    if (file === '' || !/(^|\/)(images|motifs)$/.test(dir)) return '';
     return dir + '/push/' + file.replace(/\.[^.]+$/, '') + '.jpg';
 }
 

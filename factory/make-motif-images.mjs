@@ -47,6 +47,19 @@ const PORT = Number(process.env.MOTIF_PORT || 8123);
 const WIDTH = 400;
 const HEIGHT = 300;
 
+/* AND A 2:1 COPY OF EACH, for the Media field of a web push. A demo whose scrape found
+   no product photography carries motif artwork as its image_link, so this artwork is what
+   a push for that demo shows, in a band the push editor asks to be 2:1. A 400x300 file
+   arrives letterboxed there.
+
+   RENDERED AT THE LARGER SIZE RATHER THAN ENLARGED FROM THE TILE, which is the whole
+   reason it happens here and not in make-push-images.mjs. That script works from committed
+   photographs and can only interpolate; this one still has the vector, so 1200x600 is a
+   crisp drawing rather than a 3x upscale of a JPEG. The svg keeps its own aspect ratio
+   inside the wider box, so the drawing fills the height and the paper fills the rest. */
+const PUSH_WIDTH = 1200;
+const PUSH_HEIGHT = 600;
+
 /* Fixed rather than themed, and this is the one place that is correct. The
    storefront's artwork inherits the prospect's ink colour through currentColor,
    but one shared file cannot be twenty colours at once, and a Dengage rendered
@@ -127,8 +140,35 @@ function demoFolders(only) {
                JPEG to ring against. */
             await shot.screenshot({ path: join(OUT, id + '.jpg'), type: 'jpeg', quality: 88 });
             await shot.close();
+
+            /* The same drawing at 2:1. Same markup, same colours, different viewport, so
+               the two can never disagree about what a motif looks like.
+
+               THE ONE CHANGE IS preserveAspectRatio, from meet to slice. With meet, the
+               svg keeps its 4:3 and the tile's own gradient stops two thirds of the way
+               across, leaving a visible seam against the page behind it. With slice it
+               fills the band and the drawing is cropped top and bottom instead, which the
+               motifs survive because every one of them is a centred silhouette with room
+               around it. Set on the markup rather than in CSS, because object-fit does not
+               apply to an inline svg. */
+            const wide = svg.replace(/<svg\b/, '<svg preserveAspectRatio="xMidYMid slice"');
+            const banner = await browser.newPage({
+                viewport: { width: PUSH_WIDTH, height: PUSH_HEIGHT } });
+            await banner.setContent(
+                '<!doctype html><html><head><meta charset="utf-8"><style>' +
+                'html,body{margin:0;padding:0;width:' + PUSH_WIDTH + 'px;height:' +
+                PUSH_HEIGHT + 'px}' +
+                'body{background:' + PAPER + ';color:' + INK + '}' +
+                'svg{display:block;width:100%;height:100%}' +
+                '</style></head><body>' + wide + '</body></html>',
+                { waitUntil: 'load' });
+            mkdirSync(join(OUT, 'push'), { recursive: true });
+            await banner.screenshot({
+                path: join(OUT, 'push', id + '.jpg'), type: 'jpeg', quality: 88 });
+            await banner.close();
         }
-        console.log(motifs.length + ' motif image(s) written to assets/motifs/');
+        console.log(motifs.length + ' motif image(s) written to assets/motifs/, ' +
+                    'and a 2:1 copy of each to assets/motifs/push/');
 
         /* ---------------------------------------------------------------- */
         /* 2. Record the motif on every product                              */

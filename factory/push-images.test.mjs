@@ -88,6 +88,16 @@ function jpegSize(bytes) {
        /\/push\/p2\.jpg$/.test(bannerOf(ORIGIN + 'images/p2.png')),
        bannerOf(ORIGIN + 'images/p2.png'));
 
+    /* THE SHARED MOTIF ARTWORK TOO, which is the picture a demo with no photography of its
+       own carries into image_link, and therefore into a push. make-motif-images.mjs renders
+       those banners from the vector rather than enlarging the tile. */
+    const MOTIF = 'https://dengage-presales.github.io/demo-ai/assets/motifs/';
+    ok('the motif artwork resolves to a banner on both sides',
+       bannerOf(MOTIF + 'camera.jpg') === 'https://dengage-presales.github.io/demo-ai/' +
+           bannerPathFor('assets/motifs/camera.jpg') &&
+       bannerOf(MOTIF + 'camera.jpg') === MOTIF + 'push/camera.jpg',
+       bannerOf(MOTIF + 'camera.jpg'));
+
     /* AND NEITHER INVENTS A PATH FROM A SHAPE IT DOES NOT RECOGNISE. The asset falls back
        to the original photograph, which is a real image and merely letterboxed, and the
        generator skips the file rather than writing somewhere unexpected. */
@@ -173,6 +183,43 @@ function jpegSize(bytes) {
        as a PNG would be reported rather than silently accepted as unmeasurable. */
     ok('the dimension reader rejects bytes that are not a JPEG',
        jpegSize(Buffer.from([0x89, 0x50, 0x4E, 0x47, 0, 0, 0, 0, 0, 0, 0, 0])) === null);
+}
+
+/* -------------------------------------------------------------------------- */
+/* And every shared motif has one, for the demos with no photography at all      */
+
+{
+    /* THE CASE THAT IS EASY TO MISS, and it was missed until dps_product was read rather
+       than reasoned about. A demo whose scrape found no product photography carries the
+       shared motif artwork in image_link, so that artwork is what its push shows. The
+       products.json check above cannot see it: those products have no image field at all,
+       and the substitution happens in the feed. */
+    const dir = join(ROOT, 'assets', 'motifs');
+    const tiles = existsSync(dir)
+        ? readdirSync(dir).filter((file) => file.endsWith('.jpg')).sort() : [];
+    ok('there is motif artwork to check', tiles.length > 0, tiles.length);
+
+    const missing = [];
+    const wrongRatio = [];
+    for (const tile of tiles) {
+        const rel = bannerPathFor('assets/motifs/' + tile);
+        const banner = join(ROOT, rel);
+        if (!existsSync(banner)) { missing.push(rel); continue; }
+        const size = jpegSize(readFileSync(banner));
+        if (!size || size.width !== WIDTH || size.height !== HEIGHT) {
+            wrongRatio.push({ at: rel, size });
+        }
+    }
+    ok('every motif has a 2:1 banner', missing.length === 0, missing);
+    ok('and every one of them is ' + WIDTH + 'x' + HEIGHT, wrongRatio.length === 0, wrongRatio);
+
+    /* RENDERED RATHER THAN ENLARGED, which is the point of doing it in the motif script.
+       A 400x300 tile scaled to 1200x600 would be soft; a banner drawn from the vector at
+       the larger size carries more detail, and more detail is more bytes. */
+    const tile = readFileSync(join(dir, tiles[0]));
+    const banner = readFileSync(join(ROOT, bannerPathFor('assets/motifs/' + tiles[0])));
+    ok('the banner carries more detail than the tile it shares a drawing with',
+       banner.length > tile.length, { tile: tile.length, banner: banner.length });
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

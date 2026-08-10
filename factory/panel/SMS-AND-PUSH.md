@@ -131,9 +131,13 @@ for that band**, generated at build time and committed with the demo:
 | **The background is sampled from the photograph** | a white cutout gets a white band and looks full bleed, rather than a white rectangle on a grey field |
 | **40 to 70KB** | well inside the 600KB the editor warns about. Size was never the problem, the ratio was |
 
-Nothing to set and nothing to upload. `factory/make-push-images.mjs` writes them, every build
-runs it, and a photograph committed without a banner fails CI rather than becoming a broken
-image in somebody's notification.
+And for a demo whose scrape found no product photography at all, the same is true of the
+shared motif artwork it falls back to: a 2:1 copy of each of the 48 drawings, rendered from
+the vector rather than enlarged, so that demo's push is a clean full bleed drawing rather
+than a 400x300 tile in a letterbox.
+
+Nothing to set and nothing to upload. The build writes them, and a picture committed without
+a banner fails CI rather than becoming a broken image in somebody's notification.
 
 ---
 
