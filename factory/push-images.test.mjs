@@ -98,6 +98,27 @@ function jpegSize(bytes) {
        bannerOf(MOTIF + 'camera.jpg') === MOTIF + 'push/camera.jpg',
        bannerOf(MOTIF + 'camera.jpg'));
 
+    /* AND THE THIRD IMPLEMENTATION, in factory/emails/resolve.mjs, which every scenario
+       email carries so a card can offer a known size image. Lifted the same way and held to
+       the same answer: three copies of one rule in three files that cannot import each
+       other is exactly the shape that drifts. */
+    const { resolveBlock } = await import('./emails/resolve.mjs');
+    const block = resolveBlock({ table: 'page_view_events', fold: 'ctx.x = 1;' });
+    const lifted = block.match(/var bannerOf = function[\s\S]*?\n  \};/);
+    ok('the scenario emails carry a bannerOf too', Boolean(lifted));
+    /* eslint-disable-next-line no-new-func */
+    const inEmail = new Function(lifted[0] + '\nreturn bannerOf;')();
+    for (const probe of ['images/p1.jpg', 'images/p2.png', 'assets/motifs/camera.jpg',
+                         'images', 'assets/p1.jpg', 'p1.jpg', 'images/', 'imagesx/p1.jpg']) {
+        const site = 'https://dengage-presales.github.io/demo-ai/';
+        const viaGenerator = bannerPathFor(probe) === '' ? '' : site + bannerPathFor(probe);
+        ok('"' + probe + '" resolves the same in the email as in the generator',
+           inEmail(site + probe) === viaGenerator,
+           [inEmail(site + probe), viaGenerator]);
+        ok('and the same as in the push asset', inEmail(site + probe) === bannerOf(site + probe),
+           [inEmail(site + probe), bannerOf(site + probe)]);
+    }
+
     /* AND NEITHER INVENTS A PATH FROM A SHAPE IT DOES NOT RECOGNISE. The asset falls back
        to the original photograph, which is a real image and merely letterboxed, and the
        generator skips the file rather than writing somewhere unexpected. */

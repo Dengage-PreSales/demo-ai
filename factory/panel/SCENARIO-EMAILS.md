@@ -41,6 +41,46 @@ No asset, no id, no per demo work, no rebuild when a demo is added.
 
 ---
 
+## The AMP sample
+
+**One, and it is the browse abandonment email:**
+[`scenario-browse.amp.html`](content/_shared/scenario-browse.amp.html). Paste it into the
+**AMP tab** of that same email, beside the HTML.
+
+The products the recipient actually looked at, in a carousel they swipe **inside the inbox**.
+That is the thing an HTML email cannot do, which is the only reason to reach for AMP: a
+carousel of a basket they have already chosen, or of one saved item, would be a carousel for
+its own sake. So it is a sample rather than a set.
+
+**Two things to know before you send it.**
+
+**It only renders if the sending domain is registered for AMP for Email** with the mailbox
+provider, Google for Gmail. Until then every provider falls back to the HTML part, which is
+the same email without the swipe, so nothing breaks and nothing shows. That registration is
+a Dengage and Google matter and there is nothing in this repository that can do it.
+
+**There is no `.amp.preview.html`, on purpose.** The AMP boilerplate hides the body until the
+runtime loads from `cdn.ampproject.org`, so an AMP file opened from disk is a blank page.
+Checked rather than assumed. To see it before sending, paste it into the AMP playground,
+which renders it live:
+
+```
+https://playground.amp.dev/?runtime=amp4email
+```
+
+**The carousel images are the 1200x600 push banners**, the same files the web push Media
+field uses. `amp-img` demands explicit width and height, and a product photograph is whatever
+aspect the prospect's studio shot; a banner is always 2:1 with the margin trimmed, and CI
+asserts one exists beside every committed photograph. One product renders without a carousel
+at all, because arrows that do nothing read as broken.
+
+**It is validated by the real thing.** `scenarios.test.mjs` runs the official
+`amphtml-validator` in `AMP4EMAIL` mode against the send output, and also checks it rejects
+the same document with a plain `<img>` in it, because a validator that passes everything
+passes nothing.
+
+---
+
 ## What each one reads, and what it says
 
 | Email | Reads | Personal because |
@@ -114,11 +154,12 @@ and a Code Editor email needs none of it because raw HTML carries the query.
 
 ## How they were checked, and what that does not cover
 
-`factory/emails/scenarios.test.mjs`, 109 assertions, run in CI. It **executes** each email
+`factory/emails/scenarios.test.mjs`, 127 assertions, run in CI. It **executes** each email
 against synthetic event logs rather than reading it, which is the only way to check a file
 that is a program. It covers: every column named exists in
 [`factory/phase0/SCHEMA.md`](../phase0/SCHEMA.md), the query and the markup share no
-variable, each scenario resolves what its history implies, and every degradation above.
+variable, each scenario resolves what its history implies, every degradation above, and the
+AMP sample against the official AMP4EMAIL validator.
 
 Each was also rendered and looked at in a browser.
 

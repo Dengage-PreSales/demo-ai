@@ -39,6 +39,11 @@ import { resolveBlock } from './resolve.mjs';
 import { render, arrayFrom } from './dengage-template.mjs';
 import { SCENARIOS, masthead, footer, band, note } from './scenarios.mjs';
 import { document } from './scenario-html.mjs';
+import { ampScenario } from './amp-scenario.mjs';
+
+/* THE ONE SCENARIO THAT ALSO GETS AN AMP VARIANT. See amp-scenario.mjs for why it is one
+   and why it is this one. */
+export const AMP_SCENARIO = 'browse';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const OUT = join(ROOT, 'factory', 'panel', 'content', '_shared');
@@ -200,13 +205,20 @@ function history(scenario, slug, cat) {
 const ORIGIN = 'https://dengage-presales.github.io/demo-ai/';
 const TO_ROOT = '../../../../';
 
-export function previewOf(scenario, source, slug, cat) {
+export function previewOf(scenario, source, slug, cat, options) {
+    const o = options || {};
     const out = render(source, {
         $from: arrayFrom(history(scenario, slug, cat)),
         $Contact: { contact_key: 'DPS-1' }
     });
-    return out.split(ORIGIN).join(TO_ROOT);
+    /* ABSOLUTE ON REQUEST, and AMP is why the option exists. AMP4EMAIL requires every src
+       and href to be an absolute https URL, so the rewrite that makes a preview's images
+       load from disk is exactly what makes the AMP validator reject it. The validator has
+       to see what a send would carry, so it gets this. */
+    return o.absolute ? out : out.split(ORIGIN).join(TO_ROOT);
 }
+
+export { ORIGIN, TO_ROOT };
 
 /* -------------------------------------------------------------------------- */
 
@@ -227,6 +239,7 @@ if (INVOKED) {
     mkdirSync(OUT, { recursive: true });
 
     const report = [];
+    let amped = null;
     for (const scenario of SCENARIOS) {
         if (only && scenario.id !== only) continue;
         const source = scenarioHtml(scenario, palette);
@@ -241,6 +254,28 @@ if (INVOKED) {
         }
         writeFileSync(join(OUT, 'scenario-' + scenario.id + '.preview.html'), preview);
 
+        /* NO PREVIEW FILE FOR THE AMP VARIANT, and that is deliberate rather than missing.
+           The AMP boilerplate is `body{visibility:hidden}`, undone only when the runtime
+           loads from cdn.ampproject.org, so an AMP document opened from disk without a
+           network is a blank page. Checked, not assumed: Chromium reports body visibility
+           hidden and zero visible characters. A file called .preview.html that renders
+           blank is worse than no file, so what gets emitted instead is the send output,
+           validated. Somebody who wants to see it uses the AMP playground, which
+           factory/panel/SCENARIO-EMAILS.md links. */
+        if (scenario.id === AMP_SCENARIO) {
+            const amp = ampScenario(scenario, palette);
+            writeFileSync(join(OUT, 'scenario-' + scenario.id + '.amp.html'), amp);
+            let sent;
+            try {
+                sent = previewOf(scenario, amp, demo.slug, cat, { absolute: true });
+            } catch (err) {
+                console.error('FAILED to render the AMP variant: ' + err.message);
+                process.exit(1);
+            }
+            amped = { bytes: amp.length, rendered: sent.length,
+                      slides: (sent.match(/<amp-img /g) || []).length };
+        }
+
         const cards = (preview.match(/<img /g) || []).length;
         const links = (source.match(/href="\{%=/g) || []).length;
         report.push({ id: scenario.id, journey: scenario.journey, table: scenario.table,
@@ -254,6 +289,10 @@ if (INVOKED) {
     for (const r of report) {
         console.log('  ' + pad(r.id, 11) + pad(r.journey, 24) + pad(r.table, 22) +
                     pad(r.bytes, 9) + pad(r.rendered, 10) + pad(r.cards, 8) + r.links);
+    }
+    if (amped) {
+        console.log('\n  AMP variant of ' + AMP_SCENARIO + ': ' + amped.bytes +
+                    ' bytes, ' + amped.slides + ' slides in the carousel.');
     }
     console.log('\n  Previewed against ' + demo.slug + ', ' + cat.length + ' products.');
     console.log('\n  Subject and Pre-header for each, to paste into those two fields:\n');

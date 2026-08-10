@@ -157,6 +157,20 @@
     return s.length > n ? s.substring(0, n - 3).replace(/[\s,]+$/, "") + "..." : s;
   };
 
+  var bannerOf = function (url) {
+    var u = String(url == null ? "" : url).trim();
+    var cut = u.lastIndexOf('/');
+    if (cut === -1) { return ""; }
+    var dir = u.slice(0, cut);
+    var file = u.slice(cut + 1).split('?')[0].split('#')[0];
+    var tail = dir.slice(-7);
+    if (file === "" || (tail !== '/images' && tail !== '/motifs')) { return ""; }
+    var dot = file.lastIndexOf('.');
+    var stem = dot === -1 ? file : file.slice(0, dot);
+    if (stem === "") { return ""; }
+    return dir + '/push/' + stem + '.jpg';
+  };
+
   var leafOf = function (path) {
     var parts = String(path == null ? "" : path).split('>');
     return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
@@ -174,6 +188,7 @@
       title: clamp(item.title, 60),
       category: leafOf(item.category_path),
       image: httpsOnly(item.image_link),
+      banner: bannerOf(httpsOnly(item.image_link)),
       link: httpsOnly(item.link),
       price: full,
       cut: cut,

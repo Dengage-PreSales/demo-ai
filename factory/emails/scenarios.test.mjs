@@ -400,5 +400,106 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
     }
 }
 
+/* -------------------------------------------------------------------------- */
+/* The AMP sample, against the rules rather than against a reading of them      */
+
+{
+    const { ampScenario } = await import('./amp-scenario.mjs');
+    const { AMP_SCENARIO, previewOf, ORIGIN } = await import('./build-scenarios.mjs');
+    const scenario = SCENARIOS.find((s) => s.id === AMP_SCENARIO);
+    ok('the AMP sample names a scenario that exists', Boolean(scenario), AMP_SCENARIO);
+
+    const amp = ampScenario(scenario, PALETTE);
+
+    /* STRUCTURAL FIRST, because these run with no dependency and no network, so they run
+       everywhere. Each one is a rule the official validator enforces, and each was read
+       off the validator rather than off documentation: an `<img>` fails, an inline style
+       attribute does not, and `!important` is rejected outright. */
+    ok('AMP: the html tag carries amp4email', /<html amp4email\b/.test(amp));
+    ok('AMP: the boilerplate is exact, because a character out is a rejected email',
+       amp.includes('<style amp4email-boilerplate>body{visibility:hidden}</style>'));
+    ok('AMP: the runtime is included', amp.includes('src="https://cdn.ampproject.org/v0.js"'));
+    ok('AMP: and a custom-element script for every amp component used', (() => {
+        const used = new Set((amp.match(/<(amp-[a-z-]+)[\s>]/g) || [])
+            .map((t) => t.replace(/[<\s>]/g, '')).filter((t) => t !== 'amp-img'));
+        return [...used].every((tag) =>
+            amp.includes('custom-element="' + tag + '"'));
+    })(), (amp.match(/custom-element="[^"]+"/g) || []));
+    ok('AMP: exactly one amp-custom style block',
+       (amp.match(/<style amp-custom>/g) || []).length === 1);
+    ok('AMP: no !important, which amp rejects rather than ignores', !amp.includes('!important'));
+    ok('AMP: no plain img tag anywhere', !/<img[\s>]/.test(amp));
+    ok('AMP: every amp-img has explicit dimensions and a layout',
+       (amp.match(/<amp-img [^>]*>/g) || []).every((tag) =>
+           /width="/.test(tag) && /height="/.test(tag) && /layout="/.test(tag)),
+       (amp.match(/<amp-img [^>]*>/g) || [])[0]);
+    ok('AMP: the images are the 1200x600 banners, which is why a fixed ratio is possible',
+       amp.includes('card.banner') && amp.includes('width="1200" height="600"'));
+    /* ONE PRODUCT IS NOT A CAROOUSEL. Arrows that do nothing read as broken rather than
+       empty, so a single slide renders without one. */
+    ok('AMP: a carousel only when there is more than one slide',
+       amp.includes('{% if (view.length > 1) { %}'));
+
+    const rendered = previewOf(scenario, amp, 'techiestore-in', (() => {
+        const list = JSON.parse(readFileSync(
+            join(ROOT, 'demos', 'techiestore-in', 'products.json'), 'utf8')).products;
+        const base = ORIGIN + 'demos/techiestore-in/';
+        return list.map((p) => ({
+            product_id: String(p.id), title: p.name,
+            price: p.price == null ? null : String(p.price),
+            discounted_price: p.discountedPrice == null ? null : String(p.discountedPrice),
+            image_link: p.image ? base + p.image : null,
+            link: base + 'product.html?id=' + encodeURIComponent(String(p.id)),
+            category_path: p.category || '', stock_count: null, is_active: true
+        }));
+    })(), { absolute: true });
+
+    ok('AMP: it renders slides from a real catalogue',
+       (rendered.match(/<amp-img /g) || []).length >= 2,
+       (rendered.match(/<amp-img /g) || []).length);
+    ok('AMP: and every address in the send is absolute https, which amp requires',
+       !/(?:src|href)="(?!https:\/\/)/.test(rendered),
+       (rendered.match(/(?:src|href)="(?!https:)[^"]*"/g) || []).slice(0, 2));
+
+    /* AND THEN THE REAL VALIDATOR, when it is installed. This is the only assertion here
+       that is authority rather than inference: everything above is a rule I read off it,
+       and this is it. It runs on the SEND output rather than a preview, because a preview
+       rewrites addresses to relative paths and AMP requires absolute ones.
+
+       IT SKIPS RATHER THAN FAILS when the package is absent, so the suite still runs on a
+       machine that has not installed it, and it says which happened. */
+    let validator = null;
+    try {
+        validator = (await import('amphtml-validator')).default;
+    } catch (err) {
+        console.log('   skip  AMP: official validator not installed ' +
+                    '(npm install --no-save amphtml-validator to run it)');
+    }
+    if (validator) {
+        const instance = await validator.getInstance();
+        const result = instance.validateString(rendered, 'AMP4EMAIL');
+        ok('AMP: the official AMP4EMAIL validator passes the send output',
+           result.status === 'PASS',
+           result.errors.map((e) => e.line + ':' + e.col + ' ' + e.params.join(' ')).slice(0, 4));
+
+        /* THE VALIDATOR AGAINST SOMETHING IT MUST REJECT, because a validator that passes
+           everything passes nothing. */
+        const broken = rendered.replace('<amp-img ', '<img ');
+        ok('and it rejects the same document with a plain img in it',
+           instance.validateString(broken, 'AMP4EMAIL').status === 'FAIL');
+    }
+
+    const path = join(ROOT, 'factory', 'panel', 'content', '_shared',
+                      'scenario-' + AMP_SCENARIO + '.amp.html');
+    ok('AMP: the file to paste is committed', existsSync(path));
+    if (existsSync(path)) {
+        ok('AMP: and matches what the generator produces now',
+           readFileSync(path, 'utf8') === amp);
+    }
+    ok('AMP: no blank preview file is shipped, because the runtime cannot load from disk',
+       !existsSync(join(ROOT, 'factory', 'panel', 'content', '_shared',
+                        'scenario-' + AMP_SCENARIO + '.amp.preview.html')));
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

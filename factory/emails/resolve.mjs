@@ -31,7 +31,9 @@
      view      the first `show` cards, which is what renders
      extra     how many the email is not showing, so it can say so
      byId      product_id -> the dps_product row
-     cards     ids resolved to display fields, inactive products dropped
+     cards     ids resolved to display fields, inactive products dropped. `banner` on each
+               is the 1200x600 crop beside its photograph, for anywhere that needs a known
+               size, and "" when the photograph is not where one would be
      ctx       whatever the fold chose to carry, per scenario
 
    PRICES ARE NEVER INVENTED ANYWHERE IN HERE. money() returns "" for anything that is
@@ -227,6 +229,29 @@ export function resolveBlock(options) {
     push('    return s.length > n ? s.substring(0, n - 3).replace(/[\\s,]+$/, "") + "..." : s;');
     push('  };');
     push('');
+    /* THE 2:1 BANNER BESIDE EACH PHOTOGRAPH, derived rather than stored, which is the same
+       rule abandoned-cart-image.txt uses and the same one make-push-images.mjs writes to.
+       An AMP email needs it: amp-img demands explicit dimensions, and a product photograph
+       is whatever aspect the prospect's studio used, while a banner is always 1200x600.
+
+       THREE IMPLEMENTATIONS OF ONE RULE NOW, in this file, in that asset and in the
+       generator, none of which can import the others. factory/push-images.test.mjs runs all
+       three against the same inputs and holds them to the same answer, because a derived
+       address for a file nobody wrote is a broken image rather than a fallback. */
+    push('  var bannerOf = function (url) {');
+    push('    var u = String(url == null ? "" : url).trim();');
+    push("    var cut = u.lastIndexOf('/');");
+    push('    if (cut === -1) { return ""; }');
+    push('    var dir = u.slice(0, cut);');
+    push("    var file = u.slice(cut + 1).split('?')[0].split('#')[0];");
+    push('    var tail = dir.slice(-7);');
+    push(`    if (file === "" || (tail !== '/images' && tail !== '/motifs')) { return ""; }`);
+    push("    var dot = file.lastIndexOf('.');");
+    push('    var stem = dot === -1 ? file : file.slice(0, dot);');
+    push('    if (stem === "") { return ""; }');
+    push("    return dir + '/push/' + stem + '.jpg';");
+    push('  };');
+    push('');
     push('  var leafOf = function (path) {');
     push("    var parts = String(path == null ? \"\" : path).split('>');");
     push('    return parts[parts.length - 1].replace(/^\\s+|\\s+$/g, "");');
@@ -248,6 +273,7 @@ export function resolveBlock(options) {
     push('      title: clamp(item.title, 60),');
     push('      category: leafOf(item.category_path),');
     push('      image: httpsOnly(item.image_link),');
+    push('      banner: bannerOf(httpsOnly(item.image_link)),');
     push('      link: httpsOnly(item.link),');
     push('      price: full,');
     push('      cut: cut,');

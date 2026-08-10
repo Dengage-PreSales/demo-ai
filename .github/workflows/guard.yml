@@ -53,6 +53,18 @@ jobs:
         with:
           node-version: '22'
 
+      # THE OFFICIAL AMP VALIDATOR, for the one AMP for Email sample. Everything else in
+      # this repository runs with no dependency at all, and this is worth the exception:
+      # an AMP email is either valid or the mailbox provider refuses to render it, and no
+      # amount of reading the markup establishes which. The test skips rather than fails
+      # when it is absent, so a machine without it still runs the other 126 assertions.
+      - name: AMP validator
+        # TOLERANT ON PURPOSE. The test skips this one assertion and states that it did
+        # when the package is absent, so an unreachable registry must not fail a job whose
+        # other checks need no network at all.
+        continue-on-error: true
+        run: npm install --no-save amphtml-validator
+
       - name: Generator decisions
         run: node factory/scrape/scrape.test.mjs
 
