@@ -148,6 +148,25 @@ with `data-dn-invalid="true"` and `data-dn-is-submitted="true"` used for state,
 and the submit control calling `Dn.postQuestion()` then
 `Dn.sendClick('<scenario>__submit')`.
 
+**In that order, and only on success.** `postQuestion` validates and, if the answer
+is good, calls `Dn.setTags` itself. It does **not** report the click and does **not**
+switch on the confirmation panel, so the button's handler runs it first, reads
+`data-dn-invalid` to learn what the engine decided, and reports and confirms only
+when the engine did not mark the question invalid. Reporting the click first would
+count an engagement for an empty submit.
+
+**It sets `data-dn-invalid="false"` rather than removing the attribute.** Safe only
+because every invalid style in both creatives keys on `[data-dn-invalid="true"]`. A
+selector on `[data-dn-invalid]` alone would show the error on every valid answer.
+
+**Both creatives were on `Dn.setTags` until 10 August 2026**, validating the question
+themselves, because that is the call a question creative's payload ends up at anyway.
+They moved to the native call after Dengage fixed form submission and
+`factory/checks/creative.js` was re-run against the published handler. The gain is
+that the engine reads `data-dn-min-selection` and `data-dn-max-selection`, which the
+hand written handler ignored: a question offering eight options and allowing three
+would have sent all eight.
+
 `data-dn-name` is the contact tag the answer lands in. It must be generic: the
 reference uses `tyre_line_interest`, which is exactly the kind of vertical
 specific name a shared creative cannot use. Something like `interest_area`.

@@ -409,7 +409,15 @@ async function main() {
     qok('the tag matches data-dn-name',
         Array.isArray(payload) && payload[0] && payload[0].tag === q.tagName, { sent: payload, expected: q.tagName });
     qok('the confirmation panel is switched on', sent.submitted === 'true', sent);
-    qok('the invalid stamp is cleared', sent.invalid === null, sent);
+    /* CLEARED MEANS "NOT true", NOT "ABSENT". Both creatives used to remove the
+       attribute themselves and this asserted null. They now submit through
+       Dn.postQuestion(), and the engine SETS data-dn-invalid="false" rather than
+       removing it, so a null test fails on a creative that is working correctly.
+       Every invalid style in both files keys on [data-dn-invalid="true"], so "false"
+       styles identically to absent, which is what makes this the right assertion
+       rather than a loosened one. Checked against the published handler, 10 August
+       2026. */
+    qok('the invalid stamp is cleared', sent.invalid !== 'true', sent);
   }
 
   console.log('\n8. Rules every creative must satisfy');

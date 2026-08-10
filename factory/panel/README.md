@@ -97,7 +97,32 @@ node factory/build-snippets.mjs --preview
 It resolves all fourteen against a committed demo's real catalogue and prints the seven SMS
 bodies with their character counts and the seven push messages field by field.
 
-### 3. Seven scenario emails. Content > Email > Code Editor
+### 3. Re-paste two on-site creatives. Content > Onsite
+
+**New, 10 August 2026, and it is the one item here that came from Dengage rather than
+from this repository.** Both now submit through the engine's native
+`Dn.postQuestion()` instead of validating the answer themselves and calling
+`Dn.setTags`. Open each campaign's content and paste the current file over it:
+
+| Campaign | Paste |
+|---|---|
+| `dengage_demo_survey` | `factory/creatives/survey.html` |
+| `dengage_demo_nps-popup` | `factory/creatives/nps-popup.html` |
+
+Both campaigns are **already ACTIVE** in the live manifest, so there is nothing to
+resume. Nothing else about either campaign changes: same trigger, same settings, same
+tag names, and the same row on the contact card afterwards.
+
+**One visible difference on a call.** The engine writes its own validation message, so
+submitting with nothing chosen now reads `Please select at least 1 and at most 4
+choice(s)` on the survey and `Please select at least one option` on the NPS, instead of
+`Choose at least one.` and `Choose a score first.` Only on an empty submit, and the
+error now clears the moment something is picked rather than on the next press.
+
+**`dengage_demo_subscription-popup` needs nothing.** It was always on the native
+`Dn.postSubscription()` and was re-checked at the same time.
+
+### 4. Seven scenario emails. Content > Email > Code Editor
 
 **New, 10 August 2026.** One HTML email per journey: checkout rescue, browse abandonment,
 failed search, wishlist, basket building, replenishment and win-back. Each is **one paste**
@@ -107,7 +132,7 @@ with no Dynamic Content asset behind it, because a Code Editor email carries its
 and the pre-header for each. Open the `.preview.html` beside each one first: it is that
 email rendered against a real catalogue rather than a drawing of it.
 
-### 4. Re-import the email template. Content > Email > Email Builder
+### 5. Re-import the email template. Content > Email > Email Builder
 
 ```
 factory/panel/content/_shared/beefree-abandoned-cart.json
@@ -118,23 +143,23 @@ so it can never contradict the basket inside it. `factory/emails/BEEFREE.md` say
 and what is in it. Open the `.preview.html` beside it first if you want to see it
 before uploading.
 
-### 5. One abandoned cart campaign, using that template
+### 6. One abandoned cart campaign, using that template
 
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 6. Confirm the ETL runs on a schedule
+### 7. Confirm the ETL runs on a schedule
 
 Postgres reloads every demo's catalogue every ten minutes by itself. The Dengage
 Automated Flow is what copies it into `dps_product`, and **if that flow is not on a
 recurring schedule, a new demo's products never arrive** and its emails have nothing
 to render. Set the frequency you want on the flow. `supabase/README.md` has the chain.
 
-### 7. Five inline creatives, when support enables Inline
+### 8. Five inline creatives, when support enables Inline
 
 Written and committed, nothing to build. The table is below.
 
-### 8. Watch the MP4 through once
+### 9. Watch the MP4 through once
 
 Detail below. It takes a minute and it is the one thing a URL check cannot answer.
 

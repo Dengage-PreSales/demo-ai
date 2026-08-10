@@ -1055,18 +1055,40 @@ reading code.
     The general rule: the head order in §6.2 is load bearing in both directions.
     Things that must run early go above things that block.
 
-12.13 **`survey` and `nps-popup` submit with `Dn.setTags`, and that is deliberate.**
+12.13 **`survey` and `nps-popup` submit natively, with `Dn.postQuestion()`.**
 
-    `Dn.setTags` is the call that writes contact tags, which is what a question
-    creative produces. Both files validate their own single question and then call
-    it with the payload the tag contract expects:
+    **Changed 10 August 2026.** Both used to validate their own question and call
+    `Dn.setTags` directly. Dengage reported a fix to form submission, the published
+    handler was re-checked against both creatives, and the native call now passes every
+    assertion, so both were moved onto it.
+
+    **Both routes end in the same place**, which is the fact that makes this a small
+    change rather than a risky one. `postQuestion` validates and then calls `Dn.setTags`
+    itself, with the payload the tag contract expects:
 
     ```
     [ { tag: "<data-dn-name>", value: "<the chosen input value>" } ]
     ```
 
-    Every native attribute the question contract documents is present and correct in
-    both files, so the engine's own validation and state stamping apply on top.
+    and the parent SDK posts that to `/api/setTags` either way. The stored result is
+    identical. The difference is entirely in who validates.
+
+    **What the engine does that the hand written version did not:** it reads
+    `data-dn-min-selection` and `data-dn-max-selection`. The old survey handler ignored
+    both, so a question offering eight options and allowing three would have sent eight.
+    Nothing binds today, because that question offers four and allows four, so this is
+    about the next question rather than the current one.
+
+    **What it does not do:** report the click, or switch on the confirmation panel. Both
+    creatives still do those, after reading `data-dn-invalid` to find out what the engine
+    decided. And it sets `data-dn-invalid="false"` rather than removing the attribute,
+    which is safe only because every invalid style in both files keys on
+    `[data-dn-invalid="true"]`. A selector on `[data-dn-invalid]` alone would show the
+    error on every valid answer.
+
+    **`subscription-popup` was already native**, on `Dn.postSubscription()`, and was
+    re-checked at the same time. Its payload, its per field validation and its refusal of
+    a bad email all pass against the current handler.
 
     **DO NOT CHANGE EITHER FILE TO A DIFFERENT SUBMIT CALL** without re-running
     `bash factory/checks/run.sh` and reading its output for that creative. That check

@@ -14,10 +14,21 @@
      contact card and segmented on the tag. Nothing is written to a table and there
      is nothing to create in Data Space for it. Handoff 12.4.
 
-     IT SUBMITS WITH Dn.setTags, the call that writes contact tags, because a score
-     is a tag. It validates its own single question and then submits:
+     IT SUBMITS NATIVELY, with Dn.postQuestion(). Changed 10 August 2026, after
+     Dengage applied a fix to form submission and the published handler was re-checked
+     against this exact markup. It used to validate here and call Dn.setTags itself.
+     postQuestion validates and then calls setTags with
 
          [ { tag: "nps_score", value: "<0 to 10>" } ]
+
+     so the stored result is the same either way and the difference is who validates.
+     The engine writes its own message, "Please select at least one option" for a radio
+     question, and re-checks on every input so the error clears when a score is picked.
+
+     IT DOES NOT REPORT THE CLICK AND DOES NOT SWITCH ON THE CONFIRMATION PANEL, which
+     is why there is still a handler on the button: it calls postQuestion, reads
+     data-dn-invalid to find out what the engine decided, and only then reports and
+     confirms. survey.html says more, including why data-dn-invalid="false" is safe.
 
      DO NOT CHANGE THIS TO A DIFFERENT SUBMIT CALL without re-running
      bash factory/checks/run.sh and reading its output for this creative. The same
@@ -309,12 +320,22 @@
 
         <div class="ends"><span>Not likely</span><span>Very likely</span></div>
 
-        <!-- A DIV, not a span: the engine's selector is div.form-message. -->
+        <!-- A DIV, not a span: the engine's selector is div.form-message.
+
+             THE ENGINE OVERWRITES THIS TEXT. Dn.postQuestion() sets it from the
+             validation language on the form, and for a radio question it reads
+             "Please select at least one option". The copy below is what shows if the
+             engine's handler is ever absent, so it stays. -->
         <div class="form-message">Choose a score first.</div>
       </div>
 
+      <!-- SUBMIT NATIVELY, and read the engine's verdict rather than deciding it.
+           postQuestion validates the question, writes its own message and sends the
+           tag. Reporting the click and switching on the confirmation panel are the two
+           things it does not do, so they are here and both run only when the engine did
+           not mark the question invalid. See the note at the top. -->
       <button type="button" class="send"
-              onclick="var f=document.getElementById('dnf-np'),b=f.querySelector('.form-block'),s=b.querySelector('input[type=radio]:checked');if(!s){b.setAttribute('data-dn-invalid','true');return;}b.removeAttribute('data-dn-invalid');this.disabled=true;Dn.sendClick('nps-popup__submit');Dn.setTags([{tag:b.getAttribute('data-dn-name'),value:s.value}]);f.querySelector('.container').setAttribute('data-dn-is-submitted','true');">
+              onclick="var f=document.getElementById('dnf-np'),b=f.querySelector('.form-block');Dn.postQuestion();if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('nps-popup__submit');f.querySelector('.container').setAttribute('data-dn-is-submitted','true');">
         Send my score
       </button>
 
