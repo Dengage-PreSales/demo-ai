@@ -24,6 +24,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # THE FULL HISTORY, because one check reads commit dates and the default
+          # depth of 1 knows almost none of them.
+          #
+          # The check is "no push banner is older than the photograph it was made
+          # from", and it used to compare file mtimes. mtime does not survive a
+          # checkout: a clone stamps every file with the moment it was written, so
+          # the order of a photograph and its banner is whatever the checkout
+          # happened to do, and it differs every run. That assertion passed on every
+          # machine that had generated the banners and failed here on two arbitrary
+          # files out of thirty, which held this workflow red across every commit on
+          # 10 August 2026 with nothing actually wrong.
+          #
+          # It now reads git commit dates, which are the same in a clone as they are
+          # anywhere else. With a shallow clone it SKIPS and says why rather than
+          # guessing, so leaving this out would not turn the workflow red again, it
+          # would quietly stop checking.
+          fetch-depth: 0
 
       # Runs before the guard itself. If the checks have stopped working, the
       # result of running them over the repository means nothing, so there is

@@ -21,7 +21,8 @@
    the other, so this runs them against the same inputs and holds them to the same answer.
    ========================================================================== */
 
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { bannerPathFor, WIDTH, HEIGHT } from './make-push-images.mjs';
@@ -30,10 +31,63 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 let pass = 0;
 let fail = 0;
+let skipped = 0;
 function ok(label, condition, detail) {
     if (condition) { pass++; console.log('   ok    ' + label); return; }
     fail++;
     console.log('   FAIL  ' + label + (detail !== undefined ? '  <' + JSON.stringify(detail) + '>' : ''));
+}
+
+/* A CHECK THAT CANNOT SEE ITS EVIDENCE SAYS SO, LOUDLY, and neither passes nor fails.
+   Counted and printed in the summary, because a skip nobody notices is a pass nobody
+   earned. Added 10 August 2026 with the git dated staleness check below. */
+function skip(label, why) {
+    skipped++;
+    console.log('   skip  ' + label + (why ? '  (' + why + ')' : ''));
+}
+
+/* Is there a git history to read dates out of, and is it deep enough to be worth reading?
+   Three ways this is not available and all three are ordinary: no git on the machine, not
+   a repository, or a shallow clone, which is what actions/checkout produces by default. */
+function gitHistory() {
+    const run = (args) => spawnSync('git', args, { cwd: ROOT, encoding: 'utf8' });
+    const inside = run(['rev-parse', '--is-inside-work-tree']);
+    if (inside.error) return { available: false, why: 'git is not on this machine' };
+    if (inside.status !== 0 || String(inside.stdout).trim() !== 'true') {
+        return { available: false, why: 'not a git working tree' };
+    }
+    const shallow = run(['rev-parse', '--is-shallow-repository']);
+    if (String(shallow.stdout).trim() === 'true') {
+        return {
+            available: false,
+            why: 'shallow clone, so commit dates are unknown. Set fetch-depth: 0'
+        };
+    }
+    return { available: true, run };
+}
+
+/* The newest commit date per path, in ONE pass over the history rather than one git call
+   per file. `git log --format=@%ct --name-only` prints a date and then the paths that
+   commit touched, newest commit first, so the FIRST time a path appears is its newest
+   commit. The @ prefix is what tells a date line from a path. */
+function commitTimes(history, pairs) {
+    const paths = [];
+    for (const pair of pairs) {
+        if (paths.indexOf(pair.photo) === -1) paths.push(pair.photo);
+        if (paths.indexOf(pair.banner) === -1) paths.push(pair.banner);
+    }
+    if (!paths.length) return {};
+    const out = history.run(['log', '--format=@%ct', '--name-only', '--'].concat(paths));
+    if (out.status !== 0) return {};
+    const times = {};
+    let at = 0;
+    for (const line of String(out.stdout).split('\n')) {
+        const text = line.trim();
+        if (text === '') continue;
+        if (text.charAt(0) === '@') { at = Number(text.slice(1)); continue; }
+        if (times[text] === undefined) times[text] = at;
+    }
+    return times;
 }
 
 /* JPEG dimensions off the SOF marker, because the alternative is a dependency and the
@@ -149,7 +203,7 @@ function jpegSize(bytes) {
     const missing = [];
     const wrongRatio = [];
     const tooLarge = [];
-    const stale = [];
+    const pairs = [];
     let checked = 0;
 
     for (const slug of demos) {
@@ -179,11 +233,15 @@ function jpegSize(bytes) {
             }
             /* A REGENERATED PHOTOGRAPH WITH A STALE BANNER is the quiet failure this whole
                file is for: the push would carry last week's picture and look completely
-               fine. The generator compares the same two timestamps. */
+               fine. Collected here and judged below, because the timestamps this compares
+               are git's rather than the filesystem's. */
             const original = join(ROOT, 'demos', slug, product.image);
-            if (existsSync(original) &&
-                statSync(original).mtimeMs > statSync(banner).mtimeMs) {
-                stale.push(slug + '/' + rel);
+            if (existsSync(original)) {
+                pairs.push({
+                    at: slug + '/' + rel,
+                    photo: 'demos/' + slug + '/' + product.image,
+                    banner: 'demos/' + slug + '/' + rel
+                });
             }
         }
     }
@@ -193,7 +251,48 @@ function jpegSize(bytes) {
     ok('every banner is ' + WIDTH + 'x' + HEIGHT, wrongRatio.length === 0, wrongRatio);
     ok('no banner is above the size the push editor warns about',
        tooLarge.length === 0, tooLarge);
-    ok('no banner is older than the photograph it was made from', stale.length === 0, stale);
+
+    /* GIT COMMIT TIME, NOT FILE MTIME, and the difference is the whole reason this
+       assertion is written out rather than being one statSync comparison.
+
+       mtime DOES NOT SURVIVE A CHECKOUT. A fresh clone stamps every file with the moment
+       it was written, so the order of a photograph and its banner is whatever the checkout
+       happened to do, and it is different on every run. This assertion therefore passed on
+       every machine that had generated the banners and failed in CI on two arbitrary files
+       out of thirty, which is the worst combination available: green where it is checking
+       nothing, red where nothing is wrong. It held the guard red all day on 10 August 2026
+       across every commit, and both files it named were correct by every real measure.
+
+       git log -1 --format=%ct IS the record of which was updated last, it is identical in
+       a clone, and it is what somebody would look at to answer the question by hand.
+
+       IT SKIPS RATHER THAN GUESSING when the history is not there. actions/checkout fetches
+       depth 1 by default, so a shallow clone knows the commit dates of almost nothing;
+       .github/workflows/guard.yml sets fetch-depth: 0 so this runs there. A check that
+       cannot see its evidence has to say so, because the alternative is the failure above
+       in the other direction. */
+    const history = gitHistory();
+    if (!history.available) {
+        skip('no banner is older than the photograph it was made from', history.why);
+    } else {
+        const times = commitTimes(history, pairs);
+        const stale = [];
+        const unknown = [];
+        for (const pair of pairs) {
+            const photo = times[pair.photo];
+            const banner = times[pair.banner];
+            if (photo === undefined || banner === undefined) { unknown.push(pair.at); continue; }
+            if (photo > banner) stale.push(pair.at);
+        }
+        ok('no banner is older than the photograph it was made from, by commit date',
+           stale.length === 0, stale);
+        /* AN UNCOMMITTED PAIR IS REPORTED RATHER THAN COUNTED EITHER WAY. A file with no
+           commit yet is normal in a working tree mid change and would be a real gap in CI. */
+        if (unknown.length) {
+            skip('and ' + unknown.length + ' pair(s) are not in the history yet',
+                 unknown.slice(0, 4).join(', '));
+        }
+    }
 
     /* THE CHECK AGAINST A BANNER THAT IS NOT THERE, because one that matches nothing
        passes on an empty repository. Two checks here have already failed open. */
@@ -243,5 +342,41 @@ function jpegSize(bytes) {
        banner.length > tile.length, { tile: tile.length, banner: banner.length });
 }
 
-console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
+/* -------------------------------------------------------------------------- */
+/* The staleness comparison, against times it cannot have got right by luck     */
+
+{
+    /* THE COMPARISON ITSELF, on synthetic dates. The assertion above passes on a healthy
+       repository, which says nothing about whether it would catch an unhealthy one, and
+       that is exactly how its predecessor came to be green on every developer machine
+       while red in CI. CLAUDE.md section 4: a guard needs a test that would catch it
+       failing open. */
+    const judge = (times, pairs) => {
+        const out = { stale: [], unknown: [] };
+        for (const pair of pairs) {
+            const photo = times[pair.photo];
+            const banner = times[pair.banner];
+            if (photo === undefined || banner === undefined) { out.unknown.push(pair.at); continue; }
+            if (photo > banner) out.stale.push(pair.at);
+        }
+        return out;
+    };
+    const pair = { at: 'demo/images/push/p1.jpg', photo: 'a.jpg', banner: 'b.jpg' };
+
+    ok('a banner newer than its photograph passes',
+       judge({ 'a.jpg': 100, 'b.jpg': 200 }, [pair]).stale.length === 0);
+    ok('a banner OLDER than its photograph is caught',
+       judge({ 'a.jpg': 300, 'b.jpg': 200 }, [pair]).stale[0] === pair.at);
+    /* THE SAME COMMIT IS NOT STALE, and it is the normal case: the generator writes the
+       banner and the photograph is committed with it. A >= comparison would fail every
+       demo the factory has ever built. */
+    ok('the same commit for both is not stale',
+       judge({ 'a.jpg': 200, 'b.jpg': 200 }, [pair]).stale.length === 0);
+    ok('a pair missing from the history is reported rather than judged',
+       judge({ 'a.jpg': 200 }, [pair]).unknown[0] === pair.at &&
+       judge({ 'a.jpg': 200 }, [pair]).stale.length === 0);
+}
+
+console.log('\n   ' + pass + ' passed, ' + fail + ' failed' +
+            (skipped ? ', ' + skipped + ' skipped' : ''));
 process.exit(fail ? 1 : 0);
