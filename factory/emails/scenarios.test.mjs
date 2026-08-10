@@ -461,6 +461,46 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
        !/(?:src|href)="(?!https:\/\/)/.test(rendered),
        (rendered.match(/(?:src|href)="(?!https:)[^"]*"/g) || []).slice(0, 2));
 
+    /* THE PANEL'S OWN VALIDATOR IS STRICTER THAN THE OFFICIAL ONE, and this section is
+       every rule it taught us. The difference is not a bug in either: the official
+       validator was given the RESOLVED document, and Dengage validates the file AS
+       AUTHORED, before the template engine runs. So a document that passes the official
+       validator perfectly can be rejected by the panel with eight structural errors, none
+       of which is about AMP. That happened, on 10 August 2026, and these are the four
+       causes.
+
+       Every one of them is asserted on the authored source rather than on the render,
+       because that is what the panel sees. */
+    ok('AMP: the doctype is the very first thing in the file',
+       amp.indexOf('<!doctype html>') === 0, amp.slice(0, 40));
+    ok('AMP: the query is inside the body, not above the doctype',
+       amp.indexOf('{%') > amp.indexOf('<body'), [amp.indexOf('{%'), amp.indexOf('<body')]);
+    /* AN HTML PARSER READS THE QUERY AS MARKUP, so `i < rows.length` opens a tag. The
+       generated block writes every comparison with the larger side first. */
+    ok('AMP: the query contains no < character, which a parser would read as a tag',
+       !amp.slice(amp.indexOf('{%'), amp.indexOf('%}')).includes('<'),
+       amp.slice(amp.indexOf('{%'), amp.indexOf('%}'))
+          .split('\n').filter((l) => l.includes('<')).slice(0, 2));
+    /* A TAG INSIDE AN ATTRIBUTE. In a URL the panel reports a disallowed relative URL; in
+       a style attribute it breaks the quoting and reports nine invented attributes per
+       slide. Both are fixed by writing the origin out and by using classes. */
+    const attributes = amp.match(/(?:src|href)="([^"]*)"/g) || [];
+    ok('AMP: every src and href begins with a literal https, before the engine runs',
+       attributes.every((a) => /="https:\/\//.test(a)),
+       attributes.filter((a) => !/="https:\/\//.test(a)).slice(0, 3));
+    ok('AMP: and no style attribute contains a template tag',
+       !/style="[^"]*\{%/.test(amp),
+       (amp.match(/style="[^"]*\{%[^"]*"/g) || []).slice(0, 2));
+    ok('AMP: so the slide styles are classes in amp-custom instead',
+       amp.includes('<div class="s">') && amp.includes('.n.t{'));
+
+    /* AND THE TWO PATHS THE ORIGIN PREFIX RELIES ON. resolve.mjs strips the same origin
+       this file writes out, so if the two ever disagreed the URL would be wrong in a way
+       that still validates: a doubled origin, or a missing slash. */
+    ok('AMP: the origin it writes out is the one resolve.mjs strips',
+       amp.includes('src="https://dengage-presales.github.io/demo-ai/{%= card.bannerPath %}"'),
+       (amp.match(/src="[^"]*bannerPath[^"]*"/) || [])[0]);
+
     /* AND THEN THE REAL VALIDATOR, when it is installed. This is the only assertion here
        that is authority rather than inference: everything above is a rule I read off it,
        and this is it. It runs on the SEND output rather than a preview, because a preview

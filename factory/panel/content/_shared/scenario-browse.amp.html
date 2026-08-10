@@ -1,3 +1,26 @@
+<!doctype html>
+<html amp4email data-css-strict>
+<head>
+<meta charset="utf-8">
+<script async src="https://cdn.ampproject.org/v0.js"></script>
+<script async custom-element="amp-carousel" src="https://cdn.ampproject.org/v0/amp-carousel-0.1.js"></script>
+<style amp4email-boilerplate>body{visibility:hidden}</style>
+<style amp-custom>
+body{margin:0;padding:0;background-color:#f6f7f8;}
+a{color:#125cfa;}
+table{border-collapse:collapse;}
+.s{text-align:center;}
+.c{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5a6375;padding:20px 0 6px 0;}
+.n{font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.35;font-weight:700;color:#14181b;padding:0 24px 8px 24px;}
+.n.t{padding-top:20px;}
+.p{font-size:16px;line-height:1.4;color:#14181b;}
+.p .b{font-weight:bold;}
+.p .w{text-decoration:line-through;color:#5a6375;padding-left:8px;}
+.o{padding:16px 0 0 0;font-size:13px;}
+.h{font-size:12px;line-height:1.5;color:#5a6375;text-align:center;padding:14px 0 0 0;}
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f6f7f8;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;color:#14181b;">
 {%
   var keys = [];
   if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
@@ -6,7 +29,7 @@
     ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
     : [];
 
-  for (var d = 0; d < devices.length; d++) {
+  for (var d = 0; devices.length > d; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
     if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
   }
@@ -34,7 +57,7 @@
 
   var demoOf = {};
   var rootOf = {};
-  for (var v = 0; v < views.length; v++) {
+  for (var v = 0; views.length > v; v++) {
     var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
     if (vs === "" || demoOf[vs]) { continue; }
     var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
@@ -57,7 +80,7 @@
 
   if (target !== "") {
     var mine = [];
-    for (var m = 0; m < rows.length; m++) {
+    for (var m = 0; rows.length > m; m++) {
       var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
       if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
     }
@@ -81,7 +104,7 @@
   var best = "";
   var bestN = 0;
   for (var k in counts) {
-    if (counts[k] > bestN || (counts[k] === bestN && k < best)) { bestN = counts[k]; best = k; }
+    if (counts[k] > bestN || (counts[k] === bestN && best > k)) { bestN = counts[k]; best = k; }
   }
   ctx.category = best;
 
@@ -92,13 +115,13 @@
     : [];
 
   var byId = {};
-  for (var p = 0; p < products.length; p++) {
+  for (var p = 0; products.length > p; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
 
   var money = function (value) {
     var n = Number(value);
-    if (!isFinite(n) || n <= 0) { return ""; }
+    if (!isFinite(n) || 0 >= n) { return ""; }
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   };
 
@@ -132,8 +155,16 @@
     return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
   };
 
+  var SITE = 'https://dengage-presales.github.io/demo-ai/';
+  var pathOf = function (url) {
+    var u = String(url == null ? "" : url);
+    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";
+  };
+
+  var rootPath = pathOf(root);
+
   var cards = [];
-  for (var c = 0; c < ids.length; c++) {
+  for (var c = 0; ids.length > c; c++) {
     var item = byId[ids[c]];
     if (!item || !item.is_active) { continue; }
     var full = money(item.price);
@@ -145,6 +176,8 @@
       category: leafOf(item.category_path),
       image: httpsOnly(item.image_link),
       banner: bannerOf(httpsOnly(item.image_link)),
+      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),
+      linkPath: pathOf(httpsOnly(item.link)),
       link: httpsOnly(item.link),
       price: full,
       cut: cut,
@@ -155,25 +188,12 @@
 
   var view = cards.slice(0, 4);
   var extra = (all.length - view.length) > 0 ? (all.length - view.length) : 0;
-%}<!doctype html>
-<html amp4email data-css-strict>
-<head>
-<meta charset="utf-8">
-<script async src="https://cdn.ampproject.org/v0.js"></script>
-<script async custom-element="amp-carousel" src="https://cdn.ampproject.org/v0/amp-carousel-0.1.js"></script>
-<style amp4email-boilerplate>body{visibility:hidden}</style>
-<style amp-custom>
-body{margin:0;padding:0;background-color:#f6f7f8;}
-a{color:#125cfa;}
-table{border-collapse:collapse;}
-</style>
-</head>
-<body style="margin:0;padding:0;background-color:#f6f7f8;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;color:#14181b;">
+%}
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f7f8;">
 <tr><td align="center" style="background-color:#f6f7f8;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:24px 24px 24px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><strong style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;">Dengage</strong><span style="font-size:12px;color:#5a6375;padding-left:6px;">eComm Demo</span></td></tr></table></td></tr>
 <tr><td align="center" style="background-color:#ffffff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:36px 24px 24px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#125cfa;font-weight:bold;padding:0 0 10px 0;">Recently viewed</div>{% if (ctx.category !== "") { %}<div style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.2;color:#14181b;padding:0 0 12px 0;">More in {%= ctx.category %}</div>{% } else { %}<div style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.2;color:#14181b;padding:0 0 12px 0;">Picking up where you left off</div>{% } %}<div style="font-size:15px;line-height:1.6;color:#5a6375;">You were looking at these. Swipe through them here, without leaving your inbox.</div></td></tr></table></td></tr>
-<tr><td align="center" style="background-color:#ffffff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:0px 24px 24px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;">{% if (view.length > 1) { %}<amp-carousel width="600" height="512" layout="responsive" type="slides" role="region" aria-label="Products you viewed" controls loop>{% for (var i = 0; i < view.length; i++) { var card = view[i]; %}<div style="text-align:center;">{% if (card.banner !== "") { %}<amp-img src="{%= card.banner %}" width="1200" height="600" layout="responsive" alt="{%= card.title %}"></amp-img>{% } %}{% if (card.category !== "") { %}<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5a6375;padding:20px 0 6px 0;">{%= card.category %}</div>{% } %}<div style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.35;font-weight:700;color:#14181b;padding:{%= card.category === "" ? 20 : 0 %}px 24px 8px 24px;">{%= card.title %}</div>{% if (card.price !== "") { %}<div style="font-size:16px;line-height:1.4;color:#14181b;">{% if (card.cut !== "") { %}<span style="font-weight:bold;">{%= card.cut %}</span><span style="text-decoration:line-through;color:#5a6375;padding-left:8px;">{%= card.price %}</span>{% } else { %}<span style="font-weight:bold;">{%= card.price %}</span>{% } %}</div>{% } %}{% if (card.link !== "") { %}<div style="padding:16px 0 0 0;"><a href="{%= card.link %}" target="_blank" style="font-size:13px;color:#125cfa;">Open this one</a></div>{% } %}</div>{% } %}</amp-carousel><div style="font-size:12px;line-height:1.5;color:#5a6375;text-align:center;padding:14px 0 0 0;">Swipe, or use the arrows, to see all {%= view.length %}.</div>{% } else { %}{% for (var i = 0; i < view.length; i++) { var card = view[i]; %}<div style="text-align:center;">{% if (card.banner !== "") { %}<amp-img src="{%= card.banner %}" width="1200" height="600" layout="responsive" alt="{%= card.title %}"></amp-img>{% } %}{% if (card.category !== "") { %}<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5a6375;padding:20px 0 6px 0;">{%= card.category %}</div>{% } %}<div style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;line-height:1.35;font-weight:700;color:#14181b;padding:{%= card.category === "" ? 20 : 0 %}px 24px 8px 24px;">{%= card.title %}</div>{% if (card.price !== "") { %}<div style="font-size:16px;line-height:1.4;color:#14181b;">{% if (card.cut !== "") { %}<span style="font-weight:bold;">{%= card.cut %}</span><span style="text-decoration:line-through;color:#5a6375;padding-left:8px;">{%= card.price %}</span>{% } else { %}<span style="font-weight:bold;">{%= card.price %}</span>{% } %}</div>{% } %}{% if (card.link !== "") { %}<div style="padding:16px 0 0 0;"><a href="{%= card.link %}" target="_blank" style="font-size:13px;color:#125cfa;">Open this one</a></div>{% } %}</div>{% } %}{% } %}</td></tr></table></td></tr>
-<tr><td align="center" style="background-color:#ecf2ff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:26px 24px 28px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;">{% if (ctx.category !== "") { %}{% if (root !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="center" style="padding:0;"><a href="{%= root + 'index.html?category=' + encodeURIComponent(ctx.category) %}" target="_blank" style="display:inline-block;background-color:#125cfa;color:#ffffff;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:10px;text-decoration:none;">See more in {%= ctx.category %}</a></td></tr><tr><td align="center" style="padding:12px 0 0 0;font-size:13px;line-height:1.5;"><a href="{%= root + 'index.html' %}" target="_blank" style="color:#5a6375;text-decoration:underline;">or browse everything</a></td></tr></table>{% } %}{% } else { %}{% if (root !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="center" style="padding:0;"><a href="{%= root + 'index.html' %}" target="_blank" style="display:inline-block;background-color:#125cfa;color:#ffffff;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:10px;text-decoration:none;">Keep browsing</a></td></tr></table>{% } %}{% } %}</td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#ffffff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:0px 24px 24px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;">{% if (view.length > 1) { %}<amp-carousel width="600" height="512" layout="responsive" type="slides" role="region" aria-label="Products you viewed" controls loop>{% for (var i = 0; view.length > i; i++) { var card = view[i]; %}<div class="s">{% if (card.bannerPath !== "") { %}<amp-img src="https://dengage-presales.github.io/demo-ai/{%= card.bannerPath %}" width="1200" height="600" layout="responsive" alt="{%= card.title %}"></amp-img>{% } %}{% if (card.category !== "") { %}<div class="c">{%= card.category %}</div>{% } %}<div class="{% if (card.category === "") { %}n t{% } else { %}n{% } %}">{%= card.title %}</div>{% if (card.price !== "") { %}<div class="p">{% if (card.cut !== "") { %}<span class="b">{%= card.cut %}</span><span class="w">{%= card.price %}</span>{% } else { %}<span class="b">{%= card.price %}</span>{% } %}</div>{% } %}{% if (card.linkPath !== "") { %}<div class="o"><a href="https://dengage-presales.github.io/demo-ai/{%= card.linkPath %}" target="_blank">Open this one</a></div>{% } %}</div>{% } %}</amp-carousel><div class="h">Swipe, or use the arrows, to see all {%= view.length %}.</div>{% } else { %}{% for (var i = 0; view.length > i; i++) { var card = view[i]; %}<div class="s">{% if (card.bannerPath !== "") { %}<amp-img src="https://dengage-presales.github.io/demo-ai/{%= card.bannerPath %}" width="1200" height="600" layout="responsive" alt="{%= card.title %}"></amp-img>{% } %}{% if (card.category !== "") { %}<div class="c">{%= card.category %}</div>{% } %}<div class="{% if (card.category === "") { %}n t{% } else { %}n{% } %}">{%= card.title %}</div>{% if (card.price !== "") { %}<div class="p">{% if (card.cut !== "") { %}<span class="b">{%= card.cut %}</span><span class="w">{%= card.price %}</span>{% } else { %}<span class="b">{%= card.price %}</span>{% } %}</div>{% } %}{% if (card.linkPath !== "") { %}<div class="o"><a href="https://dengage-presales.github.io/demo-ai/{%= card.linkPath %}" target="_blank">Open this one</a></div>{% } %}</div>{% } %}{% } %}</td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#ecf2ff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:26px 24px 28px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;">{% if (ctx.category !== "") { %}{% if (rootPath !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center" style="padding:0;"><a href="https://dengage-presales.github.io/demo-ai/{%= rootPath + 'index.html?category=' + encodeURIComponent(ctx.category) %}" target="_blank" style="display:inline-block;background-color:#125cfa;color:#ffffff;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:10px;text-decoration:none;">See more in {%= ctx.category %}</a></td></tr><tr><td align="center" style="padding:12px 0 0 0;font-size:13px;line-height:1.5;"><a href="https://dengage-presales.github.io/demo-ai/{%= rootPath + 'index.html' %}" target="_blank" style="color:#5a6375;text-decoration:underline;">or browse everything</a></td></tr></table>{% } %}{% } else { %}{% if (rootPath !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center" style="padding:0;"><a href="https://dengage-presales.github.io/demo-ai/{%= rootPath + 'index.html' %}" target="_blank" style="display:inline-block;background-color:#125cfa;color:#ffffff;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:10px;text-decoration:none;">Keep browsing</a></td></tr></table>{% } %}{% } %}</td></tr></table></td></tr>
 <tr><td align="center" style="background-color:#f6f7f8;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:24px 24px 28px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><div style="font-size:13px;font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;color:#14181b;font-weight:bold;padding:0 0 8px 0;">Dengage<span style="font-size:12px;font-weight:normal;color:#5a6375;padding-left:5px;">eComm Demo</span></div><div style="font-size:12px;line-height:1.6;color:#5a6375;">You are receiving this because you shopped with us.<br>If you have already completed your purchase, please disregard this email.<br>This is a demonstration storefront built for a sales conversation.</div></td></tr></table></td></tr>
 </table>
 </body>

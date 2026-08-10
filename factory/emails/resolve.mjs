@@ -26,6 +26,8 @@
      keys      every identifier this contact's rows could be under
      target    the slug of the demo the newest row belongs to, or ""
      root      that demo's absolute base URL, or ""
+     rootPath  the same with this origin stripped, for a validator that reads attributes
+               before the engine resolves them. See the AMP note below
      all       every product id the fold found, newest first
      ids       the first `cap` of them, which is what dps_product was asked about
      view      the first `show` cards, which is what renders
@@ -35,6 +37,12 @@
                is the 1200x600 crop beside its photograph, for anywhere that needs a known
                size, and "" when the photograph is not where one would be
      ctx       whatever the fold chose to carry, per scenario
+
+   THE EMITTED CODE USES NO `<` CHARACTER, and that is not style either. Dengage validates
+   an AMP email's markup before running the engine, so an HTML parser reads this block as
+   document text and `i < rows.length` opens a tag it never closes. Every comparison is
+   written with the larger side first. Found from the panel's own validator rejecting the
+   first AMP sample with eight structural errors, none of which was about AMP.
 
    PRICES ARE NEVER INVENTED ANYWHERE IN HERE. money() returns "" for anything that is
    not a finite positive number, and a card with no price renders none. CLAUDE.md rule 5,
@@ -89,6 +97,9 @@ export function resolveBlock(options) {
        than a helpful error, which is the kind of thing a renderer catches and a reading
        does not. */
     const extra = String(o.extra || '').trim();
+    /* This repository's own published origin. Everything dps_product carries is under it,
+       because the ETL builds those addresses from it. */
+    const site = o.site || 'https://dengage-presales.github.io/demo-ai/';
     const cap = Number(o.cap) || 20;
     const show = Number(o.show) || 6;
 
@@ -108,7 +119,7 @@ export function resolveBlock(options) {
     push("    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()");
     push('    : [];');
     push('');
-    push('  for (var d = 0; d < devices.length; d++) {');
+    push('  for (var d = 0; devices.length > d; d++) {');
     push('    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";');
     push('    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }');
     push('  }');
@@ -126,7 +137,7 @@ export function resolveBlock(options) {
     } else if (tie) {
         push('    var ta = String(a.' + tie.column + ' == null ? "" : a.' + tie.column + ');');
         push('    var tb = String(b.' + tie.column + ' == null ? "" : b.' + tie.column + ');');
-        push('    return ta < tb ? -1 : (ta > tb ? 1 : 0);');
+        push('    return tb > ta ? -1 : (ta > tb ? 1 : 0);');
     } else {
         push('    return 0;');
     }
@@ -135,7 +146,7 @@ export function resolveBlock(options) {
 
     if (!viewsAreRows) {
         push('  var sessions = [];');
-        push('  for (var s0 = 0; s0 < rows.length; s0++) {');
+        push('  for (var s0 = 0; rows.length > s0; s0++) {');
         push('    var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";');
         push('    if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }');
         push('  }');
@@ -158,7 +169,7 @@ export function resolveBlock(options) {
     push('');
     push('  var demoOf = {};');
     push('  var rootOf = {};');
-    push('  for (var v = 0; v < views.length; v++) {');
+    push('  for (var v = 0; views.length > v; v++) {');
     push('    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";');
     push('    if (vs === "" || demoOf[vs]) { continue; }');
     push('    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";');
@@ -181,7 +192,7 @@ export function resolveBlock(options) {
     push('');
     push('  if (target !== "") {');
     push('    var mine = [];');
-    push('    for (var m = 0; m < rows.length; m++) {');
+    push('    for (var m = 0; rows.length > m; m++) {');
     push('      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";');
     push('      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }');
     push('    }');
@@ -208,13 +219,13 @@ export function resolveBlock(options) {
     push('    : [];');
     push('');
     push('  var byId = {};');
-    push('  for (var p = 0; p < products.length; p++) {');
+    push('  for (var p = 0; products.length > p; p++) {');
     push('    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }');
     push('  }');
     push('');
     push('  var money = function (value) {');
     push('    var n = Number(value);');
-    push('    if (!isFinite(n) || n <= 0) { return ""; }');
+    push('    if (!isFinite(n) || 0 >= n) { return ""; }');
     push("    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);");
     push('  };');
     push('');
@@ -261,8 +272,24 @@ export function resolveBlock(options) {
         for (const line of extra.split('\n')) push(line === '' ? '' : '  ' + line);
         push('');
     }
+    /* AN ORIGIN RELATIVE PATH ALONGSIDE EACH ABSOLUTE ONE, and the reason is AMP.
+       Dengage validates an AMP email AS AUTHORED, before the template engine runs, so it
+       sees `src="{%= card.banner %}"` and reports a disallowed relative URL. A literal
+       https prefix followed by a path expression is absolute to a validator reading the
+       text, and identical after resolution.
+
+       Empty when the address is not on this repository's own origin, which makes the AMP
+       markup omit the image or the link rather than emit half a URL. */
+    push("  var SITE = '" + site + "';");
+    push('  var pathOf = function (url) {');
+    push('    var u = String(url == null ? "" : url);');
+    push('    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";');
+    push('  };');
+    push('');
+    push('  var rootPath = pathOf(root);');
+    push('');
     push('  var cards = [];');
-    push('  for (var c = 0; c < ids.length; c++) {');
+    push('  for (var c = 0; ids.length > c; c++) {');
     push('    var item = byId[ids[c]];');
     push('    if (!item || !item.is_active) { continue; }');
     push('    var full = money(item.price);');
@@ -274,6 +301,8 @@ export function resolveBlock(options) {
     push('      category: leafOf(item.category_path),');
     push('      image: httpsOnly(item.image_link),');
     push('      banner: bannerOf(httpsOnly(item.image_link)),');
+    push('      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),');
+    push('      linkPath: pathOf(httpsOnly(item.link)),');
     push('      link: httpsOnly(item.link),');
     push('      price: full,');
     push('      cut: cut,');

@@ -6,7 +6,7 @@
     ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
     : [];
 
-  for (var d = 0; d < devices.length; d++) {
+  for (var d = 0; devices.length > d; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
     if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
   }
@@ -22,7 +22,7 @@
   });
 
   var sessions = [];
-  for (var s0 = 0; s0 < rows.length; s0++) {
+  for (var s0 = 0; rows.length > s0; s0++) {
     var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";
     if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }
   }
@@ -42,7 +42,7 @@
 
   var demoOf = {};
   var rootOf = {};
-  for (var v = 0; v < views.length; v++) {
+  for (var v = 0; views.length > v; v++) {
     var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
     if (vs === "" || demoOf[vs]) { continue; }
     var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
@@ -65,7 +65,7 @@
 
   if (target !== "") {
     var mine = [];
-    for (var m = 0; m < rows.length; m++) {
+    for (var m = 0; rows.length > m; m++) {
       var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
       if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
     }
@@ -93,7 +93,7 @@
     ? $from('$db.dps_product').where('is_active', '=', true).take(1000).get()
     : [];
   var here = [];
-  for (var q = 0; q < pool.length; q++) {
+  for (var q = 0; pool.length > q; q++) {
     var prow = pool[q] || {};
     var plink = String(prow.link == null ? "" : prow.link);
     if (plink.indexOf(root) !== 0) { continue; }
@@ -101,28 +101,28 @@
   }
   var needle = term.toLowerCase();
   var hits = [];
-  for (var h = 0; h < here.length; h++) {
+  for (var h = 0; here.length > h; h++) {
     var hay = (String(here[h].title == null ? "" : here[h].title) + ' ' +
                String(here[h].category_path == null ? "" : here[h].category_path)).toLowerCase();
     if (hay.indexOf(needle) !== -1) { hits.push(String(here[h].product_id)); }
   }
   hits.sort();
   ctx.matched = hits.length;
-  for (var i2 = 0; i2 < hits.length; i2++) {
+  for (var i2 = 0; hits.length > i2; i2++) {
     if (all.indexOf(hits[i2]) === -1) { all.push(hits[i2]); }
   }
   if (ctx.matched === 0) {
     var seedBase = 0;
-    for (var c2 = 0; c2 < term.length; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
+    for (var c2 = 0; term.length > c2; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
     var spare = [];
-    for (var s2 = 0; s2 < here.length; s2++) { spare.push(String(here[s2].product_id)); }
+    for (var s2 = 0; here.length > s2; s2++) { spare.push(String(here[s2].product_id)); }
     spare.sort(function (a, b) {
       var ha = (seedBase + a.length * 7 + a.charCodeAt(0)) % 1000;
       var hb = (seedBase + b.length * 7 + b.charCodeAt(0)) % 1000;
       if (ha !== hb) { return ha - hb; }
-      return a < b ? -1 : (a > b ? 1 : 0);
+      return b > a ? -1 : (a > b ? 1 : 0);
     });
-    for (var s3 = 0; s3 < spare.length; s3++) {
+    for (var s3 = 0; spare.length > s3; s3++) {
       if (all.indexOf(spare[s3]) === -1) { all.push(spare[s3]); }
     }
   }
@@ -134,13 +134,13 @@
     : [];
 
   var byId = {};
-  for (var p = 0; p < products.length; p++) {
+  for (var p = 0; products.length > p; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
 
   var money = function (value) {
     var n = Number(value);
-    if (!isFinite(n) || n <= 0) { return ""; }
+    if (!isFinite(n) || 0 >= n) { return ""; }
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   };
 
@@ -174,8 +174,16 @@
     return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
   };
 
+  var SITE = 'https://dengage-presales.github.io/demo-ai/';
+  var pathOf = function (url) {
+    var u = String(url == null ? "" : url);
+    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";
+  };
+
+  var rootPath = pathOf(root);
+
   var cards = [];
-  for (var c = 0; c < ids.length; c++) {
+  for (var c = 0; ids.length > c; c++) {
     var item = byId[ids[c]];
     if (!item || !item.is_active) { continue; }
     var full = money(item.price);
@@ -187,6 +195,8 @@
       category: leafOf(item.category_path),
       image: httpsOnly(item.image_link),
       banner: bannerOf(httpsOnly(item.image_link)),
+      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),
+      linkPath: pathOf(httpsOnly(item.link)),
       link: httpsOnly(item.link),
       price: full,
       cut: cut,

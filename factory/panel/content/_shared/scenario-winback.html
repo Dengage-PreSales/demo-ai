@@ -6,7 +6,7 @@
     ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
     : [];
 
-  for (var d = 0; d < devices.length; d++) {
+  for (var d = 0; devices.length > d; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
     if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
   }
@@ -34,7 +34,7 @@
 
   var demoOf = {};
   var rootOf = {};
-  for (var v = 0; v < views.length; v++) {
+  for (var v = 0; views.length > v; v++) {
     var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
     if (vs === "" || demoOf[vs]) { continue; }
     var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
@@ -57,7 +57,7 @@
 
   if (target !== "") {
     var mine = [];
-    for (var m = 0; m < rows.length; m++) {
+    for (var m = 0; rows.length > m; m++) {
       var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
       if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
     }
@@ -81,7 +81,7 @@
   var best = "";
   var bestN = 0;
   for (var k in counts) {
-    if (counts[k] > bestN || (counts[k] === bestN && k < best)) { bestN = counts[k]; best = k; }
+    if (counts[k] > bestN || (counts[k] === bestN && best > k)) { bestN = counts[k]; best = k; }
   }
   ctx.category = best;
   all.length = 0;
@@ -89,21 +89,21 @@
     ? $from('$db.dps_product').where('is_active', '=', true).take(1000).get()
     : [];
   var mine = [];
-  for (var q = 0; q < pool.length; q++) {
+  for (var q = 0; pool.length > q; q++) {
     var prow = pool[q] || {};
     var plink = String(prow.link == null ? "" : prow.link);
     if (plink.indexOf(root) !== 0) { continue; }
     mine.push(String(prow.product_id));
   }
   var seedBase = 0;
-  for (var c2 = 0; c2 < target.length; c2++) { seedBase = (seedBase * 31 + target.charCodeAt(c2)) % 100003; }
+  for (var c2 = 0; target.length > c2; c2++) { seedBase = (seedBase * 31 + target.charCodeAt(c2)) % 100003; }
   mine.sort(function (a, b) {
     var ha = (seedBase + a.length * 7 + a.charCodeAt(0)) % 1000;
     var hb = (seedBase + b.length * 7 + b.charCodeAt(0)) % 1000;
     if (ha !== hb) { return ha - hb; }
-    return a < b ? -1 : (a > b ? 1 : 0);
+    return b > a ? -1 : (a > b ? 1 : 0);
   });
-  for (var m2 = 0; m2 < mine.length; m2++) { all.push(mine[m2]); }
+  for (var m2 = 0; mine.length > m2; m2++) { all.push(mine[m2]); }
 
   var ids = all.slice(0, 12);
 
@@ -112,13 +112,13 @@
     : [];
 
   var byId = {};
-  for (var p = 0; p < products.length; p++) {
+  for (var p = 0; products.length > p; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
 
   var money = function (value) {
     var n = Number(value);
-    if (!isFinite(n) || n <= 0) { return ""; }
+    if (!isFinite(n) || 0 >= n) { return ""; }
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   };
 
@@ -152,8 +152,16 @@
     return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
   };
 
+  var SITE = 'https://dengage-presales.github.io/demo-ai/';
+  var pathOf = function (url) {
+    var u = String(url == null ? "" : url);
+    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";
+  };
+
+  var rootPath = pathOf(root);
+
   var cards = [];
-  for (var c = 0; c < ids.length; c++) {
+  for (var c = 0; ids.length > c; c++) {
     var item = byId[ids[c]];
     if (!item || !item.is_active) { continue; }
     var full = money(item.price);
@@ -165,6 +173,8 @@
       category: leafOf(item.category_path),
       image: httpsOnly(item.image_link),
       banner: bannerOf(httpsOnly(item.image_link)),
+      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),
+      linkPath: pathOf(httpsOnly(item.link)),
       link: httpsOnly(item.link),
       price: full,
       cut: cut,

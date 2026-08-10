@@ -6,7 +6,7 @@
     ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
     : [];
 
-  for (var d = 0; d < devices.length; d++) {
+  for (var d = 0; devices.length > d; d++) {
     var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
     if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
   }
@@ -22,7 +22,7 @@
   });
 
   var sessions = [];
-  for (var s0 = 0; s0 < rows.length; s0++) {
+  for (var s0 = 0; rows.length > s0; s0++) {
     var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";
     if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }
   }
@@ -42,7 +42,7 @@
 
   var demoOf = {};
   var rootOf = {};
-  for (var v = 0; v < views.length; v++) {
+  for (var v = 0; views.length > v; v++) {
     var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
     if (vs === "" || demoOf[vs]) { continue; }
     var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
@@ -65,7 +65,7 @@
 
   if (target !== "") {
     var mine = [];
-    for (var m = 0; m < rows.length; m++) {
+    for (var m = 0; rows.length > m; m++) {
       var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
       if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
     }
@@ -80,7 +80,7 @@
   var present = {};
   var seen = [];
   ctx.checkout = false;
-  for (var r = 0; r < rows.length; r++) {
+  for (var r = 0; rows.length > r; r++) {
     var row = rows[r] || {};
     var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
     var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
@@ -98,7 +98,7 @@
   }
   ctx.present = present;
   ctx.qty = {};
-  for (var q2 = 0; q2 < all.length; q2++) {
+  for (var q2 = 0; all.length > q2; q2++) {
     var qn = present[all[q2]] ? Number(present[all[q2]].quantity) : 1;
     if (isFinite(qn) && qn > 1) { ctx.qty[all[q2]] = qn; }
   }
@@ -111,7 +111,7 @@
     : [];
   var wanted = [];
   ctx.category = "";
-  for (var b = 0; b < mineRows.length; b++) {
+  for (var b = 0; mineRows.length > b; b++) {
     var path = String(mineRows[b].category_path == null ? "" : mineRows[b].category_path).replace(/^\s+|\s+$/g, "");
     if (path !== "" && wanted.indexOf(path) === -1) { wanted.push(path); }
   }
@@ -124,7 +124,7 @@
     ? $from('$db.dps_product').where('category_path', 'in', wanted).take(200).get()
     : [];
   var offered = [];
-  for (var o2 = 0; o2 < near.length; o2++) {
+  for (var o2 = 0; near.length > o2; o2++) {
     var cand = near[o2] || {};
     var cid = String(cand.product_id == null ? "" : cand.product_id);
     if (cid === "" || basket.indexOf(cid) !== -1) { continue; }
@@ -134,7 +134,7 @@
     if (offered.indexOf(cid) === -1) { offered.push(cid); }
   }
   offered.sort();
-  for (var f2 = 0; f2 < offered.length; f2++) { all.push(offered[f2]); }
+  for (var f2 = 0; offered.length > f2; f2++) { all.push(offered[f2]); }
 
   var ids = all.slice(0, 12);
 
@@ -143,13 +143,13 @@
     : [];
 
   var byId = {};
-  for (var p = 0; p < products.length; p++) {
+  for (var p = 0; products.length > p; p++) {
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
 
   var money = function (value) {
     var n = Number(value);
-    if (!isFinite(n) || n <= 0) { return ""; }
+    if (!isFinite(n) || 0 >= n) { return ""; }
     return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   };
 
@@ -183,8 +183,16 @@
     return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
   };
 
+  var SITE = 'https://dengage-presales.github.io/demo-ai/';
+  var pathOf = function (url) {
+    var u = String(url == null ? "" : url);
+    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";
+  };
+
+  var rootPath = pathOf(root);
+
   var cards = [];
-  for (var c = 0; c < ids.length; c++) {
+  for (var c = 0; ids.length > c; c++) {
     var item = byId[ids[c]];
     if (!item || !item.is_active) { continue; }
     var full = money(item.price);
@@ -196,6 +204,8 @@
       category: leafOf(item.category_path),
       image: httpsOnly(item.image_link),
       banner: bannerOf(httpsOnly(item.image_link)),
+      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),
+      linkPath: pathOf(httpsOnly(item.link)),
       link: httpsOnly(item.link),
       price: full,
       cut: cut,

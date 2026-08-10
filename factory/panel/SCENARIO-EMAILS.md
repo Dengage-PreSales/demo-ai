@@ -74,10 +74,27 @@ aspect the prospect's studio shot; a banner is always 2:1 with the margin trimme
 asserts one exists beside every committed photograph. One product renders without a carousel
 at all, because arrows that do nothing read as broken.
 
-**It is validated by the real thing.** `scenarios.test.mjs` runs the official
-`amphtml-validator` in `AMP4EMAIL` mode against the send output, and also checks it rejects
-the same document with a plain `<img>` in it, because a validator that passes everything
-passes nothing.
+**It is validated twice, and the two validators disagree for a reason worth knowing.**
+
+`scenarios.test.mjs` runs the official `amphtml-validator` in `AMP4EMAIL` mode against the
+**resolved** email, and checks it rejects the same document with a plain `<img>` in it,
+because a validator that passes everything passes nothing.
+
+**Dengage's own validator reads the file as authored, before the template engine runs**, so
+it is stricter in four specific ways. The first AMP sample passed the official validator
+perfectly and the panel reported thirty errors, none of which was about AMP. All four are
+fixed, and all four are now asserted on the authored source:
+
+| What the panel sees | What it reported | Fix |
+|---|---|---|
+| 150 lines of `{% %}` above `<!doctype html>` | `the parent tag of 'html' is '$root'`, and every head tag parsed as body | the doctype is first, and the query sits inside `<body>` |
+| `i < rows.length` inside the query | nothing directly, but an HTML parser opens a tag at the `<` | **the generated query contains no `<` at all.** Every comparison is written larger side first |
+| `src="{%= card.banner %}"` | `the relative URL '{%= card.banner %}' is disallowed` | a literal `https://...` prefix, then a path expression |
+| `padding:{%= ... %}` in a `style` attribute | nine invented attributes per slide, `'%}px'`, `'24px;"'` | classes in `<style amp-custom>` |
+
+That last pair is why `resolve.mjs` gives every card a `bannerPath` and a `linkPath`
+alongside its absolute address: the attribute has to look absolute to something reading the
+text, and resolve to the same URL afterwards.
 
 ---
 
@@ -154,7 +171,7 @@ and a Code Editor email needs none of it because raw HTML carries the query.
 
 ## How they were checked, and what that does not cover
 
-`factory/emails/scenarios.test.mjs`, 127 assertions, run in CI. It **executes** each email
+`factory/emails/scenarios.test.mjs`, 134 assertions, run in CI. It **executes** each email
 against synthetic event logs rather than reading it, which is the only way to check a file
 that is a program. It covers: every column named exists in
 [`factory/phase0/SCHEMA.md`](../phase0/SCHEMA.md), the query and the markup share no

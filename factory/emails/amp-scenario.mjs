@@ -42,7 +42,12 @@
    ========================================================================== */
 
 import { resolveBlock } from './resolve.mjs';
-import { masthead, footer, band, eyebrow, headline, lede, button } from './scenario-html.mjs';
+import { masthead, footer, band, eyebrow, headline, lede } from './scenario-html.mjs';
+
+/* This repository's published origin, written out so an AMP attribute can be absolute
+   before the engine runs. resolve.mjs strips the same prefix to produce card.bannerPath
+   and card.linkPath, and scenarios.test.mjs holds the two to the same value. */
+const SITE = 'https://dengage-presales.github.io/demo-ai/';
 
 /* The carousel's box. 600 wide to match every other email here, and 512 tall because a
    2:1 banner at 600 is 300, leaving room for the category, the name and the price without
@@ -56,45 +61,67 @@ const BANNER_HEIGHT = 600;
 
 /* One slide per product. Inline styles, which the validator accepts, so this matches the
    HTML emails rather than inventing a second visual language. */
-function slide(palette) {
-    return '{% for (var i = 0; i < view.length; i++) { var card = view[i]; %}' +
-        '<div style="text-align:center;">' +
-        '{% if (card.banner !== "") { %}' +
-        '<amp-img src="{%= card.banner %}" width="' + BANNER_WIDTH + '" height="' +
-        BANNER_HEIGHT + '" layout="responsive" alt="{%= card.title %}"></amp-img>' +
-        '{% } %}' +
-        '{% if (card.category !== "") { %}' +
-        '<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:' +
-        palette.quiet + ';padding:20px 0 6px 0;">{%= card.category %}</div>{% } %}' +
-        '<div style="font-family:' + palette.display + ';font-size:18px;line-height:1.35;' +
-        'font-weight:700;color:' + palette.text + ';padding:' +
-        '{%= card.category === "" ? 20 : 0 %}px 24px 8px 24px;">{%= card.title %}</div>' +
-        '{% if (card.price !== "") { %}' +
-        '<div style="font-size:16px;line-height:1.4;color:' + palette.text + ';">' +
-        '{% if (card.cut !== "") { %}<span style="font-weight:bold;">{%= card.cut %}</span>' +
-        '<span style="text-decoration:line-through;color:' + palette.quiet +
-        ';padding-left:8px;">{%= card.price %}</span>' +
-        '{% } else { %}<span style="font-weight:bold;">{%= card.price %}</span>{% } %}' +
+function slide() {
+    return '{% for (var i = 0; view.length > i; i++) { var card = view[i]; %}' +
+        '<div class="s">' +
+        /* A LITERAL https PREFIX, THEN A PATH EXPRESSION. Dengage validates the markup as
+           authored, so `src="{%= card.banner %}"` reads to it as a relative URL and is
+           rejected outright. With the origin written out, the attribute is absolute to
+           anything reading the text and identical once the engine resolves it. */
+        '{% if (card.bannerPath !== "") { %}' +
+        '<amp-img src="' + SITE + '{%= card.bannerPath %}" width="' + BANNER_WIDTH +
+        '" height="' + BANNER_HEIGHT + '" layout="responsive" alt="{%= card.title %}">' +
+        '</amp-img>{% } %}' +
+        /* THE CONDITIONAL PADDING IS TWO CLASSES RATHER THAN AN EXPRESSION IN A STYLE
+           ATTRIBUTE. A `{%= %}` inside style="" breaks the attribute for an HTML parser,
+           and the panel reported nine invented attributes per slide because of it. */
+        '{% if (card.category !== "") { %}<div class="c">{%= card.category %}</div>{% } %}' +
+        '<div class="{% if (card.category === "") { %}n t{% } else { %}n{% } %}">' +
+        '{%= card.title %}</div>' +
+        '{% if (card.price !== "") { %}<div class="p">' +
+        '{% if (card.cut !== "") { %}<span class="b">{%= card.cut %}</span>' +
+        '<span class="w">{%= card.price %}</span>' +
+        '{% } else { %}<span class="b">{%= card.price %}</span>{% } %}' +
         '</div>{% } %}' +
-        '{% if (card.link !== "") { %}' +
-        '<div style="padding:16px 0 0 0;"><a href="{%= card.link %}" target="_blank" ' +
-        'style="font-size:13px;color:' + palette.brandText + ';">Open this one</a></div>' +
-        '{% } %}' +
+        '{% if (card.linkPath !== "") { %}' +
+        '<div class="o"><a href="' + SITE + '{%= card.linkPath %}" target="_blank">' +
+        'Open this one</a></div>{% } %}' +
         '</div>{% } %}';
+}
+
+/* THE BUTTON, WITH THE ORIGIN WRITTEN OUT. scenario-html.mjs's button emits
+   href="{%= root + '...' %}", which every other email uses happily and which Dengage's AMP
+   validator rejects as a relative URL. Same fix as the images: a literal https prefix and a
+   path expression after it. Still suppressed entirely when no demo resolved, because there
+   is no address correct for every demo. */
+function ampButton(palette, label, pathExpression, secondary) {
+    let out = '{% if (rootPath !== "") { %}' +
+        '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">' +
+        '<tr><td align="center" style="padding:0;">' +
+        '<a href="' + SITE + '{%= ' + pathExpression + ' %}" target="_blank" ' +
+        'style="display:inline-block;background-color:' + palette.brand + ';color:' +
+        palette.onBrand + ';font-family:' + palette.body + ';font-size:16px;' +
+        'font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:' +
+        palette.radius + 'px;text-decoration:none;">' + label + '</a></td></tr>';
+    if (secondary) {
+        out += '<tr><td align="center" style="padding:12px 0 0 0;font-size:13px;' +
+            'line-height:1.5;"><a href="' + SITE + '{%= ' + secondary.href + ' %}" ' +
+            'target="_blank" style="color:' + palette.quiet + ';text-decoration:underline;">' +
+            secondary.label + '</a></td></tr>';
+    }
+    return out + '</table>{% } %}';
 }
 
 /* THE CAROUSEL, AND THE FALLBACK IS NOT OPTIONAL. A recipient with one viewed product
    would get a one slide carousel with arrows that do nothing, which looks broken rather
    than empty. So one product renders as a plain slide and no carousel at all. */
-function carousel(palette) {
+function carousel() {
     return '{% if (view.length > 1) { %}' +
         '<amp-carousel width="' + SLIDE_WIDTH + '" height="' + SLIDE_HEIGHT + '" ' +
         'layout="responsive" type="slides" role="region" aria-label="Products you viewed" ' +
-        'controls loop>' + slide(palette) + '</amp-carousel>' +
-        '<div style="font-size:12px;line-height:1.5;color:' + palette.quiet +
-        ';text-align:center;padding:14px 0 0 0;">Swipe, or use the arrows, to see all ' +
-        '{%= view.length %}.</div>' +
-        '{% } else { %}' + slide(palette) + '{% } %}';
+        'controls loop>' + slide() + '</amp-carousel>' +
+        '<div class="h">Swipe, or use the arrows, to see all {%= view.length %}.</div>' +
+        '{% } else { %}' + slide() + '{% } %}';
 }
 
 export function ampScenario(scenario, palette) {
@@ -118,39 +145,61 @@ export function ampScenario(scenario, palette) {
             lede(palette, 'You were looking at these. Swipe through them here, without ' +
                 'leaving your inbox.'),
             { top: 36, bottom: 24 }),
-        band(palette, carousel(palette), { top: 0, bottom: 24 }),
+        band(palette, carousel(), { top: 0, bottom: 24 }),
         band(palette,
             '{% if (ctx.category !== "") { %}' +
-            button(palette, 'See more in {%= ctx.category %}',
-                "root + 'index.html?category=' + encodeURIComponent(ctx.category)",
-                { label: 'or browse everything', href: "root + 'index.html'" }) +
+            ampButton(palette, 'See more in {%= ctx.category %}',
+                "rootPath + 'index.html?category=' + encodeURIComponent(ctx.category)",
+                { label: 'or browse everything', href: "rootPath + 'index.html'" }) +
             '{% } else { %}' +
-            button(palette, 'Keep browsing', "root + 'index.html'") +
+            ampButton(palette, 'Keep browsing', "rootPath + 'index.html'") +
             '{% } %}',
             { ground: palette.wash, top: 26, bottom: 28 }),
         footer(palette)
     ];
 
-    /* THE HEAD IS EXACT. The boilerplate line, the attribute name and the script URLs are
-       all validated shapes rather than approximations: a character out and the whole email
-       is rejected by the mailbox provider rather than degraded. */
-    return '{%\n' + block + '\n%}' +
-        '<!doctype html>\n<html amp4email data-css-strict>\n<head>\n' +
+    /* THE DOCTYPE COMES FIRST, AND THE QUERY GOES INSIDE THE BODY. This is the fix for
+       eight of the errors the panel reported on the first attempt, and none of them was
+       about AMP: Dengage validates the markup before running the template engine, so a
+       hundred and fifty lines of `{% %}` above `<!doctype html>` meant the doctype was not
+       first, `<html>` had the wrong parent, and every head tag was parsed as body content.
+
+       Inside `<body>` the same block is just text, which is allowed, and it resolves to
+       nothing. Which only holds because the block contains no `<` character: see
+       resolve.mjs. */
+    return '<!doctype html>\n<html amp4email data-css-strict>\n<head>\n' +
         '<meta charset="utf-8">\n' +
         '<script async src="https://cdn.ampproject.org/v0.js"></script>\n' +
         '<script async custom-element="amp-carousel" ' +
         'src="https://cdn.ampproject.org/v0/amp-carousel-0.1.js"></script>\n' +
         '<style amp4email-boilerplate>body{visibility:hidden}</style>\n' +
-        /* ONE amp-custom BLOCK, AND NO !important IN IT. AMP allows exactly one and
-           rejects the declaration outright, which is why the HTML emails' responsive
-           override cannot come across: it uses !important to beat a fixed table width. */
+        /* ONE amp-custom BLOCK, AND NO !important IN IT. AMP allows exactly one and rejects
+           the declaration outright, which is why the HTML emails' responsive override
+           cannot come across: it uses !important to beat a fixed table width.
+
+           THE SLIDE'S STYLES LIVE HERE RATHER THAN INLINE, unlike the rest of this file,
+           because a slide has one conditional value and a `{%= %}` inside a style attribute
+           is what produced nine bogus attributes per slide in the panel's validator. */
         '<style amp-custom>\n' +
         'body{margin:0;padding:0;background-color:' + palette.canvas + ';}\n' +
         'a{color:' + palette.brandText + ';}\n' +
         'table{border-collapse:collapse;}\n' +
+        '.s{text-align:center;}\n' +
+        '.c{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:' +
+        palette.quiet + ';padding:20px 0 6px 0;}\n' +
+        '.n{font-family:' + palette.display + ';font-size:18px;line-height:1.35;' +
+        'font-weight:700;color:' + palette.text + ';padding:0 24px 8px 24px;}\n' +
+        '.n.t{padding-top:20px;}\n' +
+        '.p{font-size:16px;line-height:1.4;color:' + palette.text + ';}\n' +
+        '.p .b{font-weight:bold;}\n' +
+        '.p .w{text-decoration:line-through;color:' + palette.quiet + ';padding-left:8px;}\n' +
+        '.o{padding:16px 0 0 0;font-size:13px;}\n' +
+        '.h{font-size:12px;line-height:1.5;color:' + palette.quiet +
+        ';text-align:center;padding:14px 0 0 0;}\n' +
         '</style>\n</head>\n' +
         '<body style="margin:0;padding:0;background-color:' + palette.canvas +
         ';font-family:' + palette.body + ';color:' + palette.text + ';">\n' +
+        '{%\n' + block + '\n%}\n' +
         '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" ' +
         'style="background-color:' + palette.canvas + ';">\n' +
         rows.join('\n') +

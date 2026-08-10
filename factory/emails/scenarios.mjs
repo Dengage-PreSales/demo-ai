@@ -55,7 +55,7 @@ const CART_REPLAY = `
 var present = {};
 var seen = [];
 ctx.checkout = false;
-for (var r = 0; r < rows.length; r++) {
+for (var r = 0; rows.length > r; r++) {
   var row = rows[r] || {};
   var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
   var pid = (row.${C.cart.product} == null) ? "" : String(row.${C.cart.product}).trim();
@@ -73,7 +73,7 @@ for (var s = seen.length - 1; s >= 0; s--) {
 }
 ctx.present = present;
 ctx.qty = {};
-for (var q2 = 0; q2 < all.length; q2++) {
+for (var q2 = 0; all.length > q2; q2++) {
   var qn = present[all[q2]] ? Number(present[all[q2]].quantity) : 1;
   if (isFinite(qn) && qn > 1) { ctx.qty[all[q2]] = qn; }
 }`;
@@ -86,18 +86,18 @@ var subtotal = 0;
 var discount = 0;
 var counted = 0;
 var priced = true;
-for (var x = 0; x < ids.length; x++) {
+for (var x = 0; ids.length > x; x++) {
   var item = byId[ids[x]];
   if (!item || !item.is_active) { continue; }
   var qty = (ctx.present[ids[x]] && ctx.present[ids[x]].quantity) ? Number(ctx.present[ids[x]].quantity) : 1;
-  if (!isFinite(qty) || qty < 1) { qty = 1; }
+  if (!isFinite(qty) || 1 > qty) { qty = 1; }
   var fullN = Number(item.${C.product.price});
-  if (!isFinite(fullN) || fullN <= 0) { priced = false; break; }
+  if (!isFinite(fullN) || 0 >= fullN) { priced = false; break; }
   var nowN = fullN;
   if (item.${C.product.discounted} != null && String(item.${C.product.discounted}) !== "") {
     var cutN = Number(item.${C.product.discounted});
-    if (!isFinite(cutN) || cutN <= 0) { priced = false; break; }
-    if (cutN < fullN) { nowN = cutN; }
+    if (!isFinite(cutN) || 0 >= cutN) { priced = false; break; }
+    if (fullN > cutN) { nowN = cutN; }
   }
   subtotal = subtotal + (fullN * qty);
   discount = discount + ((fullN - nowN) * qty);
@@ -123,7 +123,7 @@ for (var r = rows.length - 1; r >= 0; r--) {
 var best = "";
 var bestN = 0;
 for (var k in counts) {
-  if (counts[k] > bestN || (counts[k] === bestN && k < best)) { bestN = counts[k]; best = k; }
+  if (counts[k] > bestN || (counts[k] === bestN && best > k)) { bestN = counts[k]; best = k; }
 }
 ctx.category = best;`;
 
@@ -232,7 +232,7 @@ var pool = (term !== "" && root !== "")
   ? $from('$db.${C.product.table}').where('${C.product.active}', '=', true).take(1000).get()
   : [];
 var here = [];
-for (var q = 0; q < pool.length; q++) {
+for (var q = 0; pool.length > q; q++) {
   var prow = pool[q] || {};
   var plink = String(prow.${C.product.link} == null ? "" : prow.${C.product.link});
   if (plink.indexOf(root) !== 0) { continue; }
@@ -240,28 +240,28 @@ for (var q = 0; q < pool.length; q++) {
 }
 var needle = term.toLowerCase();
 var hits = [];
-for (var h = 0; h < here.length; h++) {
+for (var h = 0; here.length > h; h++) {
   var hay = (String(here[h].${C.product.name} == null ? "" : here[h].${C.product.name}) + ' ' +
              String(here[h].${C.product.category} == null ? "" : here[h].${C.product.category})).toLowerCase();
   if (hay.indexOf(needle) !== -1) { hits.push(String(here[h].${C.product.id})); }
 }
 hits.sort();
 ctx.matched = hits.length;
-for (var i2 = 0; i2 < hits.length; i2++) {
+for (var i2 = 0; hits.length > i2; i2++) {
   if (all.indexOf(hits[i2]) === -1) { all.push(hits[i2]); }
 }
 if (ctx.matched === 0) {
   var seedBase = 0;
-  for (var c2 = 0; c2 < term.length; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
+  for (var c2 = 0; term.length > c2; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
   var spare = [];
-  for (var s2 = 0; s2 < here.length; s2++) { spare.push(String(here[s2].${C.product.id})); }
+  for (var s2 = 0; here.length > s2; s2++) { spare.push(String(here[s2].${C.product.id})); }
   spare.sort(function (a, b) {
     var ha = (seedBase + a.length * 7 + a.charCodeAt(0)) % 1000;
     var hb = (seedBase + b.length * 7 + b.charCodeAt(0)) % 1000;
     if (ha !== hb) { return ha - hb; }
-    return a < b ? -1 : (a > b ? 1 : 0);
+    return b > a ? -1 : (a > b ? 1 : 0);
   });
-  for (var s3 = 0; s3 < spare.length; s3++) {
+  for (var s3 = 0; spare.length > s3; s3++) {
     if (all.indexOf(spare[s3]) === -1) { all.push(spare[s3]); }
   }
 }`,
@@ -310,7 +310,7 @@ if (ctx.matched === 0) {
         fold: `
 var present = {};
 var seen = [];
-for (var r = 0; r < rows.length; r++) {
+for (var r = 0; rows.length > r; r++) {
   var row = rows[r] || {};
   var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
   var pid = (row.${C.wishlist.product} == null) ? "" : String(row.${C.wishlist.product}).trim();
@@ -328,7 +328,7 @@ var look = saved.length
   ? $from('$db.${C.product.table}').where('${C.product.id}', 'in', saved.slice(0, 24)).take(24).get()
   : [];
 var nowBy = {};
-for (var n = 0; n < look.length; n++) {
+for (var n = 0; look.length > n; n++) {
   if (look[n] && look[n].${C.product.id}) { nowBy[String(look[n].${C.product.id})] = look[n]; }
 }
 
@@ -336,18 +336,18 @@ var dropped = [];
 var rest = [];
 ctx.lowStock = 0;
 ctx.was = {};
-for (var w = 0; w < saved.length; w++) {
+for (var w = 0; saved.length > w; w++) {
   var item = nowBy[saved[w]];
   if (!item || !item.${C.product.active}) { continue; }
   var savedAtN = Number(present[saved[w]].was);
   var nowN = Number(item.${C.product.price});
   if (item.${C.product.discounted} != null && String(item.${C.product.discounted}) !== "") {
     var cutN = Number(item.${C.product.discounted});
-    if (isFinite(cutN) && cutN > 0 && cutN < nowN) { nowN = cutN; }
+    if (isFinite(cutN) && cutN > 0 && nowN > cutN) { nowN = cutN; }
   }
   var st = Number(item.${C.product.stock});
-  if (isFinite(st) && st > 0 && st <= 3) { ctx.lowStock = ctx.lowStock + 1; }
-  if (isFinite(savedAtN) && savedAtN > 0 && isFinite(nowN) && nowN > 0 && nowN < savedAtN) {
+  if (isFinite(st) && st > 0 && 3 >= st) { ctx.lowStock = ctx.lowStock + 1; }
+  if (isFinite(savedAtN) && savedAtN > 0 && isFinite(nowN) && nowN > 0 && savedAtN > nowN) {
     ctx.was[saved[w]] = savedAtN;
     dropped.push(saved[w]);
   } else {
@@ -355,8 +355,8 @@ for (var w = 0; w < saved.length; w++) {
   }
 }
 ctx.dropped = dropped.length;
-for (var d2 = 0; d2 < dropped.length; d2++) { all.push(dropped[d2]); }
-for (var r2 = 0; r2 < rest.length; r2++) { all.push(rest[r2]); }`,
+for (var d2 = 0; dropped.length > d2; d2++) { all.push(dropped[d2]); }
+for (var r2 = 0; rest.length > r2; r2++) { all.push(rest[r2]); }`,
         subject: 'Something you saved',
         preheader: 'Your saved items, and what changed since you saved them.',
         /* THREE HEADLINES ON ONE PIECE OF EVIDENCE EACH, and the strongest wins. A price
@@ -418,7 +418,7 @@ var mineRows = basket.length
   : [];
 var wanted = [];
 ctx.category = "";
-for (var b = 0; b < mineRows.length; b++) {
+for (var b = 0; mineRows.length > b; b++) {
   var path = String(mineRows[b].${C.product.category} == null ? "" : mineRows[b].${C.product.category}).replace(/^\\s+|\\s+$/g, "");
   if (path !== "" && wanted.indexOf(path) === -1) { wanted.push(path); }
 }
@@ -431,7 +431,7 @@ var near = wanted.length
   ? $from('$db.${C.product.table}').where('${C.product.category}', 'in', wanted).take(200).get()
   : [];
 var offered = [];
-for (var o2 = 0; o2 < near.length; o2++) {
+for (var o2 = 0; near.length > o2; o2++) {
   var cand = near[o2] || {};
   var cid = String(cand.${C.product.id} == null ? "" : cand.${C.product.id});
   if (cid === "" || basket.indexOf(cid) !== -1) { continue; }
@@ -441,7 +441,7 @@ for (var o2 = 0; o2 < near.length; o2++) {
   if (offered.indexOf(cid) === -1) { offered.push(cid); }
 }
 offered.sort();
-for (var f2 = 0; f2 < offered.length; f2++) { all.push(offered[f2]); }`,
+for (var f2 = 0; offered.length > f2; f2++) { all.push(offered[f2]); }`,
         subject: 'Goes with what you picked',
         preheader: 'A few things that pair with your basket.',
         body: (p) => [
@@ -531,21 +531,21 @@ var pool = root !== ""
   ? $from('$db.${C.product.table}').where('${C.product.active}', '=', true).take(1000).get()
   : [];
 var mine = [];
-for (var q = 0; q < pool.length; q++) {
+for (var q = 0; pool.length > q; q++) {
   var prow = pool[q] || {};
   var plink = String(prow.${C.product.link} == null ? "" : prow.${C.product.link});
   if (plink.indexOf(root) !== 0) { continue; }
   mine.push(String(prow.${C.product.id}));
 }
 var seedBase = 0;
-for (var c2 = 0; c2 < target.length; c2++) { seedBase = (seedBase * 31 + target.charCodeAt(c2)) % 100003; }
+for (var c2 = 0; target.length > c2; c2++) { seedBase = (seedBase * 31 + target.charCodeAt(c2)) % 100003; }
 mine.sort(function (a, b) {
   var ha = (seedBase + a.length * 7 + a.charCodeAt(0)) % 1000;
   var hb = (seedBase + b.length * 7 + b.charCodeAt(0)) % 1000;
   if (ha !== hb) { return ha - hb; }
-  return a < b ? -1 : (a > b ? 1 : 0);
+  return b > a ? -1 : (a > b ? 1 : 0);
 });
-for (var m2 = 0; m2 < mine.length; m2++) { all.push(mine[m2]); }`,
+for (var m2 = 0; mine.length > m2; m2++) { all.push(mine[m2]); }`,
         subject: 'New in, and worth a look',
         preheader: 'A few of the things people are picking up right now.',
         body: (p) => [
