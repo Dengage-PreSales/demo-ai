@@ -58,7 +58,7 @@ over each one.** Type **HTML**.
 Nothing to attach and nothing to click. Every id is recorded in `factory/sandbox.json`,
 so the template calls all four by id.
 
-### 2. The fourth asset is the one four channels share
+### 2. The fourth asset is the one five channels share
 
 `dps abandoned cart line`, from `content/_dynamic/abandoned-cart.txt`, type **Plain Text**.
 Created 9 August, id recorded, **and the email preheader already calls it**. It is the only
@@ -74,8 +74,9 @@ Correct at one item, two or six. Four places want it, and one is already done:
 |---|---|
 | Email **preheader** | done. The template carries the tag, hidden, with `, one press from checkout.` after it |
 | Email **subject** | `Still yours: ` then the snippet. A campaign field, so this one is a paste |
-| SMS and WhatsApp | the snippet on its own |
-| Push title or body | the snippet in the copy |
+| SMS and WhatsApp | the snippet with words around it |
+| Push message | the snippet in the copy. Step 3 |
+| On site content | the snippet in a creative |
 
 **One thing to check on the first test send.** The tag is written into the template's HTML
 rather than picked in the builder, so the builder never validates it: the preview line of a
@@ -91,7 +92,39 @@ ends in a single `{%= line %}` and nothing after it.
 
 `factory/emails/BEEFREE.md` has the subject and preheader wording.
 
-### 3. Re-import the email template. Content > Email > Email Builder
+### 3. Two more Plain Text assets, for web push
+
+**New, 10 August 2026.** Every box in the push editor accepts Dynamic Content and only the
+text kind, which you confirmed. Two of those boxes are not copy, and that is what makes this
+worth doing: the **image** and the **destination** of a rich push can both be resolved per
+recipient.
+
+| Asset name in the panel | Type | Paste this file |
+|---|---|---|
+| `dps abandoned cart image` | **Plain Text** | `content/_dynamic/abandoned-cart-image.txt` |
+| `dps abandoned cart url` | **Plain Text** | `content/_dynamic/abandoned-cart-url.txt` |
+
+Then one push, and it serves every demo like the email does:
+
+| Field in the push editor | What goes in it |
+|---|---|
+| Title | `Still in your basket` |
+| Message | the **line** snippet, then ` are waiting for you.` |
+| Notification Type | Rich |
+| Media | the **image** snippet, on its own |
+| Target URL | the **url** snippet, on its own |
+| Icon | Default |
+| Custom parameter `inbox` | `yes`, so the same message reaches the App Inbox |
+
+**Send me both ids** and they go in `factory/sandbox.json` beside the others.
+
+**Both emit nothing rather than something wrong**, which matters more here than in the email.
+No picture in the basket means the push sends without one, and a basket no page view can
+attribute to a demo means an empty Target URL rather than a guessed one. A push that lands on
+another prospect's storefront is worse on a call than a push nobody sent, because the wrong one
+is visible and the missing one is not.
+
+### 4. Re-import the email template. Content > Email > Email Builder
 
 ```
 factory/panel/content/_shared/beefree-abandoned-cart.json
@@ -102,23 +135,23 @@ so it can never contradict the basket inside it. `factory/emails/BEEFREE.md` say
 and what is in it. Open the `.preview.html` beside it first if you want to see it
 before uploading.
 
-### 4. One abandoned cart campaign, using that template
+### 5. One abandoned cart campaign, using that template
 
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 5. Confirm the ETL runs on a schedule
+### 6. Confirm the ETL runs on a schedule
 
 Postgres reloads every demo's catalogue every ten minutes by itself. The Dengage
 Automated Flow is what copies it into `dps_product`, and **if that flow is not on a
 recurring schedule, a new demo's products never arrive** and its emails have nothing
 to render. Set the frequency you want on the flow. `supabase/README.md` has the chain.
 
-### 6. Five inline creatives, when support enables Inline
+### 7. Five inline creatives, when support enables Inline
 
 Written and committed, nothing to build. The table is below.
 
-### 7. Watch the MP4 through once
+### 8. Watch the MP4 through once
 
 Detail below. It takes a minute and it is the one thing a URL check cannot answer.
 

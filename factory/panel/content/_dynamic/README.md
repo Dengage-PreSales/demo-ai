@@ -37,7 +37,9 @@ expansion runs long.
 | `abandoned-cart.html` | HTML | email |
 | `abandoned-cart-total.html` | HTML | email. The subtotal, the total, and the button back to the basket |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
-| `abandoned-cart.txt` | Plain Text | **four channels.** SMS, WhatsApp, push copy, and the email's subject line and preheader. See below |
+| `abandoned-cart.txt` | Plain Text | **five channels.** SMS, WhatsApp, push copy, on site, and the email's subject line and preheader. See below |
+| `abandoned-cart-image.txt` | Plain Text | web push **Media**. The newest basket product's own photograph |
+| `abandoned-cart-url.txt` | Plain Text | web push **Target URL**, SMS links, anywhere a link needs the right demo |
 | `recommendations.html` | HTML | email. The storefront's own recommendation rail |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
 | `_diagnostic.html` | HTML | a throwaway asset for reading what an email send can actually see |
@@ -90,7 +92,7 @@ Which table each scenario reads:
 `recommendations.html` already does the browse abandonment fold, so it is the second worked
 example and the one to copy for anything anchored on views rather than on a basket.
 
-### The eight things that cost a day each, none of them documented anywhere else
+### The things that cost a day each, none of them documented anywhere else
 
 Every one was found by a failed send rather than by reading, which is why they are here.
 
@@ -103,7 +105,7 @@ Every one was found by a failed send rather than by reading, which is why they a
 | An output tag closes with a bare **`%}`** | a trailing `=` gives `SyntaxError: Unexpected token` |
 | **No comments inside `{% %}`** | the block is parsed as JavaScript and a comment was the first SyntaxError this project hit |
 | Only **`=`** and **`in`** are verified operators | a consequence of the three method surface |
-| A snippet id is a **UUID**, not the integer the documentation shows | the docs say `snippet_id="8835"`; the panel issues `5178aafe-...` |
+| **A snippet id has two forms, and the editor decides which** | corrected 10 August 2026. This row used to say a snippet id is always a UUID and the documentation's integer was wrong. Both are real: the email builder writes `snippet_id="5178aafe-..."`, and the SMS editor writes `snippet_id="4870"` for the same asset. See the tag form section below |
 
 ### And two rules from CLAUDE.md that bite hardest here
 
@@ -116,7 +118,7 @@ is the worked example, and it suppresses on four separate conditions.
 against a synthetic event log. A new asset gets a `resolver()` line and its own scenarios, and
 that is the difference between a defect found in a minute and one found on a call.
 
-## One line, four channels, and that is the whole reason it is a separate asset
+## One line, five channels, and that is the whole reason it is a separate asset
 
 Salil, 9 August 2026: **a preheader takes a Dynamic Content snippet, and so do push text,
 push image, SMS and on site content.** Everything consumes them. That makes
@@ -125,8 +127,9 @@ renders as a phrase rather than as markup:
 
 | Where | What it becomes |
 |---|---|
-| SMS, WhatsApp | the body, on its own |
-| Push title or body | the same phrase, in the copy |
+| SMS, WhatsApp | the body, with words around it |
+| Push title or message | the same phrase, in the copy |
+| On site content | the same phrase, in a creative |
 | Email subject | `Still yours: Oxford Shirt and 3 more items` |
 | Email preheader | `Oxford Shirt and 3 more items, one press from checkout.` |
 
@@ -200,6 +203,67 @@ dps diagnostic key=DPS-3 devices=1 cart=8 views=26
 scenario asset renders its fallback. `FAILED` means that table refused the query. And if the
 message arrives showing the raw tag instead of any of this, the channel is not resolving
 snippets at all, which is the answer nothing else gives you as plainly.
+
+## The tag form is different in every editor, so let the editor write it
+
+**Confirmed 10 August 2026, and it corrects something this file used to assert.** The same
+saved asset is referenced two different ways depending on where you insert it:
+
+| Editor | What the panel writes |
+|---|---|
+| Email Builder, HTML block | `<snippet snippet_id="5178aafe-5bec-4326-b3ed-890aff1ec867" snippet_name="..."></snippet>` |
+| SMS designer | `<snippet snippet_id="4870" snippet_name="DPS - Abandon Cart (TXT)" />` |
+
+Three differences, and none of them was guessable: **a UUID in one and an integer in the
+other**, an **open and close pair** in one and a **self closing tag** in the other. Dengage's
+documentation shows the integer, which this file previously recorded as simply wrong. It is
+not wrong, it is the other surface.
+
+**So never hand write a tag.** Use the editor's own insert control, once per channel, and let
+the panel produce the form. That rule was already here for the email; it is now the rule that
+found this.
+
+**`snippet_name` is a label, not part of the lookup.** The generated email calls the assets by
+names this repository chose, and the assets in the panel are named differently by the person
+who created them. Both resolve, because `snippet_id` is what resolves. So a name mismatch
+between this folder and the panel is cosmetic, and the asset names in the tables here are what
+to call a new one rather than a claim about what exists.
+
+## Web push, where every field takes a text snippet
+
+**Salil, 10 August 2026: every box in the push editor accepts Dynamic Content, and only the
+text kind.** Title, Message, Media, Target URL, Badge URL, and the custom parameter values.
+That is worth more than personalized copy, because two of those fields are not copy at all:
+
+| Field | Asset | What arrives |
+|---|---|---|
+| Title | words, or `abandoned-cart.txt` | `Still in your basket` |
+| Message | `abandoned-cart.txt` with words around it | `Oxford Shirt and 3 more items are waiting.` |
+| **Media** | `abandoned-cart-image.txt` | the visitor's own product photograph |
+| **Target URL** | `abandoned-cart-url.txt` | that demo's basket, opened |
+| Custom parameter `inbox` | `yes`, unchanged | the same message lands in the App Inbox |
+
+So a rich web push carries the product the visitor actually left behind and lands them back on
+the basket they left it in, with no per demo campaign and nothing typed on the day.
+
+**Both new assets emit nothing rather than something wrong, and that is the whole design.**
+
+| Case | What is emitted | Why |
+|---|---|---|
+| The newest product has no picture | the next basket product's picture | one demo here has no product photography at all, and a rail of one is worse than none |
+| No basket product has a picture | nothing. The push sends without an image | a standard notification is a fine notification |
+| The picture is `http` | nothing | a browser blocks a mixed content push image, so an http URL is the same as no URL |
+| No page view attributes the basket to a demo | nothing | there is no address correct for every demo, and a guessed one lands the recipient on somebody else's storefront |
+
+That last row is the one to keep. **A push landing on the wrong demo is worse on a call than a
+push that was never sent**, because the wrong one is visible and the missing one is not. The
+same reasoning is why the shared on site creatives report a click and dismiss rather than
+navigate.
+
+**A note on the copy field.** `abandoned-cart.txt` is a phrase and not a sentence, so put words
+around it: `Message` reads `<snippet /> are waiting for you.` and not the snippet alone. The
+grammar works at any basket size because the phrase carries its own count, and a send that
+resolves nothing still reads as English.
 
 ## The totals, because a correct product list next to an invented total is worse
 

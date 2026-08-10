@@ -92,6 +92,9 @@ const text = resolver('abandoned-cart.txt',
     '{ ids: ids, all: all, line: line, count: count }');
 const total = resolver('abandoned-cart-total.html',
     '{ subtotal: subtotal, discount: discount, counted: counted, priced: priced }');
+const image = resolver('abandoned-cart-image.txt', '{ image: image, ids: ids }');
+const url = resolver('abandoned-cart-url.txt',
+    '{ basketUrl: basketUrl, target: target, rootOf: rootOf }');
 const recommend = resolver('recommendations.html',
     '{ picks: picks, wanted: wanted, label: LABEL, lead: LEAD, cards: cards }');
 
@@ -917,6 +920,127 @@ function catalogue(ids) {
     const after = source.slice(source.indexOf('%}') + 2);
     ok('the asset emits one output tag and nothing else, not even a trailing newline',
        after === '{%= line %}', JSON.stringify(after));
+}
+
+/* -------------------------------------------------------------------------- */
+/* 17. THE TWO PUSH ASSETS, where an empty value is the safe one                 */
+
+{
+    /* SALIL, 10 AUGUST 2026: every field of a web push takes a Dynamic Content snippet,
+       and only the text kind. Title, Message, Media, Target URL, Badge URL and the custom
+       parameters, all of them. That is more than personalized copy: the IMAGE and the
+       DESTINATION of a rich push can be the visitor's own product and their own basket,
+       from two assets that emit one line of plain text each.
+
+       WHICH MAKES EMPTY THE IMPORTANT CASE HERE rather than an edge case. A push carrying
+       the wrong product's photograph, or landing on another demo's storefront, is worse on
+       a call than a push with no image or a push that was not sent: both of those are
+       invisible and the wrong one is not. So both assets emit nothing rather than anything
+       they cannot stand behind, and that is what most of this section asserts. */
+    const ROOT = 'https://dengage-presales.github.io/demo-ai/demos/mine/';
+    const shot = (id, src) => Object.assign(product(id), { image_link: src });
+
+    const cart = [
+        event('add_to_cart', 'p1', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-mine'),
+        event('add_to_cart', 'p2', '2026-08-09T10:01:00Z', 1, DEVICE, 'session-mine')
+    ];
+    const views = [view('session-mine', 'mine')];
+
+    const both = (tables) => ({
+        image: image(stubFrom(tables), CONTACT),
+        url: url(stubFrom(tables), CONTACT)
+    });
+
+    const out = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('p2', ROOT + 'img/p2.jpg')]
+    });
+
+    /* THE NEWEST ADDITION, because that is the product the push is about and the one the
+       copy beside it names. ids is newest first, so this is the first that has a picture. */
+    ok('the image is the newest basket product\'s own photograph',
+       out.image.image === ROOT + 'img/p2.jpg', out.image.image);
+    ok('and the destination is that demo\'s basket',
+       out.url.basketUrl === ROOT + 'index.html?open=cart', out.url.basketUrl);
+
+    /* A PRODUCT WITH NO PICTURE MUST NOT COST THE PUSH ITS PICTURE, so it falls through to
+       the next one that has one rather than emitting an empty Media URL. One demo in this
+       repository has no product photography at all. */
+    const partial = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('p2', null)]
+    });
+    ok('a newest product with no picture falls through to one that has a picture',
+       partial.image.image === ROOT + 'img/p1.jpg', partial.image.image);
+
+    const none = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shot('p1', null), shot('p2', '')]
+    });
+    ok('a catalogue with no pictures emits nothing, so the push sends without one',
+       none.image.image === '', none.image.image);
+
+    /* HTTP IS NOT HTTPS. A rich push image over plain http is blocked by the browser, so an
+       http URL is the same as no URL and saying so here is cheaper than a silent one. */
+    const insecure = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shot('p2', 'http://example.test/p2.jpg'), shot('p1', null)]
+    });
+    ok('an http image is treated as no image, because a browser blocks it anyway',
+       insecure.image.image === '', insecure.image.image);
+
+    /* NO PAGE VIEW MEANS NO DEMO, AND NO DEMO MEANS NO URL. This is the case that must not
+       guess: there is no address that is correct for every demo, so an invented one lands
+       the recipient on somebody else's storefront. */
+    const unattributed = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: [],
+        dps_product: [shot('p1', ROOT + 'img/p1.jpg')]
+    });
+    ok('with no page view to attribute the basket, the URL is empty rather than guessed',
+       unattributed.url.basketUrl === '' && unattributed.url.target === '',
+       unattributed.url.basketUrl);
+
+    /* AND IT IS THIS DEMO'S BASKET, NOT THE ONE BROWSED BEFORE IT. Same defect the email
+       had, and it is worse in a push: the email at least shows the products it linked to. */
+    const OTHER = 'https://dengage-presales.github.io/demo-ai/demos/theirs/';
+    const crossed = both({
+        master_device: devices,
+        shopping_cart_events: [
+            event('add_to_cart', 'q1', '2026-08-09T09:00:00Z', 1, DEVICE, 'session-theirs'),
+            event('add_to_cart', 'p1', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-mine')
+        ],
+        page_view_events: [
+            { session_id: 'session-theirs', page_url: OTHER + 'index.html',
+              event_date: '2026-08-09T09:00:00Z' },
+            { session_id: 'session-mine', page_url: ROOT + 'index.html',
+              event_date: '2026-08-09T10:00:00Z' }
+        ],
+        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('q1', OTHER + 'img/q1.jpg')]
+    });
+    ok('the push lands on the demo the newest basket row belongs to',
+       crossed.url.basketUrl === ROOT + 'index.html?open=cart', crossed.url.basketUrl);
+    ok('and carries that demo\'s product photograph, not the earlier demo\'s',
+       crossed.image.image === ROOT + 'img/p1.jpg', crossed.image.image);
+
+    /* AND BOTH EMIT ONE LINE, for the same reason the copy asset does: these go into a
+       Media URL field and a Target URL field, where a leading newline is a broken URL
+       rather than a cosmetic problem. */
+    for (const file of ['abandoned-cart-image.txt', 'abandoned-cart-url.txt']) {
+        const source = readFileSync(join(HERE, file), 'utf8');
+        const after = source.slice(source.indexOf('%}') + 2);
+        ok(file + ' emits one output tag and nothing else',
+           /^\{%= [a-zA-Z]+ %\}$/.test(after), JSON.stringify(after));
+    }
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
