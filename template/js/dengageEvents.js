@@ -451,9 +451,68 @@
        the other is discarded by the browser at no cost. The only way to see a
        widget twice is two campaigns sharing one event name, which
        factory/panel/live-campaigns.sh already reports as its nastiest case. */
+    /* WHICH CARDS CREATE A CONTACT, which is not the same as which cards have a
+       form. A survey and an NPS card post tags, and tags attach to whatever the
+       device already is, so they never mint anything. Only the subscription form
+       creates a contact. */
+    var CAPTURES_A_CONTACT = { 'subscription-popup': true };
+
+    /* GIVE A CAPTURE FORM A CONTACT KEY BEFORE IT CAN BE SUBMITTED, because if it
+       does not have one the engine invents its own and the invented one carries no
+       DPS- marker.
+
+       Observed on a stored contact, 10 August 2026: a subscription submitted by an
+       anonymous visitor arrived keyed sf_ followed by a uuid. The engine's own
+       submit handler reads the device record, finds no contact key, mints that one,
+       and only then posts the form. So the contact exists and is correct in every
+       other respect, and nothing looking for the DPS- marker will ever find it.
+
+       THE TIMING IS THE WHOLE POINT, and it is why this sits here rather than
+       anywhere nearer the form. The engine reads the device record at submit time,
+       so a key set while the visitor is still typing has long since landed. The two
+       tempting alternatives both fail: reacting to the confirmation is too late,
+       because the key was minted before the post, and listening for the submit
+       message races the engine's own listener for that same message.
+
+       THE NUMBER IS A TIMESTAMP RATHER THAN A COUNTER, deliberately. Low numbers
+       are the ones a pre-sales person types into the account panel during a call,
+       so minting DPS-1 here would quietly adopt the contact they are already
+       demonstrating as and file a stranger's consent against it. */
+    function identifyBeforeCapture(slug) {
+        if (!CAPTURES_A_CONTACT[slug]) return;
+
+        /* mintKey is checked rather than assumed. A TypeError here would happen
+           inside the launcher's click handler and take the whole card down, so the
+           worst case is an sf_ contact rather than a button that does nothing. */
+        var identity = window.DemoIdentity;
+        if (!identity || identity.contactKey) return;
+        if (typeof identity.mintKey !== 'function') return;
+
+        var key = identity.mintKey(Date.now());
+        if (!setContactKey(key)) return;
+        identity.contactKey = key;
+
+        /* The same storage identity.js reads, so a reload keeps this contact and
+           the SDK initializes with the key already attached. Namespaced by slug by
+           construction, because storageKey is. */
+        try {
+            window.sessionStorage.setItem(identity.storageKey, key);
+        } catch (err) { /* private mode */ }
+
+        /* A PAGE VIEW AFTER IDENTIFYING, and here it is load bearing rather than a
+           nicety. page_view_events is the only route from a slug back to a demo's
+           rows, so a contact created without one owns cart and order rows that
+           nothing can attribute to this demo. Same reason signIn sends one. */
+        pageview('login');
+    }
+
     function scenario(slug) {
         var dengageConfig = config().dengage || {};
         var eventName = (dengageConfig.scenarioPrefix || 'dengage_demo_') + slug;
+
+        /* Before the trigger, not after: the widget must not be able to appear
+           until the visitor it will capture has a key. */
+        identifyBeforeCapture(slug);
 
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: eventName, actionType: eventName });

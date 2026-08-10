@@ -227,6 +227,33 @@ async function openAccount(pg) {
     await page.locator('#account.open').count() === 0);
   ok('scrim down', await page.locator('#scrim.open').count() === 0);
 
+  /* 8a EXISTS BECAUSE THE ENGINE MINTS ITS OWN KEY OTHERWISE, and the one it mints
+     carries no DPS- marker. A subscription submitted by an anonymous visitor was
+     stored keyed sf_ plus a uuid on 10 August 2026: the engine reads the device
+     record at submit time, finds nothing, and invents a key before it posts. So the
+     key has to exist BEFORE the form can be submitted, which is why firing the card
+     identifies the visitor rather than the submit doing it.
+
+     THE TIMESTAMP IS ASSERTED AS A SHAPE, NOT A VALUE. It has to be a number, and
+     it has to be a big one: low numbers are what a pre-sales person types into this
+     very modal during a call, so minting DPS-1 here would adopt the contact they
+     are already demonstrating as. */
+  const minted = await page.evaluate(() => window.DemoIdentity.contactKey);
+  ok('firing the subscription card identified the visitor',
+    typeof minted === 'string' && minted.length > 4, minted);
+  ok('with the DPS- marker, so a purge can find the contact',
+    String(minted).indexOf('DPS-') === 0, minted);
+  ok('and a timestamp rather than a number a human would type',
+    /^DPS-\d{13}$/.test(String(minted)), minted);
+  ok('setContactKey was called with exactly that key',
+    (await page.evaluate(() => window.__calls))
+      .some(c => c[0] === 'setContactKey' && c[1] === minted), minted);
+  /* Without this the contact owns cart and order rows that no page view can be
+     joined to, so nothing can attribute them to this demo. See CLAUDE.md 1b. */
+  ok('and a page view followed it, so the contact is attributable',
+    (await page.evaluate(() => window.__calls))
+      .some(c => c[0] === 'pageView' && c[1] && c[1].page_type === 'login'));
+
   console.log('\n9. The launcher also clears the way');
   await page.click('.panel-toggle button');
   await page.waitForTimeout(220);
@@ -239,6 +266,12 @@ async function openAccount(pg) {
 
   console.log('\n10. Product page has the same account path');
   const first = await page.evaluate(() => window.Catalog.all()[0].id);
+  /* THE IDENTITY FROM 8a IS CLEARED FIRST, and not because it is inconvenient.
+     Section 8 fired the subscription card, which identifies the visitor by design,
+     so this page would open the signed IN modal and the prefix asserted below does
+     not exist in that state. Clearing storage is what makes this an anonymous
+     visitor again, which is the state this section is about. */
+  await page.evaluate(k => { sessionStorage.removeItem(k); localStorage.removeItem(k); }, storeKey);
   await page.goto(BASE + 'product.html?id=' + encodeURIComponent(first), { waitUntil: 'networkidle' });
   await openAccount(page);
   ok('modal present on product.html', await page.locator('#account.open').count() === 1);

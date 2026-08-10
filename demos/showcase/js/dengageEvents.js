@@ -224,9 +224,31 @@
         return true;
     }
 
+    var CAPTURES_A_CONTACT = { 'subscription-popup': true };
+
+    function identifyBeforeCapture(slug) {
+        if (!CAPTURES_A_CONTACT[slug]) return;
+
+        var identity = window.DemoIdentity;
+        if (!identity || identity.contactKey) return;
+        if (typeof identity.mintKey !== 'function') return;
+
+        var key = identity.mintKey(Date.now());
+        if (!setContactKey(key)) return;
+        identity.contactKey = key;
+
+        try {
+            window.sessionStorage.setItem(identity.storageKey, key);
+        } catch (err) {  }
+
+        pageview('login');
+    }
+
     function scenario(slug) {
         var dengageConfig = config().dengage || {};
         var eventName = (dengageConfig.scenarioPrefix || 'dengage_demo_') + slug;
+
+        identifyBeforeCapture(slug);
 
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: eventName, actionType: eventName });

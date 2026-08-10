@@ -427,6 +427,12 @@ async function main() {
     say('with the four fields the contact needs',
         Boolean(form) && form.name === 'Ada' && form.surname === 'Lovelace' &&
         form.email === 'ada@dengage.com' && String(form.gsm).indexOf('7700900123') !== -1, form);
+    /* whatsapp_number IS ITS OWN COLUMN and it stayed empty on a real stored
+       contact while gsm was filled, so the same number has to be sent twice. Pinned
+       on the fallback as well as the native path, because the fallback builds the
+       payload by hand and would not notice losing a key. */
+    say('and the mobile a second time, under the whatsapp key',
+        Boolean(form) && String(form.whatsappNumber) === String(form.gsm), form);
     say('and all three permissions true',
         Boolean(form) && form.emailPermission === true &&
         form.gsmPermission === true && form.whatsappPermission === true, form);

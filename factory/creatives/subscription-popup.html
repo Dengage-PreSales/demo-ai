@@ -405,8 +405,10 @@
 
            EACH HAS ITS OWN MESSAGE SPAN, IN THIS ORDER, AND THAT IS LOAD BEARING. The
            handler walks [data-dn-id] and [data-dn-invalid-message-type] together BY INDEX,
-           so seven fields need seven spans in the matching order. Add a field without its
-           span and every message after it belongs to the wrong input.
+           so these seven visible fields need seven spans in the matching order. Add a
+           field between them without its span and every message after it belongs to the
+           wrong input. The one field that has no span is the hidden whatsappNumber
+           below, which is last precisely so that it pairs with nothing.
            factory/checks/creative.js section 3 prints the pairing and says "aligned". -->
       <div class="perm">
         <input type="checkbox" id="dnf-perm-email" checked
@@ -428,6 +430,30 @@
       <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
       <p class="channels">You can unsubscribe from any of these whenever you want.</p>
 
+      <!-- THE MOBILE NUMBER, SENT A SECOND TIME UNDER THE WHATSAPP KEY, because the
+           contact has two separate columns for it. Observed on a stored contact,
+           10 August 2026: gsm filled and whatsapp_number empty, from a form that
+           labels the one input as being used for both. One input, two payload keys
+           is the only way to fill both, since data-dn-id maps one to one.
+
+           IT IS DELIBERATELY THE LAST [data-dn-id] IN THE DOCUMENT, and that is
+           load bearing for the same reason the span order above is. The handler
+           pairs fields and message spans by index over
+           Math.max(messages.length, fields.length), so an eighth field placed
+           anywhere earlier would hand every later span to the wrong input.
+           An eighth field with no eighth span is safe; the reverse is not, because
+           the handler reads fields[i].dataset before the guard that would have
+           caught a missing field, so more spans than fields throws and the submit
+           sends nothing at all.
+
+           Its value is copied from the visible input by the submit handler rather
+           than by a change listener, so there is no window in which the two
+           disagree. Type is left at the default TEXT rather than GSM on purpose:
+           GSM would validate it a second time and prefix it a second time, and a
+           hidden field that fails validation blocks the submit with a message
+           nobody can see. -->
+      <input type="hidden" id="dnf-wa" value="" data-dn-id="whatsappNumber">
+
       <p class="engine-missing">This form cannot be submitted right now. Neither the
         engine's form handler nor its shared script loaded into this creative, so there is
         nothing to send the details to. See factory/creatives/README.md.</p>
@@ -442,7 +468,7 @@
            Closing in the same handler dismisses the card before the post
            completes and the contact is never created. -->
       <button type="button" class="send"
-              onclick="var f=document.getElementById('dnf-sub');var native=(typeof Dn.postSubscription==='function');if(native){Dn.postSubscription();}else{if(typeof Dn.postMessageToParent!=='function'){f.setAttribute('data-dn-engine','absent');return;}var g=function(i){return document.getElementById(i);};var t=function(el){return el.value.replace(/^\s+|\s+$/g,'');};var bad=0;var mark=function(el,ok){if(ok){el.removeAttribute('data-dn-invalid');}else{el.setAttribute('data-dn-invalid','true');bad=1;}};var fn=g('dnf-first'),ln=g('dnf-last'),em=g('dnf-email'),gs=g('dnf-gsm');mark(fn,t(fn)!=='');mark(ln,t(ln)!=='');mark(em,/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t(em)));mark(gs,t(gs).replace(/[^0-9]/g,'').length>6);if(bad){return;}Dn.postMessageToParent('postSubscription',{form:{name:t(fn),surname:t(ln),email:t(em),gsm:t(gs),emailPermission:g('dnf-perm-email').checked,gsmPermission:g('dnf-perm-sms').checked,whatsappPermission:g('dnf-perm-whatsapp').checked}});}if(f.querySelector('[data-dn-invalid=&quot;true&quot;]')){return;}this.disabled=true;Dn.sendClick('subscription-popup__subscribe');if(!native){f.querySelector('.container').setAttribute('data-dn-is-submitted','true');}">
+              onclick="var f=document.getElementById('dnf-sub');document.getElementById('dnf-wa').value=document.getElementById('dnf-gsm').value;var native=(typeof Dn.postSubscription==='function');if(native){Dn.postSubscription();}else{if(typeof Dn.postMessageToParent!=='function'){f.setAttribute('data-dn-engine','absent');return;}var g=function(i){return document.getElementById(i);};var t=function(el){return el.value.replace(/^\s+|\s+$/g,'');};var bad=0;var mark=function(el,ok){if(ok){el.removeAttribute('data-dn-invalid');}else{el.setAttribute('data-dn-invalid','true');bad=1;}};var fn=g('dnf-first'),ln=g('dnf-last'),em=g('dnf-email'),gs=g('dnf-gsm');mark(fn,t(fn)!=='');mark(ln,t(ln)!=='');mark(em,/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(t(em)));mark(gs,t(gs).replace(/[^0-9]/g,'').length>6);if(bad){return;}Dn.postMessageToParent('postSubscription',{form:{name:t(fn),surname:t(ln),email:t(em),gsm:t(gs),whatsappNumber:t(gs),emailPermission:g('dnf-perm-email').checked,gsmPermission:g('dnf-perm-sms').checked,whatsappPermission:g('dnf-perm-whatsapp').checked}});}if(f.querySelector('[data-dn-invalid=&quot;true&quot;]')){return;}this.disabled=true;Dn.sendClick('subscription-popup__subscribe');if(!native){f.querySelector('.container').setAttribute('data-dn-is-submitted','true');}">
         Create account
       </button>
 

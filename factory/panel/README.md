@@ -105,30 +105,38 @@ node factory/build-snippets.mjs --preview
 It resolves all fourteen against a committed demo's real catalogue and prints the seven SMS
 bodies with their character counts and the seven push messages field by field.
 
-### 3. Re-paste two on-site creatives. Content > Onsite
+### 3. Re-paste the subscription creative. Content > Onsite
 
-**New, 10 August 2026, and it is the one item here that came from Dengage rather than
-from this repository.** Both now submit through the engine's native
-`Dn.postQuestion()` instead of validating the answer themselves and calling
-`Dn.setTags`. Open each campaign's content and paste the current file over it:
+**One paste, and it is the only required one in this step.** Open
+`dengage_demo_subscription-popup` and paste `factory/creatives/subscription-popup.html`
+over its content.
 
-| Campaign | Paste |
-|---|---|
-| `dengage_demo_survey` | `factory/creatives/survey.html` |
-| `dengage_demo_nps-popup` | `factory/creatives/nps-popup.html` |
+Two things came out of a real lead submitted on 10 August 2026, and both are fixed
+in that file:
 
-Both campaigns are **already ACTIVE** in the live manifest, so there is nothing to
-resume. Nothing else about either campaign changes: same trigger, same settings, same
-tag names, and the same row on the contact card afterwards.
+| What the stored contact showed | Why | What changed |
+|---|---|---|
+| `WhatsApp Number` empty while `Phone` was filled | `whatsapp_number` is its own column, and one input can only carry one payload key | the mobile is sent a second time as `whatsappNumber`, from a hidden field the visitor never sees |
+| `Contact Key` was `sf_` followed by a uuid | the engine reads the device record at submit time, finds no contact key, and invents one before it posts | the demo now sets a `DPS-` key when the card is fired, so there is one to find |
 
-**One visible difference on a call.** The engine writes its own validation message, so
-submitting with nothing chosen now reads `Please select at least 1 and at most 4
-choice(s)` on the survey and `Please select at least one option` on the NPS, instead of
-`Choose at least one.` and `Choose a score first.` Only on an empty submit, and the
-error now clears the moment something is picked rather than on the next press.
+The second fix is in the storefront rather than the creative, so it ships with the
+demo and needs nothing in the panel. It has **one visible effect on a call**: firing
+the subscription card identifies the visitor straight away, so the account icon reads
+as signed in afterwards even if the popup is dismissed without subscribing. That is
+the honest reading, because the device really is attached to that contact from then
+on. Sign out in the account modal returns it to anonymous.
 
-**`dengage_demo_subscription-popup` needs nothing.** It was always on the native
-`Dn.postSubscription()` and was re-checked at the same time.
+The key is `DPS-` plus a millisecond timestamp rather than `DPS-1`. Low numbers are
+what a pre-sales person types into the account modal during a call, and minting one
+here would file a stranger's consent against the contact they were demonstrating as.
+
+**`dengage_demo_survey` and `dengage_demo_nps-popup` are optional and deliberately
+left alone.** Both capture answers correctly as they are. The current files move them
+onto the engine's native `Dn.postQuestion()` instead of validating the answer
+themselves, which is a tidy-up with no visible benefit and one visible cost: the
+engine writes its own validation message, so an empty submit would read `Please
+select at least 1 and at most 4 choice(s)` rather than `Choose at least one.` Paste
+them if either file changes for another reason. Do not paste them for this.
 
 ### 4. Seven scenario emails. Content > Email > Code Editor
 
