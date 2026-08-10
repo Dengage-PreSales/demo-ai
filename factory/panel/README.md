@@ -11,6 +11,7 @@ demo the factory generates uses it.
 | **This page** | the numbered list of what to do, in order |
 | [`SMS-AND-PUSH.md`](SMS-AND-PUSH.md) | the two live short form channels, field by field, from scratch. Fourteen assets, seven SMS messages, seven push messages |
 | [`SCENARIO-EMAILS.md`](SCENARIO-EMAILS.md) | the seven Code Editor emails, one journey each. One paste per email and nothing else |
+| [`EVENTS-AND-SEGMENTS.md`](EVENTS-AND-SEGMENTS.md) | the twenty nine event definitions, and the eleven segments that address all twenty one messages. Read its first table before writing any filter: it names the eight columns no demo ever fills |
 | [`REFERENCE.md`](REFERENCE.md) | the panel's own templates, web push explained, the App Inbox, the product feed. Background rather than steps |
 | [`content/_dynamic/README.md`](content/_dynamic/README.md) | the saved Dynamic Content assets, and the six step pattern for writing another one |
 
