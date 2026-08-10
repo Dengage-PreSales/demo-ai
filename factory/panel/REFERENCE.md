@@ -1,23 +1,41 @@
-# The templates built in the panel, and the content to put in them
+# Panel reference
 
-Five of the launcher's cards have **no creative file**, and that is deliberate.
-They are Dengage's own Visual Editor templates: the template *is* the creative,
-configured with settings rather than pasted HTML. There is nothing to copy into a
-code editor.
+Everything about the Dengage panel that is not a step to take today. For what to do now,
+see [`README.md`](README.md), and for SMS and web push specifically see
+[`SMS-AND-PUSH.md`](SMS-AND-PUSH.md).
 
-That does not mean there is nothing to hand over. A template still needs
-**content**: images, titles, labels, a video. This document carries all of it,
-ready to type or paste, alongside the settings each template needs.
+| | |
+|---|---|
+| [The panel's own templates](#the-panels-own-templates) | Story, Video Popup, Vertical Popup, and the three that are parked |
+| [Web push, in plain language](#web-push-in-plain-language) | how it works, what surprises people, and sending one on demand |
+| [App Inbox](#app-inbox-and-it-is-built) | built, and the one capability with no panel template behind it |
+| [The product feed](#the-product-feed) | the catalogue, and the one thing that unblocks what is parked |
 
-Each is flagged `panel: true` in `template/js/panels.js`, and
-`factory/checks/launcher.js` is told to expect a card with no file for exactly
-those. Any *other* card without a creative is a defect.
-
-Two cards in the launcher are neither creatives nor templates: **Web push** and
-**App inbox**. Both are explained at the end.
+**Merged 10 August 2026** from `NATIVE-TEMPLATES.md` and `PRODUCT-FEED.md`, which said
+overlapping things about the same three parked capabilities in two places. The parked
+sections are compressed here rather than deleted: what unblocks them is one line, and it is
+in this same document.
 
 ---
 
+# The panel's own templates
+
+Some of the launcher's cards have **no creative file**, and that is deliberate. They are
+Dengage's own Visual Editor templates: the template *is* the creative, configured with
+settings rather than pasted HTML. There is nothing to copy into a code editor.
+
+That does not mean there is nothing to hand over. A template still needs **content**:
+images, titles, labels, a video. This document carries all of it, ready to type or paste,
+alongside the settings each template needs.
+
+Each is flagged `panel: true` in `template/js/panels.js`, and `factory/checks/launcher.js`
+is told to expect a card with no file for exactly those. Any *other* card without a creative
+is a defect.
+
+Two cards in the launcher are neither creatives nor templates: **Web push** and **App
+inbox**. Both are below.
+
+---
 ## The content is shared, which decides what it can be
 
 One campaign per template serves every demo. The same story circle appears on a
@@ -118,53 +136,46 @@ active border `#125CFA`, passive border `#E4E7EC`.
 
 ---
 
-## 2. Product Box, PARKED 6 August 2026
+## Parked: Product Box, Typeform and Smart Search
 
-`dengage_demo_product-box`
+All three hidden from the launcher, Salil's call, 6 August 2026. Two of them are parked on
+**one** thing, which is [the product feed](#the-product-feed) below, and the third on an
+unconfirmed panel screen. None is parked on work in this repository.
 
-**Hidden from the launcher for now.** Everything below is still accurate and is
-what to follow once this is picked back up: `factory/panel/PRODUCT-FEED.md` has
-the one thing blocking it.
+| Card | Campaign | Parked on |
+|---|---|---|
+| Product Box | `dengage_demo_product-box` | the feed, for the **Dynamic** variant. The **Static** variant works on this application today |
+| Smart Search | `dengage_demo_smart-search` | the feed, plus a Search Container key and a Recommendation Rule key once it lands |
+| Typeform | `dengage_demo_typeform` | nothing external. What is unconfirmed is the second screen it needs |
 
-Content > Onsite > New > **Product Box**
+**Product Box.** A small panel of product cards over the page. Static takes products typed
+into the campaign and involves neither the page nor the backend, so it runs now: fill it from
+`demos/<slug>/products.json` so the box matches the storefront it sits on, three or four
+products, and use the **real** product id rather than a placeholder because interactions with
+it can be segmented on afterwards. Dynamic asks Dengage which products to show, which needs
+Web enabled in Stats, an algorithm configured, and the feed. **This one card is per demo
+rather than shared**, the only exception on this page, because a product box showing another
+vertical's products is worse than no product box.
 
-### How it works
+**Smart Search.** Content > Onsite > New > Visual Editor > Search Widget. The target selector
+is **`#search-input`**, the storefront's own search box, which already exists on both pages
+and is stable, so **there is nothing to do on the page**. In order: confirm the SDK
+integration and the Analytics Event Definitions, which are already done; get the feed
+registered; ask a developer for a **Search Container** key; configure a **Recommendation
+Rule** and note its key; create the campaign with both keys. Until the feed exists the widget
+attaches and stays empty, which is not a misconfiguration and no panel work will change.
+Settings once it can run: Show Results on Open `yes`, Min Query Length `3`, Max Products `6`,
+`3` columns, `2` rows, Campaign Priority **High**, delivery **Show without limits** with
+**Stop after engagement** off.
 
-A small panel of product cards, laid over the page, in two variants.
-
-**Static** takes products you type into the campaign. The panel holds the image,
-id, name, price and destination for each, and shows exactly those. Nothing on the
-page and nothing in the backend is involved, so it works on this application
-today.
-
-**Dynamic** asks Dengage which products to show, through a recommendation
-algorithm. That needs Web enabled in Stats, an algorithm configured, and a
-product integration feeding the catalogue in. None of those exist for this
-application, which is the same missing feed that parked the recommendation engine
-card.
-
-### What to do
-
-**Use the Static variant.** Fill it from the demo's own catalogue so the box
-matches the storefront it is sitting on: `demos/<slug>/products.json` has the ids,
-names, categories and prices. Take three or four products from it.
-
-Per product: image, **Product ID**, name, price, discount price, button text,
-target URL. The Product ID matters beyond display, because interactions with it
-can be segmented on afterwards, so use the real id from `products.json` rather
-than a placeholder.
-
-Layout settings: position, max width, dismiss on click outside, keep in place on
-scroll, CTA visibility, price and discount visibility, price direction, close
-button.
-
-**This one card is per demo rather than shared**, because the products in it come
-from that demo's catalogue. It is the only exception on this page, and it is worth
-the two minutes: a product box showing another vertical's products is worse than
-no product box.
+**Typeform.** Not one of the ready-made templates: it is a plain on-site content template
+holding Typeform's own embed snippet, a script and a div, authored once in the content editor.
+That content has **no trigger setting anywhere on its screen**, which is the confusing part.
+The trigger lives on a separate object, created afterwards by pressing **Create Campaign**
+from that content, where the conditions are defined under Campaign Targeting On Site. What is
+still unconfirmed is exactly what that second screen offers.
 
 ---
-
 ## 3. Video Popup
 
 `dengage_demo_video-popup`
@@ -331,137 +342,6 @@ so a shared creative reports the click and closes.
 
 **Layout:** Position `Center`, Max Width `420px`, Dismiss on Click Outside `yes`,
 Keep in Place on Scroll `yes`.
-
----
-
-## 5. Typeform, PARKED 6 August 2026
-
-`dengage_demo_typeform`
-
-**Hidden from the launcher for now.** Corrected the same day it was documented, so
-the correction is recorded here rather than left silently wrong.
-
-### It is not one of the ready-made templates above
-
-Story, Video Popup and Vertical Popup are each a single screen: Content > Onsite >
-New > the template name, and the trigger (when it should appear) is a setting on
-that same screen.
-
-Typeform is different. What Salil built is a plain **on-site content template**
-holding Typeform's own embed snippet, a normal script and a div, authored once in
-the content editor. That content on its own has no trigger setting anywhere on
-screen, which is the confusing part: **the trigger lives on a separate object**,
-created afterwards by pressing **Create Campaign** from that content. Screenshot
-evidence, 6 August: opening the content shows no Trigger field at all, and the
-panel's own assistant confirms the two-step shape, content first, then "attach it
-to a targeting campaign under Campaign Targeting On Site, where you define the
-trigger conditions."
-
-**What is still unconfirmed** is exactly what that second screen offers. The
-Trigger table below, and the advice to pick Custom Event, was written assuming
-Typeform's trigger setting works the same as every other template's. That may
-still be right, since the underlying SDK has no idea which visual template a
-campaign's content came from, but it was written before seeing the actual screen,
-so treat it as a strong guess rather than a confirmed setting until someone has
-looked at it.
-
-| Trigger | The SDK listens on |
-|---|---|
-| Data Layer Event | `window.dataLayer.push({ event: <name> })` |
-| **Custom Event**, the expected pick here | `window.addEventListener(<name>)` |
-| Dengage Event | `window.addEventListener(<name>)`, the same handler |
-
-If picked up again: open the content, press **Create Campaign**, and see what the
-next screen actually offers before assuming either of the above. Whatever the
-trigger type, the event name should be `dengage_demo_typeform`, and the launcher
-card already sends both a data layer push and a matching window event on every
-press, so it works whichever trigger type turns out to be right. Handoff 12.14 has
-the full trigger table, and it applies to every card, not just this one: a trigger
-mismatch produces no error anywhere, and `bash factory/panel/live-campaigns.sh`
-prints the trigger for every live campaign without opening the panel.
-
-**One thing to avoid whenever this comes back:** two campaigns sharing one event
-name on different triggers. Both would fire and the prospect would see the widget
-twice. `live-campaigns.sh` reports duplicates for exactly this reason.
-
-To turn the card back on once this is sorted: one line in
-`template/js/panels.js`, marked and easy to find.
-
----
-
-## 6. Smart Search, PARKED 6 August 2026
-
-`dengage_demo_smart-search`
-
-**Hidden from the launcher for now**, for the same reason as Product Box, and it
-needs the extra steps below on top once that reason is gone.
-
-Content > Onsite > New > Visual Editor > **Search Widget**
-
-The one with a real page side dependency, and the one with a prerequisite that is
-not met yet.
-
-### How it works
-
-The widget attaches to a search input on the page and answers keystrokes with
-products. Underneath, the SDK exposes it as a headless provider that the template
-draws the results for, and reading that provider is what makes the requirements
-below concrete rather than guessed. It is configured with a
-**`searchContainerKey`** and a **`recommendationContainerKey`**, and it does two
-different things:
-
-**Before anything is typed**, it shows initial products, and it gets them from the
-**recommendation** container rather than the search one. That is why a
-recommendation rule is required even though this is a search widget.
-
-**Once typing starts**, it waits for the input to settle, roughly 400 ms by
-default, checks the query is at least `minChars` long, and asks the **search**
-container for up to `maxResultCount` products. Answers are cached for five
-minutes, so the same query typed twice on a call does not go back to the server.
-
-It reports a search open and each settled query to Dengage with a request id, so
-what people searched for is measurable afterwards.
-
-Two things follow from that, and they are the whole problem:
-
-- **Both containers need a product catalogue in Dengage.** The widget returns
-  products, not pages. This application has no product feed, so both containers
-  have nothing to return.
-- **The storefront's own events do not supply it.** `ec:search` and the rest
-  record *behaviour*, which is a different thing from a *catalogue*. Sending more
-  events will never make this widget fill.
-
-### What to do
-
-**On the page: nothing.** The target selector is **`#search-input`**, the
-storefront's search box in the search drawer, on both pages. It already exists
-and is stable.
-
-**In the panel and the backend, in this order:**
-
-1. Confirm the SDK integration and the Analytics Event Definitions, both of which
-   are already done for this application.
-2. **Get a product integration configured for application
-   `99d9b8fb-0c62-5a85-3e43-2402554d93a5`.** This is the blocker and it is a
-   backend task, not a panel setting. It is the same feed the recommendation
-   engine and Product Box Dynamic need, so one piece of work unblocks three
-   cards.
-3. Ask a developer to configure a **Search Container** and note its key.
-4. Configure a **Recommendation Rule** for the initial products and note its key.
-5. Create the campaign with both keys, target `#search-input`.
-
-**Until step 2 exists, expect the widget to attach and stay empty.** That is not
-a misconfiguration and no amount of panel work will change it. The card is in the
-launcher anyway, because a capability nobody can fire is a capability the demo
-does not have, and because the moment the feed lands this becomes a five minute
-job rather than a discovery.
-
-### Settings, once it can run
-
-Show Results on Open `yes`, Min Query Length `3`, Max Products `6`, columns `3`,
-rows `2`, then the container, title, card, image, price, discounted price and CTA
-styling. Campaign Priority **High**, delivery **Show without limits** with **Stop
-after engagement** off.
 
 ---
 
@@ -648,3 +528,150 @@ delete against an account shared with five live demo sites is not something a de
 should do on its own initiative (CLAUDE.md 1a). Setting
 `dengage.inboxReportDelete` to `true` in `demos/<slug>/demo.config.json` turns the
 real call on. That is a decision to make rather than a default to inherit.
+
+# The product feed
+
+The catalogue Dengage needs, and the one thing standing between this application and
+three capabilities.
+
+```
+https://dengage-presales.github.io/demo-ai/feed/products.csv
+https://dengage-presales.github.io/demo-ai/feed/products.json
+```
+
+Both are regenerated whenever a demo is built, committed alongside it, and published by
+GitHub Pages. Nothing needs to be uploaded by hand.
+
+---
+
+## Why three things were blocked on one
+
+| Capability | Why it was empty |
+|---|---|
+| Smart Search | returns products, and there were none |
+| Recommendation engine | same |
+| Product Box, Dynamic variant | same |
+
+None of them was misconfigured, and no amount of event traffic would have fixed
+any of them. `ec:search`, `ec:addToCart` and the rest record **behaviour**. A
+recommendation needs a **catalogue**, which is a different thing, and Dengage had
+no catalogue for application `99d9b8fb-0c62-5a85-3e43-2402554d93a5`.
+
+---
+
+## What to do
+
+**1. Point the product integration at the feed.** In the panel, wherever product
+integration is configured for this application, give it the CSV URL above. If it
+offers a refresh schedule, daily is plenty: the feed only changes when a demo is
+built or expires.
+
+**2. Map the columns.** They are named to match Dengage's own filter vocabulary,
+so this should be a lookup rather than a decision.
+
+| Column | What it is | Dengage filter field |
+|---|---|---|
+| `product_id` | the same id every `ec:*` event sends | the join key |
+| `demo_slug` | **which demo this product belongs to** | custom catalog attribute |
+| `name` | product name, from the prospect's own catalogue | |
+| `category` | the prospect's own category | Category |
+| `brand` | where the feed published one | Brand |
+| `price` | what a customer pays now | Price |
+| `original_price` | what it was before any discount | Original Price |
+| `discount` | the difference, `0` when there is none | Discount |
+| `currency` | three letter code, per demo | |
+| `in_stock` | `true` or `false` | In Stock Status |
+| `stock_level` | a number, **or empty meaning unknown** | Stock Level |
+| `url` | the product page on the live demo | |
+| `image_url` | a shared motif tile, see below | |
+
+**3. Create one recommendation rule per demo, scoped by `demo_slug`.** This is
+the step that matters most and the reason that column exists. See below.
+
+**4. Then the three capabilities can be configured**, in this order, because each
+needs the one before it:
+
+- a **Recommendation Rule** filtered to one demo
+- a **Search Container** for Smart Search, which also needs a recommendation rule
+  for the products it shows before anything is typed
+- **Product Box, Dynamic**, which needs Web enabled in Stats and an algorithm
+
+---
+
+## The scoping problem, stated plainly
+
+**Every demo shares one Dengage application, and an application has one product
+catalogue.** So the feed is the union of every live demo. Right now that is one
+demo and the question is invisible. At five to seven demos a month with ninety day
+retention it will be around twenty demos and six hundred products, and a fashion
+prospect being shown tyres is a real way to lose a call.
+
+`demo_slug` is the answer: a recommendation rule filtered to `demo_slug` equals
+one slug can only return that demo's products. Dengage's documentation says
+Advanced Filters cover Category, Brand, Price, Original Price, Discount, Stock
+Level, In Stock Status **and custom catalog attributes**, which is why the column
+is there.
+
+**This is the one thing here that could not be verified from the repository side.**
+Whether the product integration accepts a custom attribute, and whether a rule can
+then filter on it, is a panel and backend question. Two things follow:
+
+- **If it works**, one rule per demo, filtered on `demo_slug`, and the problem is
+  solved for good.
+- **If it does not**, the feed is still correct and the question becomes yours:
+  either a separate application per demo, which contradicts the single application
+  design, or accepting cross-demo recommendations, which is not acceptable on a
+  call. Worth settling before the second demo exists rather than the twentieth.
+
+`category` is not a substitute. Two demos both having "Accessories" is normal.
+
+---
+
+## Two things about the data that are deliberate
+
+**`stock_level` is usually empty, and empty means unknown.** A public product feed
+publishes whether something is buyable, not how many are left. Shopify's
+`products.json` carries `available` per variant and no quantity; schema.org carries
+an availability URL. So:
+
+- `in_stock` is a **fact**. `false` means no variant was available.
+- `stock_level` is a **number only when the source published one**.
+
+A product can therefore be in stock with no known level, and that is not a
+contradiction. Writing a number there would be inventing one, and writing `0` in
+particular would announce every product out of stock and poison every
+back-in-stock segment built on it (CLAUDE.md 3.5).
+
+**`image_url` is one tile per motif, not one per product.** The storefront draws
+its product artwork inline as SVG so that nothing in a demo can 404 during a call.
+That is right for the page and leaves a Dengage rendered widget with no image, so
+each motif is rendered once to `assets/motifs/<motif>.jpg` and every product using
+that motif points at it. Forty-eight files, shared by every demo, rather than
+thirty per demo.
+
+The consequence, stated so it is not a surprise on a call: **in a Dengage rendered
+recommendation widget, two different jackets show the same tile.** On the demo's own
+pages they also share a silhouette, so the two surfaces agree with each other. If a
+specific call needs real photography, the scraping route is documented in handoff
+7.3 and can be turned on for one demo.
+
+---
+
+## Rebuilding it by hand
+
+```bash
+node factory/make-motif-images.mjs     # motif tiles, and record each product's motif
+node factory/build-feed.mjs            # the feed itself
+node factory/build-feed.mjs --check    # CI: fails if the committed feed is stale
+node factory/feed.test.mjs             # 45 assertions, no network
+```
+
+The motif pass needs a browser, because it asks the real classifier in
+`template/js/artwork.js` rather than reimplementing it. A second copy of that
+classifier would drift, and the drift would be silent: a feed whose images
+disagree with the page.
+
+**An expired demo drops out of the feed on the date**, without waiting for its
+folder to be removed. Folder deletion is parked with the rest of the purge
+(handoff 10), so the feed filters on `expiresAt` itself. A recommendation pointing
+at a demo that has been taken down is a broken link on a live call.

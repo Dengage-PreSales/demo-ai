@@ -1,8 +1,20 @@
 # What is left to do in the Dengage panel
 
-**One page, in order.** Everything the repository can do is done. What remains is
-panel work, and this is all of it. Nothing here is per demo: do it once and every
-demo the factory generates from now on uses it.
+**This page is the list of things to do.** Everything the repository can do is done. What
+remains is panel work, and this is all of it. Nothing here is per demo: do it once and every
+demo the factory generates uses it.
+
+## The four documents, and which one you want
+
+| | |
+|---|---|
+| **This page** | the numbered list of what to do, in order |
+| [`SMS-AND-PUSH.md`](SMS-AND-PUSH.md) | the two live short form channels, field by field, from scratch |
+| [`REFERENCE.md`](REFERENCE.md) | the panel's own templates, web push explained, the App Inbox, the product feed. Background rather than steps |
+| [`content/_dynamic/README.md`](content/_dynamic/README.md) | the saved Dynamic Content assets, and the six step pattern for writing another one |
+
+Two more, one level out: [`factory/emails/BEEFREE.md`](../emails/BEEFREE.md) for the Email
+Builder template, and [`supabase/README.md`](supabase/README.md) for the Postgres side.
 
 > **Where the content actually is**, because there are three places and only one of
 > them is per demo.
@@ -29,7 +41,7 @@ demo the factory generates from now on uses it.
 > `demos/`, and a page naming panel locations next to sample data does not belong on
 > a customer facing URL.
 
-Last reviewed **9 August 2026**. To re-check the campaign half without opening the
+Last reviewed **10 August 2026**. To re-check the campaign half without opening the
 panel:
 
 ```bash
@@ -197,7 +209,7 @@ attribute and no autoplay permission:
 https://dengage-presales.github.io/demo-ai/assets/video/dn-ecomm-demo.svg
 ```
 
-Full explanation and the tested results: `factory/panel/NATIVE-TEMPLATES.md`.
+Full explanation and the tested results: `factory/panel/REFERENCE.md`.
 
 ---
 
@@ -211,9 +223,9 @@ is not lost, for whenever it is picked up.
 
 | | Why it's parked | Written up at |
 |---|---|---|
-| Product Box | needs Dengage to hold this application's product list, and that is not plugged in yet | `factory/panel/PRODUCT-FEED.md` |
+| Product Box | needs Dengage to hold this application's product list, and that is not plugged in yet | `factory/panel/REFERENCE.md` |
 | Product Box, in email | same blocker, but **no longer needed for the abandoned cart email**. Its rail is real now: what the contact actually viewed, then the basket's categories, then the site's own trending. Product Box would add the engine's ranking on top, and the audience wide strategies, Others also viewed and Frequently bought together, still need it | `content/_dynamic/README.md` |
-| Smart Search | same reason, plus it needs two separate setup pieces once the list is plugged in | `factory/panel/PRODUCT-FEED.md`, `factory/panel/NATIVE-TEMPLATES.md` |
+| Smart Search | same reason, plus it needs two separate setup pieces once the list is plugged in | `factory/panel/REFERENCE.md`, `factory/panel/REFERENCE.md` |
 | The 5 recommendation cards | not actually blocked, but showing a working recommendations section next to two cards saying "not ready" looked inconsistent | `template/js/panels.js` |
 | Typeform | it is real, but it is built differently in the panel than everything else here and deserved a second look before shipping it | see below |
 | The 90 day purge | held for Phase 3 | handoff §10, and §1a before anything is armed |
@@ -253,7 +265,7 @@ goes looking for a campaign that was never meant to exist.
 raises the browser's own permission prompt, and that is the whole of what a page
 can do: only a server can send a notification. To make it feel instant on a call,
 point a journey at one of the storefront events. Plain language walk through:
-`factory/panel/NATIVE-TEMPLATES.md`.
+`factory/panel/REFERENCE.md`.
 
 To send one on demand, for a rehearsal rather than in front of a prospect:
 

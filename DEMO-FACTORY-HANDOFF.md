@@ -743,7 +743,7 @@ POST https://api.dengage.com/rest/push/sendInstant
 ```
 
 `factory/panel/send-instant-push.mjs` wraps it. Panel doc:
-`factory/panel/NATIVE-TEMPLATES.md`, "Sending one on demand".
+`factory/panel/REFERENCE.md`, "Sending one on demand".
 
 **Why it is a command and not a launcher card.** Two properties of the API decide
 this, and neither is worked around:

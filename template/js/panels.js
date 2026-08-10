@@ -147,7 +147,7 @@
 
            panel: true still marks them, and it still means there is no file in
            factory/creatives/: the template IS the creative and the settings live in
-           factory/panel/NATIVE-TEMPLATES.md. That flag is what tells
+           factory/panel/REFERENCE.md. That flag is what tells
            factory/checks/launcher.js not to expect a creative on disk.
 
            They exist as cards because a capability nobody can fire is a capability
@@ -175,7 +175,7 @@
            panel: true stays because it states a fact about disk:
            factory/checks/launcher.js reads it as "expect no creative in
            factory/creatives/", and there is still none. The native Video Popup
-           template is still documented in factory/panel/NATIVE-TEMPLATES.md and
+           template is still documented in factory/panel/REFERENCE.md and
            still streams this same film when its campaign fires.
 
            The action is here because that campaign cannot be triggered cleanly
@@ -202,7 +202,7 @@
 
         /* PRODUCT BOX AND SMART SEARCH ARE PARKED, Salil's call, 6 August 2026.
            Both need a product catalogue inside Dengage for this application, and
-           this application does not have one yet: factory/panel/PRODUCT-FEED.md
+           this application does not have one yet: factory/panel/REFERENCE.md
            has the feed itself (built, live) and what still has to happen with it,
            which is backend work, not a panel setting. A card that opens onto
            something with nothing to show is worse than no card.
@@ -224,7 +224,7 @@
            Trigger dropdown this repository documented for every other template does
            not exist on the content screen itself, only on the campaign attached to
            it, so the setup is two steps rather than one and the first attempt at
-           documenting it undersold that. factory/panel/NATIVE-TEMPLATES.md has the
+           documenting it undersold that. factory/panel/REFERENCE.md has the
            corrected version once this is picked back up.
 
            TO TURN IT BACK ON, put this line back.

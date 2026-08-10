@@ -266,7 +266,7 @@ function deck(palette, journeys, panelJourneys, slug, config, problems) {
       <p class="why">This journey's copy names a product, and no Dengage table carries a
         product name: every one identifies a product by id and stops there. Registering the
         product feed against this application is what resolves an id into a name, a price
-        and an image. See <b>factory/panel/PRODUCT-FEED.md</b>, and
+        and an image. See <b>factory/panel/REFERENCE.md</b>, and
         <b>factory/phase0/SCHEMA.md</b> for the column lists this was read from.</p>
     </section>` : `
     <section class="j">

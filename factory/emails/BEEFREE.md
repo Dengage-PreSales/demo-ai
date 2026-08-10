@@ -419,3 +419,144 @@ became a Dynamic Content block and moved to the front of the document. Counting 
 have filled the basket with the rail and drawn a plausible email in the wrong order without
 failing anything, so `dynamicModules()` matches on the asset name instead. Three of the four
 names are a prefix of another, so it matches the delimiter after the name as well.
+
+---
+
+# How BeeFree treats a block, which is the part that caused two real defects
+
+**Moved here 10 August 2026** from `factory/panel/content/_dynamic/README.md`. It is about
+how the Email Builder renders, so it belongs beside the template rather than beside the
+saved assets, and it was the only email specific material in that file.
+
+## BeeFree decorates a block, but not an HTML block
+
+**One fact, and it caused both of the things that looked wrong in real sends.** BeeFree
+writes a typeface inline on every block and puts a block's padding on a `td` around it. It
+does neither for raw HTML: an HTML block is passed through untouched. So a module's own
+`descriptor.style` is not an ancestor of what an HTML module contains.
+
+Two consequences, and each shipped once:
+
+1. These assets declare `font-family: inherit`, so with nothing above them declaring one,
+   every client fell back to its default and the product names arrived in Times under a
+   sans headline.
+2. The module's 24px of side padding never applied either, so the totals table sat flush
+   against both edges of the email while the text blocks were inset. The product cards hid
+   it, because their content is centred, so they looked inset when they were not.
+
+**Both are fixed the same way: the generated template puts them inside the block's own
+content**, in one wrapper div per snippet, which IS an ancestor:
+
+```html
+<div style="font-family:...;font-size:15px;line-height:1.6;color:...;padding:0 24px;">
+  <snippet snippet_id="..." snippet_name="..."></snippet>
+</div>
+```
+
+The module itself now declares no side padding at all, so there is one source for each
+rather than two that can disagree about which one a client honoured. `beefree.test.mjs`
+asserts the wrapper carries both, that the module carries neither, and that the gutter and
+the typeface match the ones the text blocks use.
+
+**The preview was flattering this**, which is why it went unnoticed twice. It replaced the
+whole block including the wrapper and then supplied the font and padding from the module
+style, so it looked right while the send did not. It now substitutes only inside the
+wrapper and takes nothing from the module but vertical padding, exactly as BeeFree does.
+
+## The typeface, and why `inherit` is not enough on its own
+
+**These assets never name a font, and they cannot.** One asset serves every demo and
+every template, so an explicit family in here would beat whatever the surrounding email
+said. They declare `font-family: inherit` and take what is around them.
+
+**Which is nothing, in BeeFree.** Read out of a real export from this account: all 67 of
+its `font-family` declarations are inline on individual blocks. Not one global CSS rule,
+and none on the `<body>`. BeeFree sets a typeface on every block and never on the email.
+So `inherit` inside an HTML block has nothing above it to inherit from, and every mail
+client falls back to its default, which is a serif. That is why the first real send put
+every product name in Times under a sans headline.
+
+**So the template supplies it, in the block's own content.** The generated template wraps
+each `<snippet>` tag in
+
+```html
+<div style="font-family:...;font-size:15px;line-height:1.6;color:...;">
+```
+
+which is inside the snippet's own document, so `inherit` resolves to it. The module's own
+`style.font-family` does not carry: BeeFree treats an HTML block as raw HTML and puts no
+typography around it, which is exactly why the first attempt failed.
+
+**It is the same face the text blocks use, and that is pinned.** `beefree.test.mjs`
+asserts every wrapper declares the identical family the headline and copy declare, so a
+change to one of them fails rather than shipping an email whose products are in a
+different typeface from its words.
+
+**One consequence worth knowing.** Change the template's typeface by hand in the Email
+Builder and the wrapper does not follow, because it is content rather than a block style.
+Change it in `template/style.css` and rebuild instead, which is where the standard
+palette lives and where both halves read it from. Pasting one of these assets into a
+template that has no wrapper gives the client default for the same reason.
+
+## Styling: inline, and as little as possible
+
+Earlier these used `dps-` class names on the assumption that each generated email would
+carry a `<style>` block to theme them. **That is wrong for how this is actually used.**
+The asset drops into a Dengage system template in the Email Builder, and the builder owns
+that template's CSS: there is nowhere to add a class definition.
+
+So the HTML asset is inline styled and deliberately plain. No background, no border, no
+heading, no button, and `font-family: inherit` with `color: inherit` so it takes the
+surrounding template's typography instead of imposing its own. It is a product list and
+nothing else, because the template already supplies the heading above it and the call to
+action below it.
+
+**What each row is, and why.** The first pass was correct and looked like a receipt.
+The proportions are now the storefront's own, so the email and the site it came from
+read as one thing:
+
+| Part | Treatment | Why |
+|---|---|---|
+| image | 96px square in a 112px cell | 72px read as a thumbnail in a list. A product photograph is the reason the email works |
+| category | 11px, uppercase, letter spaced, 60% opacity | the same eyebrow the storefront puts above a product name |
+| name | 16px bold, inheriting the template's colour | not the client's default link blue, which is the single most common way an email looks unfinished |
+| price | 16px bold, reduction first, original struck through at 14% smaller and 55% opacity | a reduction shown honestly, and only when `discounted_price` is genuinely set |
+| quantity | `Qty 2`, and only above one | a quantity of one on every row is noise |
+| row spacing | 22px below each row | three products at 72px with 12px gaps was a dense block rather than a list |
+
+Nothing here sets a colour, a face or a background, so it themes itself from whatever
+template it is dropped into. Opacity does the work a grey would have done, which is
+what keeps it neutral against a dark template as well as a light one.
+
+The old class contract, kept only as a record of what it was:
+
+| Class | What it is |
+|---|---|
+| `dps-items` | the wrapper around all rows |
+| `dps-row` | one product |
+| `dps-thumbcell` | the table cell holding the image, for its width and padding |
+| `dps-thumb` | the image itself |
+| `dps-text` | the cell holding everything beside the image |
+| `dps-name` | the product name |
+| `dps-namelink` | the anchor around the name, so it is not the client's default blue |
+| `dps-meta` | the category, and the quantity when there is more than one |
+| `dps-price` | the price |
+| `dps-was` | the old price, when there is a genuine reduction |
+| `dps-empty` | the fallback when the basket has nothing in it |
+
+A generated email styles all eleven. `dps-namelink` and `dps-thumb` are the two worth
+not forgetting: an unstyled link is blue and underlined in every client, and an
+unstyled image has no border radius or background while it loads.
+
+Outlook on Windows honours `color`, `font-family`, `font-size` and `background-color`
+from a `<style>` block. It does not honour everything, so the shell around these rows
+stays fully inline in the generated email. A worst case is product rows in the default
+face inside a correctly branded email, not a broken layout.
+
+**It does a two step lookup.** `shopping_cart_events` records that something happened
+to a `product_id` and carries no name or picture, so the id is looked up in
+`dps_product`. `factory/phase0/SCHEMA.md` has the column lists and the reasoning.
+
+`is_active` is checked rather than trusted: a product withdrawn from the catalogue
+still has cart rows from before it went, and a basket reminder for something nobody can
+buy is worse than one item short.

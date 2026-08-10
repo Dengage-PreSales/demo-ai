@@ -59,7 +59,7 @@ function short(mode, spec, column, max, fallback, sample) {
             'no column for this value on ' + spec.spec.table + '. ' +
             'factory/phase0/SCHEMA.md lists what the table has. Product names are in ' +
             'no table: Product Box resolves them from the product feed, see ' +
-            'factory/panel/PRODUCT-FEED.md');
+            'factory/panel/REFERENCE.md');
     }
     if (mode !== 'panel') {
         const value = sample || fallback;

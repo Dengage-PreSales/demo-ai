@@ -45,7 +45,7 @@
    product feed is for, and what Product Box does with it. So a name field and an
    image field are deliberately absent below rather than guessed at, and until the
    feed is registered against this application there is nothing a query can render.
-   factory/panel/PRODUCT-FEED.md, and SCHEMA.md for the reasoning. */
+   factory/panel/REFERENCE.md, and SCHEMA.md for the reasoning. */
 export const COLUMNS = {
     cart: {
         table: 'shopping_cart_events',
@@ -191,7 +191,7 @@ function column(spec, key) {
             'no column for "' + key + '" on ' + spec.table + '. ' +
             'factory/phase0/SCHEMA.md lists what the table actually has. ' +
             'Product names and images are not in any table: Product Box resolves ' +
-            'them from the product feed, see factory/panel/PRODUCT-FEED.md');
+            'them from the product feed, see factory/panel/REFERENCE.md');
     }
     return name;
 }

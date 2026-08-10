@@ -156,53 +156,16 @@ from the template's side in `factory/emails/beefree.test.mjs`.
 phrase and only the email wants a comma after it, so the asset stays a phrase and the
 template supplies the rest. Which is only possible because of the paragraph above.
 
-## "Please add variables to your template first. No variables found"
+## The panel behaviours that are not about these files
 
-**The SMS test dialog says this, and it is not about the snippet.** 10 August 2026, on
-`DPS - Abandoned Cart V1.0`.
+Three things about the editors will cost an afternoon each, and all three are written
+down once, in [`factory/panel/SMS-AND-PUSH.md`](../../SMS-AND-PUSH.md):
 
-That dialog's job is to collect a sample value for **every variable in the template** so it
-can render a preview against one phone number. It scans the body, finds no variables, and
-stops, because it has nothing to ask you for. A **variable** is a placeholder the panel fills
-from a contact column. A **snippet** is a saved asset the panel runs. The dialog counts the
-first kind, so a body containing only a snippet has zero variables and the message is
-literally true.
-
-**It is not a statement about the snippet either way.** It does not mean the tag was
-rejected, and it does not mean the tag will resolve. It means the preview path is gated on
-something a snippet is not.
-
-Two things get past it, and the second is the one that proves anything:
-
-1. **Add one contact variable** from the editor's own personalization list, any one. The
-   dialog then has something to collect and Preview and Test opens. Take it out afterwards
-   or leave it, it does no harm.
-2. **Send a real test message.** A preview means rendered. A received SMS means it works,
-   and the two have already disagreed elsewhere in this project: an HTTP 200 from the event
-   endpoint means accepted, not stored.
-
-**Insert the snippet with the editor's own control rather than by pasting the tag**, at least
-once. Whatever the panel writes into the body is the authoritative form for that channel,
-and it is the only way to find out whether SMS uses the same `<snippet snippet_id="...">`
-form the email does. That is how the email form was pinned down. If it writes something
-different, it goes in this file.
-
-**And keep words around it.** `Still in your basket: ` before the tag costs nothing and means
-a snippet that fails to resolve leaves a short message rather than an empty one. The asset
-itself always emits a phrase, so the only way to get a blank SMS is the tag not running at
-all, which is exactly the case worth surviving.
-
-`_diagnostic.txt` answers the same question from the other side. It is a throwaway Plain Text
-asset that reports what a send can actually see, in one line short enough for one SMS:
-
-```
-dps diagnostic key=DPS-3 devices=1 cart=8 views=26
-```
-
-`key=(none)` means the send has no contact key, so every query returns nothing and any
-scenario asset renders its fallback. `FAILED` means that table refused the query. And if the
-message arrives showing the raw tag instead of any of this, the channel is not resolving
-snippets at all, which is the answer nothing else gives you as plainly.
+- **"Please add variables to your template first. No variables found"** is the SMS test
+  dialog asking for variables, which a snippet is not. It says nothing about your snippet.
+- **The preview pane never resolves snippets.** It echoes the body. Only a real send resolves.
+- **A message field takes a reference, never an asset body.** Pasting a body counts every
+  character of the query against the 450 character SMS limit.
 
 ## The tag form is different in every editor, so let the editor write it
 
@@ -229,54 +192,18 @@ who created them. Both resolve, because `snippet_id` is what resolves. So a name
 between this folder and the panel is cosmetic, and the asset names in the tables here are what
 to call a new one rather than a claim about what exists.
 
-## Web push, where every field takes a text snippet
+## Which asset goes in which field
 
-**Salil, 10 August 2026: every box in the push editor accepts Dynamic Content, and only the
-text kind.** Title, Message, Media, Target URL, Badge URL, and the custom parameter values.
-That is worth more than personalized copy, because two of those fields are not copy at all:
+Every box in the push editor takes a text snippet, and two of those boxes are not copy:
+Media takes `abandoned-cart-image.txt` and Target URL takes `abandoned-cart-url.txt`. The
+field by field list, and what each emits when there is nothing to show, is in
+[`factory/panel/SMS-AND-PUSH.md`](../../SMS-AND-PUSH.md).
 
-| Field | Asset | What arrives |
-|---|---|---|
-| Title | words, or `abandoned-cart.txt` | `Still in your basket` |
-| Message | `abandoned-cart.txt` with words around it | `Oxford Shirt and 3 more items are waiting.` |
-| **Media** | `abandoned-cart-image.txt` | the visitor's own product, as a 2:1 banner |
-| **Target URL** | `abandoned-cart-url.txt` | that demo's basket, opened |
-| Custom parameters | left alone | the App Inbox reads what Dengage holds for the device |
-
-**The image asset asks for a banner rather than the product tile, and derives its address
-from the tile's.** A push shows its image in a wide band, so a square tile arrives
-letterboxed. `factory/make-push-images.mjs` writes a 1200x600 crop beside every photograph,
-with the photograph's own margin trimmed off and the band filled with a colour sampled from
-its corners, and the asset inserts one path segment into `image_link` to find it.
-
-Deriving is what keeps this free of any change to `dps_product`, and the price of deriving is
-that a missing file is a 404 in a notification rather than a fallback. So
-`factory/push-images.test.mjs` asserts every committed photograph has a banner, at the exact
-path the asset will ask for, and it runs the asset's own `bannerOf` against the generator's
-own `bannerPathFor` so the two namings cannot drift. A photograph whose address is not of the
-expected shape falls back to itself: letterboxed is a real picture, a derived 404 is not.
-
-So a rich web push carries the product the visitor actually left behind and lands them back on
-the basket they left it in, with no per demo campaign and nothing typed on the day.
-
-**Both new assets emit nothing rather than something wrong, and that is the whole design.**
-
-| Case | What is emitted | Why |
-|---|---|---|
-| The newest product has no picture | the next basket product's picture | one demo here has no product photography at all, and a rail of one is worse than none |
-| No basket product has a picture | nothing. The push sends without an image | a standard notification is a fine notification |
-| The picture is `http` | nothing | a browser blocks a mixed content push image, so an http URL is the same as no URL |
-| No page view attributes the basket to a demo | nothing | there is no address correct for every demo, and a guessed one lands the recipient on somebody else's storefront |
-
-That last row is the one to keep. **A push landing on the wrong demo is worse on a call than a
-push that was never sent**, because the wrong one is visible and the missing one is not. The
-same reasoning is why the shared on site creatives report a click and dismiss rather than
-navigate.
-
-**A note on the copy field.** `abandoned-cart.txt` is a phrase and not a sentence, so put words
-around it: `Message` reads `<snippet /> are waiting for you.` and not the snippet alone. The
-grammar works at any basket size because the phrase carries its own count, and a send that
-resolves nothing still reads as English.
+**The image asset asks for a 2:1 banner rather than the product tile**, deriving its address
+from `image_link` by inserting one path segment. `factory/make-push-images.mjs` writes those
+for photographs and `factory/make-motif-images.mjs` for the shared artwork, and
+`factory/push-images.test.mjs` holds the two namings to the same answer, because a derived
+address for a file nobody wrote is a 404 in a notification rather than a fallback.
 
 ## The totals, because a correct product list next to an invented total is worse
 
@@ -545,136 +472,3 @@ contains only code.
 **`is_active` IS A BOOLEAN.** All three tested `p.is_active == 1`. Dengage declares the
 column BOOLEAN, confirmed from its API, so that comparison was false for every product
 and the block would have rendered empty while looking like a data problem.
-
-## BeeFree decorates a block, but not an HTML block
-
-**One fact, and it caused both of the things that looked wrong in real sends.** BeeFree
-writes a typeface inline on every block and puts a block's padding on a `td` around it. It
-does neither for raw HTML: an HTML block is passed through untouched. So a module's own
-`descriptor.style` is not an ancestor of what an HTML module contains.
-
-Two consequences, and each shipped once:
-
-1. These assets declare `font-family: inherit`, so with nothing above them declaring one,
-   every client fell back to its default and the product names arrived in Times under a
-   sans headline.
-2. The module's 24px of side padding never applied either, so the totals table sat flush
-   against both edges of the email while the text blocks were inset. The product cards hid
-   it, because their content is centred, so they looked inset when they were not.
-
-**Both are fixed the same way: the generated template puts them inside the block's own
-content**, in one wrapper div per snippet, which IS an ancestor:
-
-```html
-<div style="font-family:...;font-size:15px;line-height:1.6;color:...;padding:0 24px;">
-  <snippet snippet_id="..." snippet_name="..."></snippet>
-</div>
-```
-
-The module itself now declares no side padding at all, so there is one source for each
-rather than two that can disagree about which one a client honoured. `beefree.test.mjs`
-asserts the wrapper carries both, that the module carries neither, and that the gutter and
-the typeface match the ones the text blocks use.
-
-**The preview was flattering this**, which is why it went unnoticed twice. It replaced the
-whole block including the wrapper and then supplied the font and padding from the module
-style, so it looked right while the send did not. It now substitutes only inside the
-wrapper and takes nothing from the module but vertical padding, exactly as BeeFree does.
-
-## The typeface, and why `inherit` is not enough on its own
-
-**These assets never name a font, and they cannot.** One asset serves every demo and
-every template, so an explicit family in here would beat whatever the surrounding email
-said. They declare `font-family: inherit` and take what is around them.
-
-**Which is nothing, in BeeFree.** Read out of a real export from this account: all 67 of
-its `font-family` declarations are inline on individual blocks. Not one global CSS rule,
-and none on the `<body>`. BeeFree sets a typeface on every block and never on the email.
-So `inherit` inside an HTML block has nothing above it to inherit from, and every mail
-client falls back to its default, which is a serif. That is why the first real send put
-every product name in Times under a sans headline.
-
-**So the template supplies it, in the block's own content.** The generated template wraps
-each `<snippet>` tag in
-
-```html
-<div style="font-family:...;font-size:15px;line-height:1.6;color:...;">
-```
-
-which is inside the snippet's own document, so `inherit` resolves to it. The module's own
-`style.font-family` does not carry: BeeFree treats an HTML block as raw HTML and puts no
-typography around it, which is exactly why the first attempt failed.
-
-**It is the same face the text blocks use, and that is pinned.** `beefree.test.mjs`
-asserts every wrapper declares the identical family the headline and copy declare, so a
-change to one of them fails rather than shipping an email whose products are in a
-different typeface from its words.
-
-**One consequence worth knowing.** Change the template's typeface by hand in the Email
-Builder and the wrapper does not follow, because it is content rather than a block style.
-Change it in `template/style.css` and rebuild instead, which is where the standard
-palette lives and where both halves read it from. Pasting one of these assets into a
-template that has no wrapper gives the client default for the same reason.
-
-## Styling: inline, and as little as possible
-
-Earlier these used `dps-` class names on the assumption that each generated email would
-carry a `<style>` block to theme them. **That is wrong for how this is actually used.**
-The asset drops into a Dengage system template in the Email Builder, and the builder owns
-that template's CSS: there is nowhere to add a class definition.
-
-So the HTML asset is inline styled and deliberately plain. No background, no border, no
-heading, no button, and `font-family: inherit` with `color: inherit` so it takes the
-surrounding template's typography instead of imposing its own. It is a product list and
-nothing else, because the template already supplies the heading above it and the call to
-action below it.
-
-**What each row is, and why.** The first pass was correct and looked like a receipt.
-The proportions are now the storefront's own, so the email and the site it came from
-read as one thing:
-
-| Part | Treatment | Why |
-|---|---|---|
-| image | 96px square in a 112px cell | 72px read as a thumbnail in a list. A product photograph is the reason the email works |
-| category | 11px, uppercase, letter spaced, 60% opacity | the same eyebrow the storefront puts above a product name |
-| name | 16px bold, inheriting the template's colour | not the client's default link blue, which is the single most common way an email looks unfinished |
-| price | 16px bold, reduction first, original struck through at 14% smaller and 55% opacity | a reduction shown honestly, and only when `discounted_price` is genuinely set |
-| quantity | `Qty 2`, and only above one | a quantity of one on every row is noise |
-| row spacing | 22px below each row | three products at 72px with 12px gaps was a dense block rather than a list |
-
-Nothing here sets a colour, a face or a background, so it themes itself from whatever
-template it is dropped into. Opacity does the work a grey would have done, which is
-what keeps it neutral against a dark template as well as a light one.
-
-The old class contract, kept only as a record of what it was:
-
-| Class | What it is |
-|---|---|
-| `dps-items` | the wrapper around all rows |
-| `dps-row` | one product |
-| `dps-thumbcell` | the table cell holding the image, for its width and padding |
-| `dps-thumb` | the image itself |
-| `dps-text` | the cell holding everything beside the image |
-| `dps-name` | the product name |
-| `dps-namelink` | the anchor around the name, so it is not the client's default blue |
-| `dps-meta` | the category, and the quantity when there is more than one |
-| `dps-price` | the price |
-| `dps-was` | the old price, when there is a genuine reduction |
-| `dps-empty` | the fallback when the basket has nothing in it |
-
-A generated email styles all eleven. `dps-namelink` and `dps-thumb` are the two worth
-not forgetting: an unstyled link is blue and underlined in every client, and an
-unstyled image has no border radius or background while it loads.
-
-Outlook on Windows honours `color`, `font-family`, `font-size` and `background-color`
-from a `<style>` block. It does not honour everything, so the shell around these rows
-stays fully inline in the generated email. A worst case is product rows in the default
-face inside a correctly branded email, not a broken layout.
-
-**It does a two step lookup.** `shopping_cart_events` records that something happened
-to a `product_id` and carries no name or picture, so the id is looked up in
-`dps_product`. `factory/phase0/SCHEMA.md` has the column lists and the reasoning.
-
-`is_active` is checked rather than trusted: a product withdrawn from the catalogue
-still has cart rows from before it went, and a basket reminder for something nobody can
-buy is worse than one item short.

@@ -77,7 +77,7 @@ So a message cannot render a product's name or picture from these rows. The id i
 all there is. Resolving an id into a name, a price and an image is what the
 **product feed** is for, and it is what `Product Box` does. Until the feed is
 registered against this application, personalised product content in email, push
-or on-site has nothing to render. `factory/panel/PRODUCT-FEED.md` covers the
+or on-site has nothing to render. `factory/panel/REFERENCE.md` covers the
 registration, and `factory/panel/README.md` records it as parked.
 
 This also settles a documentation conflict. Dengage's ecommerce events reference
