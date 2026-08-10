@@ -72,12 +72,22 @@ function slide() {
         '<amp-img src="' + SITE + '{%= card.bannerPath %}" width="' + BANNER_WIDTH +
         '" height="' + BANNER_HEIGHT + '" layout="responsive" alt="{%= card.title %}">' +
         '</amp-img>{% } %}' +
-        /* THE CONDITIONAL PADDING IS TWO CLASSES RATHER THAN AN EXPRESSION IN A STYLE
-           ATTRIBUTE. A `{%= %}` inside style="" breaks the attribute for an HTML parser,
-           and the panel reported nine invented attributes per slide because of it. */
-        '{% if (card.category !== "") { %}<div class="c">{%= card.category %}</div>{% } %}' +
-        '<div class="{% if (card.category === "") { %}n t{% } else { %}n{% } %}">' +
-        '{%= card.title %}</div>' +
+        /* THE CONDITION IS OUTSIDE THE TAG, NOT INSIDE THE ATTRIBUTE, and it took two
+           rounds with the panel to get this right. The first version put the conditional
+           padding in a style attribute; the second moved it into a class attribute, which
+           failed the same way for the same reason, and the reason is narrower than "no
+           tags in attributes":
+
+           AN ATTRIBUTE IS DOUBLE QUOTED, AND THE EXPRESSION CONTAINED A DOUBLE QUOTE.
+           `class="{% if (card.category === "") ... "` ends, to a parser, at the `""` in the
+           comparison. Everything after it is read as more attributes, which is why the
+           panel reported eight of them per slide with names like '%}n{%' and 'else'.
+
+           So the whole div is chosen rather than the class inside it. src, href and alt
+           keep their tags, because their expressions use single quotes and survive. */
+        '{% if (card.category !== "") { %}<div class="c">{%= card.category %}</div>' +
+        '<div class="n">{%= card.title %}</div>' +
+        '{% } else { %}<div class="n t">{%= card.title %}</div>{% } %}' +
         '{% if (card.price !== "") { %}<div class="p">' +
         '{% if (card.cut !== "") { %}<span class="b">{%= card.cut %}</span>' +
         '<span class="w">{%= card.price %}</span>' +

@@ -488,9 +488,46 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
     ok('AMP: every src and href begins with a literal https, before the engine runs',
        attributes.every((a) => /="https:\/\//.test(a)),
        attributes.filter((a) => !/="https:\/\//.test(a)).slice(0, 3));
-    ok('AMP: and no style attribute contains a template tag',
-       !/style="[^"]*\{%/.test(amp),
-       (amp.match(/style="[^"]*\{%[^"]*"/g) || []).slice(0, 2));
+    /* EVERY TAG IS PARSED THE WAY A PARSER WOULD, rather than pattern matched, and this
+       replaced two narrower checks that each missed the next instance of the same bug.
+
+       The first version of this file put a conditional in a style attribute. Told about it,
+       I moved the conditional into a class attribute, which failed identically, because the
+       cause is not the attribute's name. An attribute is double quoted and closes at the
+       next double quote, so `class="{% if (x === "") ... "` ends inside the comparison and
+       everything after is read as more attributes: '%}n{%', 'else', '{', '}'. That is
+       exactly what the panel listed, twice.
+
+       So this consumes each tag attribute by attribute the way a parser does and fails if
+       anything is left over. It catches the style case, the class case, and any attribute
+       somebody adds later. */
+    const malformed = [];
+    for (const tag of amp.slice(amp.indexOf('%}') + 2).match(/<[a-zA-Z][^>]*>/g) || []) {
+        let rest = tag.replace(/^<[a-zA-Z][\w-]*/, '');
+        for (;;) {
+            const before = rest;
+            rest = rest.replace(/^\s*\/?>$/, '')
+                       .replace(/^\s+[a-zA-Z_:][\w:.-]*(?:="[^"]*")?/, '');
+            if (rest === '' || rest === before) break;
+        }
+        if (rest !== '') malformed.push(tag.slice(0, 70));
+    }
+    ok('AMP: every tag parses attribute by attribute with nothing left over',
+       malformed.length === 0, malformed.slice(0, 2));
+
+    /* AND THE CHECK AGAINST THE EXACT MARKUP THAT FAILED, because a parser check that
+       accepts everything accepts nothing. */
+    const wasBroken = '<div class="{% if (a === "") { %}n t{% } else { %}n{% } %}">';
+    let leftover = wasBroken.replace(/^<[a-zA-Z][\w-]*/, '');
+    for (;;) {
+        const before = leftover;
+        leftover = leftover.replace(/^\s*\/?>$/, '')
+                           .replace(/^\s+[a-zA-Z_:][\w:.-]*(?:="[^"]*")?/, '');
+        if (leftover === '' || leftover === before) break;
+    }
+    ok('and it rejects the class attribute the panel rejected', leftover !== '',
+       leftover.slice(0, 40));
+
     ok('AMP: so the slide styles are classes in amp-custom instead',
        amp.includes('<div class="s">') && amp.includes('.n.t{'));
 

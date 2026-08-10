@@ -90,7 +90,18 @@ fixed, and all four are now asserted on the authored source:
 | 150 lines of `{% %}` above `<!doctype html>` | `the parent tag of 'html' is '$root'`, and every head tag parsed as body | the doctype is first, and the query sits inside `<body>` |
 | `i < rows.length` inside the query | nothing directly, but an HTML parser opens a tag at the `<` | **the generated query contains no `<` at all.** Every comparison is written larger side first |
 | `src="{%= card.banner %}"` | `the relative URL '{%= card.banner %}' is disallowed` | a literal `https://...` prefix, then a path expression |
-| `padding:{%= ... %}` in a `style` attribute | nine invented attributes per slide, `'%}px'`, `'24px;"'` | classes in `<style amp-custom>` |
+| A tag inside a **double quoted attribute** whose expression contains a double quote | eight invented attributes per slide: `'%}n{%'`, `'else'`, `'{'`, `'}'` | the condition goes outside the tag, not inside the attribute |
+
+That last one took two rounds, and the second round is the useful part. The first version put
+a conditional in a `style` attribute. Told about it, I moved the conditional into a `class`
+attribute, which failed identically, because **the attribute's name was never the cause**. An
+attribute closes at the next double quote, so `class="{% if (x === "") ...` ends inside the
+comparison and everything after it is read as more attributes. `src`, `href` and `alt` keep
+their tags quite happily, because their expressions use single quotes.
+
+So the test no longer pattern matches for a list of attribute names. It consumes every tag
+attribute by attribute the way a parser does and fails if anything is left over, and it
+checks itself against the exact markup the panel rejected.
 
 That last pair is why `resolve.mjs` gives every card a `bannerPath` and a `linkPath`
 alongside its absolute address: the attribute has to look absolute to something reading the
@@ -171,7 +182,7 @@ and a Code Editor email needs none of it because raw HTML carries the query.
 
 ## How they were checked, and what that does not cover
 
-`factory/emails/scenarios.test.mjs`, 134 assertions, run in CI. It **executes** each email
+`factory/emails/scenarios.test.mjs`, 135 assertions, run in CI. It **executes** each email
 against synthetic event logs rather than reading it, which is the only way to check a file
 that is a program. It covers: every column named exists in
 [`factory/phase0/SCHEMA.md`](../phase0/SCHEMA.md), the query and the markup share no
