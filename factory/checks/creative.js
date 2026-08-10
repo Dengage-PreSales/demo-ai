@@ -138,6 +138,35 @@ async function main() {
   const hasForm = isSubscription;
   console.log('   form handler would be injected .. ' + wantsForm + '\n');
 
+  /* THE GATE MUST SURVIVE A PANEL THAT RE-QUOTES ATTRIBUTES. Added 10 August 2026,
+     after the live create account card rendered with Dn present and Dn.postSubscription
+     absent, which can only mean shared.js was injected at </body> and the form handler
+     was not.
+
+     The gate is a BYTE comparison for data-dn-form-id="<id>" with straight double quotes.
+     A CSS attribute selector reads the parsed value and never the source quoting, so a
+     panel that normalises quotes on save breaks the injection while leaving every selector
+     and every field working. Nothing on screen says so and nothing is logged.
+
+     Both question creatives and the subscription creative therefore carry the substring a
+     second time as a TEXT NODE, which no attribute normaliser rewrites. This simulates the
+     mangling on the form tag alone and requires the gate to still match. */
+  if (wantsForm) {
+    const requoted = creative.split('\n').map((line) =>
+      /^<form/.test(line) ? line.replace(/data-dn-form-id="([a-z_]+)"/g, "data-dn-form-id='$1'") : line
+    ).join('\n');
+    const stillGated = assemble(requoted).wantsForm;
+    console.log('   the form tag was re-quoted in this probe ... ' +
+      (requoted !== creative));
+    console.log('   the gate still matches anyway ........... ' + stillGated +
+      (stillGated ? '   (the text node carries it)' : '   <-- THE HANDLER WOULD NOT LOAD'));
+    if (requoted === creative) {
+      console.log('   ^^ the probe changed nothing, so it proved nothing. The form tag ' +
+        'should start a line');
+    }
+  }
+
+
   browser = await chromium.launch({
     executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium' });
   const page = await browser.newPage();
