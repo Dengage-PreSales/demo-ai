@@ -79,27 +79,6 @@
 ========================================================================== -->
 </head>
 <body>
-<!-- =========================================================================
-     THE INJECTION GATE, WRITTEN OUT AS TEXT ON PURPOSE. Added 10 August 2026.
-
-     The SDK decides whether to inject its form handler by searching the stored
-     content for the EXACT substring  data-dn-form-id="question_form"  with
-     straight double quotes. That is a byte comparison, not a DOM query.
-
-     The form below carries the attribute correctly, and it still failed live: the
-     create account card rendered, Dn existed, and Dn.postSubscription did not, which
-     can only mean shared.js was injected at </body> and the form handler was not.
-     A panel that normalises attribute quotes on save breaks the byte comparison
-     while leaving every DOM selector working, because a CSS attribute selector reads
-     the parsed value and never the source quoting. That asymmetry is the whole bug.
-
-     So the substring also appears below as a TEXT NODE, which no attribute quote
-     normaliser touches. It is invisible, it is not a field, it sits outside the form
-     so the engine's field walker never sees it, and its only job is to make the
-     comparison above succeed. Removing it risks the handler silently not loading.
-========================================================================== -->
-<span style="display:none;" aria-hidden="true">data-dn-form-id="question_form"</span>
-
 <form class="form" data-dn-form-id="question_form" data-dn-validation-language="en"
       id="dnf-np" onsubmit="return false">
   <style>
@@ -385,5 +364,30 @@
   </div>
 </form>
 
+
+<!-- =========================================================================
+     THE INJECTION GATE, WRITTEN OUT AS TEXT ON PURPOSE. Added 10 August 2026.
+
+     The SDK decides whether to inject its form handler by searching the stored
+     content for the EXACT substring  data-dn-form-id="question_form"  with
+     straight double quotes. That is a byte comparison, not a DOM query.
+
+     The form below carries the attribute correctly, and it still failed live: the
+     create account card rendered, Dn existed, and Dn.postSubscription did not, which
+     can only mean shared.js was injected at the end of the body and the form handler
+     was not. That closing tag is deliberately not written out here: the SDK injects by
+     replacing its FIRST occurrence, so naming it in a comment above the real one sends
+     both scripts into the comment, where they never run. Caught by the check, having
+     been introduced by this very comment.
+     A panel that normalises attribute quotes on save breaks the byte comparison
+     while leaving every DOM selector working, because a CSS attribute selector reads
+     the parsed value and never the source quoting. That asymmetry is the whole bug.
+
+     So the substring also appears below as a TEXT NODE, which no attribute quote
+     normaliser touches. It is invisible, it is not a field, it sits outside the form
+     so the engine's field walker never sees it, and its only job is to make the
+     comparison above succeed. Removing it risks the handler silently not loading.
+========================================================================== -->
+<span style="display:none;" aria-hidden="true">data-dn-form-id="question_form"</span>
 </body>
 </html>

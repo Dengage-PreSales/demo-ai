@@ -313,6 +313,12 @@ async function main() {
       if (perm) perm.checked = true;
     });
 
+    /* RE-ENABLED FIRST. A capture creative disables its own submit after a successful
+       post, which is correct behaviour and stops a double submit, and section 4 above has
+       already submitted once. Without this the click waits thirty seconds for a button
+       that will never be enabled again and the run dies as a harness error rather than a
+       verdict. */
+    await page.evaluate(() => { const b = document.querySelector('button.send'); if (b) b.disabled = false; });
     await page.click('button.send');
     await page.waitForTimeout(500);
 
@@ -338,6 +344,12 @@ async function main() {
       el.value = 'not-an-email';
       el.dispatchEvent(new Event('input', { bubbles: true }));
     });
+    /* RE-ENABLED FIRST. A capture creative disables its own submit after a successful
+       post, which is correct behaviour and stops a double submit, and section 4 above has
+       already submitted once. Without this the click waits thirty seconds for a button
+       that will never be enabled again and the run dies as a harness error rather than a
+       verdict. */
+    await page.evaluate(() => { const b = document.querySelector('button.send'); if (b) b.disabled = false; });
     await page.click('button.send');
     await page.waitForTimeout(400);
     badPosted = await page.evaluate(() => window.__posted.length);
@@ -354,6 +366,72 @@ async function main() {
 
   } else {
     console.log('\n3 to 6. Form contract: not a form creative, skipped.');
+  }
+
+  /* --------------------------------------------------------------------- */
+  /* 6b. THE SUBSCRIPTION SURVIVES A MISSING FORM HANDLER TOO.
+     Added 10 August 2026. The handler is injected only on a byte match for
+     data-dn-form-id="subscription_form", and live it was not injected: the card rendered,
+     Dn existed and Dn.postSubscription did not.
+
+     I first told Salil this one had no fallback, because creating a contact needs the
+     engine's endpoint. That was wrong. The form handler's whole job is to collect the
+     fields, validate them and then call Dn.postMessageToParent('postSubscription',
+     { form: ... }). postMessageToParent lives in shared.js, which IS injected, and the
+     PARENT SDK is what makes the HTTP call. So the creative can build the payload itself
+     and skip the handler entirely, which is what it now does. */
+  if (isSubscription) {
+    console.log('\n6b. With no form handler, the creative posts the subscription itself');
+    const bare2 = assemble(creative, { withoutForm: true });
+    const stem3 = 'noform-' + path.basename(target).replace(/\W+/g, '-') + '.html';
+    fs.writeFileSync(path.join(ASSEMBLED_DIR, stem3), bare2.html);
+    const page3 = await browser.newPage();
+    const blew = [];
+    page3.on('pageerror', (e) => blew.push(String(e.message || e)));
+    await page3.goto(SERVE + stem3, { waitUntil: 'load' });
+
+    const out = await page3.evaluate(() => {
+      const res = { hasHandler: typeof (window.Dn || {}).postSubscription === 'function' };
+      window.__posted = [];
+      window.Dn.postMessageToParent = (action, data) => { window.__posted.push({ action, data }); };
+      const set = (id, v) => { document.getElementById(id).value = v; };
+
+      /* A bad email must still be refused, by the creative's own validation now. */
+      set('dnf-first', 'Ada'); set('dnf-last', 'Lovelace');
+      set('dnf-email', 'not-an-email'); set('dnf-gsm', '7700900123');
+      document.querySelector('button.send').click();
+      res.badEmailPosted = window.__posted.length;
+      res.emailInvalid = document.getElementById('dnf-email').getAttribute('data-dn-invalid');
+
+      /* And a good one must post, with every field and all three permissions. */
+      set('dnf-email', 'ada@dengage.com');
+      const btn = document.querySelector('button.send');
+      btn.disabled = false;
+      btn.click();
+      res.posted = window.__posted[window.__posted.length - 1] || null;
+      const c = document.querySelector('.container');
+      res.submitted = c ? c.getAttribute('data-dn-is-submitted') : null;
+      return res;
+    });
+    await page3.close();
+
+    const form = out.posted && out.posted.data && out.posted.data.form;
+    const say = (l, c, d) => { if (c) console.log('   ok    ' + l); else { ok2 = false;
+      console.log('   FAIL  ' + l + (d !== undefined ? '  <' + JSON.stringify(d) + '>' : '')); } };
+    say('the form handler really is absent in this probe', out.hasHandler === false, out);
+    say('nothing throws', blew.length === 0, blew.slice(0, 2));
+    say('a bad email is refused without posting',
+        out.badEmailPosted === 0 && out.emailInvalid === 'true', out);
+    say('a valid form posts the postSubscription action',
+        out.posted && out.posted.action === 'postSubscription', out.posted);
+    say('with the four fields the contact needs',
+        Boolean(form) && form.name === 'Ada' && form.surname === 'Lovelace' &&
+        form.email === 'ada@dengage.com' && String(form.gsm).indexOf('7700900123') !== -1, form);
+    say('and all three permissions true',
+        Boolean(form) && form.emailPermission === true &&
+        form.gsmPermission === true && form.whatsappPermission === true, form);
+    say('and the creative confirms it itself, because no engine will',
+        out.submitted === 'true', out);
   }
 
   console.log('\n7. Page errors');
@@ -621,11 +699,16 @@ async function main() {
                         : fail('scoped CSS', unscoped.slice(0, 4));
 
   console.log('\n9. It renders, and the CTA reports before it dismisses');
-  const rendered = await page.evaluate(() => {
-    const root = document.body.firstElementChild;
+  /* THE CREATIVE'S OWN ROOT, BY ID, not document.body.firstElementChild. Changed 10
+     August 2026: a hidden element added ahead of the card made this measure 0x0 and
+     report a perfectly good creative as not rendering. What it is asking is "does the
+     card have a size", and the card is the element carrying the root id that section 8
+     already found. firstElementChild remains the fallback for a creative with no id. */
+  const rendered = await page.evaluate((id) => {
+    const root = (id && document.getElementById(id)) || document.body.firstElementChild;
     const r = root ? root.getBoundingClientRect() : { width: 0, height: 0 };
-    return { w: Math.round(r.width), h: Math.round(r.height) };
-  });
+    return { w: Math.round(r.width), h: Math.round(r.height), measured: root ? (root.id || root.tagName) : null };
+  }, rootId);
   rendered.h > 20 && rendered.w > 100
     ? pass('renders at ' + rendered.w + 'x' + rendered.h)
     : fail('renders with real size', rendered);

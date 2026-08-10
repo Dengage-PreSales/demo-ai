@@ -231,11 +231,30 @@ endpoint honours that particular key is a question only a real send answers.
 order. Add a field without its span and every message after it belongs to the wrong input.
 Section 3 of the check prints the pairing and the word `aligned`.
 
-**The submit is guarded, and reports the click only on a valid submit.** If
-`Dn.postSubscription` does not exist, which happens when the SDK's injection gate misses
-the file, the handler shows a visible notice instead of doing nothing at all. Unlike the
-two question creatives there is no fallback available: creating a contact needs the
-engine's endpoint, and `Dn.setTags` cannot do it.
+**There IS a fallback, and I was wrong to say there was not.** I told Salil this creative
+could not survive a missing form handler because creating a contact needs the engine's
+endpoint. That confused the endpoint with the handler. The form handler's whole job is to
+collect the fields, validate them, and then call
+
+```js
+Dn.postMessageToParent('postSubscription', { form: { ... } })
+```
+
+`postMessageToParent` lives in **shared.js**, which is always injected, and the **parent
+SDK** is what makes the HTTP call. So the creative can build the payload itself and skip
+the handler entirely, which is what it now does: native when `Dn.postSubscription` exists,
+its own validation and its own `postMessageToParent` when it does not.
+
+The notice therefore now means something much narrower: neither the handler **nor**
+shared.js loaded, which means `</body>` never survived and nothing at all can be sent.
+
+**One `Dn.sendClick` for the whole file, after both branches.** Two would double count one
+engagement, which is why the check counts them. The confirmation panel is stamped only on
+the fallback branch, because on the native branch the engine stamps it on `tagsSuccess`.
+
+`factory/checks/creative.js` section 6b asserts the whole fallback against a page assembled
+without the handler: a bad email refused, a good one posted as `postSubscription` with all
+four fields and all three permissions, and the confirmation shown.
 
 #### The skeleton is part of the contract
 
