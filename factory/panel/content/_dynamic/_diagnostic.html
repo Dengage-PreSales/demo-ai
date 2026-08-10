@@ -8,8 +8,16 @@
     out.push(label + ' [' + ks.length + ']: ' + ks.join(', '));
   };
 
+  var shape = function (value) {
+    if (value === null) { return '(null)'; }
+    if (value === undefined) { return '(undefined)'; }
+    var s = String(value);
+    if (s === '') { return '(empty string)'; }
+    return '[' + s + ']';
+  };
+
   keysOf('$Contact', $Contact);
-  out.push('$Contact.contact_key = [' + (($Contact && $Contact.contact_key) ? $Contact.contact_key : '') + ']');
+  out.push('$Contact.contact_key = ' + shape($Contact ? $Contact.contact_key : null));
 
   try { keysOf('$Device', $Device); }
   catch (e) { out.push('$Device: not available in this context'); }
@@ -38,8 +46,75 @@
   } catch (e) {
     out.push('cart by contact_key: ' + e);
   }
+
+  out.push('');
+  out.push('dps_product, which is where every picture and price in an email comes from');
+
+  var sample = [];
+  try {
+    sample = $from('$db.dps_product').take(50).get();
+    if (!sample) { sample = []; }
+    out.push('rows a take(50) returned: ' + sample.length);
+    keysOf('dps_product row', sample.length ? sample[0] : null);
+  } catch (e) {
+    out.push('dps_product: ' + e);
+  }
+
+  var withImage = 0;
+  var emptyImage = 0;
+  var insecure = 0;
+  var relative = 0;
+  for (var n = 0; n < sample.length; n++) {
+    var link = sample[n] ? sample[n].image_link : null;
+    var s = (link == null) ? '' : String(link);
+    if (s === '') { emptyImage = emptyImage + 1; continue; }
+    withImage = withImage + 1;
+    if (s.indexOf('https://') === 0) { continue; }
+    if (s.indexOf('http://') === 0) { insecure = insecure + 1; } else { relative = relative + 1; }
+  }
+  out.push('of those rows, image_link is: ' + withImage + ' filled, ' +
+           emptyImage + ' empty, of the filled ones ' + insecure +
+           ' begin http and ' + relative + ' are not absolute at all');
+  out.push('take(50) returns SOME fifty rows rather than the first fifty, so read this as');
+  out.push('a sample of the table rather than a count of it');
+
+  out.push('');
+  out.push('the first three rows verbatim, so an empty column cannot be mistaken for a');
+  out.push('blocked picture');
+  var shown = [];
+  for (var q = 0; q < sample.length && q < 3; q++) {
+    var rowq = sample[q] || {};
+    out.push('  product_id  ' + shape(rowq.product_id));
+    out.push('  title       ' + shape(rowq.title));
+    out.push('  is_active   ' + shape(rowq.is_active));
+    out.push('  price       ' + shape(rowq.price));
+    out.push('  image_link  ' + shape(rowq.image_link));
+    out.push('  link        ' + shape(rowq.link));
+    out.push('');
+    var src = (rowq.image_link == null) ? '' : String(rowq.image_link).trim();
+    if (src.indexOf('https://') === 0) { shown.push({ src: src, title: String(rowq.title == null ? '' : rowq.title) }); }
+  }
 %}
 <pre style="font:12px/1.5 monospace;white-space:pre-wrap;">
 {% for (var i = 0; i < out.length; i++) { %}{%= out[i] %}
 {% } %}
 </pre>
+{% if (shown.length) { %}
+  <p style="font:12px/1.5 monospace;">
+    Below is an img using the FIRST address printed above, nothing else. If the address
+    reads correctly and this picture is still missing, the address is not the problem:
+    either the file is not there or the client is refusing to load remote images.
+  </p>
+  {% for (var w = 0; w < shown.length; w++) { %}
+    <p style="font:11px/1.4 monospace;margin:0 0 4px 0;">{%= shown[w].src %}</p>
+    <img src="{%= shown[w].src %}" alt="{%= shown[w].title %}" width="160"
+         style="width:160px;height:auto;border:1px solid #999;display:block;margin:0 0 14px 0;">
+  {% } %}
+{% } else { %}
+  <p style="font:12px/1.5 monospace;">
+    No row in the sample carried an https image_link, so there is no picture to attempt.
+    That is the answer: the column is empty or not absolute on the Dengage side, and the
+    email has nothing to render. Everything upstream of Dengage can be correct and this
+    will still be true, because what an email reads is dps_product and nothing else.
+  </p>
+{% } %}

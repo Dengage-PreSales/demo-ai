@@ -1079,12 +1079,35 @@ reading code.
     Nothing binds today, because that question offers four and allows four, so this is
     about the next question rather than the current one.
 
-    **What it does not do:** report the click, or switch on the confirmation panel. Both
-    creatives still do those, after reading `data-dn-invalid` to find out what the engine
-    decided. And it sets `data-dn-invalid="false"` rather than removing the attribute,
-    which is safe only because every invalid style in both files keys on
-    `[data-dn-invalid="true"]`. A selector on `[data-dn-invalid]` alone would show the
-    error on every valid answer.
+    **What it does not do:** report the click. Both creatives still do that, only when the
+    engine judged the answer valid, because engagement is a click whatever the tag write
+    did. And it sets `data-dn-invalid="false"` rather than removing the attribute, which is
+    safe only because every invalid style in both files keys on `[data-dn-invalid="true"]`.
+    A selector on `[data-dn-invalid]` alone would show the error on every valid answer.
+
+    **THE CONFIRMATION PANEL IS THE ENGINE'S, AND ONLY ON A CONFIRMED WRITE. Corrected
+    later the same day, and this correction is the one that mattered.** An earlier revision
+    of this section said the engine does not stamp `data-dn-is-submitted` and that both
+    creatives should. That was wrong, and it was wrong because of how it was checked: the
+    probe stubbed `Dn.setTags` and `postMessageToParent`, so the parent never replied and
+    the stamping never ran. The probe's own boundary was mistaken for the engine's
+    behaviour.
+
+    What really happens is a round trip. `postQuestion` calls `Dn.setTags`, the iframe posts
+    to the parent SDK, the parent POSTs `/api/setTags`, and **on success it posts
+    `{ action: 'closeForm', status: 'tagsSuccess' }` back into the frame**, where the
+    engine's own listener stamps `data-dn-is-submitted="true"` on `.container`. On failure
+    that message never arrives.
+
+    So a creative that stamps it itself shows "Noted, thank you" whether or not the answer
+    was stored, which is the worst behaviour available to the one creative whose whole
+    purpose is capture. It shipped that way for part of 10 August 2026 and is exactly how a
+    broken capture came to look like a working one. Neither creative stamps it now.
+
+    **A failed write leaves the form on screen with the button disabled and no thank you.**
+    That is the intended signal. `factory/checks/creative.js` asserts both halves: nothing
+    is stamped before the write is confirmed, and the engine stamps it when the parent's
+    real message arrives.
 
     **`subscription-popup` was already native**, on `Dn.postSubscription()`, and was
     re-checked at the same time. Its payload, its per field validation and its refusal of

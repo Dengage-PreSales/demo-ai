@@ -149,11 +149,19 @@ and the submit control calling `Dn.postQuestion()` then
 `Dn.sendClick('<scenario>__submit')`.
 
 **In that order, and only on success.** `postQuestion` validates and, if the answer
-is good, calls `Dn.setTags` itself. It does **not** report the click and does **not**
-switch on the confirmation panel, so the button's handler runs it first, reads
-`data-dn-invalid` to learn what the engine decided, and reports and confirms only
-when the engine did not mark the question invalid. Reporting the click first would
-count an engagement for an empty submit.
+is good, calls `Dn.setTags` itself. It does **not** report the click, so the button's
+handler runs it first, reads `data-dn-invalid` to learn what the engine decided, and
+reports only when the engine did not mark the question invalid. Reporting the click
+first would count an engagement for an empty submit.
+
+**Neither creative switches on its own confirmation panel, and that is load bearing.**
+The write is a round trip: the parent SDK POSTs `/api/setTags` and, on success, posts
+`{ action: 'closeForm', status: 'tagsSuccess' }` back into the frame, where the
+engine's own listener stamps `data-dn-is-submitted`. A creative that stamps it itself
+shows the thank you whether or not anything was stored. Both did for part of
+10 August 2026, which is how a capture that was not working looked like one that was.
+A failed write now leaves the form on screen with the button disabled and no thank
+you, which is the signal.
 
 **It sets `data-dn-invalid="false"` rather than removing the attribute.** Safe only
 because every invalid style in both creatives keys on `[data-dn-invalid="true"]`. A

@@ -101,10 +101,26 @@
      own validation message and re-checks on every input, so the error clears as soon
      as the visitor picks something.
 
-     WHAT IT DOES NOT DO, and this is why there is still code below. It does not report
-     the click and it does not switch on the confirmation panel. So the handler calls
-     postQuestion, reads data-dn-invalid to find out what the engine decided, and only
-     then reports and confirms.
+     THE CONFIRMATION PANEL IS THE ENGINE'S TO SWITCH ON, AND ONLY ON A CONFIRMED WRITE.
+     Corrected 10 August 2026, and getting this wrong cost real time.
+
+     The round trip: postQuestion calls Dn.setTags, which posts to the parent SDK, which
+     POSTs /api/setTags. On success the parent posts { action: 'closeForm', status:
+     'tagsSuccess' } BACK into this frame, and the engine's own listener is what stamps
+     data-dn-is-submitted="true" on .container. On failure that message does not arrive.
+
+     SO THIS FILE MUST NOT STAMP IT ITSELF, which it used to. Doing so showed "Noted, thank
+     you" whether or not the answer was ever stored, which is the worst possible behaviour
+     for the one creative whose entire purpose is capture: the demo looked like it worked
+     and nothing reached the contact. That is exactly how the failure was reported.
+
+     WHAT A FAILED WRITE NOW LOOKS LIKE: the form stays on screen with the button disabled
+     and no thank you. That is the intended signal rather than a rough edge. A visitor who
+     is anonymous, or an account where the write is refused, gets no false confirmation.
+
+     What the handler below still owns is reporting the click, because engagement is a click
+     regardless of what the tag write did, and it reports only when the engine judged the
+     answer valid so an empty submit cannot count as one.
 
      IT LEAVES data-dn-invalid="false" RATHER THAN REMOVING IT. Harmless here, and only
      because every invalid style in this file keys on [data-dn-invalid="true"]. A
@@ -440,7 +456,7 @@
            confirmation panel, so those are here, and both run only when the engine
            did not mark the question invalid. See the note at the top. -->
       <button type="button" class="send"
-              onclick="var f=document.getElementById('dnf-sv'),b=f.querySelector('.form-block');Dn.postQuestion();if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('survey__submit');f.querySelector('.container').setAttribute('data-dn-is-submitted','true');">
+              onclick="var b=document.getElementById('dnf-sv').querySelector('.form-block');Dn.postQuestion();if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('survey__submit');">
         Send my answer
       </button>
 

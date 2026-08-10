@@ -408,7 +408,26 @@ async function main() {
         payload);
     qok('the tag matches data-dn-name',
         Array.isArray(payload) && payload[0] && payload[0].tag === q.tagName, { sent: payload, expected: q.tagName });
-    qok('the confirmation panel is switched on', sent.submitted === 'true', sent);
+    /* THE CONFIRMATION PANEL IS NOT SWITCHED ON YET, AND MUST NOT BE. Corrected 10
+       August 2026. The engine stamps data-dn-is-submitted only when the parent SDK posts
+       { action: 'closeForm', status: 'tagsSuccess' } back into the frame, which happens
+       after /api/setTags succeeds. A creative that stamps it itself shows the thank you
+       whether or not the answer was stored, which is how a broken capture came to look
+       like a working one. */
+    qok('the confirmation panel is NOT switched on before the write is confirmed',
+        sent.submitted !== 'true', sent);
+
+    /* AND THE SUCCESS ROUND TRIP IS EXERCISED, so the assertion above cannot pass just
+       because nothing ever confirms. This is the message the parent really sends. */
+    const confirmed = await page.evaluate(() => new Promise((resolve) => {
+        window.postMessage({ action: 'closeForm', status: 'tagsSuccess' }, '*');
+        setTimeout(() => {
+            const c = document.querySelector('.container');
+            resolve({ submitted: c ? c.getAttribute('data-dn-is-submitted') : null });
+        }, 250);
+    }));
+    qok('and the engine switches it on when the parent confirms the write',
+        confirmed.submitted === 'true', confirmed);
     /* CLEARED MEANS "NOT true", NOT "ABSENT". Both creatives used to remove the
        attribute themselves and this asserted null. They now submit through
        Dn.postQuestion(), and the engine SETS data-dn-invalid="false" rather than

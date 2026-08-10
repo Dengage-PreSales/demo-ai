@@ -29,11 +29,37 @@ const { chromium } = require('playwright');
 
 const BASE = process.env.TEMPLATE_URL || 'http://localhost:8101/template/';
 
-let pass = 0, fail = 0;
+let pass = 0, fail = 0, skipped = 0;
 const ok = (label, cond, detail) => {
   if (cond) { pass++; console.log('   ok    ' + label); }
   else { fail++; console.log('   FAIL  ' + label + (detail !== undefined ? '  <' + JSON.stringify(detail) + '>' : '')); }
 };
+
+/* A CHECK THIS CATALOGUE CANNOT ANSWER SAYS SO, and is neither a pass nor a failure.
+   Added 10 August 2026, because this file asserted things only one catalogue can supply.
+
+   THE DEFECT IT FIXES. Everything here was written against the committed fixture, whose
+   fifteen products are one per vertical and none of which has a photograph. Run against a
+   real prospect's catalogue it produced nineteen failures with nothing wrong: a keyboard
+   shop has no product matching "jacket", and its grid shows photographs rather than motifs
+   because motifs are the FALLBACK for a demo whose scrape found no pictures. So the check
+   reported a demo as broken for being an ordinary demo, and the whole suite exited 1 on
+   every run.
+
+   The distinction that fixes it rather than muting it: an assertion about the CLASSIFIER
+   runs anywhere, because it can be asked with a synthetic product. An assertion about THIS
+   CATALOGUE can only run where the catalogue supplies the case. */
+const skip = (label, why) => {
+  skipped++;
+  console.log('   skip  ' + label + (why ? '  (' + why + ')' : ''));
+};
+
+/* THE COMMITTED FIXTURE IS HELD TO EVERYTHING, and that is what stops the skipping above
+   from becoming a way to check nothing. template/products.json is this repository's own, it
+   is one product per vertical, and run.sh always runs this check against it, so every
+   assertion below runs somewhere on every suite. A demo is allowed to be missing a case.
+   The fixture is not. */
+const IS_FIXTURE = /\/template\/$/.test(BASE);
 
 /* Name fragment to the motif it must produce. Written out here on purpose: this is
    the check, so deriving it from the module would assert the module against
@@ -97,17 +123,43 @@ const EXPECTED = [
   ok('every svg carries a data-motif', drawn.every(d => d.motif), drawn.filter(d => !d.motif));
 
   console.log('\n3. The motif matches the product\'s vertical');
+  /* ONLY THE PAIRS THIS CATALOGUE CONTAINS. On the fixture that is all fifteen and a
+     missing one is a failure, because the fixture's job is to supply them. On a prospect's
+     catalogue it is however many happen to overlap, and a keyboard shop having no jacket is
+     not a defect in anything. Section 7 and sections 8 onwards ask the classifier the same
+     questions with synthetic products, so its correctness is asserted here regardless. */
+  let exercised = 0;
   for (const [fragment, expected] of EXPECTED) {
     const hit = drawn.filter(d => d.name.toLowerCase().indexOf(fragment) !== -1);
-    if (!hit.length) { ok('a product matching "' + fragment + '" exists', false, drawn.map(d => d.name)); continue; }
+    if (!hit.length) {
+      if (IS_FIXTURE) {
+        ok('the fixture still has a product matching "' + fragment + '"', false,
+          drawn.map(d => d.name));
+      } else {
+        skip('"' + fragment + '" draws the ' + expected + ' motif',
+          'this catalogue has no such product');
+      }
+      continue;
+    }
+    exercised++;
     ok('"' + hit[0].name + '" draws the ' + expected + ' motif',
       hit[0].motif === expected, { got: hit[0].motif, want: expected });
   }
-  /* Not one product may fall through to the initials tile in a catalogue this
-     ordinary. The fallback is for unexpected verticals, and if it fires here the
-     classifier has regressed. */
-  ok('nothing fell back to the initials tile',
-    drawn.every(d => d.motif !== 'initials'), drawn.filter(d => d.motif === 'initials').map(d => d.name));
+  console.log('   note  ' + exercised + ' of ' + EXPECTED.length +
+    ' verticals are present in this catalogue and were checked against it');
+
+  /* THE INITIALS TILE IS A REGRESSION ON THE FIXTURE AND A FACT ON A REAL CATALOGUE.
+     Every fixture product is a vertical the library covers, so one falling through means
+     the classifier broke. A prospect sells whatever they sell: a power cord has no motif
+     and the initials tile is the correct answer for it, which is what the tile is for. */
+  const initials = drawn.filter(d => d.motif === 'initials').map(d => d.name);
+  if (IS_FIXTURE) {
+    ok('nothing fell back to the initials tile', initials.length === 0, initials);
+  } else {
+    console.log('   note  ' + initials.length + ' of ' + drawn.length +
+      ' products fall back to the initials tile, which is what it is for' +
+      (initials.length ? ': ' + JSON.stringify(initials.slice(0, 3)) : ''));
+  }
 
   console.log('\n4. No requests, no colour literals');
   const all = await page.evaluate(() => window.Catalog.all().map(p => window.Artwork.svg(p)).join(''));
@@ -125,13 +177,34 @@ const EXPECTED = [
     literals.length === 0, literals.slice(0, 5));
 
   console.log('\n5. The grid renders them, and asks the network for nothing');
+  /* WHICH GRID THIS DEMO HAS IS A FACT ABOUT ITS SCRAPE, not a setting. A motif is the
+     FALLBACK for a catalogue whose scrape found no photography, so a demo with pictures
+     shows pictures and a motif never reaches its grid. Asserting motifs in the grid of a
+     demo that has photographs asserted that the fallback had taken over, which would be a
+     defect if it were true.
+
+     SO BOTH CASES ARE ASSERTED, rather than one being skipped: a catalogue with no pictures
+     must draw motifs and ask the network for nothing, and a catalogue with pictures must
+     draw the pictures. Each is the correct expectation for that demo, and between them
+     there is no demo this section cannot judge. */
   await page.waitForFunction(() => document.querySelectorAll('[data-id]').length > 0, null, { timeout: 20000 });
+  const hasPhotographs = await page.evaluate(() =>
+    window.Catalog.all().some(p => p.image));
   const inDom = await page.evaluate(() =>
     [...document.querySelectorAll('[data-id] svg[data-motif]')].map(n => n.getAttribute('data-motif')));
-  ok('motifs are in the rendered grid', inDom.length > 0, inDom.length);
-  ok('the grid asked for no images', imageRequests.length === 0, imageRequests.slice(0, 3));
-  ok('no <img> tags in the grid',
-    await page.locator('.grid img').count() === 0);
+  const gridImages = await page.locator('.grid img').count();
+
+  if (hasPhotographs) {
+    console.log('   note  this catalogue has product photographs, so its grid shows them ' +
+      'and the motifs are the fallback that never fires here');
+    ok('the grid renders the photographs', gridImages > 0, gridImages);
+    ok('and no motif took over a card that has a photograph',
+      inDom.length === 0, inDom.slice(0, 3));
+  } else {
+    ok('motifs are in the rendered grid', inDom.length > 0, inDom.length);
+    ok('the grid asked for no images', imageRequests.length === 0, imageRequests.slice(0, 3));
+    ok('no <img> tags in the grid', gridImages === 0, gridImages);
+  }
 
   console.log('\n6. Stable: same product, same picture, twice and across pages');
   const twice = await page.evaluate(() => {
@@ -147,8 +220,14 @@ const EXPECTED = [
     null, { timeout: 20000 });
   const onPdp = await page.evaluate(id => window.Artwork.svg(window.Catalog.get(id)), first);
   ok('the same product draws identically on the product page', onHome === onPdp);
-  ok('the product page shows the motif',
-    await page.locator('.pdp-media svg[data-motif]').count() === 1);
+  /* Same reasoning as the grid above: the product page shows whichever the catalogue has. */
+  if (hasPhotographs) {
+    ok('the product page shows the photograph',
+      await page.locator('.pdp-media img').count() >= 1);
+  } else {
+    ok('the product page shows the motif',
+      await page.locator('.pdp-media svg[data-motif]').count() === 1);
+  }
 
   console.log('\n7. An unclassifiable product falls back rather than breaking');
   const oddball = await page.evaluate(() => {
@@ -340,9 +419,25 @@ const EXPECTED = [
      nothing above would notice: every assertion in section 4 would still pass. */
   console.log('\n8c. The artwork colour comes from a theme token');
   await page.goto(BASE, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => document.querySelector('.art'), null, { timeout: 20000 });
+  await page.waitForFunction(() => document.querySelector('.grid') && window.Artwork,
+    null, { timeout: 20000 });
+  /* THE HOLDER IS RENDERED RATHER THAN FOUND, and that is what lets this run on every
+     demo. It used to wait for a `.art` already in the page, which only exists on a card
+     that drew a motif: on a catalogue with photographs there is none, so it waited twenty
+     seconds and then threw, taking the whole check down with it. That was the twentieth
+     failure of the nineteen visible in a run, because it aborted before the summary.
+
+     Rendering one into the live page keeps every part of the assertion honest. The markup
+     comes from Artwork.svg, the class is the real one, the stylesheet is the demo's own and
+     the token is read off the demo's own :root, so what is measured is still "does a motif
+     in THIS demo follow THIS demo's palette". Only the trigger changes. */
   const colour = await page.evaluate(() => {
-    const el = document.querySelector('.art');
+    const product = window.Catalog.all()[0];
+    const holder = document.createElement('div');
+    holder.className = 'art';
+    holder.innerHTML = window.Artwork.svg(product);
+    document.querySelector('.grid').appendChild(holder);
+
     const hex = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
     /* Resolve the token through the browser so the comparison is rgb to rgb
        rather than rgb to hex. */
@@ -351,15 +446,26 @@ const EXPECTED = [
     document.body.appendChild(probe);
     const want = getComputedStyle(probe).color;
     probe.remove();
-    return { got: getComputedStyle(el).color, want: want, token: hex };
+
+    const got = getComputedStyle(holder).color;
+    /* AND THE SVG INSIDE IT, because currentColor is what carries the token into the
+       drawing and a holder that resolves correctly around an svg that does not is the
+       failure this section is for. */
+    const svg = holder.querySelector('svg');
+    const inner = svg ? getComputedStyle(svg).color : null;
+    holder.remove();
+    return { got: got, inner: inner, want: want, token: hex };
   });
   ok('.art resolves to the themed --ink token', colour.got === colour.want, colour);
+  ok('and the svg inside it inherits the same colour',
+    colour.inner === colour.want, colour);
 
   console.log('\n9. No page errors');
   console.log(errors.length ? JSON.stringify(errors, null, 2) : '   none');
   ok('clean console', errors.length === 0, errors.slice(0, 3));
 
-  console.log('\n' + pass + ' passed, ' + fail + ' failed');
+  console.log('\n' + pass + ' passed, ' + fail + ' failed' +
+    (skipped ? ', ' + skipped + ' skipped' : ''));
   await browser.close();
   process.exit(fail ? 1 : 0);
 })();
