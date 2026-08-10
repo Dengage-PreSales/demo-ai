@@ -241,6 +241,51 @@ for photographs and `factory/make-motif-images.mjs` for the shared artwork, and
 `factory/push-images.test.mjs` holds the two namings to the same answer, because a derived
 address for a file nobody wrote is a 404 in a notification rather than a fallback.
 
+## What changed in `abandoned-cart.html` on 10 August 2026
+
+A rewrite of this asset came back from outside, and three things in it were better. Those
+were taken; the rest was not, and both halves are worth recording because the same offer
+will come again.
+
+**Taken:**
+
+| | |
+|---|---|
+| **Guarded sort keys** | `new Date(a.event_date)` on a row with no date is `NaN`, `NaN - NaN` is `NaN`, and a comparator returning `NaN` leaves the order undefined. Both keys now fall back, to the epoch and to zero |
+| **A guard after every `.get()`** | `if (!rows) { rows = []; }` four times. Nothing has been observed returning null, and the cost of being wrong about that is a template that throws mid send |
+| **A visible CTA per card** | the image and the title were already links, which a recipient cannot see. A `View item` control makes the card obviously clickable |
+
+**Not taken, and why:**
+
+| | |
+|---|---|
+| A hardcoded `Rs` before every price | one asset serves every demo. A US prospect's basket would read `Rs 149.00` |
+| Arial and hex greys | this asset uses `color:inherit`, `font-family:inherit` and `opacity`, so it adopts whatever email it is dropped into. Literals would clash with any template that is not black on white |
+| A heading inside the asset | the email owns its heading. One inside the asset appears in every email that calls it and cannot be varied per campaign. Its second line also implied scarcity the data does not support |
+| `Qty: 1` on every card | a quantity of one is not information. It shows from two upwards |
+| `+ 3 more item(s)` | the asset pluralises properly |
+| Dropping the `$db.` prefix | every asset here uses `$from('$db.<table>')` and the live ones work. Untested without it, and a query that resolves nothing looks exactly like an empty basket |
+| Emitting nothing when the basket is empty | see below |
+| A hand written `trimText` | `.trim()` and regex `replace` both work in the engine, which the live assets prove |
+
+**The empty case is the one worth arguing about.** The rewrite emitted nothing at all when
+there was nothing to show. This asset emits a sentence instead. A blank block and a broken
+query are indistinguishable from the outside, and the blank version would have hidden a
+`$db.` mistake completely, so the sentence stays.
+
+**And two defects were found while comparing, both fixed:**
+
+**`Number(null)` is `0`, so a product with no price rendered as `0.00`.** `money()` checked
+`isFinite` only, which accepts zero, and a product with no price advertised itself as free.
+It now refuses anything not above zero, so the card shows no price rather than a wrong one.
+A discounted price above the full price is no longer struck through either: the totals block
+already refused that and the cards did not.
+
+**The overflow line counted the wrong thing.** It was `all.length - ids.length`, the ids
+looked up rather than the cards rendered, so seven items with one withdrawn inside the
+window of six showed five cards and said "and 1 more item" when two were missing. It is now
+`all.length - cards.length`. Both are asserted in `cart.test.mjs`, section 11b.
+
 ## The totals, because a correct product list next to an invented total is worse
 
 Dengage's abandoned cart system template ships with a subtotal, a discount and a total

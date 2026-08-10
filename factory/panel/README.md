@@ -59,14 +59,22 @@ answers "is it live" faster and more reliably than looking.
 
 ### 1. Three HTML Dynamic Content assets. Content > Dynamic Content
 
-All three exist. **All three changed on 9 August, so paste the current file over each one.**
+All three exist. **All three changed, so paste the current file over each one.**
 Type **HTML**. The Plain Text assets are step 2.
 
-| Asset name in the panel | Paste this file |
-|---|---|
-| `dps abandoned cart` | `content/_dynamic/abandoned-cart.html` |
-| `dps abandoned cart total` | `content/_dynamic/abandoned-cart-total.html` |
-| `dps recommendations` | `content/_dynamic/recommendations.html` |
+| Asset name in the panel | Paste this file | Last changed |
+|---|---|---|
+| `dps abandoned cart` | `content/_dynamic/abandoned-cart.html` | **10 August** |
+| `dps abandoned cart total` | `content/_dynamic/abandoned-cart-total.html` | 9 August |
+| `dps recommendations` | `content/_dynamic/recommendations.html` | 9 August |
+
+**`dps abandoned cart` is worth re-pasting first.** It fixes two numbers that read as facts
+and were not: a product with no price rendered as `0.00`, which advertises it as free, and
+the "and N more items" line counted the products looked up rather than the cards shown, so a
+basket with a withdrawn item in it understated what was held back. It also gains a visible
+`View item` control per card, and a guarded sort so a row with no date cannot scramble the
+order. `content/_dynamic/README.md` has the detail, including what was deliberately left out
+of the rewrite it came from.
 
 Nothing to attach and nothing to click. Their ids are recorded in `factory/sandbox.json`,
 so the email template calls them by id.

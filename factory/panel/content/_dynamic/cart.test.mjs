@@ -86,6 +86,11 @@ function resolver(file, returns) {
 
 const html = resolver('abandoned-cart.html',
     '{ ids: ids, more: more, all: all, present: present, keys: keys }');
+/* THE SAME BLOCK, ASKED FOR ITS CARDS. `more` is now derived from the cards rather than
+   from the ids, and the cards carry the price decisions, so both are worth reading
+   directly rather than inferring from the markup. */
+const cards = resolver('abandoned-cart.html',
+    '{ cards: cards, more: more, all: all, ids: ids }');
 const json = resolver('abandoned-cart.json',
     '{ ids: ids, more: more, all: all }');
 const text = resolver('abandoned-cart.txt',
@@ -433,6 +438,77 @@ function catalogue(ids) {
     }), CONTACT);
     ok('a discounted price above the full price adds no discount',
        backwards.priced && backwards.discount === 0, backwards);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 11b. The cards' own prices and the overflow count                            */
+
+{
+    /* TWO DEFECTS THAT WERE IN THIS ASSET FROM THE START, found on 10 August 2026 while
+       comparing it against a rewrite. Both are the same class: a number that reads as a
+       fact and is not one. */
+
+    /* NUMBER(NULL) IS 0, SO A MISSING PRICE USED TO RENDER AS 0.00. isFinite alone accepts
+       it, and a product with no price then advertised itself as free. CLAUDE.md rule 5, and
+       the exact trap the rule names. money() now refuses anything not above zero, so the
+       card shows no price rather than a wrong one. */
+    const unpriced = cards(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'p1', '2026-08-09T10:00:00Z')],
+        dps_product: [Object.assign(product('p1'), { price: null, discounted_price: null })]
+    }), CONTACT);
+    ok('a product with no price shows no price rather than 0.00',
+       unpriced.cards.length === 1 && unpriced.cards[0].now === "" &&
+       unpriced.cards[0].was === "", unpriced.cards);
+
+    /* A zero price is the same fault arriving as a number rather than as null. */
+    const zero = cards(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'p1', '2026-08-09T10:00:00Z')],
+        dps_product: [Object.assign(product('p1'), { price: '0.00' })]
+    }), CONTACT);
+    ok('and a price of zero is refused the same way',
+       zero.cards[0].now === "", zero.cards);
+
+    /* A DISCOUNT THAT IS NOT ONE IS NOT STRUCK THROUGH. The totals block already refused
+       this; the cards did not, so a card showed 12.00 with 10.00 struck out beside it. */
+    const backwardsCard = cards(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'p1', '2026-08-09T10:00:00Z')],
+        dps_product: [Object.assign(product('p1'),
+            { price: '10.00', discounted_price: '12.00' })]
+    }), CONTACT);
+    ok('a discounted price above the full price is not shown as a reduction',
+       backwardsCard.cards[0].now === '10.00' && backwardsCard.cards[0].was === "",
+       backwardsCard.cards);
+
+    /* A REAL REDUCTION STILL SHOWS BOTH, or the assertion above would pass by showing
+       nothing at all. */
+    const reduced = cards(stubFrom({
+        master_device: devices,
+        shopping_cart_events: [event('add_to_cart', 'p1', '2026-08-09T10:00:00Z')],
+        dps_product: [Object.assign(product('p1'),
+            { price: '10.00', discounted_price: '8.00' })]
+    }), CONTACT);
+    ok('a real reduction shows the new price with the old one struck through',
+       reduced.cards[0].now === '8.00' && reduced.cards[0].was === '10.00', reduced.cards);
+
+    /* THE OVERFLOW COUNT COUNTS WHAT IS NOT SHOWN, which used to be computed from the ids
+       looked up rather than from the cards rendered. Seven items where one of the six
+       inside the window is withdrawn renders five cards, and the line said "1 more item"
+       when two were missing. The recipient can count the difference. */
+    const ids = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'];
+    const held = cards(stubFrom({
+        master_device: devices,
+        shopping_cart_events: ids.map((id, i) =>
+            event('add_to_cart', id, '2026-08-09T10:0' + i + ':00Z')),
+        /* p3 is inside the newest six and is withdrawn. */
+        dps_product: ids.map((id) => product(id, id !== 'p3'))
+    }), CONTACT);
+    ok('seven items with one withdrawn inside the window render five cards',
+       held.cards.length === 5, held.cards.length);
+    ok('and the overflow line counts both of the two that are not shown',
+       held.more === 2, { more: held.more, all: held.all.length, cards: held.cards.length });
 }
 
 /* -------------------------------------------------------------------------- */
