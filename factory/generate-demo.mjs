@@ -555,33 +555,24 @@ async function main() {
         rewriteFontLink(join(dest, 'index.html'), href);
         rewriteFontLink(join(dest, 'product.html'), href);
 
-        /* THE EMAIL SET. Built from the config and products.json just written, so it
-           carries this demo's own palette, typography, catalogue and currency.
+        /* NO PER DEMO EMAIL SET IS BUILT, AND THAT IS A REMOVAL RATHER THAN AN OMISSION.
+           Ten Code Editor journeys used to be generated here. They read product names
+           and images from event tables, which never had either, so every build reported
+           "Emails: none" and the set was never produced for any demo. Deleted 10 August
+           2026 with the rest of that subsystem.
 
-           Two files per journey: the panel file with live {%= %} tags and $from
-           queries to paste into the Dengage Code Editor, and a resolved preview so
-           the set can be shown on a call without a send. Plus the AMP variant of
-           the cart message for the panel's AMP tab.
-
-           It is not allowed to fail the build. A demo with no email set is still a
-           working demo, and losing one over a template that can be rebuilt with one
-           command afterwards would be the wrong trade. */
-        try {
-            const { buildEmails } = await import('./emails/build-emails.mjs');
-            const emails = buildEmails(slug);
-            console.error('Emails: ' + emails.count + ' journeys, ' + emails.amp +
-                ' AMP, themed on ' + emails.palette.brand +
-                (emails.palette.dark ? ' (dark)' : ''));
-        } catch (err) {
-            console.error('Emails: none (' + err.message + ')');
-            console.error('Run this afterwards:  node factory/emails/build-emails.mjs --slug ' + slug);
-        }
+           What replaced it is one shared Email Builder template, below, and the saved
+           Dynamic Content assets it calls. Those read dps_product, which does have names,
+           images and prices, and they resolve which demo a basket belongs to by themselves,
+           so nothing about them is per demo. factory/panel/content/_dynamic/README.md has
+           the six steps for adding another scenario. */
 
         /* THE EMAIL BUILDER TEMPLATE IS SHARED, so a new demo does not get one of its
            own and this step is idempotent. It runs anyway, because the shared template
            is drawn from template/style.css and should be rebuilt whenever the standard
-           palette moves. Its own try block: buildEmails is allowed to fail, and one
-           broken journey must not take the template with it. */
+           palette moves. Its own try block, because a demo with no email template is
+           still a working demo and losing one over a template that can be rebuilt with a
+           single command afterwards would be the wrong trade. */
         try {
             const { buildBeefree } = await import('./emails/build-beefree.mjs');
             const beefree = buildBeefree();

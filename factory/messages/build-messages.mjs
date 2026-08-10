@@ -10,7 +10,7 @@
                      button per channel that puts the panel copy on the clipboard
      messages.json   the same content as data, for pasting or for the content API
 
-   NOT UNDER demos/, DELIBERATELY, for the reason build-emails.mjs sets out: pages.yml
+   NOT UNDER demos/, DELIBERATELY: pages.yml
    serves demos/ publicly, and a deck naming panel locations and listing character
    limits is setup material rather than something a prospect should be able to load.
 
@@ -423,10 +423,9 @@ export function buildMessages(slug) {
         }
     }
 
-    /* Written to the factory rather than into the demo, for the reason set out in
-       build-emails.mjs: pages.yml serves demos/ publicly, and a deck naming panel
-       locations and listing character limits is setup material rather than something
-       a prospect should be able to load. */
+    /* Written to the factory rather than into the demo, because pages.yml serves demos/
+       publicly and a deck naming panel locations and listing character limits is setup
+       material rather than something a prospect should be able to load. */
     const out = join(ROOT, 'factory', 'panel', 'content', slug, 'messages');
     mkdirSync(out, { recursive: true });
     writeFileSync(join(out, 'index.html'), deck(palette, preview, panel, slug, config, problems));

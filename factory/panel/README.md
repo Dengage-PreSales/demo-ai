@@ -18,12 +18,12 @@ demo the factory generates from now on uses it.
 > It opens straight from disk with no server, and the build regenerates it, so a new
 > demo arrives with its own set.
 >
-> **There is no `content/<slug>/emails/` any more.** The ten Code Editor journey
-> emails are not currently generated: three of them ask an event table for a product
-> name, which no event table has, and `build-emails.mjs` refuses rather than sending
-> an email with an empty row in it. The abandoned cart email replaced them for now and
-> is the one that works end to end. Reinstating the other nine is a separate job,
-> using `dps_product` the way the abandoned cart assets already do.
+> **There is no `content/<slug>/emails/`, and the ten Code Editor journey emails are
+> gone.** Deleted 10 August 2026. They read product names and images from event tables,
+> which have never had either, so the set was never produced for any demo. The shared
+> abandoned cart email replaced them and works end to end. Anything new goes the same
+> way: a Dynamic Content asset over `dps_product`, six steps, in
+> `content/_dynamic/README.md`.
 >
 > All of it lives here rather than in `demos/<slug>/` because `pages.yml` publishes
 > `demos/`, and a page naming panel locations next to sample data does not belong on

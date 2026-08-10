@@ -47,10 +47,9 @@
        DPS_SNIPPET_RECOMMENDATIONS=<id> DPS_SNIPPET_CART_LINE=<id> \
        node factory/emails/build-beefree.mjs
 
-   ITS OWN SCRIPT, ON PURPOSE. build-emails.mjs builds the ten Code Editor messages and
-   currently throws on the journeys that still ask an event table for a product name,
-   which is a separate job. A template that could only be produced by a command that
-   fails would not be a deliverable.
+   ITS OWN SCRIPT, ON PURPOSE. The generator calls it, and it is runnable by hand for the
+   case that actually comes up: a snippet id arriving, or the standard palette moving in
+   template/style.css. The template is shared, so this is idempotent and safe to re-run.
    ========================================================================== */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';

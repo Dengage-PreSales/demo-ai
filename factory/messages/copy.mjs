@@ -24,7 +24,7 @@
    the personalisation lives in the targeting, not the copy.
    ========================================================================== */
 
-import { COLUMNS, QUERIES } from '../emails/data.mjs';
+import { COLUMNS, QUERIES } from '../phase0/columns.mjs';
 import { demoLink } from '../demo-links.mjs';
 
 /* The value of a column for this contact, as a tag or as a sample. Short form has

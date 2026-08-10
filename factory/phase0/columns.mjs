@@ -1,63 +1,25 @@
 /* ============================================================================
-   The star schema queries each journey needs, and the two ways to render them.
+   The six standard ecommerce tables, their columns, and the queries over them.
 
-   THE PROBLEM THIS SOLVES. An email that is genuinely personalised has to read
-   the contact's own rows at send time: the items they left in a basket, the
-   category they were looking at, the thing they saved when it was more expensive.
-   That is a query, and Dengage runs it inside the content through
-   $from("table"). But a file full of $from loops renders as nothing in a browser,
-   and a presales colleague needs to show these messages on a call without an
-   inbox, a send or a test list.
+     import { COLUMNS, QUERIES, productLookup } from './columns.mjs';
 
-   So every journey is written ONCE and rendered TWICE, from the same markup:
+   ONE PLACE THE COLUMN NAMES ARE DECLARED, which is the whole point of the file.
+   Every column here was read off a real table rather than a document: the contact key
+   on an event table is `key` and not `contact_key`, and a query naming a column that
+   does not exist fails at send time with `42703` where nobody is watching.
+   factory/phase0/SCHEMA.md is the prose beside it and lists what each table holds.
 
-     panel    the file that goes into the Code Editor. Real {%= %} tags and real
-              $from queries. Nothing about the recipient is hardcoded.
-     preview  the same layout with those queries already resolved against this
-              demo's own committed catalogue, so it opens in a browser and looks
-              exactly like what the panel version will send.
+   IT MOVED HERE ON 10 AUGUST 2026, from factory/emails/data.mjs. It was written for the
+   ten Code Editor journey emails, and those are gone: they read product names from event
+   tables that never had any, so they produced nothing and refused rather than sending an
+   email with an empty row in it. The declarations outlived them, because
+   factory/phase0/schema.test.mjs checks them against the real schema and
+   factory/messages/copy.mjs builds the short form channel copy from them.
 
-   The trick that keeps them honest is below: a field is either a literal string
-   or the Dengage tag that produces it, and layout.mjs cannot tell the difference.
-   One markup path, two sources, so the preview cannot drift from what sends.
-
-   TWO PIECES OF SYNTAX, BOTH LEARNED FROM A WORKING SNIPPET RATHER THAN FROM THE
-   DOCUMENTATION, and both were wrong here for a whole day.
-
-   AN OUTPUT TAG CLOSES WITH A BARE %}, WITH NO EQUALS SIGN BEFORE IT. Every tag this
-   file emitted carried a trailing equals, which makes the engine read the expression as
-   an incomplete assignment: the Test button returns
-   SyntaxError: Unexpected token '%s' after '%s' and nothing renders at all. 58 of them
-   across 14 files.
-
-   schema.test.mjs now fails on that sequence, and this paragraph deliberately describes
-   it in words rather than quoting it, because a check that scans for a character
-   sequence cannot have that sequence in the file it is meant to keep clean. The same
-   trap caught a dash detector containing a dash earlier in this repository.
-
-   A TABLE IS ADDRESSED AS $db.<table>. $from('$db.shopping_cart_events'), not
-   $from("shopping_cart_events"). Single quotes throughout, matching the same source.
-
-   THE CONTACT KEY COLUMN IS CALLED key, NOT contact_key. Read from the API: every one
-   of the six event tables has `key TEXT` as its first column and no contact_key at all.
-   Querying contact_key answers
-   "Error on sql execution: 42703: column contact_key does not exist", which also reveals
-   that $from compiles to SQL: 42703 is a Postgres error code.
-
-   $Contact.contact_key is still correct on the CONTACT side. It is the column on the
-   event table that is named differently, which is why assuming they matched was easy
-   and wrong.
-
-   AND $from OFFERS where, take AND get. Nothing else. orderByDescending was used
-   throughout this file and does not exist, which the engine reports as
-   "TypeError: Object doesn't support property or method". Ordering, filtering and
-   slicing all happen in JavaScript on the array get() returns.
-
-   THE COLUMN NAMES ARE THE ONE THING TO CHECK PER ACCOUNT. The six standard
-   ecommerce tables are standard, but a column can be named slightly differently
-   between accounts, and no scrape can discover that. Each query below states the
-   columns it reads in one place, so correcting an account takes one edit rather
-   than ten. COLUMNS is that place.
+   WHAT TO USE FOR A NEW SCENARIO. Not these queries. A Dengage Dynamic Content asset is
+   the mechanism that works end to end, and it reads dps_product rather than an event
+   table for anything a recipient has to see the name of. The six steps are in
+   factory/panel/content/_dynamic/README.md, under "Writing the next scenario".
    ========================================================================== */
 
 /* Every column this module reads, named once, and every one of these was READ OFF

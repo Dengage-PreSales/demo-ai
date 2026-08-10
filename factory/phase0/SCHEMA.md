@@ -90,7 +90,7 @@ still returns 200.
 
 ## What was wrong before this was read
 
-Recorded so the same guesses are not made again. `factory/emails/data.mjs` named
+Recorded so the same guesses are not made again. `factory/phase0/columns.mjs` named
 these:
 
 | It used | The column is | Effect at send time |

@@ -25,7 +25,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { COLUMNS } from '../emails/data.mjs';
+import { COLUMNS } from './columns.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -204,7 +204,7 @@ for (const table of ['order_events', 'search_events']) {
 
     /* A TABLE IS ADDRESSED AS $db.<table>. Taken from a snippet known to work in a live
        account: $from('$db.product'). A bare table name was what this repository used. */
-    const { QUERIES, productLookup } = await import('../emails/data.mjs');
+    const { QUERIES, productLookup } = await import('./columns.mjs');
     const emitted = Object.values(QUERIES).map((q) => q.expr)
         .concat([productLookup('rows[i]', 'p')]);
     const unprefixed = emitted.filter((e) => /\$from\(\s*['"](?!\$db\.)/.test(e));
