@@ -1,15 +1,31 @@
-# Demo Factory: build specification and handoff
+# Demo Factory: the specification, trimmed to what still holds
 
-> **Read this first, in full, before writing any code.** This document is the
-> complete brief for a new repository. It was written in a session on
-> `salil-dengage/dengage-demos` (the five core demo sites) by reading that
-> repository end to end, and it carries forward every contract and trap that
-> applies here. The session that executes this will not have access to that
-> repository, so everything needed is restated below.
+> **This is history and reference, not the operating document.** Read
+> [`CLAUDE.md`](CLAUDE.md) first: it is short, it is current, and it is what the rules
+> actually are. Come here for the reasoning behind a rule, the traps in §12, the decision
+> log in §15, and the corrections in §15a.
 >
-> Owner: Salil. Anything this document leaves open is listed in §14 and needs
-> his answer, not a guess. §15 is a decision log mapping every question asked
-> during the design to the section that implements it.
+> **Trimmed on 10 August 2026, from 2,743 lines to what follows.** It was written in one
+> session by reading `salil-dengage/dengage-demos` end to end, before this repository or the
+> Dengage panel had been seen. Most of it has since been either built or superseded by a
+> document written with the panel actually open, and a specification that describes something
+> which no longer exists is worse than no specification, because the next person implements it.
+>
+> **What was removed, and where it lives now:**
+>
+> | Removed | Current source |
+> |---|---|
+> | §2.3 and §2.3a, the two sandbox tables | **they were never built.** Reversed 4 August 2026. CLAUDE.md §1b is what a demo writes to |
+> | §2.0, §2.1, §2.2, §2.2c, §2.5, §2.5b, panel setup | [`factory/panel/README.md`](factory/panel/README.md) and [`REFERENCE.md`](factory/panel/REFERENCE.md), written with the panel open |
+> | §3, §3.1, the layout and `seed/` | the repository itself. `seed/` is gone and the guard asserts it |
+> | §5, §5.1, the storefront and the launcher | `template/`, and `factory/checks/launcher.js` for the count |
+> | §7.1 to §7.5, the generator pipeline | [`factory/scrape/README.md`](factory/scrape/README.md) and `factory/generate-demo.mjs` |
+> | §8, the intake | `.github/ISSUE_TEMPLATE` and `.github/scripts/parse-request.mjs` |
+> | §11, CI guardrails | [`factory/guard/README.md`](factory/guard/README.md) |
+> | §13, the build plan | all four phases are done |
+>
+> Section numbers are unchanged, so every reference to them elsewhere still resolves.
+> Owner: Salil. §14 lists what is still open.
 
 ---
 
@@ -18,8 +34,10 @@
 A **demo factory**: a pre-sales person pastes a prospect's ecommerce website
 URL into a GitHub issue form, and roughly ten minutes later a working demo
 storefront is live on GitHub Pages, themed to that prospect, wired to a real
-Dengage web application, with eight preset on-site personalization widgets that
-fire on demand from an in-page launcher. No developer involved, no Dengage
+Dengage web application, with the preset on-site personalization widgets firing
+on demand from an in-page launcher. **Not a number**, because this said eight and
+the number has since been wrong twice: `factory/checks/launcher.js` counts the
+launcher against the creatives on disk and is the only place worth reading one from. No developer involved, no Dengage
 panel work per demo, and nothing that can touch the five core demo sites or the
 two mobile apps that the sales team already relies on.
 
@@ -89,7 +107,7 @@ something the pre-sales team cannot use.
 
    - **The recommendation engine feeds off the standard tables.** Sandbox tables
      would have meant a demo could never show recommendations, which is among
-     the things a prospect most wants to see. §2.7 deferred recommendations to
+     the things a prospect most wants to see. the phase 1 scope deferred recommendations to
      Phase 2 partly for feed reasons; this removes the harder half of that.
    - **Those tables are already related to `master_contact`**, so the contact
      card, Interactive Segment and profile enrichment work with no wiring.
@@ -116,7 +134,7 @@ something the pre-sales team cannot use.
    3. **The purge now deletes from production tables.** §1.11 applies in full:
       written approval, for that exact filter, every time.
 
-   The six tables and the calls that write them are in §2.3. `pageView` is no
+   The six tables and the calls that write them are in CLAUDE.md §1b and factory/phase0/SCHEMA.md. `pageView` is no
    longer an exception to anything; it is simply the first of the set.
 
 4. **No external asset hosting at runtime.** Product images scraped from a
@@ -181,134 +199,6 @@ something the pre-sales team cannot use.
 **None of this is automatable except the tables, and nothing works until it is
 done.** Do this first, before building the generator, because it is also how
 you will test.
-
-### 2.0 Turn GitHub Pages on, before anything else
-
-Repository Settings, then Pages, source set to the **`main` branch, root
-folder**. It takes a minute or two to publish.
-
-This is step zero and it is easy to miss, because every other page in this
-document assumes the site is already reachable. Until Pages is on:
-`https://dengage-presales.github.io/demo-ai/` returns not found, no demo can be
-live, and the push icon URL in §2.5 will be rejected by the panel for pointing
-at nothing.
-
-The web application form in §2.1 can be filled in before the site is live. The
-panel accepts the domain either way. It just has to be live before a real demo
-is.
-
-### 2.1 The web application
-
-Create a **new web application in account 28**, separate from the BFSI
-application that the core demos use. Salil has confirmed this is possible.
-
-You need from Salil:
-
-- the account id (the core demos use `28`)
-- the new application's **app guid**
-- the resulting SDK loader URL, which follows the pattern
-  `https://pcdn.dengage.com/p/push/<accountId>/<appGuid>/dengage_sdk_loader.js`
-
-Form values, so this is filling in a form rather than a decision:
-
-| Field | Value |
-|---|---|
-| Name | `DND - PreSales eComm [Salil]` |
-| Site Domain URL | `https://dengage-presales.github.io` |
-| Icon/Badge URL | `https://dengage-presales.github.io/demo-ai/assets/dengage-push-icon.png` |
-
-**The icon is a required field and the panel rejects a URL that does not
-resolve**, so this only works once §2.0 has published. It is live and returns
-200. The image is the Dengage mark at 1200x1200, which clears the panel's
-256px square minimum.
-
-A brief detour worth recording, because it will look odd in the history: while
-this repository's Pages was still off, the icon was moved to the origin root in
-the sibling `dengage-presales.github.io` repository, which was published
-already. That is no longer needed. Keeping the icon in this repository, beside
-the code that references it, is the simpler arrangement and it is the one that
-survives a demo being rebuilt.
-
-**Site Domain URL takes the origin only, with no path and no trailing slash.**
-Every demo ever built sits underneath that one address, so it is filled in once
-and covers all of them. Putting the full path to one demo there would scope the
-application to that demo alone.
-
-The icon is optional on the first pass and the panel may reject it until **both**
-§2.0 is done and the file exists at `assets/dengage-push-icon.png`, since the
-URL resolves to nothing before then. Push works without it. Come back and paste
-it once the site is live.
-
-Advanced settings on the new application, all four of them:
-
-| Setting | Value | Why |
-|---|---|---|
-| Trigger Initialize on Install | **off** | the page snippet calls `initialize()` itself |
-| Trigger Page View on Initialize | **off** | `js/pageView.js` sends the page view with real parameters; leaving this on double-counts every page |
-| Disable `setNavigation` | **on** | |
-| Allow connecting multiple contacts to single device | off | |
-
-The first two are not preferences. Getting them wrong produces double-counted
-page views that nobody notices until a prospect asks why the numbers look odd.
-
-### 2.2 The eight campaigns
-
-> **CORRECTED, 4 August 2026, and this is the largest scoping error in this
-> document.** "The eight" is one group out of six. The reference build carries
-> **27 scenarios**, and this section described only the first group of them.
-> Everything about the eight below is still correct; it is simply not the whole
-> job. See §2.2c for the full set and what each group needs.
->
-> The gap was not visible from inside this document, because §2.2 through §2.2b
-> are internally consistent and never claimed to be exhaustive. It surfaced when
-> Salil asked where the other scenarios were.
-
-One campaign per slug, built once, serving every demo forever.
-
-Settings common to all eight:
-
-| Field | Value |
-|---|---|
-| Trigger | **Data Layer Event** |
-| Event name | the trigger name below, exactly |
-| Where to display | `/.*/` |
-| Status | Active |
-| Show every X minutes | 1 |
-| Max show count | 100 |
-
-`/.*/` is what lets one campaign serve every demo on the shared origin. Do not
-narrow it per demo.
-
-| Trigger name | Layout | Design settings |
-|---|---|---|
-| `dengage_demo_survey` | Popup | width 460 to 480, padding 0, transparent background |
-| `dengage_demo_nps-popup` | Popup | width 460 to 480, padding 0, transparent background |
-| `dengage_demo_subscription-popup` | Popup | width 460 to 480, padding 0, transparent background |
-| `dengage_demo_image-popup` | Popup | width 460 to 520, padding 0, transparent background |
-| `dengage_demo_horizontal-popup` | Popup | width 640 to 720, padding 0, transparent background |
-| `dengage_demo_cta-image-popup` | Popup | width 440 to 480, padding 0, transparent background |
-| `dengage_demo_sticky-bar` | **Banner**, position Top, keep in place on scroll | padding 0, transparent background |
-| `dengage_demo_image-bar` | **Banner**, position Bottom, keep in place on scroll | padding 0, transparent background |
-
-> **On the spellings.** The core repository's campaigns carry three deliberate
-> misspellings (`subscripton-popup`, `stickey-bar`, `horizonal-popup`) because
-> its panel contract was set that way years ago and correcting them would take
-> live widgets dark. This is a fresh contract with nothing depending on it, so
-> the spellings above are **corrected**, on Salil's instruction. Do not copy the
-> misspellings across from any core-repo document you may be shown.
-
-**Why padding 0 and a transparent background:** the engine's own container
-otherwise draws a white box around the card, which reads as an unwanted frame
-on screen. The creative supplies its own white, corner radius and shadow.
-
-**Why the two bars are Banner and not Popup:** the Banner container is already
-fixed and full width, so the content just fills it. Do not switch them to Popup
-and do not add `position: fixed` to the creative.
-
-**Popups draw no close button of their own.** The panel supplies it, via
-Layout > Close Button > "Add close button to outside". A second one inside the
-card reads as a duplicate. The two banners keep their own, because the Banner
-layout is not offered that setting.
 
 ### 2.2a What the eight creatives can actually say
 
@@ -385,307 +275,6 @@ is a bespoke campaign someone builds in the panel for that call. It is not a
 change to the shared eight, and changing one of the eight changes it for every
 live demo at once.
 
-### 2.2c The full scenario set: 27, in six groups
-
-Recovered 4 August 2026 from the reference build's own launcher, after §2.2 was
-found to cover only the first group. Counts are the reference's.
-
-| Group | Count | What it is | State here |
-|---|---|---|---|
-| Default scenarios | 8 | popups and banners, Data Layer Event triggered | **6 written, 5 passing, 2 blocked** |
-| A/B testing | 1 | one campaign, three designs, 10/30/30/30 split | not started |
-| Inline scenarios | 5 | injected **into** the page content | targets exist, creatives not written |
-| On-site scenarios | 3 | overlaid on the content, layout untouched | not started |
-| Gamification | 5 | engagement mechanics with prizes | not started |
-| Product recommendations | 5 | driven by the catalogue | **deferred to Phase 2 by §2.7, now reopened** |
-
-Every one of these is a real platform capability rather than an aspiration. The
-SDK bundle carries the machinery for all six groups, which is how the list was
-confirmed without reading the reference repository:
-
-| Group | Evidence in the SDK |
-|---|---|
-| A/B testing | `AB_CONTROL_GROUP`, `isAbCampaign`, `$d="AB"` |
-| Inline | `inlineTarget`, `inlineTargetSelector`, `dnInlineId`, `dnInlineIndex`, `dnInlineReserved` |
-| On-site variants | `SLIDE`, `EXIT_INTENT`, `ON_SCROLL`, `scrollBreakPoints`, `popupCooldown` |
-| Gamification | `getGameWinner`, `gameWinnerResult`, `/coupon/game/` + `/onsite/draw` |
-| Recommendations | `getRecommendedItems`, `recommendationContainerKey`, `maxRecommendationCount`, `/recommendations/`, `/reco-events/batch` |
-
-And several capabilities beyond even those 27, worth knowing exist before anyone
-designs the launcher: story sets (`storySet`, `DengageStoryEngine`, Instagram
-style), site search (`searchContainerKey`, `minCharsToSearch`), countdown
-(`dn-countdown-settings`), Typeform embedding, a rating field type, and the app
-inbox (`/api/inbox/events`).
-
-#### The three capture creatives, and how each submits
-
-`survey`, `nps-popup` and `subscription-popup` all capture through the engine's
-native form mechanism rather than writing a table, so their results are read on the
-contact card and segmented on tags. Handoff 12.4.
-
-`survey` and `nps-popup` validate their own single question and submit with
-`Dn.setTags`, which is the call that writes contact tags. `subscription-popup` uses
-the subscription form contract. All three are verified against the engine's own
-published handler by `factory/checks/creative.js`, which asserts the exact payload
-each one sends.
-
-#### Inline is not a popup, and the difference is dangerous
-
-Handoff 12.3, restated because it now matters for five scenarios rather than a
-footnote. A popup renders in a cross-origin iframe and is sandboxed. **An inline
-creative is not.** The SDK lifts its `<style>` into `document.head`, clones its
-HTML into the target, and runs its `<script>` through `new Function()` in page
-scope.
-
-So one unscoped selector in an inline creative restyles the entire storefront,
-and it will look like the storefront is broken rather than like the creative is.
-Every inline creative scopes all CSS under its own root id, and
-`factory/checks/creative.js` refuses one that does not.
-
-#### How an inline creative finds its target
-
-The panel has an **Inline Target Selector**: it scans every node on the page for
-the search word in a `class` or an `id`, then generates an optimised selector,
-**preferring an id** (`#footer-container`) and falling back to tag plus class.
-
-The template's five targets are therefore plain ids, which is the form the tool
-prefers:
-
-```
-#dn_inline_target_below_header       immediately after </header>
-#dn_inline_target_below_hero         after the hero block, home page
-#dn_inline_target_in_grid            inside the product grid
-#dn_inline_target_pdp_below_price    product page, under the price block
-#dn_inline_target_above_footer       immediately before <footer>
-```
-
-Search `dn_inline_target` in the panel's selector tool and all five appear. They
-exist even when empty, on purpose: the tool cannot select a node that is not
-there, and the campaign is configured before any content is injected.
-
-One consequence worth stating: an empty target has no height, so the tool's blue
-overlay has nothing to draw. Pick from the node list rather than from the page.
-
----
-
-### 2.3 The two tables
-
-> ### SUPERSEDED, 4 AUGUST 2026. NOTHING IN THIS SECTION IS STILL BUILT.
->
-> **Read §1.3 and §15a instead, and CLAUDE.md §1b.** Salil reversed this design
-> after the two tables had been built and inspected: demos now write to the six
-> standard ecommerce tables using the SDK's own `ec:*` calls, because the
-> recommendation engine feeds off those tables and a demo that cannot show
-> recommendations is missing one of the things a prospect most wants to see.
->
-> So `sandbox_onsite_events` and `sandbox_events` are not what a demo writes to,
-> the `demo_slug` column below **never existed** and could not have (columns
-> cannot be added to the six standard tables), and there is nothing here to enter
-> in the panel.
->
-> `factory/phase0/tables.mjs` was rewritten on 6 August to match. It now names
-> the six real tables and what writes to each, and `--counts` reads their row
-> counts so you can tell whether events are landing at all.
->
-> The section is kept rather than deleted because §2.4, §5.3 and §6 still argue
-> against it, and an argument whose subject has been removed is unreadable. Treat
-> everything below as the record of a decision that was reversed.
->
-> ### CORRECTED: these are NOT automatable, and the reason is the table type
->
-> An earlier draft opened this section with "These **are** automatable", and
-> built the §2.4 argument on it. That is wrong, and it was found by creating
-> them and looking at the result.
->
-> **Dengage has five table types.** The panel offers Regular, Big Data,
-> Sendable Contact List, Sendable Token List, and Remote. Event and analytics
-> data belongs in **Big Data**: the panel's own description is "used for
-> storing external event and analytics data, create relations with these tables
-> and use them for segmentation". The reference build says so too, in a comment
-> at the top of the reference build's launcher module instructing the reader to create a Big Data
-> table with that name.
->
-> **`CreateTable` cannot make one.** The request body has exactly five fields,
-> `name`, `columns`, `contactKeyColumn`, `description` and `folderId`, and
-> **none of them selects a type**. The API decides for you: with
-> `contactKeyColumn` set it creates a **Sendable** table, without it a
-> standalone one. There is no third outcome.
->
-> A Sendable table is a send list, an audience you can mail or push to. Using
-> one to collect launcher clicks is the wrong shape, and in a shared account it
-> puts two fake audiences in front of everyone else using it.
->
-> **So the two tables are created by hand, in the panel, as Big Data tables,
-> once.** §2.4's conclusion survives intact and its reasoning does not: it is
-> not that tables are automatable and campaigns are not, it is that
-> **everything panel side is manual and all of it is one time.** No per demo
-> panel work, which is the promise that actually matters, is unaffected.
->
-> `factory/phase0/tables.mjs` no longer creates anything. It prints the
-> exact specification to enter, and it can verify what exists afterwards. See
-> §2.3a for the panel steps and the relations.
-
-Reference: https://dev.dengage.com/reference/createtable
-
-Four things about the API, all confirmed by calling it rather than by reading
-about it. They matter for the verify and purge paths, which do use it.
-
-- **There is no bearer token to be handed.** Authentication is an **API user**,
-  created in the panel under Configuration, Users, New User, which yields a
-  **user key and a password**. Those are exchanged at
-  `POST /rest/login`, body `{"userkey": ..., "password": ...}`, for an
-  `access_token` good for 3600 seconds, then sent as
-  `Authorization: Bearer <access_token>`. Dengage's guidance is explicit that
-  logging in before every call is wrong and can get the requests blocked, so
-  log in once and reuse.
-
-- **The API is IP allowlisted**, and it refuses on the address *before* it
-  looks at the credentials, with HTTP 403 and the reason in `actionResult`
-  rather than in `message`. The default reading of a 403 on a login call is
-  "wrong password", so this is worth detecting precisely. §14.2 flagged this as
-  a risk to confirm. It is confirmed, and see §10 for what it costs the purge.
-
-- **The accepted column types** are `TEXT`, `INTEGER`, `DATE`, `BOOLEAN`,
-  `EMAIL`, `PHONE` and `DECIMAL`.
-
-- **Useful read and cleanup endpoints**, for the verify step and for §10:
-  `GET /rest/dataspace/tables`, `GET /rest/dataspace/tables/{tableId}`,
-  `DELETE .../{tableId}/truncate`, `DELETE .../{tableId}/drop`, and
-  `DELETE /rest/dataspace/sync/delete` or `/async/delete` for rows. **Every one
-  of the deleting endpoints is covered by §1.11 and needs written approval
-  first.** `drop` also requires the table to already be empty.
-
-Both tables need a **`contact_key` column of type TEXT, named as the
-`contactKeyColumn`**. The API requires that column to be text, and without it
-the rows cannot be joined to a contact, which is most of what you are
-demonstrating. `key`, `event_date`, `session_id`, `event_type`, `event_id` are
-filled by the SDK or the platform, never by the site, so do not declare them.
-
-**Table 1, `sandbox_onsite_events`.** One row per widget fired from the
-launcher.
-
-```json
-{
-  "name": "sandbox_onsite_events",
-  "columns": [
-    { "name": "contact_key",    "type": "TEXT" },
-    { "name": "demo_slug",      "type": "TEXT" },
-    { "name": "event_name",     "type": "TEXT" },
-    { "name": "scenario_group", "type": "TEXT" },
-    { "name": "widget_name",    "type": "TEXT" },
-    { "name": "page_type",      "type": "TEXT" },
-    { "name": "page_url",       "type": "TEXT" }
-  ],
-  "contactKeyColumn": "contact_key",
-  "description": "Demo Factory: scenario launcher clicks, all demos"
-}
-```
-
-**Table 2, `sandbox_events`.** One row per storefront interaction. This is the
-table that replaces every standard ecommerce table, so it has to carry the
-union of what those interactions need. Deliberately wide and mostly nullable:
-one table for every event is what keeps the purge to a single filter.
-
-```json
-{
-  "name": "sandbox_events",
-  "columns": [
-    { "name": "contact_key",  "type": "TEXT" },
-    { "name": "demo_slug",    "type": "TEXT" },
-    { "name": "event_name",   "type": "TEXT" },
-    { "name": "product_id",   "type": "TEXT" },
-    { "name": "product_name", "type": "TEXT" },
-    { "name": "category_path","type": "TEXT" },
-    { "name": "quantity",     "type": "INTEGER" },
-    { "name": "unit_price",   "type": "DECIMAL" },
-    { "name": "total_value",  "type": "DECIMAL" },
-    { "name": "currency",     "type": "TEXT" },
-    { "name": "order_id",     "type": "TEXT" },
-    { "name": "search_term",  "type": "TEXT" },
-    { "name": "result_count", "type": "INTEGER" },
-    { "name": "list_name",    "type": "TEXT" },
-    { "name": "page_type",    "type": "TEXT" },
-    { "name": "page_url",     "type": "TEXT" }
-  ],
-  "contactKeyColumn": "contact_key",
-  "description": "Demo Factory: storefront events, all demos"
-}
-```
-
-The `event_name` values written into it, which is the full vocabulary:
-
-| `event_name` | Fired by | Columns it fills beyond the common four |
-|---|---|---|
-| `demo_add_to_cart` | cart | `product_id`, `product_name`, `category_path`, `quantity`, `unit_price`, `currency` |
-| `demo_remove_from_cart` | cart | `product_id`, `quantity` |
-| `demo_begin_checkout` | checkout | `total_value`, `currency`, `quantity` |
-| `demo_order_completed` | checkout | `order_id`, `total_value`, `currency`, `quantity` |
-| `demo_search` | search panel | `search_term`, `result_count` |
-| `demo_wishlist_add` | wishlist | `product_id`, `product_name`, `list_name` |
-| `demo_wishlist_remove` | wishlist | `product_id`, `list_name` |
-| `demo_product_view` | product page | `product_id`, `product_name`, `category_path` |
-
-Common four on every row: `contact_key`, `demo_slug`, `event_name`,
-`page_url`.
-
-**`unit_price` and `total_value` are omitted, not zeroed, when the scrape did
-not produce a price.** Non-negotiable 8. `Number(null)` is `0`, and a table
-full of zero-value orders is worse than a table with gaps.
-
-Both tables are shared by every demo. `demo_slug` is what separates them and
-what the 90 day purge filters on.
-
-### 2.3a Creating the two tables in the panel, and relating them
-
-> **SUPERSEDED, 4 AUGUST 2026, along with §2.3. Do not do any of this.** The six
-> standard ecommerce tables already exist and are already related to
-> `master_contact`, so there is no table to create and no relation to build. See
-> §1.3, §15a and CLAUDE.md §1b. Kept as the record of a reversed decision.
-
-Done once, by hand, because §2.3 above establishes that the API cannot produce
-the right type.
-
-**For each of the two tables:** Data Space, Tables, New, and pick **Big Data**.
-Not Regular, which is for data linked on primary keys rather than for events.
-Not either Sendable type, which are send lists. Enter the name, the description
-and the columns exactly as the two definitions above give them.
-
-**`contact_key` is nullable on a Big Data table, and should be left nullable.**
-This is the opposite of what the API forced, and the difference is the type. A
-Sendable table is an audience, so its contact key cannot be empty; the API
-refuses one with `ContactKey or PrimaryKey column cannot be nullable!`. A Big
-Data table has no such requirement, and Dengage's own star schema documentation
-says `contact_key` is nullable there precisely so that **anonymous,
-unauthenticated devices can still record rows**.
-
-That matters more than it sounds. §6.2 has anonymous visitors staying anonymous
-as correct behaviour. Had these stayed Sendable, every event from an anonymous
-visitor would have been rejected, and the demo would silently record nothing
-until someone signed up.
-
-**Then relate each table to `master_contact`.** Dengage is a star schema built
-around `master_contact` and `master_device`, and a custom table earns its place
-in segmentation by being related to it.
-
-| | |
-|---|---|
-| Where | the **Connect Toolbox**, upper right of the table, then **New Relation** |
-| From | `sandbox_onsite_events.contact_key`, and separately `sandbox_events.contact_key` |
-| To | `master_contact.contact_key` |
-| Cardinality | one to many. One contact, many event rows |
-
-Relations are created in the panel only. There is no API for them, which is the
-same shape as the campaigns in §2.2 and for the same reason: it is one time
-setup, not per demo work.
-
-**What the relation buys**, and why it is not optional: without it the two
-tables are inert stores. With it, the Interactive Segment tools can build
-segments across them, which is the thing a prospect is actually being shown.
-"Everyone who fired the NPS widget and did not complete checkout" is a segment
-only if the relation exists.
-
-Reference: https://dev.dengage.com/docs/star-schema-relational-database
-
 ### 2.4 What the API cannot do
 
 I checked the published API reference. **On-site campaigns cannot be created by
@@ -696,93 +285,6 @@ Authorization, Contact, Dataspace, Content, Settings, Logs and Transactional.
 This is precisely why §1.2 matters: if campaigns had to be created per demo,
 the whole "no panel work" promise would collapse. Do not design anything that
 assumes campaign creation can be scripted.
-
-### 2.5 Web push, phase 1
-
-In scope. Configure the push domain on the new web application, pointed at the
-Pages origin.
-
-**Corrected: the service worker is not in this repository.** An earlier draft
-put it at "the repository root", which assumed this repository served the
-origin root. It does not. `demo-ai` is a *project* Pages site published under
-`https://dengage-presales.github.io/demo-ai/`, so a worker committed here is
-scoped to `/demo-ai/` and covers nothing above it.
-
-| | |
-|---|---|
-| Repository | `Dengage-PreSales/dengage-presales.github.io` |
-| Served at | `https://dengage-presales.github.io/dengage-webpush-sw.js` |
-| Scope | `/`, the whole origin, so it covers every demo |
-
-That is the correct arrangement and it is already in place. A service worker's
-scope is its path, so the file has to sit above every demo it serves, and the
-origin root is the only place that is true. Note the filename, which is
-`dengage-webpush-sw.js` rather than the `dengagewebpushsw.js` the reference
-build uses.
-
-The file is account agnostic: it reads the account id and app guid from its own
-query string and imports the real worker from the Dengage CDN, so one copy
-serves any application and nothing in it changes per demo.
-
-One property to know and to tell pre-sales: **push subscriptions are per
-origin, and every demo shares one origin.** A browser that subscribed while
-looking at demo A is subscribed for the whole sandbox. For the intended use,
-which is composing a push in the panel during a call and having it arrive on
-screen, this is fine and arguably better. It is not a bug, so do not try to fix
-it.
-
-### 2.5b Sending a sample push without waiting for an event
-
-Added 6 August 2026. A journey pointed at a storefront event is the right way to
-show push to a prospect, because it reaches the device that triggered it and needs
-no credential. For a rehearsal, a screenshot, or a push on screen with nothing
-touched on the storefront first, there is `SendInstantPush`:
-
-```
-POST https://api.dengage.com/rest/push/sendInstant
-```
-
-`factory/panel/send-instant-push.mjs` wraps it. Panel doc:
-`factory/panel/REFERENCE.md`, "Sending one on demand".
-
-**Why it is a command and not a launcher card.** Two properties of the API decide
-this, and neither is worked around:
-
-1. It authenticates with an account level token. A public static page cannot hold
-   one, because a token the page can read is a token any visitor can read.
-2. It targets an audience, `segmentId` or `tableId`, not a device. A button on the
-   page would push to every subscribed device rather than to the browser that
-   pressed it.
-
-So the credential lives in the environment of a machine the operator controls, and
-the send is a deliberate act rather than a click during a demo.
-
-**The rail that matters, and why it is tested.** `applicationIds` is optional in
-the API, and **omitting it prepares the send for every application in the
-account**. Account 28 is shared with the core demo sites and the two mobile apps
-(§14.4, CLAUDE.md §1), so an omitted array is a push into other people's work,
-with no symptom visible from this side. The script therefore always sends
-`applicationIds`, always reads it from `factory/sandbox.json`, and has no flag to
-change or omit it. `--self-test` asserts that over nine different argument sets and
-has been checked against three deliberately broken versions of the builder.
-
-Three further habits, each paid for elsewhere in this document:
-
-- **It prints the whole request and asks for a typed word before sending.** §12
-  and CLAUDE.md §1a: an outward facing action names exactly what it will do first.
-- **It does not retry a send.** A request that reached the platform and then timed
-  out on the way back would arrive twice, and two notifications look like a fault
-  in the product. Login and the report do retry, because they change nothing.
-- **A 200 is queued, not delivered.** `--report <trackingId>` reads
-  `GET /rest/push/sendInstant` and prints delivered, opened and bounced, broken
-  down by browser and device. Same rule as §12.5 for events.
-
-The API is IP allowlisted, so this runs from a machine on the list. A stock CI
-runner is not, and its address changes, so there is nothing stable to add. That is
-one more reason this is not automated.
-
-**Nothing here deletes anything, and nothing here creates the segment.** Both are
-conversations, not script behaviour. CLAUDE.md §1a.
 
 ### 2.5a Why the GitHub account is separate
 
@@ -835,14 +337,14 @@ Two consequences that must not be undone:
 **What a separate GitHub account does NOT separate: Dengage.** The sandbox web
 application still sits inside account 28, so the Data Space, every table and
 every contact are still shared with the five core demo sites and the two mobile
-apps. The `ec:*` prohibition (§1.3), the table allowlist (§11) and the event
+apps. The `ec:*` prohibition (§1.3), the table allowlist and the event
 panel fix (§5.3) remain the only things protecting them. Do not let the account
 split create a false sense of safety. See §14.4.
 
 ### 2.6 Re-running a widget during a call
 
 Operationally the most important thing pre-sales will hit, and the reason for
-two of the settings in §2.2.
+two of the campaign settings in the panel.
 
 A campaign has a display frequency. Fire the same widget twice in a demo and
 the second one may not appear, which on a call looks like a broken product.
@@ -854,140 +356,6 @@ a widget stops appearing mid-demo, the fix is clearing that state, not
 rebuilding the campaign. Build a small reset control into the scenario launcher
 so a pre-sales person can do it themselves without a console. The core
 repository has an equivalent and it is used constantly.
-
-### 2.7 Deliberately out of scope for phase 1
-
-Named here so nobody rediscovers them as gaps.
-
-| Out of scope | Why, and what it would take |
-|---|---|
-| **Recommendations** | Phase 2, Salil's call. Needs a product feed uploaded per application in the panel, per demo, which reintroduces exactly the per-demo panel work the shared-prefix design exists to eliminate. Solving that is its own design problem |
-| **A/B testing** | The creatives are standardized and shared across every demo, so there is no per-demo variant to test. The core repository's A/B campaign is not carried over |
-| **Mobile apps** | Web only. No Android or iOS surface in this repository, in any phase |
-| **A second language** | English only. See §14.5 for the one thing to get right now so adding one later is not a rewrite |
-| **Post-generation editing** | A generated demo is not hand-edited. If a demo needs a different headline or price, that is a generator feature or a config field, never a manual edit under `demos/` |
-
----
-
-## 3. Repository layout
-
-```
-demo-ai/
-  DEMO-FACTORY-HANDOFF.md       this file
-  README.md                     what this is, how a pre-sales person uses it
-  CLAUDE.md                     the operating rules, short, pointing here
-  .nojekyll
-
-  seed/                         TEMPORARY, see §3.1. Delete at end of phase 1
-    site/en/                    reference storefront
-    panel-content/en/           reference creatives, the easy one to forget
-
-  template/                     the storefront, brand-free, never served
-    index.html
-    product.html
-    style.css                   all brand decisions live in the :root block
-    js/                         the modules, see §5
-    vendor/
-
-  demos/
-    <slug>/                     one generated demo, self-contained
-      index.html
-      product.html
-      style.css
-      demo.config.json          §4, the only file that differs by brand
-      products.json             the catalogue
-      images/                   committed, compressed, local
-      js/
-      vendor/
-
-  assets/
-    dengage-push-icon.png       the push badge, 1200x1200, referenced by §2.1
-
-  factory/
-    sandbox.json                the account id and app guid, the only copy
-    phase0/                     the panel bring-up kit, built in Phase 0
-      README.md                 the panel checklist, step by step
-      tables.mjs                names the six tables a demo writes to, and
-                                reads their row counts. Read only. §1.3
-      probe/                    the page that proves the panel works
-      creative/                 a generic card to paste for the Phase 0 check
-    guard/                      §11, the CI guardrails. Build these early
-      run.sh                    the checks
-      test.sh                   the checks, checked against known-bad input
-      fixtures/naive-copy/      that known-bad input
-      README.md                 what each check is for, and which three matter
-    scrape/                     §7.1, the three-tier catalogue reader
-    theme/                      §7.2, brand token extraction
-    art/                        §7.3, placeholder generation
-    build/                      §7.4, template plus config to a demo folder
-    smoke/                      §9, the acceptance check
-    purge/                      §10
-
-  .github/
-    ISSUE_TEMPLATE/new-demo.yml §8, the pre-sales dialog box
-    workflows/
-      build-demo.yml            issue opened, build, commit, merge, comment
-      purge.yml                 scheduled, 90 day retention
-      guard.yml                 §11, CI guardrails
-```
-
-`template/` is never served and never has a brand in it. A demo is
-`template/` plus `demo.config.json` plus a catalogue plus artwork. If you find
-yourself hand-editing a file under `demos/`, the generator is missing a
-feature.
-
-### 3.1 `seed/`, and why it exists
-
-`seed/` holds two folders copied from the core repository and committed here by
-Salil before this work started:
-
-```
-seed/
-  site/en/           = <reference-build>/en/                the reference storefront
-  panel-content/en/  = <reference-build>/panel-content/en/  the reference creatives
-```
-
-Note the `en/` level on both. An earlier draft of this document wrote them as
-`seed/site/` and `seed/panel-content/`, which is one directory short of where
-the files actually are.
-
-**Both are needed, and the second is the one that is easy to miss.** The eight
-creatives do not live inside the site folder; they live in a sibling directory,
-because they are pasted into the Dengage panel rather than served by the site.
-Phase 1 requires authoring eight standardized creatives (§2.2a), and these
-eight are working reference implementations of every rule in §12: the
-cross-origin iframe constraints, `Dn.sendClick` placement, `Dn.close()` on the
-dismiss control, the `data-dn-form-id` capture mechanism, and the
-visually-hidden class that §12.7 warns against deleting. Writing them from
-prose alone, with those files one directory away and uncopied, is a wasted day.
-
-Ignore `seed/panel-content/en/ab-testing/`: A/B testing is out of scope (§2.7).
-
-**What `seed/site/en/` already contains**, verified rather than assumed: its own
-stylesheet, 25 JavaScript modules, a main script, product artwork, `vendor/`, a
-product feed and a service worker. It references no file outside itself. The
-only external hosts it calls are Google Fonts, the Dengage SDK CDN, and a tag
-manager that must be removed (§12.9).
-
-**One thing in `seed/site/en/` will break here and must be fixed during the
-de-brand:** six links to `../index.html` and `../product.html`, the language
-switcher pointing at the Portuguese site. There is no parent site in this
-repository, so all six 404. Remove the language switcher entirely; the demos
-are English only (§2.7).
-
-It exists because **a session building this must not open
-`salil-dengage/dengage-demos`, even though it can.** See §1.1: the boundary is
-instruction, not structure. Reaching into the repository that holds the live
-sales assets, purely to copy one folder out of it, is exactly the kind of
-"just this once" that the rule exists to refuse. Copying the folder in ahead of
-time costs one commit and removes the temptation entirely.
-
-**Delete `seed/` once `template/` is built.** It is scaffolding. If it is still
-present at the end of Phase 1, something in the fork was left unfinished, and a
-stale copy of another repository's brand assets sitting in a public repository
-is exactly the kind of thing nobody notices for a year.
-
----
 
 ## 4. The demo config contract
 
@@ -1044,33 +412,6 @@ Rules:
 
 ---
 
-## 5. The storefront template
-
-Start from **`seed/site/en/`** (§3.1), which is a copy of the reference build's English
-site, the reference build in the core repository. Strip it to a brand-free
-`template/`. Salil confirmed there is nothing in that machinery to exclude, so
-this is a de-branding job rather than a selection job.
-
-The de-brand, concretely:
-
-1. Replace every brand token from the reference build, meaning its name in title
-   case, lower case and concatenated form, and its SKU prefix, across the HTML, the modules and the stylesheet with the demo slug.
-   This is what keeps element ids, CSS classes, the localStorage cart key and
-   the custom event names from colliding between two demos open in one browser
-   (§1.6). Rename its launcher module accordingly.
-2. Reduce the stylesheet's brand surface to the `:root` token block.
-3. Remove the tag manager entirely (§12.9).
-4. Remove the language switcher (§3.1).
-5. **Retarget all five modules in §5.3**, including the runtime fix to the
-   event panel. Do this before any of them runs even once.
-6. **Strip `KNOWN_CONTACTS` from `identity.js`.** The reference copy maps
-   `salil@dengage.com` to the contact key `salil-demo`, which is Salil's own
-   contact on the core account and which §6.2 says never to use. Left in place,
-   anyone signing up on a generated demo with that address attaches their test
-   traffic to it. Remove the mapping, keep the resolution order.
-7. The service worker needs no de-branding: the reference copy is already
-   account agnostic.
-
 ### 5.0 The agreed feature set
 
 Signed off by Salil. Anything not on this list is out of scope unless he adds
@@ -1095,7 +436,7 @@ it.
 > assumptions that hold for one vertical only. Three consequences, all of
 > which are cheap now and expensive to retrofit:
 >
-> - **Category count is variable.** §7.1a caps the header at what fits and
+> - **Category count is variable.** the generator caps the header at what fits and
 >   groups the rest. A mixed-vertical catalogue is what makes that cap real.
 > - **`category_path` is hierarchical**, `Electronics > Laptop`, not a flat
 >   list. Adding depth later touches the nav, the grid, the filters and every
@@ -1104,7 +445,7 @@ it.
 >   jacket has sizes and colours, a laptop has specs, a tyre has a load index.
 >   No fixed attribute set.
 >
-> None of this is what a prospect sees: §7.1a takes the real category
+> None of this is what a prospect sees: the generator takes the real category
 > structure from their own site. It is about the template not assuming a shape.
 
 | Feature | Where it lives |
@@ -1117,7 +458,7 @@ it.
 | Checkout | modal flow, not a page. See §5.3 |
 | Search | slide-in panel. See §5.3 |
 | Wishlist / saved items | drawer. See §5.3 |
-| Scenario launcher, all 27 scenarios | in-page panel, §5.1 |
+| Scenario launcher, all 27 scenarios | in-page panel. `factory/checks/launcher.js` is the count |
 | Five inline slots | §5.2 |
 | Event panel | in-page, the six standard ecommerce tables, §1b |
 
@@ -1137,7 +478,7 @@ Shape of it:
 
   > **On the rails, and this is a real contradiction to resolve rather than a
   > detail.** The reference build's rails are fed by **Dengage
-  > recommendations**, which are out of scope until Phase 2 (§2.7). In Phase 1
+  > recommendations**, which were out of scope in phase 1. In Phase 1
   > the rails must render from the demo's **own local catalogue**: "similar in
   > this category", "also viewed", picked in the generator, shipped in
   > `products.json`. They look identical on screen and they demo well. What they
@@ -1148,62 +489,6 @@ Shape of it:
 - **No build step at all.** Static files served directly by Pages. This is
   deliberate. A demo that needs a compile is a demo that can fail to compile
   fifteen minutes before a call.
-
-### 5.1 The scenario launcher
-
-The in-page panel that lets a pre-sales person fire any widget on demand during a
-call. This is the single most important piece of the demo and it is what the whole
-panel setup in §2.2 exists to serve.
-
-**Twenty two cards, in four groups, plus the five recommendation strategies below
-them, which is the twenty seven scenarios of §2.2c.** Recommendations are not
-campaigns and get no card here: `js/recommend.js` computes them locally, so they
-appear in their own group with no trigger name.
-
-> **CORRECTED, 4 August 2026.** This section described eight cards, which was the
-> same scoping error as §2.2 and outlived it: the other fourteen creatives were
-> written, committed and documented while `js/panels.js` still listed eight, so
-> fourteen campaigns had no way to be fired. Nothing failed, because a scenario
-> with no button is not an error anywhere. `factory/checks/launcher.js` now counts
-> the launcher against `factory/creatives/` in both directions, and
-> `factory/checks/test.sh` proves that count fails when they drift.
-
-Grouping is not decoration. Twenty two flat buttons is a wall, and on a call the
-operator is reading the panel while talking, looking for one named thing.
-
-Per card it pushes to `window.dataLayer`:
-
-```js
-window.dataLayer.push({
-  event:      'dengage_demo_' + slug,
-  actionType: 'dengage_demo_' + slug
-});
-```
-
-The SDK watches `window.dataLayer` itself, so campaigns set to Data Layer Event
-fire with **no GTM involvement**. See §12 for why that matters.
-
-> **CORRECTED.** This section used to specify a second call recording each click
-> into a sandbox table. Those tables no longer exist: §1.3 was reversed and a demo
-> now writes only through the SDK's own `ec:*` and `pageView` calls, from
-> `js/dengageEvents.js` alone. A launcher press is a data layer push and nothing
-> else. The campaign's own impression and click reporting is what measures it,
-> which is also what makes the creatives' "report the click, then dismiss" rule in
-> §6.3 matter.
-
-**Three cards cannot push anything, and are still listed.** Two are gestures:
-exit intent listens for the pointer leaving the window, scroll depth for a scroll
-position. Neither has a data layer event, so both are drawn as dashed cards that
-name the gesture, and pressing one says what to do instead of firing. Leaving them
-out would suggest the factory does not build them; drawing them like the others
-would produce a button that does nothing.
-
-The third case is per page rather than permanent. Three of the five inline slots
-exist on one page only (`below_hero` and `in_grid` are home, `pdp_below_price` is a
-product page), so the launcher checks the target is in the document before firing
-and refuses when it is not. Firing anyway is answered correctly by the campaign and
-renders nowhere, which on screen is the product failing rather than the operator
-being on the wrong page. That is the most expensive kind of wrong on a call.
 
 ### 5.2 The five inline slots
 
@@ -1283,7 +568,7 @@ rather than trusting the specification.
 **Why the launcher module is the dangerous one to miss.** It makes no `ec:` call
 and names none of the five standard ecommerce tables, so a denylist grep for
 those five passes it cleanly. It writes to `onsite_events`, a core-account
-table, from the first demo onwards, silently. This is the single reason §11
+table, from the first demo onwards, silently. This is the single reason the guard
 uses an allowlist rather than a denylist.
 
 So checkout, search, the wishlist and the launcher all still work and still
@@ -1305,7 +590,7 @@ window.dengage('sendDeviceEvent', tableName, payload);
 all of it at demo time.** CI greps source code. It cannot catch a pre-sales
 person typing `order_events` into a text box during a live call, which is a
 plausible thing to do while demonstrating "I can write to any table". It passes
-every check in §11 and writes to a core-account table, in front of a prospect,
+every static check and writes to a core-account table, in front of a prospect,
 in the hands of the person least likely to know why it matters.
 
 The fix has to be at runtime. Do both halves:
@@ -1322,7 +607,7 @@ while writing `sandbox_events` is worse than no card.
 The demo loses nothing. What the panel demonstrates is that a custom event
 lands in a custom table, not that the operator may name it freely.
 
-§9 asserts this, and §11 cannot.
+§9 asserts this, and static analysis cannot.
 
 #### A sixth module, for a different reason: `productCatalog.js`
 
@@ -1374,32 +659,6 @@ Enter, or a filter change. Firing per keystroke records "m", "ma", "mar",
 ---
 
 ## 6. The event contract
-
-### 6.1 `pageView`, and the one exception to "no standard tables"
-
-Salil chose option (iii) on standard tables: route everything to the sandbox
-tables. **`pageView` is the one call that stays. Salil has confirmed this
-explicitly.** It is a settled decision, not an open question.
-
-The reason is not analytics, it is that **`pageView` is the documented trigger
-for On-Site messages.** The eight Default Scenarios have no local code. They
-appear only when a `pageView` fires and the scenario's page targeting matches.
-Remove it and every widget in the demo goes dark, which is the entire product.
-
-What it carries:
-
-```js
-window.dengage('pageView', { page_type: 'home' });
-```
-
-On a product page it waits for the product to resolve, then sends `page_type`,
-`product_id` and `category_path`. It sends **no `price`**, **no
-`discounted_price`** and **no `stock_count`** unless the scrape produced a real
-figure for that product. See non-negotiable 8: the `Number(null) === 0` trap
-has shipped this bug twice on the core repository.
-
-Everything else the demo records goes to `sandbox_onsite_events` or
-`sandbox_events` through `sendDeviceEvent`.
 
 ### 6.2 Identity
 
@@ -1494,7 +753,7 @@ exactly once per file, and a close control must call `Dn.close()` and **never**
 `sendClick`, so a dismissal is not counted as a conversion.
 
 Without this the campaign reads **0 clicks** in the panel. That matters here
-even though A/B testing is out of scope (§2.7): opening the campaign report in
+even though A/B testing was out of scope in phase 1: opening the campaign report in
 front of a prospect and showing impressions with zero engagement is a bad
 moment, and it is caused entirely by a missing line in the creative rather than
 by anything the prospect did.
@@ -1504,320 +763,6 @@ by anything the prospect did.
 ## 7. The generator pipeline
 
 Input: one URL. Output: a folder under `demos/` and a live page.
-
-### 7.1 Catalogue, six tiers, tried in order
-
-**Widened 8 August 2026, Salil's instruction:** asking a colleague for a CSV had
-become routine, and a factory that stops for a spreadsheet is not automatic. Two
-platform tiers and a rendering tier were added so the engine reads Shopify,
-WooCommerce, Magento, BigCommerce and custom builds by whichever door the store
-actually leaves open. Every tier now also carries each product's image URL out,
-for §7.3.
-
-1. **Shopify.** `<store>/products.json` returns the full catalogue
-   unauthenticated on most Shopify stores: titles, variants, prices,
-   categories, image URLs. This covers a large share of ecommerce prospects and
-   needs nothing from the prospect.
-2. **WooCommerce Store API.** `/wp-json/wc/store/v1/products` is public on most
-   WooCommerce stores and answers with names, prices, sale prices, categories
-   and images. Its prices arrive as strings in minor units with a
-   `currency_minor_unit` field, and dividing by the wrong power of ten is a
-   silent 100x error, so the tier tests pin that conversion both ways.
-3. **Structured markup.** Read `robots.txt`, then the sitemap, collect product
-   URLs, and parse each page three ways in order: `schema.org/Product` JSON-LD,
-   then microdata (`itemscope`/`itemprop`, which older Magento and custom builds
-   emit instead), then OpenGraph product meta as a one-product-per-page floor.
-   Almost every serious ecommerce site emits at least one of these for Google.
-4. **Rendered.** `factory/scrape/render.mjs`. A storefront built as a JavaScript
-   application can serve empty HTML to a plain fetch and only inject its
-   structured data after rendering. This tier loads the page in headless
-   Chromium under the factory's own honest user agent, waits for it to settle,
-   and runs the same three extractors on what actually rendered. It never
-   scrapes visible priced text off the layout: structured data after rendering,
-   or nothing, because a wrong number is worse than no number. It degrades to
-   `render-unavailable` on a machine without a browser. **It does not evade:**
-   no fingerprint games, no pretending to be a person. A store that blocks the
-   honest agent falls through to tier 5, and that is designed, not accepted.
-5. **CSV fallback.** Only when everything above fails: login wall, bot
-   blocking. The issue form takes an optional CSV attachment, and the workflow
-   only asks for one after the automated tiers have failed, so it stays an
-   exception path rather than a step.
-6. **Generated stand-in catalogue.** Added 7 August 2026, `factory/scrape/fallback.mjs`.
-   Roughly fifty products in five categories, chosen for the vertical the web
-   address and the issue title appear to name, with invented prices. Reached only
-   when no CSV was attached and every automated tier found nothing.
-
-   **Why the fourth tier exists.** Tier 3 was written as the exception and turned
-   out to be the norm: several stores in a row refused every automated reader, and
-   each one became a request that stopped and waited for a person to produce a
-   spreadsheet. A demo factory that cannot finish without one is not automatic,
-   which is the whole point of phase 3.
-
-   **What it costs, stated plainly.** Every price in it is invented, which
-   non-negotiable 5 otherwise forbids outright. The exception is narrow and the
-   boundary is the thing to protect: inventing a figure for a **real** product
-   stays forbidden everywhere, because nothing downstream can tell it from a
-   scraped one. What is allowed is inventing a **whole catalogue that announces
-   itself**, through `tier: 'generated'`, `catalogueSource: 'generated'` in the
-   demo config, and the first line of the issue comment. `stockCount` is still
-   never invented. No name in it may be a real brand or model, which is why every
-   name is a description: "All Season Touring Tyre 185/65 R15" and never a
-   manufacturer's line.
-
-   **A CSV always wins.** The generator passes `generateIfUnreadable` only when no
-   CSV was supplied, so a real catalogue can never be displaced by a made up one.
-   `--no-generate` turns the tier off for a run that would rather fail.
-
-**Respect `robots.txt`.** Salil's decision. It costs some sites and those fall
-through to the CSV tier.
-
-**Cap at roughly 30 products.** A demo does not need 500 SKUs to be convincing,
-and repository size compounds. At 30 products, one image each, roughly 60KB
-after compression, a demo is a few megabytes. At 5 to 7 a month with 90 day
-retention there are around 20 demos live at any time, so the repository settles
-somewhere under 100MB rather than growing without limit. That is the whole
-reason the cap and the purge exist, and it is why raising either one is a joint
-decision rather than a tweak.
-
-**Slug collisions.** Two demos requested for the same domain, which will happen
-when a demo expires and is rebuilt for a second call, must not overwrite each
-other silently. Suffix the slug and say so in the issue comment.
-
-Note for the workflow: the scrape runs from a GitHub Actions IP, and some sites
-block cloud ranges outright. Tiers 3 and 4 are the answer, and the message on
-the issue should say which one was used in plain language rather than printing a
-stack trace at a salesperson.
-
-**A store blocking us is not the same as a store having no structured data, and
-mistaking the two cost a whole class of prospect.** Until 7 August 2026 tier 2
-collected only `@type: Product`, so any store publishing `ProductGroup` with its
-variants under `hasVariant`, which is what schema.org added the type for and what
-current Shopify themes and most clothing retailers emit, yielded nothing and was
-reported unreadable. One measured example served `robots.txt`, a sitemap index, a
-product sitemap and 1,961 product pages, all 200, all with valid JSON-LD. Two
-things follow for anything added here later: a group hands its **price** to its
-variants and keeps the **category** for itself, so a variant read without its
-group's context arrives categoryless and the catalogue collapses into one bucket;
-and a limit counted in JSON-LD nodes rather than distinct product names fills up
-on sizes of the same garment.
-
-### 7.1a Category structure
-
-Salil's brief was that the demo's **structure** follows the prospect's look and
-feel, while the storefront machinery stays standard for everyone. Concretely
-that means the scrape produces more than a flat product list:
-
-- the prospect's top-level **category names**, in their order, which become the
-  demo's navigation and its home page rails
-- each product's category assignment, so the grid and the filters are shaped
-  like the prospect's own catalogue
-
-Cap the navigation at what fits the header. The site header has no horizontal
-slack, and a prospect with fourteen top-level categories will break the layout.
-Take the largest few by product count and group the rest.
-
-### 7.2 Theme extraction
-
-> **AMENDED, 8 August 2026, by Salil, deliberately.** Two changes, both off one
-> store. This section used to say the neutrals were never extracted and that no
-> browser was needed. Both are now the opposite, and the old text is kept below
-> the list so the trade stays visible rather than being quietly rewritten.
->
-> **A browser reads the theme, and it outranks the text.** Reading HTML and
-> stylesheets as text is still the first answer and is still usually right. It
-> cannot work at all for a store whose server sends only a CSS framework and whose
-> real design arrives with its JavaScript. A national denim retailer serves one
-> stylesheet, `bootstrap.min.css`, so every text channel could only ever see
-> Bootstrap's palette: the demo shipped in Bootstrap blue on white while the store
-> is black. Nothing was missed and nothing errored. The evidence in the text was
-> Bootstrap's. A rendered pass now runs last and wins where it answers, and the
-> browser it needs is already installed for images and the render tier, so the
-> original cost argument against it no longer applies. See
-> `factory/scrape/theme-rendered.mjs`.
->
-> **A framework's untouched default is not a brand colour.** `--bs-primary` at
-> `#0d6efd` is Bootstrap as shipped; `--bs-primary` at anything else is a decision
-> somebody made. The token name cannot be the test, because a customised Bootstrap
-> compiles the store's own colour into that same name, so only the exact shipped
-> default values are refused. The counted channel refuses them too: Bootstrap
-> paints those hexes across its utility classes, so frequency alone lets an
-> untouched framework outvote the store.
->
-> **The neutrals are extracted now.** `page`, `surface`, `ink`, `muted` and `line`
-> come from the rendered page, so a black store gets a dark demo. The original
-> reasoning was that guessed neutrals produce grey text on a grey card, which was
-> true while they could only be guessed from text. What protects readability now is
-> measurement: the neutrals are adopted as a SET or not at all, and only when the
-> text on them clears the same contrast bar as everything else. A partial adoption
-> is the one outcome that produces grey on grey, since a dark page with the
-> template's dark ink is unreadable, so they move together or not at all.
-> `MIN_INK` and `applyRendered` in `factory/scrape/theme.mjs` are where this lives.
-
-From the prospect's site, derive the `theme` block in §4:
-
-- primary and accent colours, in two channels that must not share a filter.
-  **A custom property whose name ends in primary, brand or accent is the site
-  answering directly** and outranks everything counted; it may be black, which
-  frequency counting must never pick and which luxury retail uses constantly.
-  A name mentioning text, bg, border or another role is describing where a
-  colour goes rather than what the brand is, and shade or inverse variants
-  (`-light`, `-reverse`) never match. Only when nothing is declared do the most
-  frequent non-neutral colours decide, weighted toward buttons, links and the
-  header. Corrected 8 August 2026, off a store whose declared black brand was
-  discarded and replaced by a framework grey from the platform's utility CSS
-- display and body font families, mapped to the nearest Google Font that is
-  already loaded by the template
-- corner radius, from button and card styles
-
-Never extract or use the prospect's logo or word mark. The generated demo shows
-the Dengage logo with the subtext "eComm Demo".
-
-Sanity-check the result: a theme with insufficient contrast between `ink` and
-`surface`, or between `onPrimary` and `primary`, produces an unreadable demo.
-Clamp to an accessible pair rather than shipping what the scrape found.
-
-### 7.3 Product imagery: real photographs first, artwork as the floor
-
-> **REVERSED, 8 August 2026, by Salil, deliberately.** The 5 August decision below
-> chose generated artwork over scraping the prospect's photography, and three
-> demos later the cost was visible on screen: a tyre retailer whose every tile was
-> a grey pair of initials, and a leather goods store where half the grid was
-> placeholders. A demo sells the prospect their own store, and their own product
-> photography is most of what makes it theirs. Non-negotiable 4 in CLAUDE.md
-> always said images are downloaded, compressed and committed; this section was
-> the override, and the override is what ends here.
->
-> **What ships now.** The scraper tiers carry each product's image URL out of the
-> same feed or markup that named the product, and `factory/scrape/images.mjs`
-> downloads them at build time, compresses them to JPEG capped at 900px, and
-> commits them into `demos/<slug>/img/`. `products.json` carries only relative
-> `img/` paths, so nothing in a published demo can 404 mid call and nothing
-> depends on the prospect's CDN staying put, which was the whole reason the 5
-> August decision existed. A product whose image cannot be fetched, or whose
-> store refuses the fetch, falls back to the artwork below, exactly as before.
->
-> **What did not change.** The artwork library stays, as the floor rather than
-> the face: it is what an image-less product shows, and what a whole demo shows
-> when a store blocks image requests. The original decision text is kept below
-> because the reasoning about zero-request tiles still governs the fallback.
-
-> **Superseded, 5 August 2026.** Salil chose **generated artwork, drawn per product
-> from its own vertical**, over scraping the prospect's photography. Built and
-> live: `template/js/artwork.js`, checked by `factory/checks/artwork.js`.
-
-**What ships.** `js/artwork.js` holds a library of motifs, one per common
-ecommerce category, and picks one by keyword from the product's name, category and
-attributes. A jacket draws a jacket, a camera draws a camera. Every motif is
-inline SVG in `currentColor`, so:
-
-- **zero requests.** Nothing can be slow or blocked mid call, which is the same
-  property non-negotiable 4 exists to protect
-- **the prospect's palette.** One rule, `.art` in `style.css`, decides the colour
-  for the whole catalogue. It resolves to `--ink` rather than `--primary` on
-  purpose: a grid of accent coloured silhouettes reads as icons rather than as
-  products, and leaves the accent to mean "act on this"
-- **stable per product.** Variation is seeded from the product id, never
-  `Math.random`, or a product would change appearance between two rails on one
-  page and read as a rendering fault
-- **an honest floor.** An unclassifiable product falls back to the initials tile,
-  so an unexpected vertical is plain rather than broken
-
-Two traps, both already paid for:
-
-**Match whole words, and accept plurals.** Plain substring matching put `top`
-inside "laptop", `phone` inside "headphones", `mat` inside the attribute name
-"Material" and `cap` inside "Capacity": four wrong motifs in a fifteen product
-catalogue, two of them caused by the words a catalogue uses for its own column
-headings. Whole word matching then broke every plural name, because it correctly
-refuses to see `trouser` inside "Trousers", and plural names are the norm. The
-pattern needs both a word boundary and an optional `s` or `es`.
-
-**The head noun wins, not the list order.** English puts it last in a compound, so
-the match furthest through the product NAME decides: "Table Lamp" is a lamp,
-"Camera Bag" is a bag. Score the match END and break ties on the longer keyword,
-or "Fitness Watch" picks the watch motif over the smartwatch motif because
-`watch` starts later than `fitness watch`.
-
-**If a call ever needs the real photography**, the scraping route is:
-
-- download at build time, never hotlink (non-negotiable 4)
-- one image per product, resized to a maximum width of about 800px and
-  compressed to WebP, which is where the few-megabytes-per-demo figure in §7.1
-  comes from
-- commit the result under `demos/<slug>/images/`
-- when an image cannot be fetched, fall back to the generated motif, which is
-  already what `js/catalog.js` does when a product carries no `image` field
-
-The core repository generates all its artwork as self-contained SVG for exactly
-this reason: nothing can 404 at demo time. If you generate SVG with gradients,
-give every gradient id a per-file prefix, otherwise inlining several in one
-document makes them all resolve to the first definition. `js/artwork.js` derives
-its prefix from the product id hash for this reason.
-
-### 7.4 Build
-
-Copy `template/`, write `demo.config.json`, write `products.json`, substitute
-the namespace, drop in the artwork, done. No compile step.
-
-**BUILT, 5 August 2026.** `factory/generate-demo.mjs`, which calls
-`factory/build-demo.sh` for the copy and the identity substitution rather than
-repeating it. One URL in, one demo folder out.
-
-Two corrections to this section, both from building it:
-
-**The `:root` block is not written by the generator.** `js/boot.js` applies the
-theme from `demo.config.json` at runtime, so `style.css` is untouched and stays
-identical in every demo. The `:root` block is the default and the config
-overrides it. That is better than rewriting the stylesheet per demo, because a
-generated stylesheet is a second thing that can drift from the template.
-
-**The Google Fonts link is rewritten, and it has to be.** `boot.js` names the
-families but cannot download them. If the `<link>` still asks for Sora and Inter
-while the config asks for Playfair Display, the browser silently renders the
-fallback and the theme looks like it did not apply. Only families in
-`theme.mjs`'s `LOADABLE` set are ever chosen, so the weights requested are known
-to exist and the stylesheet request cannot fail on a missing weight.
-
-### 7.5 What the generator decides, and where the traps were
-
-All of this is tested offline in `factory/scrape/scrape.test.mjs`, and every case
-named below is one the code got wrong first.
-
-**Availability is any-of, never the first variant.** A Shopify feed lists sizes
-in order and the smallest is very often the one that sold out first, so reading
-`variants[0].available` reported products out of stock that had twelve sizes on
-the shelf: 26 of 30 on one real store. The price comes from an available variant
-for the same reason, because a sold out variant can carry a stale clearance
-price.
-
-**In stock products are preferred when capping to 30.** Selection, not
-invention: every number still comes from the scrape. It earns its place because a
-catalogue that is mostly sold out is faithful and useless, with nothing that can
-be added to a cart and therefore no cart, checkout, abandonment or half the
-launcher to demonstrate. A sold out product still ships when its category has
-nothing else, because "Out of stock" is a state worth showing once.
-
-**A category needs more than one product to become navigation, and the minimum
-scales.** A large retailer's structured data names the shelf rather than the
-department, so one catalogue produced "3 Seater Sofa Beds" and "Custom-made Thick
-Veneer Worktops" as top level navigation, each holding a single product. A fixed
-minimum of three then collapsed a ten product CSV with five sensible departments
-down to one entry plus More. One tenth of the catalogue, never below two, holds
-in both directions.
-
-**The navigation order comes from product order.** `js/catalog.js` builds its
-category list by walking products and taking each new name as it meets it, so the
-`categories` array in `demo.config.json` is a record rather than an instruction.
-The shipped product list is sorted by category rank for that reason, which is
-also what puts the tail group last.
-
-**Sitemaps are streamed, and the locale matters.** One national retailer's
-sitemap index holds 2171 entries named `prod-en-GB_1.xml`, and a single locale
-sitemap exceeds 8MB. Scoring on the word "product" missed the abbreviation
-entirely, and the first entries in the index were Estonian, so the first working
-version read the right site in the wrong language. Sitemaps are now read as a
-stream and abandoned once enough URLs are collected, and an `en` marker outranks
-everything else in the scoring.
 
 ### 7.6 Everything in a demo was written by somebody else
 
@@ -1858,65 +803,6 @@ element, no console error. The sanitising exists so that a tile is not captioned
 
 ---
 
-## 8. The intake
-
-Salil asked for something as close to a dialog box as possible. A GitHub issue
-form is exactly that: labelled fields, no install, no terminal, and an audit
-trail of who asked for what.
-
-`.github/ISSUE_TEMPLATE/new-demo.yml` fields:
-
-| Field | Required | Notes |
-|---|---|---|
-| Prospect website URL | yes | the only genuinely required field |
-| Demo slug | no | derived from the domain if blank |
-| Vertical | no | inferred from the catalogue, override available |
-| Currency | no | inferred from the store, override available |
-| Product CSV | no | only needed when the scrape fails |
-| Notes for the build | no | free text |
-
-`workflows/build-demo.yml`, triggered on issue open with the right label:
-
-1. run the pipeline in §7
-2. run the guard in §11, over the tree **with the new demo in it**
-3. run the smoke test in §9
-4. on success: push to `main`, comment on the issue with the live URL and the
-   expiry date, close the issue
-5. on failure: comment on the issue with a plain-language reason and what to do
-   next, and leave it open
-
-**BUILT, 5 August 2026.** `.github/ISSUE_TEMPLATE/new-demo.yml` and
-`.github/workflows/build-demo.yml`, with the form parser in
-`.github/scripts/parse-request.mjs` and its tests beside it.
-
-**Step 4 replaced "commit to a branch, open a PR, auto merge", deliberately.**
-Two reasons. Auto merge depends on repository settings that can be turned off
-without anyone noticing, and a demo sitting unmerged is a demo that is not there
-when the call starts. And verifying before the push is stronger than merging and
-reviewing after it: `main` is what Pages serves, so `main` is what must never
-receive a broken demo. Nothing reaches it that has not passed both the guard and
-the smoke test. The issue is the audit trail the pull request would have been.
-
-**The parser is a separate file with its own tests, and that is not
-over-engineering.** It turns text a stranger wrote into command line arguments.
-Every field is validated against a narrow pattern and dropped if it fails: a URL
-must parse as http or https, a slug is lowercase letters, digits and hyphens, a
-currency is exactly three letters, and a CSV link must be on a GitHub attachment
-host. That last one matters most: a workflow that fetches whatever URL appears in
-a comment is a download client for anyone who can comment on the repository.
-
-**The CSV is read from a comment and never from the issue body.** Tier 3 stays an
-exception path. Reading it from the body would let a first submission skip tiers 1
-and 2, and then the normal route would quietly become the one that needs a
-salesperson to prepare a file.
-
-The failure message is a product surface. It is read by a salesperson, not an
-engineer. "We could not read this store's product catalogue automatically.
-Attach a CSV of 20 to 30 products and I will retry" is right. A stack trace is
-not.
-
----
-
 ## 9. The smoke test
 
 Thirty seconds, not ten minutes. A generated demo is disposable and does not
@@ -1934,7 +820,7 @@ Assert, headless, against the built demo:
    so this replaced the old two-table allowlist when §1.3 was reversed
 5a. the event panel **offers no way to name a table**. Drive it and assert there
    is no free-text field and that the fixed list is the only thing that can be
-   submitted. §11 is static analysis and cannot see this (§5.3)
+   submitted. the guard is static analysis and cannot see this (§5.3)
 6. **the launcher offers every campaign in `factory/creatives/` and nothing
    else**, and each card pushes the correct `dengage_demo_<slug>` event. Derive
    the expected list from the folder rather than writing it out, because a list
@@ -1943,7 +829,7 @@ Assert, headless, against the built demo:
    scroll position, so neither has a data layer event, and a card that pushed one
    anyway would log that it fired. The three inline slots that exist on one page
    only are asserted to refuse from the other page rather than push into a target
-   that is not in the document. `factory/checks/launcher.js`, and §5.1
+   that is not in the document. `factory/checks/launcher.js`
 7. all five `dn_inline_target_*` slots exist at the right anchors
 8. `dn_inline_target_below_header` is not overlapped by the header
 9. every product tile has an image that resolves locally, none pointing off-origin
@@ -2031,66 +917,6 @@ be extended by editing `expiresAt` rather than rebuilt.
 
 ---
 
-## 11. CI guardrails
-
-`workflows/guard.yml`, on every PR:
-
-- **one module emits, and nothing else does.** Every reference to the SDK
-  function must sit in `js/dengageEvents.js`, or in the `initialize` call in a
-  page head. Anywhere else fails.
-
-  > **This replaced the original table allowlist** when §1.3 was reversed on
-  > 4 August 2026. `ec:*` calls are now expected, so a check that forbade them
-  > would fail on every correct demo. What is left to enforce is that all of them
-  > come from one auditable place.
-
-  **The check must match the call, not a shape of the call.** This is the
-  guard's own worst bug so far, and it failed open twice:
-
-  1. the first version matched `dengage('<literal>'`, so it saw two comment
-     lines and passed, never noticing the real dispatch `window.dengage(action,
-     body)` where the action is a variable
-  2. the fix excluded `.` from the preceding character class, so
-     `window.dengage(` still never matched
-
-  Both versions reported PASS while checking nothing. The working pattern is
-  `(^|[^A-Za-z0-9_])dengage[[:space:]]*\(`: any call, whatever precedes it and
-  whatever the arguments are. There are now regression tests for both failures,
-  including a variable-argument call and a bare `dengage(`.
-
-  It does not exempt comments, and that is deliberate. Exempting them means
-  parsing JavaScript in grep, and rewording a comment is cheaper than a parser.
-
-  > **Corrected.** The check was originally scoped to `demos/` and `template/`.
-  > That is one directory too narrow: the Phase 0 probe sits outside both and
-  > makes real SDK calls, so the narrower scope would not police the one page
-  > that exists before any demo does. It now runs over every committed file.
-
-- **every page loads the emitter.** A page that does not cannot fire `pageView`,
-  and without `page_view_events` a demo's rows are unfindable in the six shared
-  tables (§10). This is the check that keeps §10's join possible at all.
-- **no off-origin asset references** in any committed HTML, CSS or JS, meaning
-  any host outside a short allowlist rather than any absolute URL at all. Three
-  hosts are unavoidable and none of them is a prospect's CDN, which is what the
-  rule is actually about: `pcdn.dengage.com`, where the SDK necessarily lives,
-  and `fonts.googleapis.com` with `fonts.gstatic.com`, which §7.2 requires
-  because the extracted fonts are mapped onto a Google Font the template
-  already loads. This origin and `localhost` are allowed too. Everything else
-  fails.
-
-  The check covers what a browser loads. It does not cover the `.mjs` tooling
-  under `factory/`, because a build script calling the Dengage REST API is not
-  a page fetching an asset.
-- **no prospect logo files** committed outside the expected product image path
-- **no em dashes or en dashes** in committed text
-- **the app guid in every demo matches the sandbox app guid**, never the BFSI
-  one
-- **template purity**: no brand name, color literal or slug in `template/`
-- **`seed/` is gone** once Phase 1 is complete (§3.1). Until then, exclude it
-  from the checks above: it is a verbatim copy of another repository's site and
-  will fail every one of them, which is expected and is not something to fix in
-  place
-
 ### 11.1 Two things about the guard itself
 
 **A guard that passes on an empty repository proves nothing.** Test it against
@@ -2152,7 +978,7 @@ reading code.
 6. **A missing campaign is silent.** A scenario only appears if a campaign
    exists with that exact trigger name. If one is missing, that widget is dark:
    nothing errors, nothing logs, it simply never shows. When a widget does not
-   appear, check §2.2 before you suspect the code.
+   appear, check the campaign list with `bash factory/panel/live-campaigns.sh` before you suspect the code.
 
 7. **The visually-hidden class in the survey and NPS creatives is load-bearing.**
    Both creatives hide their real radio inputs behind styled score buttons using
@@ -2359,113 +1185,6 @@ reading code.
 
 ---
 
-## 13. Build plan
-
-Four phases. Each has an acceptance criterion that is a demonstration, not a
-green test run.
-
-**Phase 0: the panel. COMPLETE, 4 August 2026.** Both halves observed:
-
-- **A widget rendered on screen.** `dengage_demo_survey` fired from the probe's
-  launcher, matched its campaign, and drew the Phase 0 check card. Confirmed at
-  the same time: padding 0 and a transparent background leave no frame around
-  the card, the panel supplies the close button outside it, and the creative
-  renders correctly inside the cross-origin iframe.
-- **The event landed as a row.** `pageView` from the published probe produced a
-  row in `page_view_events` carrying the full `page_url`. Not a 200, the row.
-
-What Phase 0 established that the specification had wrong or unknown:
-
-| Finding | Consequence |
-|---|---|
-| `key` on every standard table is the **device id**, not the contact key | there is no contact-based row tag. The device id was `4f2b8888-b54d-4b0f-8e3a-dd69a9221995` |
-| `?ck=` genuinely attaches identity before `initialize` | contact `ddemo-phase0-probe-1` was created and linked to the device. §6.2 confirmed by observation |
-| `page_type` is free text in practice | `probe` was accepted although undocumented. Generated demos still use documented values so segmentation keeps working |
-| There is **no API to read table data** | four plausible endpoints all 404. Row cleanup is a panel Export plus a support ticket, not a script |
-| `page_view_events` is the per-demo manifest | it carries `page_url`, and `session_id` joins it to the other five tables. No extra table, column or relation needed |
-
-*Original acceptance criterion, for the record:* the probe page makes a widget
-appear on screen, and the event is visible as a row in Data Space. A 200 is not
-acceptance; the row is (§12.5).
-
-Five steps, and only the first two need Salil:
-
-1. Create the web application, four advanced settings, push domain. §2.0 first.
-2. **No longer a step.** This said "create the two tables". The six standard
-   ecommerce tables already exist and are already related to `master_contact`,
-   so there is nothing to create. §2.3 is superseded. To confirm they are
-   reachable and see their row counts: `DENGAGE_API_USERKEY=...
-   DENGAGE_API_PASSWORD=... node factory/phase0/tables.mjs --verify`, which
-   reads and writes nothing.
-3. Create the campaigns by hand. This cannot be automated (§2.4) and it is the
-   only panel work there will ever be. `factory/checks/launcher.js` is the
-   count. Phase 0 needs content in one of them;
-   `factory/phase0/creative/phase0-check.html` is a generic card to paste.
-4. Run the probe from the repository root.
-5. Confirm the row in Data Space. This is the step that gets skipped and it is
-   the entire point.
-
-**Build these before the credentials arrive, because none of them needs an
-account:**
-
-- **The probe page.** With the config blank it should log the payload it would
-  send instead of sending it, so the shape is verifiable today and the same
-  harness becomes the §9 smoke test later.
-
-  It reads the account id and app guid from `factory/sandbox.json` at runtime,
-  which is **not** what a generated demo does. A demo has both substituted into
-  its page at build time and keeps the SDK snippet in the head, exactly as the
-  reference build does. The probe reads them because it is one page that has to
-  work before those values exist, and the invariant that matters is preserved
-  either way: the contact key is resolved before `initialize`, and `initialize`
-  before `pageView` (§6.2).
-- **The guard and its workflow** (§11). Build it early, not after Phase 1: it
-  is what catches the five modules in §5.3 if one slips through. Test it
-  against a naive copy of `seed/site/en/js/`, which it must reject on every count
-  (§11.1).
-- **`tables.mjs`**, which names the six tables a demo writes to and reads their
-  row counts. Read only, and the row count before and after using a demo is the
-  cheapest honest answer to "did the event land" (§12.5).
-- **Scaffolding**: `.nojekyll`, the service worker at the repository root, and
-  the push icon at `assets/dengage-push-icon.png` at 1200x1200, which clears
-  the 256px minimum and is what §2.1 points at.
-- **`factory/phase0/README.md`**, the panel checklist, so step 1 is a checklist
-  Salil works through rather than a conversation.
-
-**Phase 1: the template.** Strip `seed/site/en/` to a brand-free `template/`,
-everything driven by `demo.config.json`, with the five modules in §5.3
-retargeted to the sandbox tables. Write the eight standardized creatives
-(§2.2a). Delete `seed/`. *Accept when:* one hand-written config produces a
-working themed storefront with all eight widgets firing, all five inline slots
-present, and `seed/` gone from the tree.
-
-**Phase 2: the generator.** §7, all three catalogue tiers, theme extraction,
-artwork, build, smoke test. *Accept when:* one command turns a Shopify URL and
-one non-Shopify URL into two live demos that pass §9.
-
-**Phase 3: the factory.** Issue form, build workflow, auto merge, purge, guard
-workflows. *Accept when:* a pre-sales person who has never seen the repository
-opens an issue and gets a live URL back, with no help.
-
-On timing, two separate numbers that are easy to confuse:
-
-**Building the factory:** roughly three to four focused working sessions to a
-usable v1, with the first demo generated end to end around the close of Phase
-2. Phase 0 is blocked on Salil (§14.1) and is mostly panel clicking rather than
-engineering. Phase 1 is the bulk of the work, because de-branding the reference
-build into a template where every brand decision comes from one config file is
-more work than the scraper is.
-
-**Running one demo, once the factory exists:** 8 to 15 minutes wall clock, of
-which 2 to 4 is the scrape and 2 to 3 is the Pages deploy. That fits inside the
-20 to 30 minute expectation with room for the pre-sales person to look at the
-result before the call.
-
-The second number is the one that was promised to the pre-sales team. The first
-is what it costs to get there, and it is paid once.
-
----
-
 ## 14. Open items for Salil
 
 Everything else in this document is decided. These three are not.
@@ -2474,7 +1193,7 @@ Everything else in this document is decided. These three are not.
    tested without them.
 2. **A REST API bearer token** for the Dataspace endpoints: table creation in
    Phase 0, row deletion in the Phase 3 purge. It needs the
-   **`dataSpace.manage`** permission specifically, per §2.3. Published rate
+   **`dataSpace.manage`** permission specifically. Published rate
    limit is 30 requests per second per IP. The core repository's notes mention
    the REST API being IP-allowlisted in at least one context, so confirm a
    GitHub Actions runner can reach it, or the purge job needs a different home.
@@ -2483,9 +1202,9 @@ Everything else in this document is decided. These three are not.
    environment and has a `--dry-run` that needs no token at all, so the two
    requests can be reviewed before anyone holds one.
 3. **Product images: SETTLED, 5 August 2026.** Salil chose generated artwork per
-   vertical rather than scraping. See §7.3. The paragraph below described the
+   vertical rather than scraping. `factory/scrape/README.md` has it. The paragraph below described the
    scraping route and the confirmation it needed; neither applies now, and the
-   route is kept in §7.3 only as the higher fidelity fallback. The original text
+   route is kept only as the higher fidelity fallback. The original text
    follows for the record.
 
    The decision was to download
@@ -2523,7 +1242,7 @@ added after the fact: the GitHub identity a session runs as can write
 connection per account, and that was accepted deliberately. See §1.1.
 
 Three things stand on the Data Space row: the `ec:*` prohibition (§1.3), the
-table allowlist (§11), and the event panel runtime fix (§5.3). None of them is
+table allowlist, and the event panel runtime fix (§5.3). None of them is
 optional and none is defence in depth for the others. They are the only
 protection there is.
 
@@ -2562,6 +1281,12 @@ structure that would make it unnecessary.
 ---
 
 ## 15. Decision log
+
+> **The section numbers in the two tables below point into the document as it was before
+> the 10 August 2026 trim.** Several of them, §2.2, §2.3, §2.7, §7.1, §11, §13, no longer
+> exist here, and that is the point of a decision log: it records what was decided and where
+> it went, including the decisions that were later reversed. Row 19 names two tables that
+> were never built. `git log` has the full text if a decision needs its original wording.
 
 Every question put to Salil across this design, his answer, and where it is
 implemented. This exists so the executing session can confirm coverage without

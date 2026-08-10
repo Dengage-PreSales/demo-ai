@@ -1,10 +1,15 @@
 # CLAUDE.md: Dengage Demo Factory (operating instructions)
 
-> Read automatically at the start of every session. This file is deliberately
-> lean: it holds the goal, the rules you must not break, and a pointer to the
-> document that carries the depth. That document is
-> [`DEMO-FACTORY-HANDOFF.md`](DEMO-FACTORY-HANDOFF.md). Read it in full before
-> writing code, not after something breaks.
+> Read automatically at the start of every session, and **this file is the
+> operating document.** It is deliberately lean: the goal, the rules you must not
+> break, and a pointer to whichever document carries the depth for what you are
+> about to touch. §2 is that list.
+>
+> [`DEMO-FACTORY-HANDOFF.md`](DEMO-FACTORY-HANDOFF.md) is history and reference
+> rather than instructions. It was written before this repository or the Dengage
+> panel had been seen, and it was trimmed on 10 August 2026 to the parts that still
+> hold. Go there for the reasoning behind a rule, the traps in §12 and the decision
+> log in §15. Do not read it in full before writing code.
 
 ---
 
@@ -227,8 +232,8 @@ report what you found and what you would remove. Then stop and ask.
 
 | File | When |
 |---|---|
-| `DEMO-FACTORY-HANDOFF.md` | **before writing any code.** The complete specification. Everything below is a summary of it |
-| handoff §2 | anything with a counterpart someone must click in the Dengage panel |
+| `DEMO-FACTORY-HANDOFF.md` | for the reasoning behind a rule, and for §12. It is history rather than a specification: it was trimmed on 10 August 2026 and no longer describes anything that does not exist |
+| `factory/panel/README.md` | **anything with a counterpart someone must click in the Dengage panel.** It is the list of what is left, and it names the three other panel documents |
 | handoff §2.2a | before writing or changing any shared creative |
 | handoff §5.3 | **before copying any module out of `seed/`.** The most consequential section in the document |
 | handoff §12 | before "fixing" anything that looks oddly indirect. Ten traps, every one already paid for |
@@ -356,9 +361,8 @@ is shared, but a count that did not move is proof it was not.
 
 ### Build order
 
-Four phases, in order, in handoff §13. Do not start Phase 1 before Phase 0 is
-genuinely done: Phase 0 proves the panel side works, and everything after it
-assumes that.
+All four phases are done, so the build plan is gone from the handoff. What is left
+to do is panel work, and `factory/panel/README.md` is the list.
 
 ---
 
