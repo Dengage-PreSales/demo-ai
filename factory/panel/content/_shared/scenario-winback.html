@@ -113,7 +113,13 @@
 
   var byId = {};
   for (var p = 0; products.length > p; p++) {
-    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+    var prod = products[p];
+    if (!prod || !prod.product_id) { continue; }
+    if (root !== "") {
+      var prodLink = String(prod.link == null ? "" : prod.link);
+      if (prodLink.indexOf(root) !== 0) { continue; }
+    }
+    byId[String(prod.product_id)] = prod;
   }
 
   var money = function (value) {

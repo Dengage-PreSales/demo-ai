@@ -88,8 +88,7 @@
   }
   ctx.term = term;
   ctx.found = isFinite(found) ? found : -1;
-
-  var pool = (term !== "" && root !== "")
+  var pool = (ctx.term !== "" && root !== "")
     ? $from('$db.dps_product').where('is_active', '=', true).take(1000).get()
     : [];
   var here = [];
@@ -99,7 +98,7 @@
     if (plink.indexOf(root) !== 0) { continue; }
     here.push(prow);
   }
-  var needle = term.toLowerCase();
+  var needle = ctx.term.toLowerCase();
   var hits = [];
   for (var h = 0; here.length > h; h++) {
     var hay = (String(here[h].title == null ? "" : here[h].title) + ' ' +
@@ -113,7 +112,7 @@
   }
   if (ctx.matched === 0) {
     var seedBase = 0;
-    for (var c2 = 0; term.length > c2; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
+    for (var c2 = 0; ctx.term.length > c2; c2++) { seedBase = (seedBase * 31 + ctx.term.charCodeAt(c2)) % 100003; }
     var spare = [];
     for (var s2 = 0; here.length > s2; s2++) { spare.push(String(here[s2].product_id)); }
     spare.sort(function (a, b) {
@@ -135,7 +134,13 @@
 
   var byId = {};
   for (var p = 0; products.length > p; p++) {
-    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+    var prod = products[p];
+    if (!prod || !prod.product_id) { continue; }
+    if (root !== "") {
+      var prodLink = String(prod.link == null ? "" : prod.link);
+      if (prodLink.indexOf(root) !== 0) { continue; }
+    }
+    byId[String(prod.product_id)] = prod;
   }
 
   var money = function (value) {

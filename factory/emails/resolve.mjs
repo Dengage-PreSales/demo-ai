@@ -38,6 +38,10 @@
                size, and "" when the photograph is not where one would be
      ctx       whatever the fold chose to carry, per scenario
 
+   `stop: 'root'` RETURNS AFTER `root` AND TAKES NO FOLD, for a push Target URL and
+   anything else that wants an address rather than a catalogue. Same scoping, two fewer
+   queries per recipient, one source.
+
    THE EMITTED CODE USES NO `<` CHARACTER, and that is not style either. Dengage validates
    an AMP email's markup before running the engine, so an HTML parser reads this block as
    document text and `i < rows.length` opens a tag it never closes. Every comparison is
@@ -88,8 +92,20 @@ export function resolveBlock(options) {
         throw new Error('resolveBlock: not one of the six standard tables: ' + table);
     }
     const tie = TIE_BREAK[table];
+    /* STOP AFTER THE DEMO ROOT, for anything that wants an address and no products.
+       A push Target URL is the case: it needs step 4 and nothing after it, and running
+       the fold and the dps_product lookup for it would cost two queries per recipient to
+       produce a value neither one contributes to. So the same source emits a short block
+       rather than a second copy of the scoping, which is the whole reason this file
+       exists. Everything up to and including `root` is identical either way. */
+    const stopAtRoot = o.stop === 'root';
     const fold = String(o.fold || '').trim();
-    if (fold === '') throw new Error('resolveBlock: a scenario must supply a fold');
+    if (fold === '' && !stopAtRoot) {
+        throw new Error('resolveBlock: a scenario must supply a fold');
+    }
+    if (fold !== '' && stopAtRoot) {
+        throw new Error("resolveBlock: stop: 'root' runs before any fold, so it cannot take one");
+    }
     /* A SECOND SLOT, AFTER THE PRODUCT LOOKUP, and it exists because putting it in the
        fold threw. A fold runs before dps_product is queried, so it can see `all` and
        nothing else; anything that needs `ids` or `byId`, which is any arithmetic over
@@ -201,6 +217,9 @@ export function resolveBlock(options) {
     push('');
     push('  var root = (target !== "" && rootOf[target]) ? rootOf[target] : "";');
     push("  if (root.indexOf('https://') !== 0) { root = \"\"; }");
+
+    if (stopAtRoot) return lines.join('\n');
+
     push('');
     push('  var all = [];');
     push('  var ctx = {};');
@@ -218,9 +237,34 @@ export function resolveBlock(options) {
     push("    ? $from('$db.dps_product').where('product_id', 'in', ids).take(" + PRODUCTS + ').get()');
     push('    : [];');
     push('');
+    /* THE LOOKUP IS SCOPED TO THE DEMO TOO, and not only the events. Scoping the events
+       was the fix everything here already had: one origin, one device id, so a key carries
+       every demo that browser ever visited. This is the other half, and it was open until
+       10 August 2026.
+
+       A PRODUCT ID IS THE PROSPECT'S OWN SKU. The scrape takes it off their site, so it is
+       FSH-JKT-001 for one store and KBE580-MOUSE for another, and nothing makes it unique
+       across demos: two prospects numbering their products 1, 2, 3 collide completely.
+       dps_product holds every demo's catalogue in one table, so `where('product_id', 'in',
+       ids)` can return two rows for one id and the later one wins the map. The events were
+       the right demo's and the product was not.
+
+       What it would have looked like is the reason it is worth two lines: a push naming
+       another prospect's product, with their photograph, linking to their demo, on a call.
+       `link` is absolute and carries the slug, so comparing it to `root` settles it.
+
+       ONLY WHEN A DEMO RESOLVED. With root empty there is nothing to compare against, and
+       dropping every product would turn "no page view" from a message with a real product
+       in it into an empty one. */
     push('  var byId = {};');
     push('  for (var p = 0; products.length > p; p++) {');
-    push('    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }');
+    push('    var prod = products[p];');
+    push('    if (!prod || !prod.product_id) { continue; }');
+    push('    if (root !== "") {');
+    push('      var prodLink = String(prod.link == null ? "" : prod.link);');
+    push('      if (prodLink.indexOf(root) !== 0) { continue; }');
+    push('    }');
+    push('    byId[String(prod.product_id)] = prod;');
     push('  }');
     push('');
     push('  var money = function (value) {');

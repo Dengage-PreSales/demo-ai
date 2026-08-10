@@ -30,9 +30,10 @@
    closes and the links point at a real page. What it cannot prove is that Dengage agrees.
    ========================================================================== */
 
-import { readFileSync, writeFileSync, existsSync, readdirSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { demoWithProducts, asProductRows, ORIGIN } from '../catalogue.mjs';
 import { emailPalette } from './palette.mjs';
 import { dengageTheme } from './dengage-theme.mjs';
 import { resolveBlock } from './resolve.mjs';
@@ -66,48 +67,12 @@ export function scenarioHtml(scenario, palette) {
 /* -------------------------------------------------------------------------- */
 /* The preview's data: a real catalogue, and an event log that reaches it       */
 
-/* A DEMO WITH PHOTOGRAPHS FIRST, and that is not cosmetic. The first pass of this
-   picked whichever demo sorted first, which is the one whose scrape found no product
-   photography at all, so every preview came out with zero images and looked like the
-   card markup was broken. A preview of the case that hides the main feature is a
-   preview nobody can check anything against. */
-function demoWithProducts() {
-    const dir = join(ROOT, 'demos');
-    if (!existsSync(dir)) return null;
-    const found = [];
-    for (const slug of readdirSync(dir).sort()) {
-        const path = join(dir, slug, 'products.json');
-        if (!existsSync(path)) continue;
-        const payload = JSON.parse(readFileSync(path, 'utf8'));
-        const list = Array.isArray(payload) ? payload : (payload.products || []);
-        if (list.length) found.push({ slug, list, images: list.filter((p) => p.image).length });
-    }
-    if (!found.length) return null;
-    found.sort((a, b) => b.images - a.images);
-    return found[0];
-}
-
-/* products.json into dps_product rows, the way the ETL does: absolute link and
-   image_link, category_path, and a price only where the scrape produced one.
-
-   NO PRICE IS INVENTED HERE EITHER. A product the scrape gave no price gets none, and the
-   preview then shows a card with no price, which is exactly what a send would show. */
-function catalogue(slug, list) {
-    const base = 'https://dengage-presales.github.io/demo-ai/demos/' + slug + '/';
-    return list.map((product) => ({
-        product_id: String(product.id),
-        title: product.name,
-        price: product.price === null || product.price === undefined ? null : String(product.price),
-        discounted_price: product.discountedPrice === null || product.discountedPrice === undefined
-            ? null : String(product.discountedPrice),
-        image_link: product.image ? base + product.image : null,
-        link: base + 'product.html?id=' + encodeURIComponent(String(product.id)),
-        category_path: product.category || '',
-        stock_count: product.stockCount === null || product.stockCount === undefined
-            ? null : Number(product.stockCount),
-        is_active: true
-    }));
-}
+/* THE DEMO AND ITS CATALOGUE COME FROM factory/catalogue.mjs, because the short form
+   asset builder needs exactly the same two things: a committed demo with photographs, and
+   its products as the dps_product rows the ETL loads. Two copies of that translation would
+   be two answers to what the ETL puts in a column, which is the question a preview exists
+   to answer. The event log below does NOT move, because a scenario email's history is per
+   scenario and an asset's is per table. */
 
 /* An event log per scenario, reaching the fold the way a real visitor would. Synthetic,
    and it says so: these are not rows from Dengage, they are the smallest history that
@@ -202,7 +167,6 @@ function history(scenario, slug, cat) {
    The rewrite runs on the rendered output, never on the emitted email. So the preview shows
    real photographs and its links open the real storefront pages, and nothing that reaches
    Dengage has been touched. */
-const ORIGIN = 'https://dengage-presales.github.io/demo-ai/';
 const TO_ROOT = '../../../../';
 
 export function previewOf(scenario, source, slug, cat, options) {
@@ -235,7 +199,7 @@ if (INVOKED) {
         console.error('No demo with products to preview against. Build a demo first.');
         process.exit(1);
     }
-    const cat = catalogue(demo.slug, demo.list);
+    const cat = asProductRows(demo.slug, demo.list);
     mkdirSync(OUT, { recursive: true });
 
     const report = [];

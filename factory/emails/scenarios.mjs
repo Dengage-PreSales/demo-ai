@@ -36,6 +36,7 @@
    ========================================================================== */
 
 import { COLUMNS } from '../phase0/columns.mjs';
+import { CART, VIEW, SAVED, ORDER, SEARCH } from './folds.mjs';
 import {
     band, masthead, footer, eyebrow, headline, lede, note,
     factStrip, cardGrid, heroCard, totals, button
@@ -46,37 +47,9 @@ import {
 const C = COLUMNS;
 
 /* -------------------------------------------------------------------------- */
-/* Folds. Each leaves `all` newest first and may put anything in `ctx`.        */
-
-/* The cart replay, which four assets already share and which is the most tested piece of
-   logic in this repository. delete_cart empties, a removal is not an item, and an add
-   after a removal brings it back. */
-const CART_REPLAY = `
-var present = {};
-var seen = [];
-ctx.checkout = false;
-for (var r = 0; rows.length > r; r++) {
-  var row = rows[r] || {};
-  var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
-  var pid = (row.${C.cart.product} == null) ? "" : String(row.${C.cart.product}).trim();
-  if (kind === 'delete_cart') { present = {}; seen = []; }
-  else if (kind === 'begin_checkout') { ctx.checkout = true; }
-  else if (pid === "") { }
-  else if (kind === 'add_to_cart') {
-    present[pid] = { quantity: row.${C.cart.quantity} };
-    seen.push(pid);
-  }
-  else if (kind === 'remove_from_cart') { present[pid] = null; }
-}
-for (var s = seen.length - 1; s >= 0; s--) {
-  if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
-}
-ctx.present = present;
-ctx.qty = {};
-for (var q2 = 0; all.length > q2; q2++) {
-  var qn = present[all[q2]] ? Number(present[all[q2]].quantity) : 1;
-  if (isFinite(qn) && qn > 1) { ctx.qty[all[q2]] = qn; }
-}`;
+/* Extensions. The five folds themselves live in folds.mjs, because the SMS and push       */
+/* assets need the same five and a second copy of the cart replay is how this repository   */
+/* has shipped its worst defects. What is below is only what a scenario adds to one.       */
 
 /* The totals, over every product looked up rather than every card shown. `priced` gates
    the whole block: one missing or non positive price suppresses it, because Number(null)
@@ -107,26 +80,6 @@ if (all.length > ids.length) { priced = false; }
 if (counted === 0) { priced = false; }
 ctx.items = counted;`;
 
-/* Views into product ids, newest first, and the leaf category seen most often. The tie on
-   the category is broken on the name so the answer does not depend on the order rows
-   arrived in: take(n) promises no ordering. */
-const VIEW_FOLD = `
-var counts = {};
-for (var r = rows.length - 1; r >= 0; r--) {
-  var row = rows[r] || {};
-  var pid = (row.${C.view.product} == null) ? "" : String(row.${C.view.product}).trim();
-  if (pid === "") { continue; }
-  if (all.indexOf(pid) === -1) { all.push(pid); }
-  var leaf = String(row.${C.view.categoryPath} == null ? "" : row.${C.view.categoryPath}).split('>').pop().replace(/^\\s+|\\s+$/g, "");
-  if (leaf !== "") { counts[leaf] = (counts[leaf] || 0) + 1; }
-}
-var best = "";
-var bestN = 0;
-for (var k in counts) {
-  if (counts[k] > bestN || (counts[k] === bestN && best > k)) { bestN = counts[k]; best = k; }
-}
-ctx.category = best;`;
-
 /* -------------------------------------------------------------------------- */
 
 export const SCENARIOS = [
@@ -136,7 +89,7 @@ export const SCENARIOS = [
         table: C.cart.table,
         cap: 20,
         show: 4,
-        fold: CART_REPLAY,
+        fold: CART,
         extra: CART_TOTALS,
         subject: 'You were one step away',
         preheader: 'Your basket is still saved, and checkout is one press away.',
@@ -166,7 +119,7 @@ export const SCENARIOS = [
         table: C.view.table,
         cap: 12,
         show: 4,
-        fold: VIEW_FOLD,
+        fold: VIEW,
         subject: 'Still thinking about it?',
         preheader: 'The pieces you were looking at, in one place.',
         /* THE CATEGORY IS THE ONLY THING THIS SCENARIO KNOWS THAT THE OTHERS DO NOT, so it
@@ -214,21 +167,14 @@ export const SCENARIOS = [
            about a failed search that then shows nothing is the failure twice, so a zero
            match send falls back to the catalogue and says so. Padding a send that found ONE
            real match would put unrelated products under a headline claiming they match, and
-           one honest card beats four with a false caption. */
-        fold: `
-var term = "";
-var found = -1;
-for (var r = rows.length - 1; r >= 0; r--) {
-  var kw = String(rows[r].${C.search.query} == null ? "" : rows[r].${C.search.query}).replace(/^\\s+|\\s+$/g, "");
-  if (kw === "") { continue; }
-  term = kw;
-  found = Number(rows[r].${C.search.results});
-  break;
-}
-ctx.term = term;
-ctx.found = isFinite(found) ? found : -1;
+           one honest card beats four with a false caption.
 
-var pool = (term !== "" && root !== "")
+           IT READS `ctx.term` RATHER THAN THE FOLD'S OWN `term`, and everything after a
+           fold does the same. Both are in scope, because the two halves are concatenated
+           into one function body, but ctx is the documented handover and a local name is
+           not: folds.mjs is free to rename its counters and this has to keep working. */
+        fold: SEARCH + `
+var pool = (ctx.term !== "" && root !== "")
   ? $from('$db.${C.product.table}').where('${C.product.active}', '=', true).take(1000).get()
   : [];
 var here = [];
@@ -238,7 +184,7 @@ for (var q = 0; pool.length > q; q++) {
   if (plink.indexOf(root) !== 0) { continue; }
   here.push(prow);
 }
-var needle = term.toLowerCase();
+var needle = ctx.term.toLowerCase();
 var hits = [];
 for (var h = 0; here.length > h; h++) {
   var hay = (String(here[h].${C.product.name} == null ? "" : here[h].${C.product.name}) + ' ' +
@@ -252,7 +198,7 @@ for (var i2 = 0; hits.length > i2; i2++) {
 }
 if (ctx.matched === 0) {
   var seedBase = 0;
-  for (var c2 = 0; term.length > c2; c2++) { seedBase = (seedBase * 31 + term.charCodeAt(c2)) % 100003; }
+  for (var c2 = 0; ctx.term.length > c2; c2++) { seedBase = (seedBase * 31 + ctx.term.charCodeAt(c2)) % 100003; }
   var spare = [];
   for (var s2 = 0; here.length > s2; s2++) { spare.push(String(here[s2].${C.product.id})); }
   spare.sort(function (a, b) {
@@ -307,21 +253,9 @@ if (ctx.matched === 0) {
            carries the price AT THE TIME OF SAVING, dps_product carries the price now, and
            the difference between two real numbers is the only honest way to claim one.
            Nothing here invents a percentage or a deadline. */
-        fold: `
-var present = {};
-var seen = [];
-for (var r = 0; rows.length > r; r++) {
-  var row = rows[r] || {};
-  var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
-  var pid = (row.${C.wishlist.product} == null) ? "" : String(row.${C.wishlist.product}).trim();
-  if (pid === "") { continue; }
-  if (kind === 'remove') { present[pid] = null; }
-  else { present[pid] = { was: row.${C.wishlist.price}, list: row.${C.wishlist.list} }; seen.push(pid); }
-}
-var saved = [];
-for (var s = seen.length - 1; s >= 0; s--) {
-  if (present[seen[s]] && saved.indexOf(seen[s]) === -1) { saved.push(seen[s]); }
-}
+        fold: SAVED + `
+var saved = all.slice(0);
+all.length = 0;
 ctx.saved = saved.length;
 
 var look = saved.length
@@ -339,7 +273,7 @@ ctx.was = {};
 for (var w = 0; saved.length > w; w++) {
   var item = nowBy[saved[w]];
   if (!item || !item.${C.product.active}) { continue; }
-  var savedAtN = Number(present[saved[w]].was);
+  var savedAtN = Number(ctx.savedAt[saved[w]].was);
   var nowN = Number(item.${C.product.price});
   if (item.${C.product.discounted} != null && String(item.${C.product.discounted}) !== "") {
     var cutN = Number(item.${C.product.discounted});
@@ -408,7 +342,7 @@ for (var r2 = 0; rest.length > r2; r2++) { all.push(rest[r2]); }`,
            basket up and then queries again by category. Same shape as the
            recommendations asset's "More like this" pass, and scoped to this demo by
            `link` for the same reason. */
-        fold: CART_REPLAY + `
+        fold: CART + `
 var basket = all.slice(0);
 ctx.basket = basket.length;
 all.length = 0;
@@ -471,27 +405,7 @@ for (var f2 = 0; offered.length > f2; f2++) { all.push(offered[f2]); }`,
            usually claims you are about to run out, which needs a consumption rate nothing
            here has. What is true is what was bought and that reordering is one press, so
            that is what it says. The campaign's own trigger owns the timing. */
-        fold: `
-var newest = "";
-for (var r = rows.length - 1; r >= 0; r--) {
-  var oid = String(rows[r].${C.orderLine.order} == null ? "" : rows[r].${C.orderLine.order}).replace(/^\\s+|\\s+$/g, "");
-  if (oid !== "") { newest = oid; break; }
-}
-ctx.order = newest;
-ctx.qty = {};
-var qty = 0;
-for (var r2 = rows.length - 1; r2 >= 0; r2--) {
-  var row = rows[r2] || {};
-  if (String(row.${C.orderLine.order} == null ? "" : row.${C.orderLine.order}).replace(/^\\s+|\\s+$/g, "") !== newest) { continue; }
-  var pid = (row.${C.orderLine.product} == null) ? "" : String(row.${C.orderLine.product}).trim();
-  if (pid === "") { continue; }
-  var q = Number(row.${C.orderLine.quantity});
-  if (isFinite(q) && q > 0) { qty = qty + q; }
-  if (all.indexOf(pid) === -1) { all.push(pid); }
-  if (isFinite(q) && q > 1) { ctx.qty[pid] = q; }
-}
-ctx.lines = all.length;
-ctx.units = qty;`,
+        fold: ORDER,
         subject: 'Order it again in one press',
         preheader: 'What you bought last time, ready to reorder.',
         body: (p) => [
@@ -525,7 +439,7 @@ ctx.units = qty;`,
            demo to send them back to. The products are the demo's own catalogue, ordered
            by the same seeded shuffle the storefront's Trending now rail uses, so the
            email and the page agree. */
-        fold: VIEW_FOLD + `
+        fold: VIEW + `
 all.length = 0;
 var pool = root !== ""
   ? $from('$db.${C.product.table}').where('${C.product.active}', '=', true).take(1000).get()

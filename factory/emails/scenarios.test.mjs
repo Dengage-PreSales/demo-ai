@@ -319,6 +319,39 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
     ok('the newest demo wins and the other demo does not appear',
        shown(crossed).join(',') === 'Product p1' && !crossed.includes(THEIRS), shown(crossed));
 
+    /* AND THE SAME PRODUCT ID ON BOTH DEMOS, which the case above does not reach because
+       it gives the two demos different ids. Found on 10 August 2026 by
+       factory/snippets.test.mjs, which shares this resolution block.
+
+       A product id is the prospect's own SKU, taken off their site by the scrape, and
+       nothing makes it unique across demos: two prospects numbering their products the same
+       way collide completely. dps_product holds every catalogue in one table, so
+       `where('product_id', 'in', ids)` returns two rows for one id, and until the lookup was
+       scoped as well as the events the later row won. The basket was the right demo's and
+       the product in it was not, with the other prospect's photograph and a link to their
+       demo.
+
+       THEIRS IS FIRST IN THE TABLE ON PURPOSE, and getting that backwards is worth a
+       sentence because it made this assertion pass without the fix in place. arrayFrom
+       hands rows back in REVERSE insertion order, deliberately, because take(n) without an
+       ordering returns some n rows rather than the newest n. So the row written LAST into
+       byId is the one listed FIRST here, and only this order lets the other prospect's
+       product win. Checked by removing the guard and watching it fail. */
+    const sameIds = run('checkout', {
+        shopping_cart_events: [
+            { id: 1, key: 'dev-1', session_id: 'theirs', event_date: '2026-08-10T09:00:00Z',
+              event_type: 'add_to_cart', product_id: 'p1', quantity: 1 },
+            { id: 2, key: 'dev-1', session_id: 'mine', event_date: '2026-08-10T10:00:00Z',
+              event_type: 'add_to_cart', product_id: 'p1', quantity: 1 }],
+        page_view_events: [
+            viewRow('theirs', THEIRS + 'index.html', null, '2026-08-10T09:00:00Z'),
+            viewRow('mine', MINE + 'index.html', null, '2026-08-10T10:00:00Z')],
+        dps_product: [product('p1', { base: THEIRS, title: 'Their Product' }), product('p1')]
+    });
+    ok('a colliding product id resolves to this demo, not the other one',
+       shown(sameIds).join(',') === 'Product p1' && !sameIds.includes('Their Product') &&
+       !sameIds.includes(THEIRS), shown(sameIds));
+
     /* A PRODUCT WITH NO PRICE. Number(null) is 0, so a subtotal that quietly includes it
        reads as a discount nobody offered. */
     const unpriced = run('checkout', {

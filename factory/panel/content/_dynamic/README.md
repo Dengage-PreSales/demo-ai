@@ -48,6 +48,42 @@ expansion runs long.
 Same query in all of them. Only the rendering differs, which is the point of one asset
 per scenario rather than one per channel.
 
+### And eleven more, generated rather than written
+
+Added 10 August 2026, for the other six scenarios in SMS and web push. Everything above was
+hand written; these come out of `factory/build-snippets.mjs`, which emits them from
+`factory/emails/resolve.mjs` and `factory/emails/folds.mjs`, the same two files the scenario
+emails are built from.
+
+| File | Type | Emits |
+|---|---|---|
+| `view-line.txt` | Plain Text | the newest viewed product, and a count of the rest |
+| `view-image.txt` | Plain Text | that product's 2:1 banner |
+| `saved-line.txt` | Plain Text | the same for the wishlist |
+| `saved-image.txt` | Plain Text | |
+| `order-line.txt` | Plain Text | the same for the newest order's lines |
+| `order-image.txt` | Plain Text | |
+| `search-term.txt` | Plain Text | the words somebody typed |
+| `url-home.txt` | Plain Text | the demo's own `index.html` |
+| `url-checkout.txt` | Plain Text | the same with `?open=checkout` |
+| `url-wishlist.txt` | Plain Text | `?open=wishlist` |
+| `url-search.txt` | Plain Text | `?open=search` |
+
+**Do not edit these by hand.** `node factory/build-snippets.mjs` rewrites them and CI fails
+if a committed one is not what the generator produces. To change what one says, change the
+generator. `--preview` resolves every asset and every message against a real demo's catalogue
+and prints them, which is the fastest way to see the effect of a change.
+
+**Which asset each scenario needs, and the exact field contents for both channels**, are in
+[`factory/panel/SMS-AND-PUSH.md`](../../SMS-AND-PUSH.md). Twelve of the fourteen are per
+**table** rather than per scenario, because seven scenarios read five tables between them.
+
+**The three hand written cart assets stay hand written**, and that is a decision rather than
+an oversight: they are live in the panel with their ids recorded, and the abandoned cart is
+the one flow confirmed working end to end in all three channels. What stops them drifting is
+`factory/snippets.test.mjs`, which rebuilds two of them from the shared source and requires
+the same output on the same event log.
+
 ## Writing the next scenario, which is the same six steps with one table swapped
 
 **Read this before writing a new asset.** Salil, 10 August 2026: the same logic is wanted for

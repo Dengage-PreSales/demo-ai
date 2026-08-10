@@ -9,7 +9,7 @@ demo the factory generates uses it.
 | | |
 |---|---|
 | **This page** | the numbered list of what to do, in order |
-| [`SMS-AND-PUSH.md`](SMS-AND-PUSH.md) | the two live short form channels, field by field, from scratch |
+| [`SMS-AND-PUSH.md`](SMS-AND-PUSH.md) | the two live short form channels, field by field, from scratch. Fourteen assets, seven SMS messages, seven push messages |
 | [`SCENARIO-EMAILS.md`](SCENARIO-EMAILS.md) | the seven Code Editor emails, one journey each. One paste per email and nothing else |
 | [`REFERENCE.md`](REFERENCE.md) | the panel's own templates, web push explained, the App Inbox, the product feed. Background rather than steps |
 | [`content/_dynamic/README.md`](content/_dynamic/README.md) | the saved Dynamic Content assets, and the six step pattern for writing another one |
@@ -71,16 +71,31 @@ Type **HTML**. The Plain Text assets are step 2.
 Nothing to attach and nothing to click. Their ids are recorded in `factory/sandbox.json`,
 so the email template calls them by id.
 
-### 2. SMS and web push. One page, on its own
+### 2. SMS and web push, for all seven scenarios. One page, on its own
 
-**[`factory/panel/SMS-AND-PUSH.md`](SMS-AND-PUSH.md)** is the whole of it, from scratch: three
-Plain Text assets with a link to each body, then the exact field values for the SMS and for
-the push. Nothing else on this page is needed for those two channels.
+**[`factory/panel/SMS-AND-PUSH.md`](SMS-AND-PUSH.md)** is the whole of it, from scratch: the
+assets with a link to each body, then the exact field values for seven SMS messages and seven
+push messages. Nothing else on this page is needed for those two channels.
 
-The short version: three assets, `dps abandoned cart line`, `dps abandoned cart image` and
-`dps abandoned cart url`. The first is copy and feeds five places, including the email subject
-line and preheader. The other two are a picture and a link, which is what makes a rich push
-carry the visitor's own product and land on their own basket.
+The short version. **Three assets already exist** and stay as they are:
+`dps abandoned cart line`, `dps abandoned cart image` and `dps abandoned cart url`. The first
+is copy and feeds five places, including the email subject line and preheader. The other two
+are a picture and a link, which is what makes a rich push carry the visitor's own product and
+land on their own basket.
+
+**Eleven more to create, extended 10 August 2026** to cover the other six scenarios. They are
+per **table** rather than per scenario, because seven scenarios read five tables between them,
+which is fourteen objects instead of twenty one. Every one is generated from the same two
+files the scenario emails are built from, so a correction lands in one place.
+
+To see what every asset and every message actually says before creating anything:
+
+```bash
+node factory/build-snippets.mjs --preview
+```
+
+It resolves all fourteen against a committed demo's real catalogue and prints the seven SMS
+bodies with their character counts and the seven push messages field by field.
 
 ### 3. Seven scenario emails. Content > Email > Code Editor
 

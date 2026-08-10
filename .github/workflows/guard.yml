@@ -109,6 +109,16 @@ jobs:
       - name: Abandoned cart resolves a real basket
         run: node factory/panel/content/_dynamic/cart.test.mjs
 
+      # THE SHORT FORM ASSETS SMS AND PUSH CONSUME, and the seven messages composed
+      # from them. Same reasoning as the line above and one addition: these run in a
+      # channel with no markup, so there is nothing to look at afterwards. A push
+      # carrying the wrong demo's product is indistinguishable from a correct one
+      # unless somebody taps it. This also holds the two hand written cart assets to
+      # the shared source, so a correction to the resolution block cannot improve
+      # eleven assets and quietly leave those two behind.
+      - name: Short form assets resolve, and the committed files are current
+        run: node factory/snippets.test.mjs
+
       # A BEEFREE IMPORT FAILS SILENTLY IN PART. A module whose type name is wrong is
       # dropped, a row whose columns do not sum to twelve reflows, and a duplicate uuid
       # makes the builder edit two blocks at once, none of it with an error message.

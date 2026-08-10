@@ -1,0 +1,189 @@
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
+
+  for (var d = 0; devices.length > d; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.wishlist_events').where('key', 'in', keys).take(100).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    var ta = String(a.event_id == null ? "" : a.event_id);
+    var tb = String(b.event_id == null ? "" : b.event_id);
+    return tb > ta ? -1 : (ta > tb ? 1 : 0);
+  });
+
+  var sessions = [];
+  for (var s0 = 0; rows.length > s0; s0++) {
+    var sid = (rows[s0] && rows[s0].session_id != null) ? String(rows[s0].session_id).trim() : "";
+    if (sid !== "" && sessions.indexOf(sid) === -1) { sessions.push(sid); }
+  }
+
+  var views = sessions.length
+    ? $from('$db.page_view_events').where('session_id', 'in', sessions).take(300).get()
+    : [];
+
+  var slugOf = function (url) {
+    var u = (url == null) ? "" : String(url);
+    var at = u.indexOf('/demos/');
+    if (at === -1) { return ""; }
+    var rest = u.slice(at + 7).split('?')[0].split('#')[0];
+    var cut = rest.indexOf('/');
+    return cut === -1 ? rest : rest.slice(0, cut);
+  };
+
+  var demoOf = {};
+  var rootOf = {};
+  for (var v = 0; views.length > v; v++) {
+    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
+    if (vs === "" || demoOf[vs]) { continue; }
+    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
+    var vslug = slugOf(vurl);
+    if (vslug !== "") {
+      demoOf[vs] = vslug;
+      if (!rootOf[vslug]) {
+        var mark = '/demos/' + vslug + '/';
+        var atRoot = vurl.indexOf(mark);
+        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }
+      }
+    }
+  }
+
+  var target = "";
+  for (var t = rows.length - 1; t >= 0; t--) {
+    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
+    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+  }
+
+  if (target !== "") {
+    var mine = [];
+    for (var m = 0; rows.length > m; m++) {
+      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
+      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+    }
+    rows = mine;
+  }
+
+  var root = (target !== "" && rootOf[target]) ? rootOf[target] : "";
+  if (root.indexOf('https://') !== 0) { root = ""; }
+
+  var all = [];
+  var ctx = {};
+  var present = {};
+  var seen = [];
+  for (var r = 0; rows.length > r; r++) {
+    var row = rows[r] || {};
+    var kind = String(row.event_type == null ? "" : row.event_type).toLowerCase();
+    var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
+    if (pid === "") { continue; }
+    if (kind === 'remove') { present[pid] = null; }
+    else { present[pid] = { was: row.price, list: row.list_name }; seen.push(pid); }
+  }
+  for (var s = seen.length - 1; s >= 0; s--) {
+    if (present[seen[s]] && all.indexOf(seen[s]) === -1) { all.push(seen[s]); }
+  }
+  ctx.savedAt = present;
+
+  var ids = all.slice(0, 20);
+
+  var products = ids.length
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(24).get()
+    : [];
+
+  var byId = {};
+  for (var p = 0; products.length > p; p++) {
+    var prod = products[p];
+    if (!prod || !prod.product_id) { continue; }
+    if (root !== "") {
+      var prodLink = String(prod.link == null ? "" : prod.link);
+      if (prodLink.indexOf(root) !== 0) { continue; }
+    }
+    byId[String(prod.product_id)] = prod;
+  }
+
+  var money = function (value) {
+    var n = Number(value);
+    if (!isFinite(n) || 0 >= n) { return ""; }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+
+  var httpsOnly = function (url) {
+    var u = (url == null) ? "" : String(url).trim();
+    return u.indexOf('https://') === 0 ? u : "";
+  };
+
+  var clamp = function (value, n) {
+    var s = String(value == null ? "" : value).replace(/^\s+|\s+$/g, "");
+    if (s === "") { return ""; }
+    return s.length > n ? s.substring(0, n - 3).replace(/[\s,]+$/, "") + "..." : s;
+  };
+
+  var bannerOf = function (url) {
+    var u = String(url == null ? "" : url).trim();
+    var cut = u.lastIndexOf('/');
+    if (cut === -1) { return ""; }
+    var dir = u.slice(0, cut);
+    var file = u.slice(cut + 1).split('?')[0].split('#')[0];
+    var tail = dir.slice(-7);
+    if (file === "" || (tail !== '/images' && tail !== '/motifs')) { return ""; }
+    var dot = file.lastIndexOf('.');
+    var stem = dot === -1 ? file : file.slice(0, dot);
+    if (stem === "") { return ""; }
+    return dir + '/push/' + stem + '.jpg';
+  };
+
+  var leafOf = function (path) {
+    var parts = String(path == null ? "" : path).split('>');
+    return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
+  };
+
+  var SITE = 'https://dengage-presales.github.io/demo-ai/';
+  var pathOf = function (url) {
+    var u = String(url == null ? "" : url);
+    return u.indexOf(SITE) === 0 ? u.slice(SITE.length) : "";
+  };
+
+  var rootPath = pathOf(root);
+
+  var cards = [];
+  for (var c = 0; ids.length > c; c++) {
+    var item = byId[ids[c]];
+    if (!item || !item.is_active) { continue; }
+    var full = money(item.price);
+    var cut = money(item.discounted_price);
+    if (cut !== "" && Number(item.discounted_price) >= Number(item.price)) { cut = ""; }
+    cards.push({
+      id: String(ids[c]),
+      title: clamp(item.title, 60),
+      category: leafOf(item.category_path),
+      image: httpsOnly(item.image_link),
+      banner: bannerOf(httpsOnly(item.image_link)),
+      bannerPath: pathOf(bannerOf(httpsOnly(item.image_link))),
+      linkPath: pathOf(httpsOnly(item.link)),
+      link: httpsOnly(item.link),
+      price: full,
+      cut: cut,
+      stock: Number(item.stock_count),
+      row: item
+    });
+  }
+
+  var view = cards.slice(0, 20);
+  var extra = (all.length - view.length) > 0 ? (all.length - view.length) : 0;
+  var image = "";
+  for (var i = 0; cards.length > i; i++) {
+    if (cards[i].image === "") { continue; }
+    image = cards[i].banner !== "" ? cards[i].banner : cards[i].image;
+    break;
+  }
+%}{%= image %}

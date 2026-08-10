@@ -1,0 +1,71 @@
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
+
+  for (var d = 0; devices.length > d; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.page_view_events').where('key', 'in', keys).take(300).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    return 0;
+  });
+
+  var views = rows;
+
+  var slugOf = function (url) {
+    var u = (url == null) ? "" : String(url);
+    var at = u.indexOf('/demos/');
+    if (at === -1) { return ""; }
+    var rest = u.slice(at + 7).split('?')[0].split('#')[0];
+    var cut = rest.indexOf('/');
+    return cut === -1 ? rest : rest.slice(0, cut);
+  };
+
+  var demoOf = {};
+  var rootOf = {};
+  for (var v = 0; views.length > v; v++) {
+    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
+    if (vs === "" || demoOf[vs]) { continue; }
+    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
+    var vslug = slugOf(vurl);
+    if (vslug !== "") {
+      demoOf[vs] = vslug;
+      if (!rootOf[vslug]) {
+        var mark = '/demos/' + vslug + '/';
+        var atRoot = vurl.indexOf(mark);
+        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }
+      }
+    }
+  }
+
+  var target = "";
+  for (var t = rows.length - 1; t >= 0; t--) {
+    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
+    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+  }
+
+  if (target !== "") {
+    var mine = [];
+    for (var m = 0; rows.length > m; m++) {
+      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
+      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+    }
+    rows = mine;
+  }
+
+  var root = (target !== "" && rootOf[target]) ? rootOf[target] : "";
+  if (root.indexOf('https://') !== 0) { root = ""; }
+  var link = root !== "" ? root + "index.html?open=search" : "";
+  if (link.indexOf('https://') !== 0) { link = ""; }
+%}{%= link %}

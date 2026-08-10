@@ -39,6 +39,18 @@ own output, not a mock-up of it.
 
 No asset, no id, no per demo work, no rebuild when a demo is added.
 
+**The one standing obligation is a re-paste when a file here changes**, and CI is what
+notices: `factory/emails/scenarios.test.mjs` fails if a committed file is not what the
+generator produces, so the way you find out is that I say so.
+
+**All eight changed on 10 August 2026 and are worth re-pasting**, most recently for a
+correctness fix rather than a cosmetic one. A product id is the prospect's own SKU, taken off
+their site by the scrape, so nothing makes it unique across demos: two prospects numbering
+their products 1, 2, 3 collide completely, and `dps_product` holds every catalogue in one
+table. Every email now compares each product's `link` to the demo it resolved and drops
+anything from elsewhere. Without it, a contact who used two demos could have seen another
+prospect's product name and photograph inside their own basket.
+
 ---
 
 ## The AMP sample

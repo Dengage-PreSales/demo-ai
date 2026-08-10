@@ -283,6 +283,13 @@ jobs:
           # carries its own query, so it is a program: the set this replaced was never run
           # and asked an event table for a column it has never had.
           node factory/emails/scenarios.test.mjs
+          # THE SHORT FORM DYNAMIC CONTENT, which is what SMS and web push consume, and
+          # the seven messages composed from it. Neither channel can hold a query, so
+          # every personal value in them comes from a saved asset, and an asset that
+          # resolves the wrong demo's product is a notification naming another
+          # prospect's catalogue on a call. Executed against synthetic logs, including
+          # the case where two demos share a product id.
+          node factory/snippets.test.mjs
           # The short form pack: the length checker in both directions, SMS counted
           # the way Dengage charges it, WhatsApp's submission rules, and the on-site
           # copy staying generic because those creatives are shared by every demo.
