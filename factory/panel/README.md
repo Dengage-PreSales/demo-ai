@@ -10,6 +10,7 @@ demo the factory generates uses it.
 |---|---|
 | **This page** | the numbered list of what to do, in order |
 | [`SMS-AND-PUSH.md`](SMS-AND-PUSH.md) | the two live short form channels, field by field, from scratch |
+| [`SCENARIO-EMAILS.md`](SCENARIO-EMAILS.md) | the seven Code Editor emails, one journey each. One paste per email and nothing else |
 | [`REFERENCE.md`](REFERENCE.md) | the panel's own templates, web push explained, the App Inbox, the product feed. Background rather than steps |
 | [`content/_dynamic/README.md`](content/_dynamic/README.md) | the saved Dynamic Content assets, and the six step pattern for writing another one |
 
@@ -81,7 +82,17 @@ The short version: three assets, `dps abandoned cart line`, `dps abandoned cart 
 line and preheader. The other two are a picture and a link, which is what makes a rich push
 carry the visitor's own product and land on their own basket.
 
-### 3. Re-import the email template. Content > Email > Email Builder
+### 3. Seven scenario emails. Content > Email > Code Editor
+
+**New, 10 August 2026.** One HTML email per journey: checkout rescue, browse abandonment,
+failed search, wishlist, basket building, replenishment and win-back. Each is **one paste**
+with no Dynamic Content asset behind it, because a Code Editor email carries its own query.
+
+**[`SCENARIO-EMAILS.md`](SCENARIO-EMAILS.md) is the whole of it**, with the file, the subject
+and the pre-header for each. Open the `.preview.html` beside each one first: it is that
+email rendered against a real catalogue rather than a drawing of it.
+
+### 4. Re-import the email template. Content > Email > Email Builder
 
 ```
 factory/panel/content/_shared/beefree-abandoned-cart.json
@@ -92,23 +103,23 @@ so it can never contradict the basket inside it. `factory/emails/BEEFREE.md` say
 and what is in it. Open the `.preview.html` beside it first if you want to see it
 before uploading.
 
-### 4. One abandoned cart campaign, using that template
+### 5. One abandoned cart campaign, using that template
 
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 5. Confirm the ETL runs on a schedule
+### 6. Confirm the ETL runs on a schedule
 
 Postgres reloads every demo's catalogue every ten minutes by itself. The Dengage
 Automated Flow is what copies it into `dps_product`, and **if that flow is not on a
 recurring schedule, a new demo's products never arrive** and its emails have nothing
 to render. Set the frequency you want on the flow. `supabase/README.md` has the chain.
 
-### 6. Five inline creatives, when support enables Inline
+### 7. Five inline creatives, when support enables Inline
 
 Written and committed, nothing to build. The table is below.
 
-### 7. Watch the MP4 through once
+### 8. Watch the MP4 through once
 
 Detail below. It takes a minute and it is the one thing a URL check cannot answer.
 

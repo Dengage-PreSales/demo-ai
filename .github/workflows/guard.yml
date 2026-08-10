@@ -81,6 +81,13 @@ jobs:
       - name: Push banners exist and match their photographs
         run: node factory/push-images.test.mjs
 
+      # THE SCENARIO EMAILS, and this belongs here as much as in the build. It runs each
+      # one against a synthetic event log, and it also asserts the committed file matches
+      # what the generator produces now: a stale one means the panel gets last week's
+      # email while the generator looks correct.
+      - name: Scenario emails resolve, and the committed files are current
+        run: node factory/emails/scenarios.test.mjs
+
       # THE BASKET REPLAY RUNS INSIDE DENGAGE, where nothing here can reach it. No
       # console, no breakpoint, and a mistake renders as an email that looks correct
       # and is wrong: a removed product shown as still in the basket, or a fourth item

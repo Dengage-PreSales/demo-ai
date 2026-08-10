@@ -1,0 +1,187 @@
+{%
+  var keys = [];
+  if ($Contact && $Contact.contact_key) { keys.push(String($Contact.contact_key)); }
+
+  var devices = ($Contact && $Contact.contact_key)
+    ? $from('$db.master_device').where('contact_key', '=', $Contact.contact_key).take(50).get()
+    : [];
+
+  for (var d = 0; d < devices.length; d++) {
+    var did = (devices[d] && devices[d].device_id != null) ? String(devices[d].device_id).trim() : "";
+    if (did !== "" && keys.indexOf(did) === -1) { keys.push(did); }
+  }
+
+  var rows = keys.length
+    ? $from('$db.page_view_events').where('key', 'in', keys).take(300).get()
+    : [];
+
+  rows.sort(function (a, b) {
+    var byDate = new Date(a.event_date) - new Date(b.event_date);
+    if (byDate !== 0) { return byDate; }
+    return 0;
+  });
+
+  var views = rows;
+
+  var slugOf = function (url) {
+    var u = (url == null) ? "" : String(url);
+    var at = u.indexOf('/demos/');
+    if (at === -1) { return ""; }
+    var rest = u.slice(at + 7).split('?')[0].split('#')[0];
+    var cut = rest.indexOf('/');
+    return cut === -1 ? rest : rest.slice(0, cut);
+  };
+
+  var demoOf = {};
+  var rootOf = {};
+  for (var v = 0; v < views.length; v++) {
+    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
+    if (vs === "" || demoOf[vs]) { continue; }
+    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
+    var vslug = slugOf(vurl);
+    if (vslug !== "") {
+      demoOf[vs] = vslug;
+      if (!rootOf[vslug]) {
+        var mark = '/demos/' + vslug + '/';
+        var atRoot = vurl.indexOf(mark);
+        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }
+      }
+    }
+  }
+
+  var target = "";
+  for (var t = rows.length - 1; t >= 0; t--) {
+    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
+    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+  }
+
+  if (target !== "") {
+    var mine = [];
+    for (var m = 0; m < rows.length; m++) {
+      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
+      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+    }
+    rows = mine;
+  }
+
+  var root = (target !== "" && rootOf[target]) ? rootOf[target] : "";
+  if (root.indexOf('https://') !== 0) { root = ""; }
+
+  var all = [];
+  var ctx = {};
+  var counts = {};
+  for (var r = rows.length - 1; r >= 0; r--) {
+    var row = rows[r] || {};
+    var pid = (row.product_id == null) ? "" : String(row.product_id).trim();
+    if (pid === "") { continue; }
+    if (all.indexOf(pid) === -1) { all.push(pid); }
+    var leaf = String(row.category_path == null ? "" : row.category_path).split('>').pop().replace(/^\s+|\s+$/g, "");
+    if (leaf !== "") { counts[leaf] = (counts[leaf] || 0) + 1; }
+  }
+  var best = "";
+  var bestN = 0;
+  for (var k in counts) {
+    if (counts[k] > bestN || (counts[k] === bestN && k < best)) { bestN = counts[k]; best = k; }
+  }
+  ctx.category = best;
+  all.length = 0;
+  var pool = root !== ""
+    ? $from('$db.dps_product').where('is_active', '=', true).take(1000).get()
+    : [];
+  var mine = [];
+  for (var q = 0; q < pool.length; q++) {
+    var prow = pool[q] || {};
+    var plink = String(prow.link == null ? "" : prow.link);
+    if (plink.indexOf(root) !== 0) { continue; }
+    mine.push(String(prow.product_id));
+  }
+  var seedBase = 0;
+  for (var c2 = 0; c2 < target.length; c2++) { seedBase = (seedBase * 31 + target.charCodeAt(c2)) % 100003; }
+  mine.sort(function (a, b) {
+    var ha = (seedBase + a.length * 7 + a.charCodeAt(0)) % 1000;
+    var hb = (seedBase + b.length * 7 + b.charCodeAt(0)) % 1000;
+    if (ha !== hb) { return ha - hb; }
+    return a < b ? -1 : (a > b ? 1 : 0);
+  });
+  for (var m2 = 0; m2 < mine.length; m2++) { all.push(mine[m2]); }
+
+  var ids = all.slice(0, 12);
+
+  var products = ids.length
+    ? $from('$db.dps_product').where('product_id', 'in', ids).take(24).get()
+    : [];
+
+  var byId = {};
+  for (var p = 0; p < products.length; p++) {
+    if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
+  }
+
+  var money = function (value) {
+    var n = Number(value);
+    if (!isFinite(n) || n <= 0) { return ""; }
+    return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+  };
+
+  var httpsOnly = function (url) {
+    var u = (url == null) ? "" : String(url).trim();
+    return u.indexOf('https://') === 0 ? u : "";
+  };
+
+  var clamp = function (value, n) {
+    var s = String(value == null ? "" : value).replace(/^\s+|\s+$/g, "");
+    if (s === "") { return ""; }
+    return s.length > n ? s.substring(0, n - 3).replace(/[\s,]+$/, "") + "..." : s;
+  };
+
+  var leafOf = function (path) {
+    var parts = String(path == null ? "" : path).split('>');
+    return parts[parts.length - 1].replace(/^\s+|\s+$/g, "");
+  };
+
+  var cards = [];
+  for (var c = 0; c < ids.length; c++) {
+    var item = byId[ids[c]];
+    if (!item || !item.is_active) { continue; }
+    var full = money(item.price);
+    var cut = money(item.discounted_price);
+    if (cut !== "" && Number(item.discounted_price) >= Number(item.price)) { cut = ""; }
+    cards.push({
+      id: String(ids[c]),
+      title: clamp(item.title, 60),
+      category: leafOf(item.category_path),
+      image: httpsOnly(item.image_link),
+      link: httpsOnly(item.link),
+      price: full,
+      cut: cut,
+      stock: Number(item.stock_count),
+      row: item
+    });
+  }
+
+  var view = cards.slice(0, 6);
+  var extra = (all.length - view.length) > 0 ? (all.length - view.length) : 0;
+%}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="https://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Win-back, Dengage eComm Demo</title>
+<style type="text/css">
+body{margin:0;padding:0;background-color:#f6f7f8;}
+img{border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
+table{border-collapse:collapse;}
+a{color:#125cfa;}
+@media only screen and (max-width:620px){
+  .dps-band{width:100% !important;}
+  .dps-half{display:block !important;width:100% !important;}
+}
+</style>
+</head>
+<body style="margin:0;padding:0;background-color:#f6f7f8;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;color:#14181b;">
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f6f7f8;">
+<tr><td align="center" style="background-color:#f6f7f8;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:24px 24px 24px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><strong style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:18px;color:#14181b;letter-spacing:-0.01em;">Dengage</strong><span style="font-size:12px;color:#5a6375;padding-left:6px;">eComm Demo</span></td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#ffffff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:36px 24px 26px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#125cfa;font-weight:bold;padding:0 0 10px 0;">Trending now</div><div style="font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:28px;font-weight:700;line-height:1.2;color:#14181b;padding:0 0 12px 0;">Worth another look</div><div style="font-size:15px;line-height:1.6;color:#5a6375;">A few of the things moving fastest in the range right now.</div></td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#ffffff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:0px 24px 6px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">{% for (var g = 0; g < view.length; g += 2) { %}<tr>{% for (var col = 0; col < 2; col++) { var card = view[g + col]; if (!card) { %}<td width="50%" style="font-size:0;line-height:0;">&nbsp;</td>{% continue; } %}<td width="50%" align="center" valign="top" style="padding:0 9px 30px 9px;">{% if (card.image !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td height="200" align="center" valign="middle" style="height:200px;">{% if (card.link !== "") { %}<a href="{%= card.link %}" target="_blank" style="text-decoration:none;">{% } %}<img src="{%= card.image %}" alt="{%= card.title %}" width="200" style="max-width:200px;max-height:200px;width:100%;height:auto;border:0;display:block;margin:0 auto;border-radius:8px;">{% if (card.link !== "") { %}</a>{% } %}</td></tr></table>{% } %}{% if (card.category !== "") { %}<div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#5a6375;padding:16px 0 6px 0;">{%= card.category %}</div>{% } %}<div style="font-size:15px;line-height:1.4;font-weight:bold;color:#14181b;padding:{%= card.category === "" ? 16 : 0 %}px 0 7px 0;">{% if (card.link !== "") { %}<a href="{%= card.link %}" target="_blank" style="color:#14181b;text-decoration:none;">{%= card.title %}</a>{% } else { %}{%= card.title %}{% } %}</div>{% if (card.price !== "") { %}<div style="font-size:14px;line-height:1.4;color:#14181b;">{% if (card.cut !== "") { %}<span style="font-weight:bold;">{%= card.cut %}</span><span style="text-decoration:line-through;color:#5a6375;padding-left:7px;">{%= card.price %}</span>{% } else { %}<span style="font-weight:bold;">{%= card.price %}</span>{% } %}{% var qtyOf = (ctx.qty && ctx.qty[card.id]) ? Number(ctx.qty[card.id]) : 1; %}{% if (isFinite(qtyOf) && qtyOf > 1) { %}<span style="color:#5a6375;padding-left:7px;">Qty {%= qtyOf %}</span>{% } %}</div>{% } %}</td>{% } %}</tr>{% } %}{% if (extra > 0) { %}<tr><td colspan="2" align="center" style="font-size:13px;line-height:1.5;color:#5a6375;padding:2px 0 0 0;">and {%= extra %} more item{% if (extra > 1) { %}s{% } %}</td></tr>{% } %}</table></td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#ecf2ff;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:26px 24px 28px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;">{% if (root !== "") { %}<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;"><tr><td align="center" style="padding:0;"><a href="{%= root + 'index.html' %}" target="_blank" style="display:inline-block;background-color:#125cfa;color:#ffffff;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:16px;font-weight:bold;line-height:1.2;padding:14px 30px;border-radius:10px;text-decoration:none;">See the range</a></td></tr></table>{% } %}</td></tr></table></td></tr>
+<tr><td align="center" style="background-color:#f6f7f8;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:600px;max-width:600px;border-collapse:collapse;"><tr><td style="padding:24px 24px 28px 24px;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;"><div style="font-size:13px;font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;color:#14181b;font-weight:bold;padding:0 0 8px 0;">Dengage<span style="font-size:12px;font-weight:normal;color:#5a6375;padding-left:5px;">eComm Demo</span></div><div style="font-size:12px;line-height:1.6;color:#5a6375;">You are receiving this because you shopped with us.<br>If you have already completed your purchase, please disregard this email.<br>This is a demonstration storefront built for a sales conversation.</div></td></tr></table></td></tr>
+</table>
+</body></html>

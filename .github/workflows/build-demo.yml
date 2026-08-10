@@ -271,6 +271,10 @@ jobs:
           # against a synthetic event log rather than read.
           node factory/panel/content/_dynamic/cart.test.mjs
           node factory/emails/beefree.test.mjs
+          # The seven Code Editor scenario emails, EXECUTED rather than read. Each one
+          # carries its own query, so it is a program: the set this replaced was never run
+          # and asked an event table for a column it has never had.
+          node factory/emails/scenarios.test.mjs
           # The short form pack: the length checker in both directions, SMS counted
           # the way Dengage charges it, WhatsApp's submission rules, and the on-site
           # copy staying generic because those creatives are shared by every demo.
