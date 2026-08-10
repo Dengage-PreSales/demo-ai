@@ -156,12 +156,37 @@ before uploading.
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 7. Confirm the ETL runs on a schedule
+### 7. Put the four secrets in the Supabase vault. This is the broken link
 
-Postgres reloads every demo's catalogue every ten minutes by itself. The Dengage
-Automated Flow is what copies it into `dps_product`, and **if that flow is not on a
-recurring schedule, a new demo's products never arrive** and its emails have nothing
-to render. Set the frequency you want on the flow. `supabase/README.md` has the chain.
+**Diagnosed 10 August 2026, and it is the reason a product can be in Postgres and not in
+an email.** The chain has four steps and the third has never run:
+
+| Step | State |
+|---|---|
+| The factory publishes `products.json` | working |
+| Postgres reloads what changed, every ten minutes | **working.** 187 runs, last one minutes ago |
+| Postgres tells the Dengage Automated Flow something changed | **has never happened once** |
+| The flow copies Postgres into `dps_product` | only when somebody presses Run by hand |
+
+`dengage_sync_log` names the cause in its own words on every run that had changes to send:
+`rows changed but vault secrets are missing, so Dengage was not told`. The vault is empty.
+
+So set `dengage_api_userkey`, `dengage_api_password` and `dengage_flow_id` in the Supabase
+vault, plus a password on the `dengage_ro` role. `supabase/README.md` has the chain and
+`autonomous-refresh.sql` is what reads them.
+
+**Why the trigger has to live in Postgres rather than in GitHub Actions**, which is the
+question this design gets asked most: the Dengage API is allowlisted per address and a
+runner sits behind a rotating pool, measured across four different addresses. This database
+presents one address that is already accepted.
+
+**Why every ten minutes rather than only when a demo is built.** Nothing tells Postgres a
+demo has been published, so it polls. Ten minutes is not about how often a catalogue
+changes, which is five to seven times a month: it is the interval that fits inside the
+thirty minute promise in CLAUDE.md section 0. Hourly would break it. The better design is
+for the build to call a Supabase function directly when it publishes, which needs one
+Actions secret and no Dengage access at all, and would make the poll a safety net rather
+than the mechanism.
 
 ### 8. Five inline creatives, when support enables Inline
 
@@ -208,7 +233,7 @@ else is waiting on anything.
 |---|---|
 | **Rotate the API credentials** | they were pasted into a chat. Nothing wrote them to disk here, and rotating is still the right move |
 | The unsubscribe link | the shared email footer has none, because there is no one storefront to point it at. If Dengage exposes an unsubscribe URL or tag, tell me and it goes in |
-| Supabase Vault secrets | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, plus a password on the `dengage_ro` role. Only needed for Postgres to trigger the flow itself |
+| **Supabase Vault secrets. THIS IS THE ONE THAT BREAKS THE CHAIN** | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, plus a password on the `dengage_ro` role. The vault is **empty**, checked 10 August 2026, so **Postgres has never once told Dengage that a catalogue changed**: 187 scheduled runs, `triggered = 0`, and `dengage_sync_log` says `rows changed but vault secrets are missing, so Dengage was not told`. Until these are set, `dps_product` inside Dengage only holds whatever a manual run of the flow last put there, whenever that was. This row used to read "only needed for Postgres to trigger the flow itself", which made it sound optional. It is the blocker |
 | GitHub | repository visibility and protection on `main` need your admin access |
 
 ---
