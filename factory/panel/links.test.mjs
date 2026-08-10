@@ -124,6 +124,48 @@ for (const url of seen.keys()) {
 ok('nothing links to a page the storefront has never had', invented.length === 0, invented);
 
 /* -------------------------------------------------------------------------- */
+/* The relative links in the panel pages, because those are the ones a person clicks */
+
+{
+    /* THESE ARE THE LINKS SOMEBODY FOLLOWS TO GET WORK DONE, so a wrong one costs their
+       time rather than a recipient's. Salil, 10 August 2026, and it is a fair complaint:
+       instructions spread across several pages with one file path wrong in the middle is
+       worse than no instructions. So every relative markdown link in factory/panel is
+       resolved to a path on disk here.
+
+       Absolute Pages URLs are the section above. This is only the local ones. */
+    const pages = walk(join(ROOT, 'factory', 'panel'), [])
+        .filter((file) => file.endsWith('.md'));
+    ok('there are panel pages to check', pages.length > 0, pages.length);
+
+    const LINK = /\]\(([^)\s]+)\)/g;
+    const dead = [];
+    let checked = 0;
+    for (const file of pages) {
+        const text = readFileSync(file, 'utf8');
+        let found;
+        while ((found = LINK.exec(text)) !== null) {
+            const href = found[1];
+            if (/^(https?:|mailto:|#)/.test(href)) continue;
+            checked++;
+            const target = join(dirname(file), decodeURIComponent(href.split('#')[0]));
+            if (!existsSync(target)) {
+                dead.push({ href, in: file.slice(ROOT.length + 1) });
+            }
+        }
+    }
+    ok('and they contain relative links', checked > 0, checked);
+    ok('every relative link in a panel page points at a file that exists',
+       dead.length === 0, dead);
+
+    /* THE CHECKER AGAINST A LINK THAT CANNOT RESOLVE, because one that matches nothing
+       passes on an empty repository and proves nothing. Two checks in this repository have
+       already failed open. */
+    const missing = join(dirname(pages[0]), 'content', '_dynamic', 'no-such-asset.txt');
+    ok('the check would reject a path that is not there', !existsSync(missing));
+}
+
+/* -------------------------------------------------------------------------- */
 /* The checker, against input it must reject                                    */
 
 {

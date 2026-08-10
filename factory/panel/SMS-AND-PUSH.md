@@ -1,0 +1,121 @@
+# SMS and web push, from scratch
+
+One page. Three assets, then two messages. Nothing on this page is per demo: do it once and
+every demo the factory generates uses it.
+
+For the email, see [`factory/emails/BEEFREE.md`](../emails/BEEFREE.md). Nothing here depends
+on it.
+
+---
+
+## Step 1. Three Dynamic Content assets
+
+**Content > Dynamic Content.** Open each link, press **Copy raw file**, paste the whole thing
+in as the body. Type **Plain Text** for all three.
+
+| Name it | Type | Body comes from |
+|---|---|---|
+| `dps abandoned cart line` | Plain Text | [`abandoned-cart.txt`](content/_dynamic/abandoned-cart.txt) |
+| `dps abandoned cart image` | Plain Text | [`abandoned-cart-image.txt`](content/_dynamic/abandoned-cart-image.txt) |
+| `dps abandoned cart url` | Plain Text | [`abandoned-cart-url.txt`](content/_dynamic/abandoned-cart-url.txt) |
+
+On GitHub:
+
+```
+https://github.com/Dengage-PreSales/demo-ai/blob/main/factory/panel/content/_dynamic/abandoned-cart.txt
+https://github.com/Dengage-PreSales/demo-ai/blob/main/factory/panel/content/_dynamic/abandoned-cart-image.txt
+https://github.com/Dengage-PreSales/demo-ai/blob/main/factory/panel/content/_dynamic/abandoned-cart-url.txt
+```
+
+What each one outputs, one line each:
+
+| Asset | Output |
+|---|---|
+| line | `Oxford Shirt and 3 more items` |
+| image | `https://dengage-presales.github.io/demo-ai/demos/<slug>/img/p2.jpg` |
+| url | `https://dengage-presales.github.io/demo-ai/demos/<slug>/index.html?open=cart` |
+
+**The first one already exists** as `DPS - Abandon Cart (TXT)`. Paste the current body over
+it anyway: the version from before 10 August emits a stray newline. Keep the name you gave
+it, the name is only a label.
+
+**Then send me the ids of all three.** They go in `factory/sandbox.json` so the email build
+stops needing anything typed.
+
+---
+
+## Step 2. The SMS
+
+**Content > SMS.** `DPS - Abandoned Cart V1.0`.
+
+| Field | What goes in it |
+|---|---|
+| Message Type | SMS |
+| Sender Name | `DENGAGE - ecomm-codec` |
+| **Message** | `Still in your basket: ` then the **line** snippet, then ` Complete your order: ` then the **url** snippet |
+| Concatenated SMS | Enabled |
+| Alternate Message | `Your basket is still saved and waiting for you.` |
+
+**Insert each snippet with the tag control on the Message field.** Do not type the tag by
+hand. The SMS designer writes its own form, `<snippet snippet_id="4870" ... />`, which is not
+the form the email uses.
+
+### Three things that will waste your time if nobody says them
+
+**Nothing with `$Contact` in it.** A demo sets only the contact key, so every other contact
+field is empty, and a field name that does not exist can fail the whole message rather than
+just itself. `$Contact.name` is not a column: `master_contact` has `first_name`.
+
+**The preview pane does not resolve snippets.** It echoes the body, so it will always show
+the raw tag. Only a real send resolves. Ignore the pane.
+
+**"Please add variables to your template first. No variables found"** is the Preview and Test
+dialog asking for **variables**, which a snippet is not. It is not about your snippet. To get
+past it, either add one contact variable from the field's own list, or skip the dialog and
+send a real test message, which is the only thing that proves anything anyway.
+
+---
+
+## Step 3. The web push
+
+**Content > Push.** Platform **WEB**.
+
+| Field | What goes in it |
+|---|---|
+| Title | `Still in your basket` |
+| **Message** | the **line** snippet, then ` are waiting for you.` |
+| Select Platform | WEB |
+| Notification Type | **Rich** |
+| Media | **URL**, and the **image** snippet on its own, nothing else in the field |
+| **Target URL** | the **url** snippet on its own, nothing else in the field |
+| Badge URL | leave empty |
+| Icon | Default |
+| Action Buttons | No Action Buttons |
+| Custom Parameters | leave as they are. The App Inbox reads whatever Dengage holds for the device, so nothing extra is needed to reach it |
+
+That is the whole difference this makes: the push carries the product the visitor actually
+left behind, and lands them back on the basket they left it in, on the right demo, with one
+push serving all of them.
+
+### What happens when there is nothing to show
+
+Both assets output an empty string rather than a wrong value. So:
+
+| Case | What the recipient gets |
+|---|---|
+| No product in the basket has a picture | the push, without an image. A standard notification |
+| The picture is `http` rather than `https` | the same. A browser blocks a mixed content push image |
+| No page view attributes the basket to a demo | an empty Target URL |
+
+An empty Target URL is deliberate. There is no address that is correct for every demo, and a
+push that lands on another prospect's storefront is worse on a call than a push nobody sent.
+
+**Media, Icon and Badge URL do not render in Safari on macOS**, per the note in the editor.
+Check the push on Chrome.
+
+---
+
+## Step 4. Tell me the three ids
+
+That is all that comes back to me. Everything else on this page is yours and needs nothing
+from the repository.
