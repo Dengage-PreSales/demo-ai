@@ -119,8 +119,23 @@
      is anonymous, or an account where the write is refused, gets no false confirmation.
 
      What the handler below still owns is reporting the click, because engagement is a click
-     regardless of what the tag write did, and it reports only when the engine judged the
-     answer valid so an empty submit cannot count as one.
+     regardless of what the tag write did, and it reports only when the answer was judged
+     valid so an empty submit cannot count as one.
+
+     AND IT CHECKS THAT postQuestion EXISTS BEFORE CALLING IT, which is not defensive
+     programming for its own sake. The SDK injects the form handler ONLY when this file
+     contains the exact substring data-dn-form-id="question_form", and the panel rewrites
+     HTML on save, so a re-quoted or reordered attribute is enough to miss the gate. When
+     it misses, Dn.postQuestion does not exist and calling it throws on the handler's FIRST
+     statement: no tag, no click reported, no visible change, and nothing anywhere to say
+     so. That is what happened on the live survey, NPS and subscription cards on 10 August
+     2026, and the network readout showed the creative being fetched and then silence.
+
+     So when the function is absent this file validates the answer itself and calls
+     Dn.setTags, which lives in shared.js and is always injected, and stamps its own
+     confirmation because with no handler there is nobody to react to tagsSuccess.
+     factory/checks/creative.js section 7c asserts that path against a page assembled the
+     way the SDK assembles it when the gate misses.
 
      IT LEAVES data-dn-invalid="false" RATHER THAN REMOVING IT. Harmless here, and only
      because every invalid style in this file keys on [data-dn-invalid="true"]. A
@@ -456,7 +471,7 @@
            confirmation panel, so those are here, and both run only when the engine
            did not mark the question invalid. See the note at the top. -->
       <button type="button" class="send"
-              onclick="var b=document.getElementById('dnf-sv').querySelector('.form-block');Dn.postQuestion();if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('survey__submit');">
+              onclick="var f=document.getElementById('dnf-sv'),b=f.querySelector('.form-block'),n=(typeof Dn.postQuestion==='function');if(n){Dn.postQuestion();}else{var s=b.querySelectorAll('input[type=checkbox]:checked'),t=b.getAttribute('data-dn-name'),v=[],i=0;for(i=0;i&lt;s.length;i++){v.push({tag:t,value:s[i].value});}if(!v.length){b.setAttribute('data-dn-invalid','true');return;}b.setAttribute('data-dn-invalid','false');Dn.setTags(v);}if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('survey__submit');if(!n){f.querySelector('.container').setAttribute('data-dn-is-submitted','true');}">
         Send my answer
       </button>
 

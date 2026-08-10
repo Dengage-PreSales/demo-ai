@@ -34,7 +34,14 @@
      intended signal. survey.html says more, including why data-dn-invalid="false" is safe.
 
      The handler below still reports the click, because engagement is a click whatever the
-     tag write did, and only when the engine judged the answer valid.
+     tag write did, and only when the answer was judged valid.
+
+     IT CHECKS THAT postQuestion EXISTS BEFORE CALLING IT. The form handler is injected
+     only on an exact substring match of data-dn-form-id="question_form", the panel rewrites
+     HTML on save, and calling a missing function throws on the first statement: no tag, no
+     click, no visible change. That took this card and two others down on 10 August 2026.
+     With the function absent this file validates and calls Dn.setTags itself, and stamps
+     its own confirmation. survey.html says more.
 
      DO NOT CHANGE THIS TO A DIFFERENT SUBMIT CALL without re-running
      bash factory/checks/run.sh and reading its output for this creative. The same
@@ -341,7 +348,7 @@
            things it does not do, so they are here and both run only when the engine did
            not mark the question invalid. See the note at the top. -->
       <button type="button" class="send"
-              onclick="var b=document.getElementById('dnf-np').querySelector('.form-block');Dn.postQuestion();if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('nps-popup__submit');">
+              onclick="var f=document.getElementById('dnf-np'),b=f.querySelector('.form-block'),n=(typeof Dn.postQuestion==='function');if(n){Dn.postQuestion();}else{var s=b.querySelector('input[type=radio]:checked');if(!s){b.setAttribute('data-dn-invalid','true');return;}b.setAttribute('data-dn-invalid','false');Dn.setTags([{tag:b.getAttribute('data-dn-name'),value:s.value}]);}if(b.getAttribute('data-dn-invalid')==='true'){return;}this.disabled=true;Dn.sendClick('nps-popup__submit');if(!n){f.querySelector('.container').setAttribute('data-dn-is-submitted','true');}">
         Send my score
       </button>
 

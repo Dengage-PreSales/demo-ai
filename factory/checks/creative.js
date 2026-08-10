@@ -65,13 +65,20 @@ function unwrap(file) {
       .replace('</body>', form ? '<script>'+formHandler+'<\/script></body>' : '</body>')
    where the form handler is included ONLY IF the creative HTML contains the exact
    substring  data-dn-form-id="subscription_form"  (or question_form). */
-function assemble(creativeHtml) {
+function assemble(creativeHtml, options) {
+  /* withoutForm BUILDS THE PAGE THE SDK BUILDS WHEN THE GATE MISSES, which is the case
+     that took a live demo down on 10 August 2026. The form handler is injected only when
+     the creative contains the EXACT substring data-dn-form-id="question_form", and the
+     panel rewrites HTML on save, so a re-quoted attribute means Dn.postQuestion never
+     exists. A creative that called it unguarded threw on its first statement: no tag, no
+     click report, no visible change, and nothing in any log. */
+  const withoutForm = Boolean(options && options.withoutForm);
   const sharedCss = unwrap('dn-shared.css.js');
   const sharedJs = unwrap('dn-shared.js');
   const containerCss = unwrap('dn-container.css.js');
   const wantsForm = creativeHtml.includes('data-dn-form-id="subscription_form"')
                  || creativeHtml.includes('data-dn-form-id="question_form"');
-  const formHandler = wantsForm
+  const formHandler = (wantsForm && !withoutForm)
     ? unwrap('dn-form-handler.js').split('{{ONSITE_COMMON_RESOURCE_URL_PREFIX}}').join(PREFIX)
     : null;
 
@@ -428,6 +435,71 @@ async function main() {
     }));
     qok('and the engine switches it on when the parent confirms the write',
         confirmed.submitted === 'true', confirmed);
+
+    /* ------------------------------------------------------------------- */
+    /* 7c. IT STILL SUBMITS WHEN THE FORM HANDLER WAS NEVER INJECTED.
+       Added 10 August 2026 after this exact case took the live survey, NPS and
+       subscription cards down together.
+
+       The SDK injects the form handler only when the creative contains the EXACT
+       substring data-dn-form-id="question_form". The panel rewrites HTML on save, so a
+       re-quoted or reordered attribute is enough to miss it, and then Dn.postQuestion
+       does not exist. A creative that called it unguarded threw on its FIRST statement:
+       no tag written, no click reported, no visible change in the popup, and nothing in
+       any log to say so. The network readout showed the creative being fetched and then
+       silence, which is how it was finally identified.
+
+       So both question creatives now check for the function and fall back to validating
+       the answer themselves and calling Dn.setTags, which lives in shared.js and is
+       always injected. This asserts that fallback against a page built the way the SDK
+       builds it when the gate misses. */
+    const bare = assemble(creative, { withoutForm: true });
+    const stem2 = 'noform-' + path.basename(target).replace(/\W+/g, '-') + '.html';
+    fs.writeFileSync(path.join(ASSEMBLED_DIR, stem2), bare.html);
+    const page2 = await browser.newPage();
+    const thrown = [];
+    page2.on('pageerror', (e) => thrown.push(String(e.message || e)));
+    await page2.goto(SERVE + stem2, { waitUntil: 'load' });
+
+    const noHandler = await page2.evaluate(() => {
+      const out = { hasPostQuestion: typeof (window.Dn || {}).postQuestion === 'function' };
+      window.__tags = [];
+      window.Dn.setTags = (t) => { window.__tags.push(t); };
+      const block = document.querySelector('.form-block');
+
+      /* Nothing chosen must still be refused, by the creative's own validation. */
+      document.querySelector('button.send').click();
+      out.emptySent = window.__tags.length;
+      out.emptyInvalid = block.getAttribute('data-dn-invalid');
+
+      /* And a real answer must still be sent, and still confirm. */
+      const input = block.querySelector('input[type="radio"],input[type="checkbox"]');
+      input.checked = true;
+      const btn = document.querySelector('button.send');
+      btn.disabled = false;
+      btn.click();
+      out.tags = window.__tags[window.__tags.length - 1] || null;
+      out.tagName = block.getAttribute('data-dn-name');
+      const c = document.querySelector('.container');
+      out.submitted = c ? c.getAttribute('data-dn-is-submitted') : null;
+      return out;
+    });
+    await page2.close();
+
+    qok('without the gate the form handler really is absent',
+        noHandler.hasPostQuestion === false, noHandler);
+    qok('and nothing throws on the page anyway', thrown.length === 0, thrown.slice(0, 2));
+    qok('an empty answer is still refused by the creative\'s own validation',
+        noHandler.emptySent === 0 && noHandler.emptyInvalid === 'true', noHandler);
+    qok('a real answer is still sent, as [{tag, value}]',
+        Array.isArray(noHandler.tags) && noHandler.tags.length > 0 &&
+        noHandler.tags[0].tag === noHandler.tagName &&
+        noHandler.tags[0].value !== undefined, noHandler);
+    /* THE CREATIVE CONFIRMS IT ITSELF HERE, and must: with no handler there is nobody
+       to react to the parent's tagsSuccess, so the visitor would otherwise see nothing
+       happen at all. */
+    qok('and the creative confirms it itself, because no engine will',
+        noHandler.submitted === 'true', noHandler);
     /* CLEARED MEANS "NOT true", NOT "ABSENT". Both creatives used to remove the
        attribute themselves and this asserted null. They now submit through
        Dn.postQuestion(), and the engine SETS data-dn-invalid="false" rather than
