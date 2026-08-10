@@ -35,12 +35,18 @@ What each one outputs, one line each:
 | image | `https://dengage-presales.github.io/demo-ai/demos/<slug>/images/push/p2.jpg` |
 | url | `https://dengage-presales.github.io/demo-ai/demos/<slug>/index.html?open=cart` |
 
-**The first one already exists** as `DPS - Abandon Cart (TXT)`. Paste the current body over
-it anyway: the version from before 10 August emits a stray newline. Keep the name you gave
-it, the name is only a label.
+All three exist now, under the names you gave them in the panel, and all three ids are in
+`factory/sandbox.json` as `abandonedCartLine`, `abandonedCartImage` and `abandonedCartUrl`.
+The name in the panel does not have to match the name here: `snippet_id` is what resolves and
+`snippet_name` is a label.
 
-**Then send me the ids of all three.** They go in `factory/sandbox.json` so the email build
-stops needing anything typed.
+**`factory/sandbox.json` is the register.** Nothing else in this repository writes a snippet id
+down, and there is a reason it is worth keeping that way. On 10 August one id was sent without
+saying which asset it belonged to, was recorded as the line asset, and the email preheader
+called the **url** asset for a day: every send would have read
+`https://.../index.html?open=cart, one press from checkout.` in the inbox preview line.
+Nothing failed and nothing could, because a snippet id is valid or invalid and never wrong.
+So an id arriving on its own is worth one sentence saying what it is.
 
 ---
 
@@ -131,7 +137,11 @@ image in somebody's notification.
 
 ---
 
-## Step 4. Tell me the three ids
+## Step 4. When an asset body changes here, re-paste it
 
-That is all that comes back to me. Everything else on this page is yours and needs nothing
-from the repository.
+That is the only standing obligation, and it is rare. The asset ids never change, so nothing
+else comes back to me.
+
+The one that has changed since it was created is `dps abandoned cart image`: it now asks for
+the 2:1 banner rather than the square product tile. If a push still shows the product small in
+a white box, that body is the old one.

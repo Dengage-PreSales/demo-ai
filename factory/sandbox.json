@@ -6,7 +6,9 @@
     "abandonedCart": "5178aafe-5bec-4326-b3ed-890aff1ec867",
     "abandonedCartTotal": "50d50fcf-3e9a-4a4f-9143-fb17b1049e91",
     "recommendations": "c3a50633-c5fb-4f49-8e72-e60083bf0437",
-    "abandonedCartLine": "6ced3ab3-9187-4802-a52b-9ec5c69dfeec"
+    "abandonedCartLine": "17bafff2-5763-4e90-a919-a80779278cec",
+    "abandonedCartImage": "bf6f868d-e4c6-4358-9c39-50730cbfa2ad",
+    "abandonedCartUrl": "6ced3ab3-9187-4802-a52b-9ec5c69dfeec"
   },
 
   "_comment": [
@@ -38,7 +40,9 @@
     "Dynamic Content asset is saved, and the shared email template has to name every",
     "one it calls or it imports with empty blocks. abandonedCartLine is the one that",
     "is not only an email asset: the same saved object feeds SMS, WhatsApp, push copy",
-    "and the email subject line. They are content ids, not",
+    "and the email subject line. abandonedCartImage and abandonedCartUrl are recorded",
+    "here as the register of what exists rather than because the email calls them: they",
+    "fill the Media and Target URL fields of the web push. They are content ids, not",
     "application ids: nothing sends to a device because of them. Listing them here",
     "rather than in the generator means the guardrails still reject every OTHER",
     "identifier, which is the property worth keeping, and the ids are written down",
