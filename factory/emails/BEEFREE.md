@@ -125,7 +125,7 @@ Nine rows:
 
 | Row | What it is |
 |---|---|
-| Preheader | Hidden. The grey line an inbox shows beside the subject. **Dynamic Content once the line asset is attached**, so it names the visitor's own products; a static sentence until then. Without either, the client shows the first words it finds, which would be "Dengage eComm Demo" |
+
 | Masthead | The Dengage mark and the eComm Demo subtext, and nothing else. Non-negotiable 3: never the prospect's logo, and now not their name either |
 | Hero | Drawn in the standard Dengage palette by `make-hero.mjs --shared`. Full bleed, and carries no text |
 | Headline | One line, and one line of copy under it |
@@ -171,8 +171,9 @@ stops competing with the name.
 
 ## The subject line and the preheader
 
-The preheader is **in the template**, hidden at the top. The subject line is **on the
-campaign**, so it is the one piece of copy this repository cannot set for you.
+**Both are fields in the email editor**, Subject and **Pre-header**, sitting together under
+Sender Profiles with a personalization control each. Neither is in the template, so both are
+copy this repository cannot set for you, and both take a Dynamic Content snippet.
 
 ### What can actually be personalized, and what cannot
 
@@ -186,11 +187,9 @@ thing that can reach it from a subject field is a Dynamic Content asset.
 
 ### The one worth using, which names the basket in the inbox
 
-**Everything consumes Dynamic Content snippets**, Salil, 9 August 2026: the preheader
-does, and so do push text, push image, SMS and on site content. That settles what was the
-last open question here, and it changes the recommendation rather than adding a footnote to
-it. A subject line and a preheader can both name the visitor's own products, before the
-email is opened at all.
+**Everything consumes Dynamic Content snippets**, Salil, 9 August 2026: the Pre-header field
+does, and so do push text, push image, SMS and on site content. So a subject line and a
+preheader can both name the visitor's own products, before the email is opened at all.
 
 One asset does it, and it is one you want anyway for SMS.
 `content/_dynamic/abandoned-cart.txt` emits exactly one line and nothing around it:
@@ -201,43 +200,33 @@ Oxford Shirt and 3 more items
 
 Which reads correctly whether the basket holds one item, two or six. So:
 
-| | |
+| Field | What to put in it |
 |---|---|
 | **Subject** | `Still yours: ` then the snippet |
-| **Preheader** | the snippet, then `, one press from checkout.` |
+| **Pre-header** | the snippet, then `, one press from checkout.` |
 
 reads in an inbox as
 
 > **Still yours: Oxford Shirt and 3 more items**
 > Oxford Shirt and 3 more items, one press from checkout.
 
-**The preheader half is done.** The asset exists as `dps abandoned cart line`, its id is in
-`factory/sandbox.json`, and the committed template carries the tag: a hidden HTML module
-with the comma and the tail after it. Nothing to click in the builder. The subject half is a
-campaign field, so that one is a paste.
-
-**Without that id the preheader falls back to the static sentence below**, which is a
-correct preheader rather than a broken one. A fallback rather than a dashed box on purpose:
-the other three blocks show a labelled box when their id is missing, because somebody has to
-attach them, and a box in a slot nobody can see would be the one place that advice is wrong.
-
-**The one thing to check on a real send.** The tag is written into the template's HTML rather
-than picked in the builder, so the builder never validates it, and whether Dengage resolves a
-Plain Text asset inside an HTML email is a send time behaviour nothing here can reach.
-Forward a test send to yourself and read the grey line beside the subject: it either names
-the products or it does not, and both are obvious immediately. If it does not, create the
-same body again as type **HTML** and swap the id. The body has no markup in it either way.
+**Corrected 10 August 2026, and the template changed with it.** The preheader used to be the
+first row of this template: a hidden block with the tag inside it, padded with a run of zero
+width non joiners so the masthead could not leak into the preview line. That was doing by
+trick what the platform does by design. A field is better in every way that matters: it is
+visible in the editor, it can be edited on a call, and it needs none of the padding. So the
+row is gone and `beefree.test.mjs` asserts nothing in the template is hidden, because a
+reinstated preheader would send twice and nobody would see either copy.
 
 ### Three that need no asset at all. Paste and go
 
-| Subject | Preheader |
+| Subject | Pre-header |
 |---|---|
 | **Your basket is still saved** | Everything you added is one press away from checkout. |
 | **You left something behind** | Your basket is saved and waiting whenever you are. |
 | **Still thinking it over?** | Your basket is exactly as you left it. |
 
-The first pair is what the template ships with. The preheader in the template is the first
-one; change the subject to match whichever pair you use.
+Use a pair, not one from each row.
 
 **The preheader never repeats the subject.** That line is the one extra piece of inbox real
 estate you get, and restating the subject wastes it. Both rules are asserted, for the

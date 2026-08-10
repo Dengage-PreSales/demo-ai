@@ -21,7 +21,7 @@
    scaffolding around them. Pass their snippet ids and the template arrives finished;
    pass nothing and each one arrives as a labelled dashed box saying which asset goes
    there, because Dengage assigns snippet_id when an asset is saved and nothing here
-   can know it in advance. The preheader is the one exception, and says why below.
+   can know it in advance.
    ========================================================================== */
 
 /* BeeFree's own module type names. Wrong here and the import is rejected or, worse,
@@ -248,7 +248,6 @@ function themed(palette, inner) {
    a block again after the template is built, which is how the preview knows which
    module to fill, so a name written twice would be a name that can drift. */
 const ASSETS = {
-    line: 'dps abandoned cart line',
     items: 'dps abandoned cart',
     total: 'dps abandoned cart total',
     recommendations: 'dps recommendations'
@@ -269,43 +268,6 @@ function dynamicBlock(palette, asset, id, describe) {
         asset + '</strong><br>' + describe +
         '<br>Click this block, clear it, then use Insert &gt; Dynamic Content.' +
         '</td></tr></table>');
-}
-
-/* THE PREHEADER, and it is the one block that reads better as a snippet than as copy.
-
-   It is the grey line an inbox shows beside the subject, and it is hidden in the body:
-   display:none plus a zero height, which every client that shows a preview reads and
-   every client that renders the body skips.
-
-   WITH THE LINE ASSET ATTACHED it names the visitor's own products, which is the whole
-   value of the line: "Oxford Shirt and 3 more items, one press from checkout." Salil
-   confirmed on 9 August 2026 that a preheader takes a Dynamic Content snippet, as do
-   push, SMS and on site content, so the same saved asset serves all of them.
-
-   WITHOUT IT the static sentence below is what sends, which is what shipped before and
-   is still a correct preheader. It is a fallback rather than a placeholder on purpose:
-   the other three blocks show a dashed box when their id is missing, because somebody
-   has to attach them, and a dashed box at the top of the email in a slot nobody can see
-   would be the one place that advice is wrong.
-
-   IT MUST BE AN HTML MODULE ONCE THERE IS A TAG IN IT. BeeFree runs a text module's
-   content through its rich text editor, which escapes or reflows a Dengage tag.
-
-   THE TAIL IS IN THE TEMPLATE RATHER THAN THE ASSET because the asset is shared: SMS
-   wants the bare phrase, and only the email wants a sentence around it. The asset emits
-   exactly one line with no surrounding whitespace, which is what lets a comma follow it
-   without a gap in front. factory/panel/content/_dynamic/README.md says why.
-
-   AND IT IS PADDED, which is not decoration. With nothing after it, a client fills the
-   rest of the preview line with the next visible text, which here is "Dengage eComm
-   Demo". A run of zero width non joiners and non breaking spaces eats that space
-   without printing anything. */
-const PREHEADER_TAIL = ', one press from checkout.';
-const PREHEADER_PLAIN = 'Everything you added is one press away from checkout.';
-
-function hidden(inner) {
-    return '<div style="display:none;max-height:0;overflow:hidden;mso-hide:all;">' +
-        inner + new Array(60).join('&zwnj;&nbsp;') + '</div>';
 }
 
 /* A Google Fonts entry, so the builder previews the demo's own typeface rather than
@@ -342,22 +304,20 @@ export function beefreeAbandonedCart(options) {
     const hairline = () => rows.push(
         row(uid(), palette, [[dividerModule(uid(), palette)]], { top: 0, bottom: 0 }));
 
-    /* 1. THE PREHEADER, hidden, and personalized when the line asset is attached. See
-       the note above PREHEADER_TAIL for both halves.
+    /* THE PREHEADER IS NOT IN HERE, AND THAT IS A CORRECTION. It used to be the first
+       row: a hidden block carrying the line that an inbox shows beside the subject.
 
-       IT DOES NOT REPEAT THE SUBJECT either way. That line is the one extra piece of
-       inbox real estate a subject gets, so restating it wastes the only thing it is
-       for. */
-    rows.push(row(uid(), palette, [[
-        snippets.line
-            ? htmlModule(uid(), palette, themed(palette, hidden(
-                '<snippet snippet_id="' + snippets.line + '" snippet_name="' +
-                ASSETS.line + '"></snippet>' + PREHEADER_TAIL)))
-            : textModule(uid(), palette, hidden(PREHEADER_PLAIN),
-                { size: 1, colour: palette.canvas })
-    ]], { ground: palette.canvas, top: 0, bottom: 0 }));
+       Salil, 10 August 2026: the email editor has its own Pre-header field, right under
+       Subject, and it takes a Dynamic Content snippet like every other field there. So the
+       template was doing by trick what the platform does by design, and a hidden row is
+       strictly worse than a field: it is invisible in the builder, it cannot be edited on a
+       call, and it needed a run of zero width non joiners to stop the masthead leaking into
+       the preview line.
 
-    /* 2. THE MASTHEAD, AND IT NAMES NOBODY BUT DENGAGE.
+       The line asset it called is unchanged and still wanted. It goes in that field, with
+       ", one press from checkout." after it. factory/emails/BEEFREE.md has the wording. */
+
+    /* 1. THE MASTHEAD, AND IT NAMES NOBODY BUT DENGAGE.
 
        IT USED TO CARRY THE STORE'S NAME AND A CATEGORY NAV BUILT FROM THAT DEMO'S
        TAXONOMY, and that is what this row is now deliberately without. The reason is a
@@ -383,7 +343,7 @@ export function beefreeAbandonedCart(options) {
 
     if (flat) hairline();
 
-    /* 3. THE HERO, in the standard Dengage palette rather than a prospect's. Same
+    /* 2. THE HERO, in the standard Dengage palette rather than a prospect's. Same
        reasoning as the masthead: a brand colour is as much a claim about whose email
        this is as a name. Full bleed, and it carries no text, so the email still reads
        with images blocked. */
@@ -393,7 +353,7 @@ export function beefreeAbandonedCart(options) {
         ]], { top: 0, bottom: 0 }));
     }
 
-    /* 4. One headline and one line of copy. No paragraph explaining the offer,
+    /* 3. One headline and one line of copy. No paragraph explaining the offer,
        because there is no offer: the products are the message. */
     rows.push(row(uid(), palette, [[
         textModule(uid(), palette,
@@ -405,14 +365,14 @@ export function beefreeAbandonedCart(options) {
             { size: 15, colour: palette.quiet })
     ]], { top: 36, bottom: 30 }));
 
-    /* 5. THE BASKET. */
+    /* 4. THE BASKET. */
     rows.push(row(uid(), palette, [[
         htmlModule(uid(), palette,
             dynamicBlock(palette, ASSETS.items, snippets.items,
                 'The visitor\'s own basket, resolved from their cart events.'))
     ]], { top: 0, bottom: 10 }));
 
-    /* 6. THE SUMMARY, on the wash so it reads as a summary rather than another product.
+    /* 5. THE SUMMARY, on the wash so it reads as a summary rather than another product.
 
        IT CARRIES THE BUTTON TOO, and that is forced by the shell being shared. A basket
        link needs a demo in it, and a BeeFree button module holds one literal href, so in
@@ -427,7 +387,7 @@ export function beefreeAbandonedCart(options) {
                 'The subtotal, the total and the button back to that basket.'))
     ]], { ground: palette.wash, top: 26, bottom: 28 }));
 
-    /* 7. THE RECOMMENDATIONS, which are the storefront's own rail rather than a new
+    /* 6. THE RECOMMENDATIONS, which are the storefront's own rail rather than a new
        idea. template/js/recommend.js computes five strategies in the browser from the
        demo's own catalogue, and it says why: the Dengage engine is fed per application
        and every demo shares one, so an engine rail would offer a fashion prospect
@@ -443,7 +403,7 @@ export function beefreeAbandonedCart(options) {
                 'More from the categories the basket is in, ranked the way the storefront ranks them.'))
     ]], { top: 0, bottom: 0 }));
 
-    /* 8. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
+    /* 7. THE ONE LINE OF URGENCY THAT IS TRUE. A countdown, a reserved basket or a
        discount that expires would all be invented, and a prospect can see through
        every one of them. What is genuinely true of any store is that a basket is not a
        reservation, and saying so is the honest version of the same nudge. */
@@ -455,7 +415,7 @@ export function beefreeAbandonedCart(options) {
 
     if (flat) hairline();
 
-    /* 9. The footer, back on the canvas, closing the card.
+    /* 8. The footer, back on the canvas, closing the card.
 
        NO LINK TO THE STORE, for the same reason the masthead has no name: there is no
        one storefront this email belongs to until it is sent. The unsubscribe is the one
@@ -519,11 +479,11 @@ export function beefreeAbandonedCart(options) {
 
    The preview has to fill each Dynamic Content block with sample products, so it needs
    to know which module is the basket and which is the rail. It used to take them in
-   document order, first, second, third, which was true until the preheader became a
-   fourth block and then silently pointed all three at the wrong module. Nothing would
-   have failed: the preview would simply have drawn a plausible email in the wrong order.
+   document order, first, second, third, which was true until a fourth block appeared at
+   the front of the document and silently pointed all three at the wrong module. Nothing
+   would have failed: the preview would have drawn a plausible email in the wrong order.
 
-   The names are prefixes of each other, so a plain substring test would match "dps
+   Two of the names are a prefix of a third, so a plain substring test would match "dps
    abandoned cart" inside "dps abandoned cart total". The delimiter is what separates
    them: a name is always followed by the closing quote of snippet_name, or by the "<"
    that ends the placeholder's label. */

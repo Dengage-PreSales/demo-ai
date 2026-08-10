@@ -131,7 +131,7 @@ renders as a phrase rather than as markup:
 | Push title or message | the same phrase, in the copy |
 | On site content | the same phrase, in a creative |
 | Email subject | `Still yours: Oxford Shirt and 3 more items` |
-| Email preheader | `Oxford Shirt and 3 more items, one press from checkout.` |
+| Email preheader | `Oxford Shirt and 3 more items, one press from checkout.` The editor's own Pre-header field |
 
 It emits exactly one of these:
 

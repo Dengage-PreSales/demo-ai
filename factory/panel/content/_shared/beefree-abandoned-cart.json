@@ -62,72 +62,8 @@
               "grid-columns": 12,
               "modules": [
                 {
-                  "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-02",
-                  "descriptor": {
-                    "html": {
-                      "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\"><snippet snippet_id=\"17bafff2-5763-4e90-a919-a80779278cec\" snippet_name=\"dps abandoned cart line\"></snippet>, one press from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
-                      "style": {
-                        "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                        "font-size": "15px"
-                      },
-                      "computedStyle": {
-                        "hideContentOnMobile": false
-                      }
-                    },
-                    "style": {
-                      "padding-top": "0px",
-                      "padding-right": "0px",
-                      "padding-bottom": "0px",
-                      "padding-left": "0px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  }
-                }
-              ],
-              "style": {
-                "background-color": "transparent",
-                "border-bottom": "0px solid transparent",
-                "border-left": "0px solid transparent",
-                "border-right": "0px solid transparent",
-                "border-top": "0px solid transparent",
-                "padding-top": "0px",
-                "padding-right": "0px",
-                "padding-bottom": "0px",
-                "padding-left": "0px"
-              },
-              "uuid": "dps-cart-01-c1"
-            }
-          ]
-        },
-        {
-          "type": "one-column-empty",
-          "uuid": "dps-cart-03",
-          "container": {
-            "style": {
-              "background-color": "transparent"
-            }
-          },
-          "content": {
-            "computedStyle": {
-              "rowColStackOnMobile": true,
-              "rowReverseColStackOnMobile": false
-            },
-            "style": {
-              "background-color": "#f6f7f8",
-              "color": "#14181b",
-              "width": "600px"
-            }
-          },
-          "columns": [
-            {
-              "grid-columns": 12,
-              "modules": [
-                {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-04",
+                  "uuid": "dps-cart-02",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -165,13 +101,13 @@
                 "padding-bottom": "24px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-03-c1"
+              "uuid": "dps-cart-01-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-05",
+          "uuid": "dps-cart-03",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -194,7 +130,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-image",
-                  "uuid": "dps-cart-06",
+                  "uuid": "dps-cart-04",
                   "descriptor": {
                     "image": {
                       "alt": "Your saved basket",
@@ -230,13 +166,13 @@
                 "padding-bottom": "0px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-05-c1"
+              "uuid": "dps-cart-03-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-07",
+          "uuid": "dps-cart-05",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -259,7 +195,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-08",
+                  "uuid": "dps-cart-06",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -287,7 +223,7 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-09",
+                  "uuid": "dps-cart-07",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -325,13 +261,13 @@
                 "padding-bottom": "30px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-07-c1"
+              "uuid": "dps-cart-05-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-10",
+          "uuid": "dps-cart-08",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -354,7 +290,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-11",
+                  "uuid": "dps-cart-09",
                   "descriptor": {
                     "html": {
                       "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
@@ -389,13 +325,13 @@
                 "padding-bottom": "10px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-10-c1"
+              "uuid": "dps-cart-08-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-12",
+          "uuid": "dps-cart-10",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -418,7 +354,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-13",
+                  "uuid": "dps-cart-11",
                   "descriptor": {
                     "html": {
                       "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
@@ -453,13 +389,13 @@
                 "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-12-c1"
+              "uuid": "dps-cart-10-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-14",
+          "uuid": "dps-cart-12",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -482,7 +418,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-html",
-                  "uuid": "dps-cart-15",
+                  "uuid": "dps-cart-13",
                   "descriptor": {
                     "html": {
                       "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
@@ -517,13 +453,13 @@
                 "padding-bottom": "0px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-14-c1"
+              "uuid": "dps-cart-12-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-16",
+          "uuid": "dps-cart-14",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -546,7 +482,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-17",
+                  "uuid": "dps-cart-15",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -584,13 +520,13 @@
                 "padding-bottom": "30px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-16-c1"
+              "uuid": "dps-cart-14-c1"
             }
           ]
         },
         {
           "type": "one-column-empty",
-          "uuid": "dps-cart-18",
+          "uuid": "dps-cart-16",
           "container": {
             "style": {
               "background-color": "transparent"
@@ -613,7 +549,7 @@
               "modules": [
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-19",
+                  "uuid": "dps-cart-17",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -641,7 +577,7 @@
                 },
                 {
                   "type": "mailup-bee-newsletter-modules-text",
-                  "uuid": "dps-cart-20",
+                  "uuid": "dps-cart-18",
                   "descriptor": {
                     "text": {
                       "computedStyle": {
@@ -679,7 +615,7 @@
                 "padding-bottom": "28px",
                 "padding-left": "0px"
               },
-              "uuid": "dps-cart-18-c1"
+              "uuid": "dps-cart-16-c1"
             }
           ]
         }
@@ -710,72 +646,8 @@
             "grid-columns": 12,
             "modules": [
               {
-                "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-02",
-                "descriptor": {
-                  "html": {
-                    "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><div style=\"display:none;max-height:0;overflow:hidden;mso-hide:all;\"><snippet snippet_id=\"17bafff2-5763-4e90-a919-a80779278cec\" snippet_name=\"dps abandoned cart line\"></snippet>, one press from checkout.&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div></div>",
-                    "style": {
-                      "font-family": "Inter, Helvetica Neue, Helvetica, Arial, sans-serif",
-                      "font-size": "15px"
-                    },
-                    "computedStyle": {
-                      "hideContentOnMobile": false
-                    }
-                  },
-                  "style": {
-                    "padding-top": "0px",
-                    "padding-right": "0px",
-                    "padding-bottom": "0px",
-                    "padding-left": "0px"
-                  },
-                  "computedStyle": {
-                    "hideContentOnMobile": false
-                  }
-                }
-              }
-            ],
-            "style": {
-              "background-color": "transparent",
-              "border-bottom": "0px solid transparent",
-              "border-left": "0px solid transparent",
-              "border-right": "0px solid transparent",
-              "border-top": "0px solid transparent",
-              "padding-top": "0px",
-              "padding-right": "0px",
-              "padding-bottom": "0px",
-              "padding-left": "0px"
-            },
-            "uuid": "dps-cart-01-c1"
-          }
-        ]
-      },
-      {
-        "type": "one-column-empty",
-        "uuid": "dps-cart-03",
-        "container": {
-          "style": {
-            "background-color": "transparent"
-          }
-        },
-        "content": {
-          "computedStyle": {
-            "rowColStackOnMobile": true,
-            "rowReverseColStackOnMobile": false
-          },
-          "style": {
-            "background-color": "#f6f7f8",
-            "color": "#14181b",
-            "width": "600px"
-          }
-        },
-        "columns": [
-          {
-            "grid-columns": 12,
-            "modules": [
-              {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-04",
+                "uuid": "dps-cart-02",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -813,13 +685,13 @@
               "padding-bottom": "24px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-03-c1"
+            "uuid": "dps-cart-01-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-05",
+        "uuid": "dps-cart-03",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -842,7 +714,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-image",
-                "uuid": "dps-cart-06",
+                "uuid": "dps-cart-04",
                 "descriptor": {
                   "image": {
                     "alt": "Your saved basket",
@@ -878,13 +750,13 @@
               "padding-bottom": "0px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-05-c1"
+            "uuid": "dps-cart-03-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-07",
+        "uuid": "dps-cart-05",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -907,7 +779,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-08",
+                "uuid": "dps-cart-06",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -935,7 +807,7 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-09",
+                "uuid": "dps-cart-07",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -973,13 +845,13 @@
               "padding-bottom": "30px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-07-c1"
+            "uuid": "dps-cart-05-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-10",
+        "uuid": "dps-cart-08",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1002,7 +874,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-11",
+                "uuid": "dps-cart-09",
                 "descriptor": {
                   "html": {
                     "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"5178aafe-5bec-4326-b3ed-890aff1ec867\" snippet_name=\"dps abandoned cart\"></snippet></div>",
@@ -1037,13 +909,13 @@
               "padding-bottom": "10px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-10-c1"
+            "uuid": "dps-cart-08-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-12",
+        "uuid": "dps-cart-10",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1066,7 +938,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-13",
+                "uuid": "dps-cart-11",
                 "descriptor": {
                   "html": {
                     "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"50d50fcf-3e9a-4a4f-9143-fb17b1049e91\" snippet_name=\"dps abandoned cart total\"></snippet></div>",
@@ -1101,13 +973,13 @@
               "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-12-c1"
+            "uuid": "dps-cart-10-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-14",
+        "uuid": "dps-cart-12",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1130,7 +1002,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-html",
-                "uuid": "dps-cart-15",
+                "uuid": "dps-cart-13",
                 "descriptor": {
                   "html": {
                     "html": "<div style=\"font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;line-height:1.6;color:#14181b;padding:0 24px;\"><snippet snippet_id=\"c3a50633-c5fb-4f49-8e72-e60083bf0437\" snippet_name=\"dps recommendations\"></snippet></div>",
@@ -1165,13 +1037,13 @@
               "padding-bottom": "0px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-14-c1"
+            "uuid": "dps-cart-12-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-16",
+        "uuid": "dps-cart-14",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1194,7 +1066,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-17",
+                "uuid": "dps-cart-15",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1232,13 +1104,13 @@
               "padding-bottom": "30px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-16-c1"
+            "uuid": "dps-cart-14-c1"
           }
         ]
       },
       {
         "type": "one-column-empty",
-        "uuid": "dps-cart-18",
+        "uuid": "dps-cart-16",
         "container": {
           "style": {
             "background-color": "transparent"
@@ -1261,7 +1133,7 @@
             "modules": [
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-19",
+                "uuid": "dps-cart-17",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1289,7 +1161,7 @@
               },
               {
                 "type": "mailup-bee-newsletter-modules-text",
-                "uuid": "dps-cart-20",
+                "uuid": "dps-cart-18",
                 "descriptor": {
                   "text": {
                     "computedStyle": {
@@ -1327,7 +1199,7 @@
               "padding-bottom": "28px",
               "padding-left": "0px"
             },
-            "uuid": "dps-cart-18-c1"
+            "uuid": "dps-cart-16-c1"
           }
         ]
       }

@@ -172,7 +172,15 @@ function walk(template) {
     const CART = configured.abandonedCart;
     const TOTAL = configured.abandonedCartTotal;
     ok('factory/sandbox.json names every saved asset the template calls',
-       ['abandonedCart', 'abandonedCartTotal', 'recommendations', 'abandonedCartLine']
+       ['abandonedCart', 'abandonedCartTotal', 'recommendations']
+           .every((key) => Boolean(configured[key])), configured);
+    /* AND THE THREE IT DOES NOT CALL, recorded there as the register of what exists in the
+       panel. The line asset feeds the Pre-header field, the Subject, SMS and push copy; the
+       image and url assets feed the push. Nothing in this repository writes a snippet id
+       anywhere else, and one arriving without its asset named has already been filed under
+       the wrong key once. */
+    ok('and the ones only the panel calls are recorded too',
+       ['abandonedCartLine', 'abandonedCartImage', 'abandonedCartUrl']
            .every((key) => Boolean(configured[key])), configured);
     /* ASSEMBLED, NOT WRITTEN, and for the same reason two patterns in this file are.
        The app-guid guardrail rejects every identifier in this repository that is not
@@ -263,76 +271,32 @@ function walk(template) {
 }
 
 /* -------------------------------------------------------------------------- */
-/* The preheader, which is a snippet now that a preheader is known to take one    */
+/* The preheader is the platform's field, not a row in here                      */
 
 {
-    /* SALIL, 9 AUGUST 2026: a preheader takes a Dynamic Content snippet, and so do push
-       text, push image, SMS and on site content. Until then this row was a static
-       sentence, which is a fine preheader and a wasted one: the line an inbox shows beside
-       the subject is the only place a basket can be named before the email is opened at
-       all, and the asset that names it already existed for SMS.
+    /* SALIL, 10 AUGUST 2026: the email editor has its own Pre-header field under Subject,
+       and it takes a Dynamic Content snippet like every other field there. So the hidden
+       first row this template used to carry is gone, and these assertions exist to keep it
+       gone: a hidden block is invisible in the builder, cannot be edited on a call, and
+       needed a run of zero width non joiners to stop the masthead leaking into the preview
+       line. A field needs none of that.
 
-       BOTH BRANCHES ARE ASSERTED. The static one is what sends until the line asset exists
-       in the panel, and it is a fallback rather than a dashed box on purpose: the other
-       three blocks show a box because somebody has to attach them, and a box in a slot
-       nobody can see would be the one place that advice is wrong.
+       Asserted as an absence, like most of this file, because a reinstated preheader would
+       send twice and nobody would see either copy. */
+    const template = build({ snippets: { line: 'nnnnnnnn-1111-2222' + '-3333-' + '444444444444' } });
+    const text = JSON.stringify(template.template);
 
-       ASSEMBLED RATHER THAN WRITTEN, like the recommendation fixture above and for the
-       same reason: the app-guid guard rejects every identifier here that is not named in
-       factory/sandbox.json, and a fixture must not be in that allowlist. */
-    const LINE = 'eeeeeeee-1111-2222' + '-3333-' + '444444444444';
-
-    const plain = build().template;
-    const staticLine = walk(plain).modules.find((module) => module.descriptor.text &&
-        module.descriptor.text.html.includes('display:none'));
-    ok('with no line asset the preheader is a static sentence', Boolean(staticLine));
-    ok('and no Dynamic Content block appeared for it',
-       dynamicModules(plain).line === undefined, dynamicModules(plain));
-
-    const withLine = build({ snippets: { line: LINE } }).template;
-    const blocks = dynamicModules(withLine);
-    const preheader = walk(withLine).modules.find((module) => module.uuid === blocks.line);
-
-    ok('with the line asset attached the preheader becomes a Dynamic Content block',
-       Boolean(preheader), blocks);
-    /* A TEXT MODULE WOULD MANGLE THE TAG, which is why all four are HTML modules. */
-    ok('and an HTML module, so the tag is not run through the rich text editor',
-       preheader && preheader.type === 'mailup-bee-newsletter-modules-html',
-       preheader && preheader.type);
-    ok('it calls the line asset by id',
-       preheader && preheader.descriptor.html.html.includes(
-           '<snippet snippet_id="' + LINE + '" snippet_name="dps abandoned cart line">'),
-       preheader && preheader.descriptor.html.html);
-    ok('it is still hidden, so it reads beside the subject rather than in the body',
-       preheader && preheader.descriptor.html.html.includes('display:none'));
-    ok('and still padded, so the mark cannot leak into the preview line',
-       preheader && (preheader.descriptor.html.html.match(/&zwnj;/g) || []).length > 20,
-       preheader && (preheader.descriptor.html.html.match(/&zwnj;/g) || []).length);
-
-    /* THE SENTENCE AROUND IT IS IN THE TEMPLATE RATHER THAN THE ASSET, because the asset
-       is shared: SMS wants the bare phrase and only the email wants a comma after it. That
-       only works because the asset emits one line with nothing around it, which
-       cart.test.mjs pins from the other side. */
-    ok('the tail is in the template, so the shared asset stays a bare phrase',
-       preheader && preheader.descriptor.html.html.includes(
-           '</snippet>, one press from checkout.'));
-    ok('and the static sentence does not send as well',
-       !JSON.stringify(withLine).includes('Everything you added is one press away'));
-
-    /* FOUR BLOCKS, TOLD APART BY NAME, and three of the four names are a prefix of
-       another, so this is the assertion a plain substring test fails. It replaced counting
-       them in document order, which was correct until the preheader became the first one
-       and would then have filled the basket with the rail without failing anything. */
-    ok('all four blocks are found, and none is confused with another',
-       new Set([blocks.line, blocks.items, blocks.total, blocks.recommendations]).size === 4,
-       blocks);
-
-    /* AND IT KEEPS THE WRAPPER RULES, which apply to every HTML block whether it can be
-       seen or not: BeeFree gives raw HTML no typeface and no padding. */
-    ok('the preheader block carries the wrapper like every other HTML block',
-       preheader &&
-       preheader.descriptor.html.html.indexOf('<div style="font-family:') === 0 &&
-       /padding:0 24px/.test(preheader.descriptor.html.html));
+    ok('nothing in the template is hidden from the body',
+       !text.includes('display:none'), (text.match(/display:none/g) || []).length);
+    ok('and nothing is padded with zero width joiners',
+       !text.includes('zwnj'));
+    ok('the line asset is not called by the template at all',
+       dynamicModules(template.template).line === undefined &&
+       !text.includes('dps abandoned cart line'),
+       dynamicModules(template.template));
+    ok('so passing its id changes nothing',
+       JSON.stringify(build({ snippets: { line: 'anything' } }).template) ===
+       JSON.stringify(build().template));
 }
 
 /* -------------------------------------------------------------------------- */
@@ -383,25 +347,6 @@ function walk(template) {
 
     const badClose = '=' + '%}';
     ok('no output tag closes with a trailing equals', !text.includes(badClose));
-
-    /* THE PREHEADER. Without one an inbox shows the first words of the body beside the
-       subject, which here would be "Dengage eComm Demo". */
-    const preheader = modules.find((module) => module.descriptor.text &&
-        module.descriptor.text.html.includes('display:none'));
-    ok('there is a hidden preheader', Boolean(preheader));
-    ok('and it says something about the basket rather than repeating the mark',
-       preheader && /checkout|basket/i.test(preheader.descriptor.text.html));
-
-    /* IT MUST NOT REPEAT THE HEADLINE, which is the copy most likely to be reused as the
-       subject. A preheader that restates the subject wastes the extra line. */
-    ok('the preheader does not repeat the headline',
-       preheader && !preheader.descriptor.text.html.includes('Still thinking it over'));
-
-    /* AND IT HAS TO BE PADDED, or the client fills the rest of the preview line with the
-       next visible text, which here is the Dengage mark. */
-    ok('it is padded, so the mark does not leak into the preview line',
-       preheader && (preheader.descriptor.text.html.match(/&zwnj;/g) || []).length > 20,
-       preheader && (preheader.descriptor.text.html.match(/&zwnj;/g) || []).length);
 
     /* THE HERO, shared and in the standard palette rather than a prospect's. */
     const hero = modules.find((module) => module.descriptor.image);
@@ -530,9 +475,9 @@ function walk(template) {
            this one would show as nothing at all. */
         const blocks = dynamicModules(committed);
         ok('every Dynamic Content block is in the committed file',
-           ['line', 'items', 'total', 'recommendations']
+           ['items', 'total', 'recommendations']
                .every((key) => Boolean(blocks[key])), blocks);
-        ok('and there are no others', html.length === 4, html.length);
+        ok('and there are no others', html.length === 3, html.length);
 
         /* ALL OF THEM ARE ATTACHED, so the import needs no clicks at all. An equality
            rather than "at least three", for the same reason. */
@@ -543,17 +488,10 @@ function walk(template) {
         ok('with no placeholder left behind',
            html.every((module) => !module.descriptor.html.html.includes('dashed')));
 
-        /* THE PREHEADER IS THE ONE THAT SENDS WITHOUT ANYBODY SEEING IT, so the two
-           things that make it work at all are pinned in the committed bytes: it is
-           hidden, and the tail follows the tag with no gap in front of the comma. */
-        const preheader = walk(committed).modules
-            .find((module) => module.uuid === blocks.line);
-        ok('the preheader is hidden and carries its tail',
-           preheader && preheader.descriptor.html.html.includes('display:none') &&
-           preheader.descriptor.html.html.includes('</snippet>, one press from checkout.'),
-           preheader && preheader.descriptor.html.html.slice(0, 200));
-        ok('and the static sentence is no longer in the file',
-           !JSON.stringify(committed).includes('Everything you added is one press away'));
+        /* AND NOTHING IN THE COMMITTED FILE IS HIDDEN, which is the preheader row staying
+           gone in the bytes somebody actually imports rather than only in the generator. */
+        ok('nothing in the committed file is hidden from the body',
+           !JSON.stringify(committed).includes('display:none'));
 
         ok('and it still names no storefront',
            !JSON.stringify(committed).includes('/demos/'));
