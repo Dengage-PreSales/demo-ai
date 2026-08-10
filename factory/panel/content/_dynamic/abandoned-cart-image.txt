@@ -94,11 +94,27 @@
     if (products[p] && products[p].product_id) { byId[String(products[p].product_id)] = products[p]; }
   }
 
+  var bannerOf = function (url) {
+    var u = String(url == null ? "" : url).trim();
+    var cut = u.lastIndexOf('/');
+    if (cut === -1) { return ""; }
+    var dir = u.slice(0, cut);
+    var file = u.slice(cut + 1).split('?')[0].split('#')[0];
+    if (file === "" || dir.slice(-7) !== '/images') { return ""; }
+    var dot = file.lastIndexOf('.');
+    var stem = dot === -1 ? file : file.slice(0, dot);
+    if (stem === "") { return ""; }
+    return dir + '/push/' + stem + '.jpg';
+  };
+
   var image = "";
   for (var i = 0; i < ids.length; i++) {
     var product = byId[ids[i]];
     if (!product || !product.is_active) { continue; }
     var src = (product.image_link == null) ? "" : String(product.image_link).trim();
-    if (src.indexOf('https://') === 0) { image = src; break; }
+    if (src.indexOf('https://') !== 0) { continue; }
+    var banner = bannerOf(src);
+    image = banner !== "" ? banner : src;
+    break;
   }
 %}{%= image %}

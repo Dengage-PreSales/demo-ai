@@ -32,7 +32,7 @@ What each one outputs, one line each:
 | Asset | Output |
 |---|---|
 | line | `Oxford Shirt and 3 more items` |
-| image | `https://dengage-presales.github.io/demo-ai/demos/<slug>/img/p2.jpg` |
+| image | `https://dengage-presales.github.io/demo-ai/demos/<slug>/images/push/p2.jpg` |
 | url | `https://dengage-presales.github.io/demo-ai/demos/<slug>/index.html?open=cart` |
 
 **The first one already exists** as `DPS - Abandon Cart (TXT)`. Paste the current body over
@@ -112,6 +112,22 @@ push that lands on another prospect's storefront is worse on a call than a push 
 
 **Media, Icon and Badge URL do not render in Safari on macOS**, per the note in the editor.
 Check the push on Chrome.
+
+### The image is optimized for the band already, so leave the field alone
+
+The image asset does not hand the push the product tile. It hands it a **1200x600 crop made
+for that band**, generated at build time and committed with the demo:
+
+| | |
+|---|---|
+| **2:1** | the ratio the editor asks for, so no client has to pad or crop it and guess |
+| **The photograph's own margin is trimmed first** | a studio product shot is mostly background. Fitting the file fits its whitespace too, which is why the first push showed the battery at about a third of the height it could have had |
+| **The background is sampled from the photograph** | a white cutout gets a white band and looks full bleed, rather than a white rectangle on a grey field |
+| **40 to 70KB** | well inside the 600KB the editor warns about. Size was never the problem, the ratio was |
+
+Nothing to set and nothing to upload. `factory/make-push-images.mjs` writes them, every build
+runs it, and a photograph committed without a banner fails CI rather than becoming a broken
+image in somebody's notification.
 
 ---
 

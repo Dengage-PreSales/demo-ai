@@ -38,7 +38,7 @@ expansion runs long.
 | `abandoned-cart-total.html` | HTML | email. The subtotal, the total, and the button back to the basket |
 | `abandoned-cart.json` | JSON | push carousel, and anything wanting data rather than markup |
 | `abandoned-cart.txt` | Plain Text | **five channels.** SMS, WhatsApp, push copy, on site, and the email's subject line and preheader. See below |
-| `abandoned-cart-image.txt` | Plain Text | web push **Media**. The newest basket product's own photograph |
+| `abandoned-cart-image.txt` | Plain Text | web push **Media**. The newest basket product's photograph, as a 2:1 banner |
 | `abandoned-cart-url.txt` | Plain Text | web push **Target URL**, SMS links, anywhere a link needs the right demo |
 | `recommendations.html` | HTML | email. The storefront's own recommendation rail |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
@@ -239,9 +239,22 @@ That is worth more than personalized copy, because two of those fields are not c
 |---|---|---|
 | Title | words, or `abandoned-cart.txt` | `Still in your basket` |
 | Message | `abandoned-cart.txt` with words around it | `Oxford Shirt and 3 more items are waiting.` |
-| **Media** | `abandoned-cart-image.txt` | the visitor's own product photograph |
+| **Media** | `abandoned-cart-image.txt` | the visitor's own product, as a 2:1 banner |
 | **Target URL** | `abandoned-cart-url.txt` | that demo's basket, opened |
-| Custom parameter `inbox` | `yes`, unchanged | the same message lands in the App Inbox |
+| Custom parameters | left alone | the App Inbox reads what Dengage holds for the device |
+
+**The image asset asks for a banner rather than the product tile, and derives its address
+from the tile's.** A push shows its image in a wide band, so a square tile arrives
+letterboxed. `factory/make-push-images.mjs` writes a 1200x600 crop beside every photograph,
+with the photograph's own margin trimmed off and the band filled with a colour sampled from
+its corners, and the asset inserts one path segment into `image_link` to find it.
+
+Deriving is what keeps this free of any change to `dps_product`, and the price of deriving is
+that a missing file is a 404 in a notification rather than a fallback. So
+`factory/push-images.test.mjs` asserts every committed photograph has a banner, at the exact
+path the asset will ask for, and it runs the asset's own `bannerOf` against the generator's
+own `bannerPathFor` so the two namings cannot drift. A photograph whose address is not of the
+expected shape falls back to itself: letterboxed is a real picture, a derived 404 is not.
 
 So a rich web push carries the product the visitor actually left behind and lands them back on
 the basket they left it in, with no per demo campaign and nothing typed on the day.

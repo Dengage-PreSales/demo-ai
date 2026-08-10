@@ -363,6 +363,21 @@ jobs:
           node factory/make-motif-images.mjs
           node factory/build-feed.mjs
 
+      # THE PUSH BANNERS NEED THE SAME BROWSER. A rich web push shows its image in a
+      # wide band and the editor asks for 2:1, so a square product tile arrives
+      # letterboxed with the product at about a third of the height it could have. This
+      # writes a 2:1 crop of each photograph beside it, and the saved asset derives that
+      # address from the product's own image_link rather than reading a new column, so a
+      # missing file would be a 404 in a notification. Which is why it runs in every
+      # build rather than by hand.
+      - name: Push banners
+        if: steps.generate.outputs.outcome == 'built'
+        run: |
+          set -euo pipefail
+          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
+          node factory/make-push-images.mjs --slug "$SLUG"
+          node factory/push-images.test.mjs
+
       # THE EMAIL HERO NEEDS THE SAME BROWSER, AND FOR THE SAME REASON. It is geometry
       # in the demo's own brand colour, described in markup and drawn by Chromium, so it
       # cannot run in the generate step before Playwright exists. The BeeFree template

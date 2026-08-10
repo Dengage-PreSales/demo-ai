@@ -939,6 +939,12 @@ function catalogue(ids) {
        they cannot stand behind, and that is what most of this section asserts. */
     const ROOT = 'https://dengage-presales.github.io/demo-ai/demos/mine/';
     const shot = (id, src) => Object.assign(product(id), { image_link: src });
+    /* THE ASSET ASKS FOR THE 2:1 BANNER, NOT THE SQUARE TILE, and derives its address from
+       the photograph's own by inserting one path segment. A push image is shown in a wide
+       band, so the tile arrives letterboxed with the product at about a third of the height
+       it could have. factory/make-push-images.mjs writes the banner and
+       factory/push-images.test.mjs holds the two namings to the same answer. */
+    const banner = (file) => ROOT + 'images/push/' + file;
 
     const cart = [
         event('add_to_cart', 'p1', '2026-08-09T10:00:00Z', 1, DEVICE, 'session-mine'),
@@ -955,13 +961,13 @@ function catalogue(ids) {
         master_device: devices,
         shopping_cart_events: cart,
         page_view_events: views,
-        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('p2', ROOT + 'img/p2.jpg')]
+        dps_product: [shot('p1', ROOT + 'images/p1.jpg'), shot('p2', ROOT + 'images/p2.jpg')]
     });
 
     /* THE NEWEST ADDITION, because that is the product the push is about and the one the
        copy beside it names. ids is newest first, so this is the first that has a picture. */
-    ok('the image is the newest basket product\'s own photograph',
-       out.image.image === ROOT + 'img/p2.jpg', out.image.image);
+    ok('the image is the newest basket product\'s own photograph, as a 2:1 banner',
+       out.image.image === banner('p2.jpg'), out.image.image);
     ok('and the destination is that demo\'s basket',
        out.url.basketUrl === ROOT + 'index.html?open=cart', out.url.basketUrl);
 
@@ -972,10 +978,10 @@ function catalogue(ids) {
         master_device: devices,
         shopping_cart_events: cart,
         page_view_events: views,
-        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('p2', null)]
+        dps_product: [shot('p1', ROOT + 'images/p1.jpg'), shot('p2', null)]
     });
     ok('a newest product with no picture falls through to one that has a picture',
-       partial.image.image === ROOT + 'img/p1.jpg', partial.image.image);
+       partial.image.image === banner('p1.jpg'), partial.image.image);
 
     const none = both({
         master_device: devices,
@@ -1004,7 +1010,7 @@ function catalogue(ids) {
         master_device: devices,
         shopping_cart_events: cart,
         page_view_events: [],
-        dps_product: [shot('p1', ROOT + 'img/p1.jpg')]
+        dps_product: [shot('p1', ROOT + 'images/p1.jpg')]
     });
     ok('with no page view to attribute the basket, the URL is empty rather than guessed',
        unattributed.url.basketUrl === '' && unattributed.url.target === '',
@@ -1025,12 +1031,25 @@ function catalogue(ids) {
             { session_id: 'session-mine', page_url: ROOT + 'index.html',
               event_date: '2026-08-09T10:00:00Z' }
         ],
-        dps_product: [shot('p1', ROOT + 'img/p1.jpg'), shot('q1', OTHER + 'img/q1.jpg')]
+        dps_product: [shot('p1', ROOT + 'images/p1.jpg'),
+                      shot('q1', OTHER + 'images/q1.jpg')]
     });
     ok('the push lands on the demo the newest basket row belongs to',
        crossed.url.basketUrl === ROOT + 'index.html?open=cart', crossed.url.basketUrl);
     ok('and carries that demo\'s product photograph, not the earlier demo\'s',
-       crossed.image.image === ROOT + 'img/p1.jpg', crossed.image.image);
+       crossed.image.image === banner('p1.jpg'), crossed.image.image);
+
+    /* AND A PHOTOGRAPH THAT IS NOT WHERE A BANNER WOULD BE FALLS BACK TO ITSELF. A
+       letterboxed product is a real picture and merely badly proportioned; a derived path to
+       a file that was never written is a 404 in a notification. */
+    const elsewhere = both({
+        master_device: devices,
+        shopping_cart_events: cart,
+        page_view_events: views,
+        dps_product: [shot('p2', ROOT + 'assets/p2.jpg'), shot('p1', null)]
+    });
+    ok('a photograph outside images/ falls back to itself rather than a derived 404',
+       elsewhere.image.image === ROOT + 'assets/p2.jpg', elsewhere.image.image);
 
     /* AND BOTH EMIT ONE LINE, for the same reason the copy asset does: these go into a
        Media URL field and a Target URL field, where a leading newline is a broken URL

@@ -73,6 +73,14 @@ jobs:
       - name: Product feed is up to date
         run: node factory/build-feed.mjs --check
 
+      # THE PUSH BANNERS ARE THE SAME CLASS OF PROBLEM AS THE FEED: something outside
+      # this repository asks for them by an address nothing here resolves. The web push
+      # asset derives the banner's URL from the product's photograph, so a photograph
+      # committed without one is a broken image in a notification, and the only place it
+      # shows is on a phone.
+      - name: Push banners exist and match their photographs
+        run: node factory/push-images.test.mjs
+
       # THE BASKET REPLAY RUNS INSIDE DENGAGE, where nothing here can reach it. No
       # console, no breakpoint, and a mistake renders as an email that looks correct
       # and is wrong: a removed product shown as still in the basket, or a fourth item
