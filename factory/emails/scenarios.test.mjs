@@ -543,6 +543,11 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
        and this is it. It runs on the SEND output rather than a preview, because a preview
        rewrites addresses to relative paths and AMP requires absolute ones.
 
+       BOTH ARTEFACTS ARE CHECKED, and confusing the two is the mistake this whole section
+       is shaped around. The panel validates what you paste; the recipient sees what the
+       engine produced. A pass on one says nothing about the other, and I reported a pass on
+       the wrong one twice before Salil asked which I was actually running.
+
        IT SKIPS RATHER THAN FAILS when the package is absent, so the suite still runs on a
        machine that has not installed it, and it says which happened. */
     let validator = null;
@@ -554,8 +559,24 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
     }
     if (validator) {
         const instance = await validator.getInstance();
+
+        /* THE AUTHORED FILE FIRST, AND THIS ASSERTION IS THE ONE I SHOULD HAVE WRITTEN
+           FIRST. Salil, 10 August 2026, looking at sixteen errors in the AMP playground:
+           "are you not validating it yourself?" I was, with this exact validator, against
+           the RESOLVED document. The playground and the Dengage panel both validate the
+           file AS PASTED, tags intact, so I was checking the one artefact nobody sees and
+           reporting a pass on it. Twice.
+
+           Structural checks on the authored form are not a substitute for this, because
+           they only ever cover the last mistake: they missed the class attribute after
+           catching the style attribute. This runs the whole validator on the whole file. */
+        const authored = instance.validateString(amp, 'AMP4EMAIL');
+        ok('AMP: the official validator passes the file AS PASTED, tags and all',
+           authored.status === 'PASS',
+           authored.errors.map((e) => e.line + ':' + e.col + ' ' + e.params.join(' ')).slice(0, 4));
+
         const result = instance.validateString(rendered, 'AMP4EMAIL');
-        ok('AMP: the official AMP4EMAIL validator passes the send output',
+        ok('AMP: and the send output, once the engine has resolved it',
            result.status === 'PASS',
            result.errors.map((e) => e.line + ':' + e.col + ' ' + e.params.join(' ')).slice(0, 4));
 

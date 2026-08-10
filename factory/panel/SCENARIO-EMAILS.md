@@ -76,9 +76,24 @@ at all, because arrows that do nothing read as broken.
 
 **It is validated twice, and the two validators disagree for a reason worth knowing.**
 
-`scenarios.test.mjs` runs the official `amphtml-validator` in `AMP4EMAIL` mode against the
-**resolved** email, and checks it rejects the same document with a plain `<img>` in it,
-because a validator that passes everything passes nothing.
+`scenarios.test.mjs` runs the official `amphtml-validator` in `AMP4EMAIL` mode against
+**both artefacts**, and confusing the two was my own mistake twice over:
+
+| Artefact | Who sees it | Why it matters |
+|---|---|---|
+| The file **as pasted**, tags intact | the Dengage panel, and the AMP playground | this is what gets rejected before you can publish |
+| The **resolved** email | the recipient | this is what has to render |
+
+A pass on one says nothing about the other. I validated only the resolved one for two rounds
+and reported a pass while the panel was showing sixteen errors, which is how Salil came to
+ask, on 10 August 2026, whether I was validating it myself at all. Both are asserted now, and
+the authored check reproduces the playground's output line for line.
+
+It also checks the validator rejects the same document with a plain `<img>` in it, because a
+validator that passes everything passes nothing.
+
+**To check any of these yourself:** paste into `https://playground.amp.dev/?runtime=amp4email`.
+It runs the same validator, on the file as pasted.
 
 **Dengage's own validator reads the file as authored, before the template engine runs**, so
 it is stricter in four specific ways. The first AMP sample passed the official validator
@@ -182,7 +197,7 @@ and a Code Editor email needs none of it because raw HTML carries the query.
 
 ## How they were checked, and what that does not cover
 
-`factory/emails/scenarios.test.mjs`, 135 assertions, run in CI. It **executes** each email
+`factory/emails/scenarios.test.mjs`, 136 assertions, run in CI. It **executes** each email
 against synthetic event logs rather than reading it, which is the only way to check a file
 that is a program. It covers: every column named exists in
 [`factory/phase0/SCHEMA.md`](../phase0/SCHEMA.md), the query and the markup share no
