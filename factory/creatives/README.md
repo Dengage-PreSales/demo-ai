@@ -195,9 +195,47 @@ in the layout, merely invisible, which is why it is not `display: none`.
 
 ### Subscription: `Dn.postSubscription()`
 
-An `<input type="email">` and an `<input type="checkbox">` for marketing
-permission, submitted with `Dn.postSubscription()`. This is the one path that
-creates a contact **with permissions** without any code on the page.
+First name, last name, email, mobile and three permissions, submitted with
+`Dn.postSubscription()`. This is the one path that creates a contact **with
+permissions** without any code on the page.
+
+**The payload is built as `form[data-dn-id] = value`**, read off the handler's own source,
+so the field names are ours to choose. That is what makes three permissions possible:
+
+| Field | `data-dn-id` | `data-dn-type` |
+|---|---|---|
+| First name | `name` | `TEXT` |
+| Last name | `surname` | `TEXT` |
+| Email | `email` | `EMAIL` |
+| Mobile, also WhatsApp | `gsm` | `GSM` |
+| Email consent | `emailPermission` | `PERMISSION_CHECKBOX` |
+| SMS consent | `gsmPermission` | `PERMISSION_CHECKBOX` |
+| WhatsApp consent | `whatsappPermission` | `PERMISSION_CHECKBOX` |
+
+**Three permissions rather than one merged, Salil's call, 10 August 2026.** There is a
+shortcut id, `mergedPermission`, which the engine expands into `emailPermission` and
+`gsmPermission` before posting. Naming those two directly produces the same two keys and
+adds the third, which the merge cannot express. Verified by capturing the real payload:
+`factory/checks/creative.js` section 4 prints it.
+
+**`whatsappPermission` is the one key here that is not confirmed against a send.** The
+other six are either the documented names or what the merge itself produces. The engine
+passes any `data-dn-id` through, so it certainly reaches Dengage; whether the subscription
+endpoint honours that particular key is a question only a real send answers.
+
+**Every permission is pre-ticked, and that is the engine's rule rather than a choice.**
+`PERMISSION_CHECKBOX` is invalid when unchecked, so an untouched box blocks the submit.
+
+**Fields and message spans are paired BY INDEX.** The handler walks `[data-dn-id]` and
+`[data-dn-invalid-message-type]` together, so seven fields need seven spans in the matching
+order. Add a field without its span and every message after it belongs to the wrong input.
+Section 3 of the check prints the pairing and the word `aligned`.
+
+**The submit is guarded, and reports the click only on a valid submit.** If
+`Dn.postSubscription` does not exist, which happens when the SDK's injection gate misses
+the file, the handler shows a visible notice instead of doing nothing at all. Unlike the
+two question creatives there is no fallback available: creating a contact needs the
+engine's endpoint, and `Dn.setTags` cannot do it.
 
 #### The skeleton is part of the contract
 

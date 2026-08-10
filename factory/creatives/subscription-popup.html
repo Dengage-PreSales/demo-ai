@@ -183,7 +183,19 @@
     #dnf-sub .perm { display:flex; gap:9px; align-items:flex-start; margin:14px 0 0; }
     #dnf-sub .perm input { margin-top:2px; width:16px; height:16px; accent-color:var(--c-primary); flex-shrink:0; }
     #dnf-sub .perm label { font-size:12.5px; color:var(--c-ink); line-height:1.5; font-weight:400; }
+    #dnf-sub .perm + .perm { margin-top:9px; }
     #dnf-sub .channels { font-size:11.5px; color:var(--c-muted); margin-top:6px; line-height:1.5; }
+    /* THE ENGINE ABSENT NOTICE. Hidden unless the submit handler finds that
+       Dn.postSubscription does not exist, which happens when the SDK's injection gate
+       missed this file and the form handler was never added to the frame. Without this
+       the button is simply dead: nothing posts, nothing changes, nothing logs. That is
+       how this card was silently broken until 10 August 2026. */
+    #dnf-sub .engine-missing {
+      display:none; font-size:12px; line-height:1.5; color:var(--c-error);
+      border:1px solid var(--c-error); border-radius:var(--c-radius);
+      padding:10px 12px; margin-top:14px;
+    }
+    #dnf-sub[data-dn-engine="absent"] .engine-missing { display:block; }
 
     #dnf-sub .send {
       display:block; width:100%; border:0; cursor:pointer; margin-top:16px;
@@ -371,7 +383,7 @@
       </div>
 
       <div class="block">
-        <label class="cap" for="dnf-gsm">Mobile</label>
+        <label class="cap" for="dnf-gsm">Mobile, also used for WhatsApp</label>
         <!-- data-dn-type="GSM" is what gives this a phone validator. The engine
              owns the format rules, which is better than a regex here inventing
              its own and disagreeing with what the platform will accept. -->
@@ -380,16 +392,46 @@
         <span data-dn-invalid-message-type="GSM"></span>
       </div>
 
+      <!-- THREE PERMISSIONS, NAMED DIRECTLY RATHER THAN MERGED. Salil, 10 August 2026:
+           a prospect should see email, SMS and WhatsApp consent as three ticks.
+
+           This used to be one checkbox with data-dn-id="mergedPermission", which the
+           engine expands into emailPermission AND gsmPermission before posting. Naming
+           the two directly produces the same two keys, and adds the third, which the
+           merge has no way to express.
+
+           EVERY ONE IS PRE-TICKED AND REQUIRED. PERMISSION_CHECKBOX is invalid when it is
+           not checked, so an untouched box blocks the submit: that is the engine's rule
+           rather than a choice here, and it is why they start ticked.
+
+           EACH HAS ITS OWN MESSAGE SPAN, IN THIS ORDER, AND THAT IS LOAD BEARING. The
+           handler walks [data-dn-id] and [data-dn-invalid-message-type] together BY INDEX,
+           so seven fields need seven spans in the matching order. Add a field without its
+           span and every message after it belongs to the wrong input.
+           factory/checks/creative.js section 3 prints the pairing and says "aligned". -->
       <div class="perm">
-        <!-- mergedPermission expands to emailPermission AND gsmPermission, so one
-             checkbox sets both. WhatsApp permission is not part of this contract:
-             see the note in factory/creatives/README.md. -->
-        <input type="checkbox" id="dnf-perm" checked
-               data-dn-id="mergedPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
-        <label for="dnf-perm">Yes, contact me with offers and updates. I can unsubscribe whenever I want.</label>
+        <input type="checkbox" id="dnf-perm-email" checked
+               data-dn-id="emailPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
+        <label for="dnf-perm-email">Email me offers and updates</label>
+      </div>
+      <div class="perm">
+        <input type="checkbox" id="dnf-perm-sms" checked
+               data-dn-id="gsmPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
+        <label for="dnf-perm-sms">Text me offers and updates</label>
+      </div>
+      <div class="perm">
+        <input type="checkbox" id="dnf-perm-whatsapp" checked
+               data-dn-id="whatsappPermission" data-dn-type="PERMISSION_CHECKBOX" data-dn-required="true">
+        <label for="dnf-perm-whatsapp">Message me on WhatsApp</label>
       </div>
       <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
-      <p class="channels">Applies to email and SMS.</p>
+      <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
+      <span data-dn-invalid-message-type="PERMISSION_CHECKBOX"></span>
+      <p class="channels">You can unsubscribe from any of these whenever you want.</p>
+
+      <p class="engine-missing">This form cannot be submitted right now. The engine's form
+        handler did not load into this creative, so there is nothing to send the details to.
+        See factory/creatives/README.md.</p>
 
       <!-- type="button", not submit: the engine's handler runs on this click.
            sendClick reports the click so the campaign report shows engagement
@@ -401,7 +443,7 @@
            Closing in the same handler dismisses the card before the post
            completes and the contact is never created. -->
       <button type="button" class="send"
-              onclick="Dn.sendClick('subscription-popup__subscribe');Dn.postSubscription()">
+              onclick="var f=document.getElementById('dnf-sub');if(typeof Dn.postSubscription!=='function'){f.setAttribute('data-dn-engine','absent');return;}Dn.postSubscription();if(f.querySelector('[data-dn-invalid=&quot;true&quot;]')){return;}Dn.sendClick('subscription-popup__subscribe');">
         Create account
       </button>
 
