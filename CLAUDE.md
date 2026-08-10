@@ -233,6 +233,7 @@ report what you found and what you would remove. Then stop and ask.
 | handoff §5.3 | **before copying any module out of `seed/`.** The most consequential section in the document |
 | handoff §12 | before "fixing" anything that looks oddly indirect. Ten traps, every one already paid for |
 | handoff §14 | what is blocked on Salil, and what is settled and must not be reopened |
+| `factory/panel/content/_dynamic/README.md` | **before writing any Dynamic Content asset, for any channel.** Its "Writing the next scenario" section is the reusable half: six steps, of which a new scenario changes two, and eight facts about the template engine that were each found by a failed send rather than by reading. None of it is in Dengage's documentation, so it exists nowhere else |
 
 ---
 

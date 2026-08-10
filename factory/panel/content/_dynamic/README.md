@@ -27,10 +27,81 @@ this repository mark that spot.
 | `abandoned-cart.txt` | Plain Text | **four channels.** SMS, WhatsApp, push copy, and the email's subject line and preheader. See below |
 | `recommendations.html` | HTML | email. The storefront's own recommendation rail |
 | `cart.test.mjs` | test | CI. Not pasted into the panel |
-| `_diagnostic.html` | HTML | a throwaway asset for reading what a send can actually see |
+| `_diagnostic.html` | HTML | a throwaway asset for reading what an email send can actually see |
+| `_diagnostic.txt` | Plain Text | the same, for a channel that carries no markup. Fits one SMS |
 
 Same query in all of them. Only the rendering differs, which is the point of one asset
 per scenario rather than one per channel.
+
+## Writing the next scenario, which is the same six steps with one table swapped
+
+**Read this before writing a new asset.** Salil, 10 August 2026: the same logic is wanted for
+other scenarios, and none of what follows should have to be worked out twice. Every asset in
+this folder opens with the same resolution block, and only two of its six steps are about
+abandoned carts at all.
+
+| Step | Changes per scenario? |
+|---|---|
+| 1. Build the key set: `contact_key`, plus every `device_id` in `master_device` for that contact | no |
+| 2. Read the scenario's event table, `where('key', 'in', keys)` | **the table** |
+| 3. Sort in JavaScript, by `event_date` and then by `id` | no |
+| 4. Scope to one demo: session ids to `page_view_events` to the slug in `page_url`, keep the newest row's demo, filter | no |
+| 5. Fold the events into a current state | **the fold** |
+| 6. Look the products up in `dps_product`, render | no |
+
+So a new scenario is steps 2 and 5. Copy any asset here, change the table and the fold, and
+the rest is already right and already tested.
+
+**Step 1 is not optional and is the one most likely to be dropped.** A demo visitor is
+anonymous until they identify, so their events land under a device id and not under the
+contact key. An asset that queries `where('key', '=', contact_key)` alone finds nothing for
+most contacts and renders its fallback, which looks like an empty basket rather than a bug.
+
+**Step 4 is not optional either, and it runs before step 5.** Every demo is served from one
+origin, so one device id carries the events of every demo that browser ever visited, and
+there is no demo column to filter on: columns cannot be added to the six standard tables.
+Scoping after the fold is worse than not scoping, because another demo's `delete_cart` will
+empty a basket that was not its own.
+
+Which table each scenario reads:
+
+| Scenario | Table | The fold |
+|---|---|---|
+| Abandoned cart | `shopping_cart_events` | add, remove, and `delete_cart` empties |
+| Abandoned search | `search_events` | the newest term with no order after it |
+| Wishlist reminder | `wishlist_events` | add and remove |
+| Browse abandonment | `page_view_events` | product ids, newest first, deduplicated |
+| Post purchase | `order_events`, `order_events_detail` | the newest order's lines |
+| Price drop, back in stock | any id set above, then `dps_product` | compare the stored price to the current one |
+
+`recommendations.html` already does the browse abandonment fold, so it is the second worked
+example and the one to copy for anything anchored on views rather than on a basket.
+
+### The eight things that cost a day each, none of them documented anywhere else
+
+Every one was found by a failed send rather than by reading, which is why they are here.
+
+| | |
+|---|---|
+| The contact key column on an event table is **`key`**, not `contact_key` | `contact_key` gives `42703: column does not exist`. `master_device` is the exception: there it really is `contact_key` |
+| `$from` offers **`.where()`, `.take()`, `.get()`** and nothing else | no ordering, no aggregation, no `like`. Anything else is a `TypeError` at send time |
+| So **sorting happens in JavaScript**, always | and `take(n)` returns SOME n rows rather than the newest n, which is why `cart.test.mjs` hands the block its rows reversed |
+| Rows inside the same second **share `event_date`** | tie break on `id` or an add and a remove resolve in random order. This shipped |
+| An output tag closes with a bare **`%}`** | a trailing `=` gives `SyntaxError: Unexpected token` |
+| **No comments inside `{% %}`** | the block is parsed as JavaScript and a comment was the first SyntaxError this project hit |
+| Only **`=`** and **`in`** are verified operators | a consequence of the three method surface |
+| A snippet id is a **UUID**, not the integer the documentation shows | the docs say `snippet_id="8835"`; the panel issues `5178aafe-...` |
+
+### And two rules from CLAUDE.md that bite hardest here
+
+**Never invent a number.** `Number(null)` is `0`, so one product with no price makes a total
+look cheaper and entirely plausible. Suppress the whole block instead. `abandoned-cart-total.html`
+is the worked example, and it suppresses on four separate conditions.
+
+**Test it by running it.** The resolution block is ordinary JavaScript apart from `$from`, so
+`cart.test.mjs` lifts it off disk, stubs `$from` with only the three real methods, and runs it
+against a synthetic event log. A new asset gets a `resolver()` line and its own scenarios, and
+that is the difference between a defect found in a minute and one found on a call.
 
 ## One line, four channels, and that is the whole reason it is a separate asset
 
@@ -68,6 +139,54 @@ from the template's side in `factory/emails/beefree.test.mjs`.
 **The sentence around it belongs to the channel, not to the asset.** SMS wants the bare
 phrase and only the email wants a comma after it, so the asset stays a phrase and the
 template supplies the rest. Which is only possible because of the paragraph above.
+
+## "Please add variables to your template first. No variables found"
+
+**The SMS test dialog says this, and it is not about the snippet.** 10 August 2026, on
+`DPS - Abandoned Cart V1.0`.
+
+That dialog's job is to collect a sample value for **every variable in the template** so it
+can render a preview against one phone number. It scans the body, finds no variables, and
+stops, because it has nothing to ask you for. A **variable** is a placeholder the panel fills
+from a contact column. A **snippet** is a saved asset the panel runs. The dialog counts the
+first kind, so a body containing only a snippet has zero variables and the message is
+literally true.
+
+**It is not a statement about the snippet either way.** It does not mean the tag was
+rejected, and it does not mean the tag will resolve. It means the preview path is gated on
+something a snippet is not.
+
+Two things get past it, and the second is the one that proves anything:
+
+1. **Add one contact variable** from the editor's own personalization list, any one. The
+   dialog then has something to collect and Preview and Test opens. Take it out afterwards
+   or leave it, it does no harm.
+2. **Send a real test message.** A preview means rendered. A received SMS means it works,
+   and the two have already disagreed elsewhere in this project: an HTTP 200 from the event
+   endpoint means accepted, not stored.
+
+**Insert the snippet with the editor's own control rather than by pasting the tag**, at least
+once. Whatever the panel writes into the body is the authoritative form for that channel,
+and it is the only way to find out whether SMS uses the same `<snippet snippet_id="...">`
+form the email does. That is how the email form was pinned down. If it writes something
+different, it goes in this file.
+
+**And keep words around it.** `Still in your basket: ` before the tag costs nothing and means
+a snippet that fails to resolve leaves a short message rather than an empty one. The asset
+itself always emits a phrase, so the only way to get a blank SMS is the tag not running at
+all, which is exactly the case worth surviving.
+
+`_diagnostic.txt` answers the same question from the other side. It is a throwaway Plain Text
+asset that reports what a send can actually see, in one line short enough for one SMS:
+
+```
+dps diagnostic key=DPS-3 devices=1 cart=8 views=26
+```
+
+`key=(none)` means the send has no contact key, so every query returns nothing and any
+scenario asset renders its fallback. `FAILED` means that table refused the query. And if the
+message arrives showing the raw tag instead of any of this, the channel is not resolving
+snippets at all, which is the answer nothing else gives you as plainly.
 
 ## The totals, because a correct product list next to an invented total is worse
 
