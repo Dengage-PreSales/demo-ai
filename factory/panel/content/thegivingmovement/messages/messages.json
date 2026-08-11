@@ -1,0 +1,743 @@
+{
+  "slug": "thegivingmovement",
+  "note": "Panel copy carries live Dengage tags. Paste into the channel content named in each entry.",
+  "journeys": [
+    {
+      "id": "identity",
+      "journey": "Identity capture",
+      "channels": {
+        "webPush": {
+          "title": "Your code is saved",
+          "body": "It is on your account and waiting at checkout. Nothing to remember.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 18,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your code is saved"
+            },
+            {
+              "field": "body",
+              "cost": 67,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "It is on your account and waiting at checkout. Nothing to remember."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Welcome. Your code is inside.",
+          "body": "We have kept your code on your account, so it applies itself at checkout. Here is where to start.",
+          "expiryDays": 7,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 29,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Welcome. Your code is inside."
+            },
+            {
+              "field": "body",
+              "cost": 97,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "We have kept your code on your account, so it applies itself at checkout. Here is where to start."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Spin to Win, or Subscription Popup on exit",
+          "heading": "Take 10 percent off your first order",
+          "body": "Spin once for a code, and we will keep it on your account until you use it.",
+          "cta": "Spin to win",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 36,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Take 10 percent off your first order"
+            },
+            {
+              "field": "body",
+              "cost": 75,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Spin once for a code, and we will keep it on your account until you use it."
+            },
+            {
+              "field": "cta",
+              "cost": 11,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Spin to win"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "checkout",
+      "journey": "Checkout rescue",
+      "channels": {
+        "webPush": {
+          "title": "You were one step away",
+          "body": "Your basket is still saved. Picking up where you left off takes a moment.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/index.html?open=checkout",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 22,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You were one step away"
+            },
+            {
+              "field": "body",
+              "cost": 73,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is still saved. Picking up where you left off takes a moment."
+            }
+          ]
+        },
+        "mobilePush": {
+          "title": "Still want to finish?",
+          "body": "Everything is saved, including your delivery choice.",
+          "subtitle": "Your basket",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/index.html?open=checkout",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 21,
+              "max": 40,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still want to finish?"
+            },
+            {
+              "field": "body",
+              "cost": 52,
+              "max": 110,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Everything is saved, including your delivery choice."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Utility",
+          "messageType": "Blank Content",
+          "header": "Your order is not complete",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Finish checkout",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/index.html?open=checkout"
+            },
+            {
+              "type": "Quick Reply",
+              "label": "Something went wrong"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 26,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Your order is not complete"
+            },
+            {
+              "field": "body",
+              "cost": 206,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, you were one step from finishing and nothing has been lost. Your basket is still saved, and the delivery date is shown before you pay. Reply here if something went wrong at the payment step."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Finish checkout\"",
+              "cost": 15,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Finish checkout"
+            },
+            {
+              "field": "button \"Something went wrong\"",
+              "cost": 20,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Something went wrong"
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Modal, on exit intent at checkout",
+          "heading": "Before you go",
+          "body": "Your basket is saved. Delivery dates and returns are shown before you pay.",
+          "cta": "Finish checkout",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 13,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Before you go"
+            },
+            {
+              "field": "body",
+              "cost": 74,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Your basket is saved. Delivery dates and returns are shown before you pay."
+            },
+            {
+              "field": "cta",
+              "cost": 15,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Finish checkout"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "cart",
+      "journey": "Cart abandonment",
+      "channels": {},
+      "blocked": "no column for this value on shopping_cart_events. factory/phase0/SCHEMA.md lists what the table has. Product names are in no table: Product Box resolves them from the product feed, see factory/panel/REFERENCE.md"
+    },
+    {
+      "id": "browse",
+      "journey": "Browse abandonment",
+      "channels": {
+        "webPush": {
+          "title": "Still looking at {% var r = $from('$db.page_view_events').where('key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 24 ? r[0].category_path.substring(0, 21) + \"...\" : r[0].category_path %}{% } else { %}these{% } %}?",
+          "body": "The one you spent time with is still there, along with a few alternatives.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 31,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still looking at valueProducts?"
+            },
+            {
+              "field": "body",
+              "cost": 74,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The one you spent time with is still there, along with a few alternatives."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "The one you were looking at",
+          "body": "Still available, and the alternatives underneath are what other shoppers compared it against.",
+          "expiryDays": 5,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 27,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The one you were looking at"
+            },
+            {
+              "field": "body",
+              "cost": 93,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Still available, and the alternatives underneath are what other shoppers compared it against."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Inline Personalization, on the home page",
+          "heading": "Pick up where you left off",
+          "body": "The things you looked at last time, and a few close alternatives.",
+          "cta": "Keep looking",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 26,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Pick up where you left off"
+            },
+            {
+              "field": "body",
+              "cost": 65,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The things you looked at last time, and a few close alternatives."
+            },
+            {
+              "field": "cta",
+              "cost": 12,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Keep looking"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "search",
+      "journey": "Failed search recovery",
+      "channels": {
+        "webPush": {
+          "title": "Back in stock",
+          "body": "The {% var r = $from('$db.search_events').where('key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 55 ? r[0].keywords.substring(0, 52) + \"...\" : r[0].keywords %}{% } else { %}item you searched for{% } %} you looked for is available again.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 13,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Back in stock"
+            },
+            {
+              "field": "body",
+              "cost": 49,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The valuevalue you looked for is available again."
+            }
+          ]
+        },
+        "inbox": {
+          "title": "What you searched for is back",
+          "body": "You looked for {% var r = $from('$db.search_events').where('key', '=', $Contact.contact_key).take(10).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 1); %}{% if (r.length && r[0].keywords) { %}{%= r[0].keywords.length > 60 ? r[0].keywords.substring(0, 57) + \"...\" : r[0].keywords %}{% } else { %}this{% } %} when we had none. It is back, and a return like this can go quickly.",
+          "expiryDays": 3,
+          "priority": 2,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 29,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "What you searched for is back"
+            },
+            {
+              "field": "body",
+              "cost": 94,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You looked for valuevalue when we had none. It is back, and a return like this can go quickly."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Product Box, on the empty results page",
+          "heading": "Nothing for that search",
+          "body": "Here is what is popular in the section you were browsing instead.",
+          "cta": "Browse these",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 23,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Nothing for that search"
+            },
+            {
+              "field": "body",
+              "cost": 65,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Here is what is popular in the section you were browsing instead."
+            },
+            {
+              "field": "cta",
+              "cost": 12,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Browse these"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "wishlist",
+      "journey": "Wishlist triggers",
+      "channels": {},
+      "blocked": "no column for this value on wishlist_events. factory/phase0/SCHEMA.md lists what the table has. Product names are in no table: Product Box resolves them from the product feed, see factory/panel/REFERENCE.md"
+    },
+    {
+      "id": "basket",
+      "journey": "Basket building",
+      "channels": {
+        "inbox": {
+          "title": "Goes with your order",
+          "body": "A few things people usually add alongside what you just bought.",
+          "expiryDays": 7,
+          "priority": 4,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 20,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Goes with your order"
+            },
+            {
+              "field": "body",
+              "cost": 63,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "A few things people usually add alongside what you just bought."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Product Box, on the product and cart pages",
+          "heading": "Often bought together",
+          "body": "The things people usually add alongside this one.",
+          "cta": "Add to basket",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 21,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Often bought together"
+            },
+            {
+              "field": "body",
+              "cost": 49,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "The things people usually add alongside this one."
+            },
+            {
+              "field": "cta",
+              "cost": 13,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Add to basket"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "replenish",
+      "journey": "Replenishment",
+      "channels": {},
+      "blocked": "no column for this value on order_events_detail. factory/phase0/SCHEMA.md lists what the table has. Product names are in no table: Product Box resolves them from the product feed, see factory/panel/REFERENCE.md"
+    },
+    {
+      "id": "rfm",
+      "journey": "RFM lifecycle",
+      "channels": {
+        "webPush": {
+          "title": "Yours first",
+          "body": "Early access is open to you a day before everyone else. No code needed.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 11,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Yours first"
+            },
+            {
+              "field": "body",
+              "cost": 71,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access is open to you a day before everyone else. No code needed."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Blank Content",
+          "header": "Text",
+          "headerText": "Early access",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you.",
+          "footer": "Reply STOP to opt out",
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "Shop early access",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 159,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, you are in the first group to see this, a day before it opens to everyone. No code and nothing to enter: the link below is already open to you."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"Shop early access\"",
+              "cost": 17,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Shop early access"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Early access, before anyone else",
+          "body": "You are one of our most regular customers, so this opens for you first. Nothing to enter.",
+          "expiryDays": 2,
+          "priority": 1,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 32,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access, before anyone else"
+            },
+            {
+              "field": "body",
+              "cost": 89,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You are one of our most regular customers, so this opens for you first. Nothing to enter."
+            }
+          ]
+        },
+        "onsite": {
+          "template": "Image Bar, for the top of the page",
+          "heading": "Early access is open to you",
+          "body": "You are in the first group to see this, a day before everyone else.",
+          "cta": "Shop early access",
+          "checks": [
+            {
+              "field": "heading",
+              "cost": 27,
+              "max": 48,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Early access is open to you"
+            },
+            {
+              "field": "body",
+              "cost": 67,
+              "max": 140,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "You are in the first group to see this, a day before everyone else."
+            },
+            {
+              "field": "cta",
+              "cost": 17,
+              "max": 24,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Shop early access"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "winback",
+      "journey": "Win-back",
+      "channels": {
+        "webPush": {
+          "title": "A few things changed",
+          "body": "New ranges in {% var r = $from('$db.page_view_events').where('key', '=', $Contact.contact_key).take(30).get().sort(function (a, b) { return new Date(b['event_date']) - new Date(a['event_date']); }).slice(0, 3); %}{% if (r.length && r[0].category_path) { %}{%= r[0].category_path.length > 30 ? r[0].category_path.substring(0, 27) + \"...\" : r[0].category_path %}{% } else { %}your categories{% } %}, and your saved items are still saved.",
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 20,
+              "max": 50,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "A few things changed"
+            },
+            {
+              "field": "body",
+              "cost": 66,
+              "max": 120,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "New ranges in valueProducts, and your saved items are still saved."
+            }
+          ]
+        },
+        "sms": {
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, it has been a while. New ranges are in at Thegivingmovement, and your saved items are still saved: {{shortlink}} Reply {{unsubscribe-link}} to opt out.",
+          "senderName": "Thegivingmovement",
+          "checks": [
+            {
+              "field": "body",
+              "cost": 180,
+              "max": 400,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "Hi Christopher, it has been a while. New ranges are in at Thegivingmovement, and your saved items are still saved: https://dng.link/abcdef Reply https://dng.link/abcdef to opt out."
+            }
+          ]
+        },
+        "whatsapp": {
+          "category": "Marketing",
+          "messageType": "Copy Coupon",
+          "header": "Text",
+          "headerText": "Since you were last here",
+          "body": "Hi {% if ($Contact.first_name) { %}{%= $Contact.first_name %}{% } else { %}there{% } %}, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it.",
+          "footer": "Reply STOP to opt out",
+          "coupon": true,
+          "buttons": [
+            {
+              "type": "Visit Website",
+              "label": "See what is new",
+              "url": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/"
+            }
+          ],
+          "checks": [
+            {
+              "field": "header",
+              "cost": 4,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Text"
+            },
+            {
+              "field": "body",
+              "cost": 219,
+              "max": 1024,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Hi Christopher, rather than send you a code for nothing, here is what is actually different: new ranges in the categories you used to buy from, and your saved items are untouched. The code below is yours if you want it."
+            },
+            {
+              "field": "footer",
+              "cost": 21,
+              "max": 60,
+              "source": "meta",
+              "over": false,
+              "resolvedTo": "Reply STOP to opt out"
+            },
+            {
+              "field": "button \"See what is new\"",
+              "cost": 15,
+              "max": 25,
+              "source": "dengage",
+              "over": false,
+              "resolvedTo": "See what is new"
+            }
+          ]
+        },
+        "inbox": {
+          "title": "Since you were last here",
+          "body": "New ranges in the categories you used to buy from, and everything you saved is still exactly where you left it.",
+          "expiryDays": 7,
+          "priority": 3,
+          "targetUrl": "https://dengage-presales.github.io/demo-ai/demos/thegivingmovement/",
+          "checks": [
+            {
+              "field": "title",
+              "cost": 24,
+              "max": 60,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "Since you were last here"
+            },
+            {
+              "field": "body",
+              "cost": 111,
+              "max": 220,
+              "source": "client",
+              "over": false,
+              "resolvedTo": "New ranges in the categories you used to buy from, and everything you saved is still exactly where you left it."
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
