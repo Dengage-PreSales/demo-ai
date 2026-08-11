@@ -1,0 +1,16 @@
+# The nightly drill list. One website address per line, comments start with #.
+#
+# Every address here gets a full practice build every night: scrape, theme,
+# images, guard, smoke test, on the same runners and the same steps as a real
+# request, and then the result is thrown away. Nothing is published, nothing is
+# committed, no issue is opened for a colleague, and Supabase never hears about
+# it, because the sync only reads demos that are actually published.
+#
+# The point is that the factory finds its own faults before a salesperson does.
+# Three real defects shipped on 11 August 2026 that only showed on the real
+# runners, because until then the pipeline was only ever exercised by a real
+# request from a real colleague.
+#
+# Add a couple of stores whose shapes differ: one Shopify, one rendered SPA,
+# one plain HTML store. A failed drill opens an issue labelled "drill" with the
+# evidence attached.

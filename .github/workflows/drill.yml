@@ -1,0 +1,179 @@
+name: Drill
+
+# THE NIGHTLY PRACTICE BUILD. Every address in factory/checks/drill-sites.txt is
+# built end to end, exactly the way a real request is built, and the result is
+# discarded. Nothing publishes, nothing commits, nobody is asked to look at
+# anything unless it FAILED.
+#
+# WHY IT EXISTS. Until 11 August 2026 the pipeline was only ever exercised by a
+# real request from a real colleague, so a colleague was always the first to
+# meet a fault. Three shipped that day, and every one of them was invisible in
+# the sandbox where the code was written: an npm install pruning another, a
+# verifier judging demos by a third party's errors, and a race against the SDK
+# on runners that could reach it. All three would have surfaced here first.
+#
+# WHAT IT DELIBERATELY DOES NOT DO:
+#   - it never pushes, so no drill demo can reach GitHub Pages
+#   - it never touches Supabase, and needs no secret: the product sync reads
+#     PUBLISHED demos off the live site, and a drill never publishes
+#   - it never comments on anybody's request issue. Its only voice is an issue
+#     it opens itself, labelled drill, when a build fails
+#
+# An empty site list is a quiet success, so this file can ship before the list
+# is chosen and simply starts working the evening somebody fills it in.
+
+on:
+  schedule:
+    # 01:30 UTC, 07:00 in India, so the answer is waiting when the day starts.
+    - cron: '30 1 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: drill
+  cancel-in-progress: false
+
+jobs:
+  drill:
+    name: Practice build, discarded
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Read the site list
+        id: sites
+        run: |
+          set -euo pipefail
+          LIST=$(grep -vE '^\s*(#|$)' factory/checks/drill-sites.txt || true)
+          if [ -z "$LIST" ]; then
+            echo "The drill list is empty, so there is nothing to practise on."
+            echo "Add addresses to factory/checks/drill-sites.txt, one per line."
+            echo "empty=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "empty=false" >> "$GITHUB_OUTPUT"
+            printf '%s\n' "$LIST"
+          fi
+
+      # The same install the real build performs, from the same lockfile, so a
+      # dependency fault fails the drill tonight instead of a request tomorrow.
+      - name: Install Playwright and the AMP validator
+        if: steps.sites.outputs.empty == 'false'
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          node -e "require.resolve('playwright'); require.resolve('amphtml-validator')"
+
+      - name: Image and render pipeline self test
+        if: steps.sites.outputs.empty == 'false'
+        run: |
+          node factory/scrape/images.test.mjs
+          node factory/scrape/render.test.mjs
+
+      # One build per listed site, sequentially, with the same three gates a
+      # real request passes: generate, guard, smoke. The loop keeps going after
+      # a failure so one broken store does not hide what the next one finds,
+      # and the step fails at the end if anything failed.
+      - name: Build every listed site, and throw the results away
+        if: steps.sites.outputs.empty == 'false'
+        run: |
+          set -uo pipefail
+          FAILED=0
+          mkdir -p /tmp/drill
+          N=0
+          while IFS= read -r URL; do
+            N=$((N + 1))
+            echo ""
+            echo "=============================================================="
+            echo "Drill $N: $URL"
+            echo "=============================================================="
+            REPORT="/tmp/drill/report-$N.json"
+            if ! node factory/generate-demo.mjs --url "$URL" --json "$REPORT"; then
+              echo "DRILL FAILED at generation: $URL"
+              FAILED=1
+              continue
+            fi
+            SLUG=$(node -e "console.log(require('$REPORT').slug)")
+            if ! ./factory/guard/run.sh; then
+              echo "DRILL FAILED at the guard: $URL (demos/$SLUG)"
+              FAILED=1
+              cp -r "demos/$SLUG" "/tmp/drill/failed-$SLUG" 2>/dev/null || true
+              rm -rf "demos/$SLUG"
+              continue
+            fi
+            python3 -m http.server 8101 --directory . >/dev/null 2>&1 &
+            SERVER=$!
+            for _ in $(seq 1 20); do
+              curl -sf -o /dev/null "http://localhost:8101/demos/$SLUG/index.html" && break
+              sleep 0.5
+            done
+            if ! node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"; then
+              echo "DRILL FAILED at the smoke test: $URL (demos/$SLUG)"
+              FAILED=1
+              cp -r "demos/$SLUG" "/tmp/drill/failed-$SLUG" 2>/dev/null || true
+            fi
+            kill $SERVER 2>/dev/null || true
+            # Discarded on success and on failure alike: the workspace dies with
+            # the runner, and nothing here ever reaches a git push.
+            rm -rf "demos/$SLUG"
+          done <<EOF
+          $(grep -vE '^\s*(#|$)' factory/checks/drill-sites.txt)
+          EOF
+          exit $FAILED
+
+      - name: Keep the evidence
+        if: failure()
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: drill-evidence
+          path: /tmp/drill
+          retention-days: 7
+
+      # The one thing a failed drill is allowed to say out loud. A fresh issue
+      # per failing night, labelled drill, so it lands in the same inbox the
+      # run-failed emails already reach and nobody has to watch the Actions tab.
+      - name: Open an issue about the failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: label } = await github.rest.issues.listLabelsForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, per_page: 100
+            }).then((r) => ({ data: r.data.find((l) => l.name === 'drill') }))
+            if (!label) {
+              await github.rest.issues.createLabel({
+                owner: context.repo.owner, repo: context.repo.repo,
+                name: 'drill', color: 'B60205',
+                description: 'The nightly practice build failed'
+              })
+            }
+            const runUrl = context.serverUrl + '/' + context.repo.owner + '/'
+              + context.repo.repo + '/actions/runs/' + context.runId
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: 'Drill failed: ' + new Date().toISOString().slice(0, 10),
+              labels: ['drill'],
+              body: [
+                'The nightly practice build failed, which means a real request would',
+                'have failed the same way. Nothing was published and no demo was',
+                'affected: that is the point of the drill.',
+                '',
+                'The run log and the failed build are here, with the demo folder',
+                'attached as an artifact for seven days:',
+                '',
+                runUrl,
+                '',
+                '---',
+                '_Generated by [Claude Code](https://claude.ai/code)_'
+              ].join('\n')
+            })
