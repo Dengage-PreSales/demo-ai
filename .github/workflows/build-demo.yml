@@ -441,6 +441,41 @@ jobs:
           done
           node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"
 
+      # KEEP THE EVIDENCE WHEN A BUILD FAILS, because until 11 August 2026 it was
+      # thrown away and that cost two full diagnostic rounds in a row.
+      #
+      # A demo that fails verification is never pushed, which is correct, and it
+      # also means the only artefact that could explain the failure is deleted
+      # with the runner. The smoke test prints one line per assertion, so a
+      # failure reads "home is clean <[...]>" and nothing else survives to
+      # reproduce it against. Every store is different, and the ones that fail
+      # are by definition the ones no committed demo resembles.
+      #
+      # The folder is the prospect's public product names and pictures, in a
+      # repository that is already public, and demo.config.json names the same
+      # sandbox application every committed demo names. So this exposes nothing
+      # that publishing the demo would not, which is the whole intent anyway.
+      - name: Keep the failed demo for diagnosis
+        if: failure() && steps.generate.outputs.outcome == 'built'
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)" 2>/dev/null || echo unknown)
+          mkdir -p /tmp/evidence
+          [ -d "demos/$SLUG" ] && cp -r "demos/$SLUG" /tmp/evidence/
+          [ -f /tmp/report.json ] && cp /tmp/report.json /tmp/evidence/
+          echo "$SLUG" > /tmp/evidence/SLUG.txt
+          du -sh /tmp/evidence
+
+      - name: Upload the failed demo
+        if: failure() && steps.generate.outputs.outcome == 'built'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: failed-demo
+          path: /tmp/evidence
+          retention-days: 7
+
       # ------------------------------------------------------------------ push
       - name: Publish
         id: publish
