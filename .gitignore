@@ -1,5 +1,13 @@
-# Playwright, installed on demand by factory/checks/run.sh. It is a test
-# dependency of the checks and never something a demo loads, so it stays out of a
-# repository whose whole job is to be served as static files.
+# Node packages, installed from package.json. Test and build dependencies of the
+# factory, never something a demo loads, so they stay out of a repository whose
+# whole job is to be served as static files.
+#
+# THE LOCKFILE IS COMMITTED, AND THAT IS THE POINT OF IT. There is a package.json
+# now because there deliberately was not one before, and the absence had a cost:
+# with no manifest, every install was --no-save, and npm treats a --no-save
+# install as the complete intended contents of node_modules, pruning whatever the
+# command did not name. Two install steps in the build workflow removed each
+# other's packages in turn, and the failure surfaced three steps later inside a
+# test about photographs. A manifest plus a lockfile plus npm ci is the shape
+# where that cannot happen.
 node_modules/
-package-lock.json

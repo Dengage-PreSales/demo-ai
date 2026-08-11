@@ -329,6 +329,16 @@ denylist that missed `onsite_events`, and a dash check whose regex silently
 errored under a non-UTF-8 locale and reported every file clean. Any check that
 can fail open needs a test that would catch it failing open.
 
+**A comment that states a fact about the environment is enforced by code, or it
+is deleted.** Added 11 August 2026, after "the SDK loader is unreachable from
+CI" sat in the smoke test's header, was read many times, and was false: GitHub's
+runners reach it fine, so the real SDK loaded mid-check, raced the recorder, and
+failed good builds intermittently for a day. It was the root cause, and it was
+never tested because it was written as documentation rather than as an
+assertion. The browser checks now refuse the SDK hosts at launch and assert the
+refusal. When writing or reading a claim like "X cannot happen here", either
+make the code enforce X, or treat the sentence as a bug.
+
 The smoke test in handoff §9 is the acceptance check for a generated demo:
 about thirty seconds, twelve assertions. A generated demo is disposable and
 does not earn a full regression suite. Items 5, 9 and 10 protect the core

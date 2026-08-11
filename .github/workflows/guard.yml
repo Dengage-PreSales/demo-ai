@@ -71,17 +71,22 @@ jobs:
         with:
           node-version: '22'
 
-      # THE OFFICIAL AMP VALIDATOR, for the one AMP for Email sample. Everything else in
-      # this repository runs with no dependency at all, and this is worth the exception:
-      # an AMP email is either valid or the mailbox provider refuses to render it, and no
-      # amount of reading the markup establishes which. The test skips rather than fails
-      # when it is absent, so a machine without it still runs the other 126 assertions.
-      - name: AMP validator
-        # TOLERANT ON PURPOSE. The test skips this one assertion and states that it did
-        # when the package is absent, so an unreachable registry must not fail a job whose
-        # other checks need no network at all.
+      # THE PINNED PACKAGES, from the committed lockfile. The AMP validator is what
+      # this job actually consumes, for the one AMP for Email sample: an AMP email is
+      # either valid or the mailbox provider refuses to render it, and no amount of
+      # reading the markup establishes which. npm ci rather than a bare install of
+      # that one package, because --no-save installs prune whatever they did not
+      # name, which is the bug class that took a build down on 11 August 2026.
+      # Playwright rides along as a package only: the env var stops its postinstall
+      # fetching a browser this job never opens.
+      - name: Install pinned packages
+        # TOLERANT ON PURPOSE. The AMP test skips its one assertion and states that
+        # it did when the package is absent, so an unreachable registry must not fail
+        # a job whose other checks need no network at all.
         continue-on-error: true
-        run: npm install --no-save amphtml-validator
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: npm ci
 
       - name: Generator decisions
         run: node factory/scrape/scrape.test.mjs

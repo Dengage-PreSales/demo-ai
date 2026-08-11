@@ -29,7 +29,13 @@ const T = {
   'pdp-below-price': ['#dn_inline_target_pdp_below_price', 'product.html?id=']
 };
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
+       checks record is always the page's own stub, on every machine. The
+       comment used to claim the CDN was unreachable from the sandbox, which
+       was true here and false on any machine with internet, where the real
+       SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] });
   let bad = 0;
   for (const [n, [sel, suffix]] of Object.entries(T)) {
     const p = await b.newPage({ viewport: { width: 1280, height: 900 } });
@@ -88,7 +94,13 @@ const T = {
     const d = px.join('factory/creatives/inline', n);
     const html = fsx.readFileSync(px.join(d,'html.html'),'utf8');
     const style = fsx.readFileSync(px.join(d,'style.css'),'utf8');
-    const p2 = await (await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' })).newPage();
+    const p2 = await (await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
+       checks record is always the page's own stub, on every machine. The
+       comment used to claim the CDN was unreachable from the sandbox, which
+       was true here and false on any machine with internet, where the real
+       SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] })).newPage();
     await p2.setContent('<style>:root{--ink:#14181b;--muted:#667085;--surface:#fff;--page:#f4f5f7;'
       + '--line:#e5e7eb;--primary:#125cfa;--radius:10px;--tint:#eef3ff;--display-font:system-ui}'
       + 'body{margin:0;padding:16px;font:14px system-ui}</style><style>' + style + '</style>'

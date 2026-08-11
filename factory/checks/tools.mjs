@@ -28,7 +28,13 @@ import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 const srv = spawn('python3', ['-m', 'http.server', '8187'], { stdio: 'ignore' });
 await new Promise(r => setTimeout(r, 1500));
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
+       checks record is always the page's own stub, on every machine. The
+       comment used to claim the CDN was unreachable from the sandbox, which
+       was true here and false on any machine with internet, where the real
+       SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] });
 const ctx = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
 const page = await ctx.newPage();
 const errs = [];

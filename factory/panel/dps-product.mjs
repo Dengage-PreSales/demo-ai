@@ -8,6 +8,13 @@
    Writes factory/panel/content/<slug>/dps_product.csv, ready to import in
    Data Space > Tables > dps_product.
 
+   THE MANUAL FALLBACK, NOT THE PIPELINE, and its output is not committed. Since
+   10 August 2026 dps_product rows travel demos -> Supabase -> Dengage ETL on a
+   ten minute check, with no CSV involved (factory/panel/supabase/README.md).
+   Run this only when that chain is down and a call cannot wait for it, and
+   treat the file as scratch: one demo once had its CSV committed while the
+   other two did not, which read as a defect rather than as history.
+
    WHY THIS EXISTS. No Dengage event table carries a product name or a picture:
    every one identifies a product by product_id and stops (factory/phase0/SCHEMA.md).
    dps_product is what turns an id back into something a person can read, so it is

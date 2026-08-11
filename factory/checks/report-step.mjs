@@ -24,7 +24,7 @@
    posted and no issue is closed: the comment body is printed instead, which is
    also the fastest way to read what an operator will actually be sent.
    ========================================================================== */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -141,7 +141,24 @@ if (!failed) {
         /* Written as escapes rather than as the characters themselves, because the
            repository guard scans committed text for those two code points and a
            check that hunts for them must not smuggle them in. */
-        ['no em or en dash reached the operator', comment && !/[\u2013\u2014]/.test(comment)]
+        ['no em or en dash reached the operator', comment && !/[\u2013\u2014]/.test(comment)],
+        /* EVERY WARNING THE GENERATOR RAISED REACHES THE OPERATOR. A warning
+           computed and then dropped by the comment is the silent thin build all
+           over again, one layer up. */
+        ['every generator warning is in the comment',
+            comment && (report.warnings || []).every((warning) => comment.includes(warning))],
+        /* EVERY PATH THE COMMENT NAMES EXISTS. The comment told every operator to
+           open emails/index.html for as long as the file did not exist, because the
+           sentence was written from memory rather than from disk. Backticked paths
+           are resolved from the repository root, and bare ones against the demo's
+           own panel folder, which is how the comment spells them. */
+        ['every file the comment names exists', comment && (() => {
+            const named = [...comment.matchAll(/`([^`\s]+\.(?:html|json|md|csv))`/g)]
+                .map((match) => match[1]);
+            const roots = ['', 'factory/panel/content/' + report.slug + '/'];
+            return named.every((path) =>
+                roots.some((root) => existsSync(join(ROOT, root + path))));
+        })()]
     ];
     for (const [label, condition] of checks) {
         console.log((condition ? '   ok    ' : '   FAIL  ') + label);

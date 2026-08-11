@@ -239,35 +239,28 @@ jobs:
       # oversized images or none, and no render tier at all) while passing every
       # check in an environment that happened to have a browser. The smoke test
       # further down needs it anyway, so the cost moves rather than grows.
-      # BOTH PACKAGES INSTALL IN ONE npm COMMAND, and that is the whole point of
-      # this step rather than a tidy-up. There is no package.json here, so every
-      # install is --no-save, and npm treats a --no-save install as the complete
-      # intended contents of node_modules: it PRUNES anything already there that
-      # the current command did not name. So installing them one after the other
-      # left whichever went second, and removed the other.
+      # npm ci FROM THE COMMITTED LOCKFILE, and the history of this step is the
+      # argument for it. When the repository had no package.json, every install
+      # was --no-save, npm treated each one as the complete intended contents of
+      # node_modules, and two consecutive installs removed each other's packages.
+      # That took a real build down on 11 August 2026, three steps later, inside
+      # a test about photographs. A manifest, a lockfile and npm ci make the
+      # whole class impossible: one command, one pinned set, no pruning.
       #
-      # THIS TOOK A BUILD DOWN ON 11 AUGUST 2026 and the failure pointed
-      # everywhere except here. Playwright was installed, its browser was
-      # downloaded, and then the AMP validator's own install removed the
-      # playwright package while leaving the browser on disk. The image pipeline
-      # self test failed with "the canvas path is the one that ran: raw-bytes",
-      # which reads like a broken image pipeline rather than a missing package,
-      # and the request that triggered it was never reached at all.
-      #
-      # THE FALLBACK KEEPS WHAT SPLITTING THEM WAS PROTECTING. Playwright is
-      # required, because the motif pass, the hero, the push banners, the render
-      # tier and the smoke test all need a browser. The AMP validator is needed
-      # by one assertion that skips itself and says so, so it must never be able
-      # to take a build down. If the pair cannot be installed, playwright is
-      # installed alone and that assertion skips, which is the same outcome the
-      # continue-on-error step used to give.
+      # The browsers install separately, because playwright's own postinstall
+      # would fetch them during npm ci and the explicit step below is the one
+      # that also installs their system dependencies.
+      # The resolve check is the assertion form of the fix: if this ever stops
+      # yielding both packages, the job fails HERE, at the install, rather than
+      # four steps later in a suite about something else.
       - name: Install Playwright and the AMP validator
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
         run: |
-          npm install --no-save playwright@1.62.1 amphtml-validator \
-            || npm install --no-save playwright@1.62.1
+          npm ci
           npx playwright install --with-deps chromium
-          node -e "require.resolve('playwright')" \
-            && echo "playwright is present after both installs"
+          node -e "require.resolve('playwright'); require.resolve('amphtml-validator')" \
+            && echo "both packages resolve"
 
       # THE PIPELINE PROVES ITSELF BEFORE IT TOUCHES THE PROSPECT'S SITE. These
       # suites are fixture based and quick, and a regression in either one means
@@ -702,6 +695,14 @@ jobs:
                   + ' column.',
                 '')
             }
+            // A THIN BUILD WARNS ABOVE THE TABLE, in the generator's own words.
+            // These are the things a build can lose while every check still
+            // passes: one category, few products, no photographs. An operator
+            // who reads only the first lines of this comment has to meet them
+            // before the numbers, because the numbers all look fine.
+            for (const warning of report.warnings || []) {
+              lines.push('> **Worth knowing before the call.** ' + warning, '')
+            }
             // The images row is arithmetic on the generator's own report, so it
             // is numbers either way: a report from before the row existed reads
             // as zero downloaded, never as an error.
@@ -745,26 +746,41 @@ jobs:
               '| Themed from the store | ' + (themed.length ? themed.join(', ') + paletteHow : 'nothing, so the demo uses the standard palette') + ' |',
               '| Expires | ' + report.expiresAt + ' |',
               '',
-              // WHERE THE PANEL CONTENT IS, SPELT OUT, because it is the one output of
-              // this build that has no address. The storefront has a URL a colleague
-              // can guess; the email set and the message pack sit in the repository
-              // on purpose, since they name panel locations and carry sample data and
-              // have no business on a customer facing origin. Unsaid, they are simply
-              // never found, and the build looks like it only produced a storefront.
-              '**Content to set up in the panel** is committed at '
-                + '`factory/panel/content/' + report.slug + '/`. Open '
-                + '`emails/index.html` and `messages/index.html` from the repository:'
-                + ' each one shows every message rendered with a copy button beside it,'
-                + ' and both open straight from disk with nothing to run.',
-              '',
-              // THE ONE FILE THAT IS UPLOADED RATHER THAN PASTED, so it needs saying
-              // separately: everything else in that folder is copied into a Code
-              // Editor, and this one is imported into the Email Builder instead.
-              'For the **Email Builder**, `emails/beefree-abandoned-cart.json` imports'
-                + ' as an editable template already carrying this demo\'s colours,'
-                + ' typeface and currency, with both Dynamic Content blocks in position.'
-                + ' `emails/beefree-abandoned-cart.preview.html` shows what it looks'
-                + ' like, filled with real products from this catalogue.',
+              // WHERE THE PANEL CONTENT IS, DERIVED FROM WHAT WAS COMMITTED rather
+              // than asserted. Until 11 August 2026 this paragraph told every
+              // operator to open emails/index.html, a file no build has ever
+              // produced, and claimed a per-demo Email Builder template that is in
+              // fact shared. A comment that names files cannot be allowed to name
+              // them from memory: git is asked at comment time, so this paragraph
+              // can only describe what a colleague will actually find.
+              ...(() => {
+                const { execSync } = require('child_process')
+                let panelFiles = []
+                try {
+                  panelFiles = execSync(
+                    'git ls-files "factory/panel/content/' + report.slug + '"',
+                    { encoding: 'utf8' }).split('\n').filter(Boolean)
+                    .map((f) => f.replace('factory/panel/content/' + report.slug + '/', ''))
+                } catch (err) { /* no git here means no claim gets made */ }
+                const viewers = panelFiles.filter((f) => f.endsWith('index.html'))
+                if (!viewers.length) {
+                  return ['**Content to set up in the panel**: this build committed'
+                    + ' nothing demo-specific. The shared set below already covers it.', '']
+                }
+                return ['**Content to set up in the panel** is committed at '
+                  + '`factory/panel/content/' + report.slug + '/`. Open '
+                  + viewers.map((v) => '`' + v + '`').join(' and ')
+                  + ' from the repository: every message is rendered there with a'
+                  + ' copy button beside it, and it opens straight from disk with'
+                  + ' nothing to run.', '']
+              })(),
+              // THE SHARED SET IS SHARED, and saying so here is what stops a
+              // colleague hunting this folder for seven emails that live at account
+              // level. They resolve which demo a shopper was on by themselves.
+              'The seven scenario emails, the Email Builder template and the on-site'
+                + ' creatives are shared by every demo and are already set up once for'
+                + ' the account: they find this demo by its address at send time.'
+                + ' `factory/panel/README.md` is the list of anything still to click.',
               '',
               // SAID CONDITIONALLY, BECAUSE IT WAS PREVIOUSLY SAID ALWAYS. The
               // riopneus comment on 7 August 2026 reported "Themed from the store:

@@ -960,6 +960,21 @@ function ldCategory(product) {
    behaviour stands exactly as it was. */
 const LOCALE_SEGMENT = /^[a-z]{2}([-_][a-z]{2,3})?$/i;
 
+/* A CONTAINER THAT NAMES ITS SHAPE IS NOT A CATEGORY. Added 11 August 2026,
+   after a Shopify-style store shipped with every product filed under
+   "Products": its addresses were /products/<slug>, the first segment had
+   something beneath it, so the rule above declared the word a category. The
+   rule was right for /glasses/spectus.html and wrong here, because these words
+   describe the store's routing rather than its taxonomy. The set errs small on
+   purpose: a word wrongly listed here costs one recoverable category, a word
+   wrongly missing invents a navigation entry every visitor can see. */
+const GENERIC_HEAD = new Set([
+    'product', 'products', 'prod', 'collection', 'collections',
+    'category', 'categories', 'shop', 'store', 'item', 'items',
+    'catalog', 'catalogue', 'buy', 'goods',
+    'page', 'pages', 'blog', 'blogs', 'news'
+]);
+
 function pathCategory(pageUrl) {
     if (!pageUrl) return '';
     let parsed;
@@ -978,8 +993,158 @@ function pathCategory(pageUrl) {
        is not a category however it is positioned. */
     if (head.length < 3 || head.length > 28) return '';
     if (/\d{3,}/.test(head)) return '';
+    if (GENERIC_HEAD.has(head.toLowerCase())) return '';
 
     return clean(head.replace(/[-_]+/g, ' '));
+}
+
+/* -------------------------------------------------------------------------- */
+/* Categories from the store's own collection pages                            */
+
+/* THE STORE'S TAXONOMY IS PUBLISHED, JUST NOT ON THE PRODUCT PAGE. Added
+   11 August 2026, after thegivingmovement.com shipped with one category.
+
+   Its sitemap held 217 collection pages named bottoms-men, crop-tops-womens and
+   hoodies-and-sweatshirts-kids, and every one of them lists the products it
+   contains as ordinary links. The product pages themselves carried JSON-LD with
+   no category at all, and their addresses all began /products/, which
+   pathCategory now correctly refuses. So the whole catalogue collapsed into one
+   bucket while the real structure sat one fetch away.
+
+   This pass reads that structure. It runs only when the product pages left at
+   least half the catalogue uncategorised, because a store that names its
+   categories in its markup has already answered and a second opinion from
+   merchandising pages would be worse: schema.org category is curated taxonomy,
+   collection membership includes every promotional shelf a product sits on.
+
+   THE MOST SPECIFIC COLLECTION WINS. A store files one garment under Apparel,
+   Bottoms and Bottoms Men all at once. The collection with the fewest members
+   is the one that says the most about the product, so it is the one used. Ties
+   break alphabetically so two runs of the same build agree.
+
+   WHAT IT REFUSES TO GUESS. A collection whose slug is the whole store
+   (all, all-products, frontpage) contributes nothing. A store whose collection
+   pages render client side yields no links here, the pass finds nothing, and
+   the demo degrades exactly as before to All products, now with a warning in
+   the report rather than silence. */
+const COLLECTION_PATH = /\/(collections?|categor(?:y|ies))\/[^/?#]+\/?$/i;
+const GENERIC_COLLECTION = new Set(['all', 'all-products', 'frontpage', 'shop-all']);
+const COLLECTION_FANOUT = 60;   /* collection pages to read, sitemap order */
+const COLLECTION_TARGET = 400;  /* collection addresses worth collecting */
+
+/* The last path segment, which is a product's identity on every store shaped
+   like this (see oneUrlPerProduct) and a collection's name in its address. */
+function lastSegment(url) {
+    let parsed;
+    try { parsed = new URL(url); } catch (err) { return ''; }
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    if (!segments.length) return '';
+    return segments[segments.length - 1].replace(/\.(html?|php|aspx?)$/i, '').toLowerCase();
+}
+
+/* Walks the same sitemaps sitemapProductUrls walks, keeping collection pages
+   instead. The index children are opened in the OPPOSITE preference order:
+   scoreSitemap marks category sitemaps down because product reads must not
+   drown in listing pages, and here the listing pages are the point. */
+async function sitemapCollectionUrls(origin) {
+    const parsed = await robots(origin);
+    const roots = parsed.sitemaps.length ? parsed.sitemaps : [origin + '/sitemap.xml'];
+
+    const seen = new Set();
+    const found = [];
+    const queue = roots.slice(0, SITEMAP_FANOUT + 1);
+
+    while (queue.length && found.length < COLLECTION_TARGET) {
+        const next = queue.shift();
+        if (!next || seen.has(next)) continue;
+        seen.add(next);
+
+        const result = await readSitemap(next);
+        if (!result) continue;
+
+        if (result.isIndex) {
+            const nested = result.urls
+                .slice()
+                .sort((a, b) => scoreSitemap(a) - scoreSitemap(b));
+            for (const child of nested.slice(0, SITEMAP_FANOUT)) {
+                if (!seen.has(child)) queue.push(child);
+            }
+            continue;
+        }
+        found.push(...result.urls.filter((url) => COLLECTION_PATH.test(url)));
+    }
+    return found.slice(0, COLLECTION_FANOUT);
+}
+
+/* Every href on a collection page that looks like a product, resolved against
+   where the page really came from. A regex over the raw HTML rather than a DOM,
+   which is the same trade the rest of this file makes: these pages are read for
+   their links, not their structure. */
+function productLinksIn(html, pageUrl) {
+    const keys = new Set();
+    const pattern = /href\s*=\s*("([^"]*)"|'([^']*)')/gi;
+    let match;
+    while ((match = pattern.exec(html))) {
+        const raw = match[2] !== undefined ? match[2] : match[3];
+        if (!raw) continue;
+        let resolved;
+        try { resolved = new URL(raw, pageUrl).toString(); } catch (err) { continue; }
+        if (!looksLikeProduct(resolved)) continue;
+        const key = lastSegment(resolved);
+        if (key) keys.add(key);
+    }
+    return keys;
+}
+
+/* Reads the collection pages and answers: for this product page slug, what is
+   the most specific collection that lists it. */
+async function collectionCategories(origin) {
+    const urls = await sitemapCollectionUrls(origin);
+    if (!urls.length) return { byProduct: new Map(), pagesRead: 0 };
+
+    /* slug -> { name, members: Set of product keys } */
+    const collections = new Map();
+    let pagesRead = 0;
+
+    let cursor = 0;
+    async function worker() {
+        while (cursor < urls.length) {
+            const url = urls[cursor++];
+            const slug = lastSegment(url);
+            if (!slug || GENERIC_COLLECTION.has(slug)) continue;
+
+            const page = await get(url, 'text/html');
+            if (!page.ok) continue;
+            pagesRead++;
+
+            const members = productLinksIn(page.body, page.url || url);
+            if (!members.size) continue;
+
+            const existing = collections.get(slug);
+            if (existing) {
+                for (const key of members) existing.members.add(key);
+            } else {
+                collections.set(slug, {
+                    name: clean(slug.replace(/[-_]+/g, ' ')),
+                    members
+                });
+            }
+        }
+    }
+    await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
+
+    /* Most specific wins: fewest members, then alphabetical, so the answer is
+       the same on every run of the same build. */
+    const ranked = [...collections.values()]
+        .sort((a, b) => a.members.size - b.members.size || a.name.localeCompare(b.name));
+
+    const byProduct = new Map();
+    for (const collection of ranked) {
+        for (const key of collection.members) {
+            if (!byProduct.has(key)) byProduct.set(key, collection.name);
+        }
+    }
+    return { byProduct, pagesRead };
 }
 
 /* schema.org lets any of these be a bare string or an object with a name, and
@@ -1221,6 +1386,12 @@ async function jsonld(origin) {
     /* A fixed small pool rather than Promise.all over every URL. A prospect's
        site is not a load test target, and a burst is the thing most likely to
        turn a readable site into a 429. */
+    /* Which page each product came from, by the page's own slug, so the
+       collections pass below can say which collections list it. Keyed by the
+       product OBJECT rather than its id, because two pages can legitimately
+       yield rows sharing an id before dedupe runs. */
+    const pageKey = new Map();
+
     let cursor = 0;
     async function worker() {
         while (cursor < urls.length && names.size < PRODUCT_CAP * 2) {
@@ -1237,6 +1408,7 @@ async function jsonld(origin) {
             for (const product of extracted.products) {
                 names.add(product.name.toLowerCase());
                 found.push(product);
+                pageKey.set(product, lastSegment(page.url || url));
             }
         }
     }
@@ -1248,12 +1420,34 @@ async function jsonld(origin) {
         return { ok: false, tier: 'jsonld',
                  reason: blocked ? REASON.BLOCKED : REASON.NOT_FOUND };
     }
+
+    /* THE COLLECTIONS PASS, only when the product pages have not answered. Half
+       is the line because below it the structure is mostly known and a second
+       source could only disagree with it; above it there is no structure to
+       disagree with. Only empty categories are filled: a category the store put
+       in its own markup is never overwritten. */
+    let detail = 'json-ld ' + contributed.jsonld + ', microdata ' + contributed.microdata +
+                 ', og ' + contributed.og;
+    const uncategorised = found.filter((product) => !product.category).length;
+    if (uncategorised >= Math.ceil(found.length / 2)) {
+        const recovered = await collectionCategories(origin);
+        let filled = 0;
+        for (const product of found) {
+            if (product.category) continue;
+            const name = recovered.byProduct.get(pageKey.get(product));
+            if (name) { product.category = name; filled++; }
+        }
+        /* Quoted on the issue through attempts, so a thin build says where its
+           categories came from, or that the recovery found nothing. */
+        detail += ', categories for ' + filled + ' of ' + found.length +
+                  ' products from ' + recovered.pagesRead + ' collection pages';
+    }
+
     return {
         ok: true, tier: 'jsonld', products: found, currency: mode(currencies),
         /* Quoted on the issue through attempts, so whoever reads it can see
            whether a store spoke JSON-LD or was rescued by the older markup. */
-        detail: 'json-ld ' + contributed.jsonld + ', microdata ' + contributed.microdata +
-                ', og ' + contributed.og
+        detail
     };
 }
 
@@ -1557,8 +1751,16 @@ export function categorise(products) {
         /* Names this function assigned on an earlier pass are not evidence about
            the prospect's catalogue. Counting them is what produced a category
            list with More in it twice: the second pass saw the first pass's own
-           output as a real category and then appended the tail again. */
-        if (!name || name === TAIL || name === UNCATEGORISED) continue;
+           output as a real category and then appended the tail again.
+
+           COMPARED CASE-BLIND, because titleCase does not fix the sentinel's own
+           casing: it turns "All products" into "All Products", so an exact
+           comparison waved the sentinel through and the second pass promoted it
+           to a real category with the wrong capitalisation. Found by the
+           collections-pass test on 11 August 2026, not by a user, which is the
+           right way round for once. */
+        if (!name || name === TAIL ||
+            name.toLowerCase() === UNCATEGORISED.toLowerCase()) continue;
         counts.set(name, (counts.get(name) || 0) + 1);
     }
 

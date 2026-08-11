@@ -651,11 +651,22 @@ async function main() {
     const liveUrl = 'https://dengage-presales.github.io/demo-ai/demos/' + slug + '/';
     console.error('Built demos/' + slug);
 
+    /* A THIN DEMO SAYS SO, IN THE REPORT AND ON THE ISSUE. Added 11 August 2026,
+       after a build shipped with every product in one category and nothing said a
+       word: the storefront rendered, every check passed, and what had silently
+       gone missing was category navigation, category recommendations and category
+       segmentation, three of the things a call is booked to show. A build that
+       loses one of those is still worth publishing, and it is not worth
+       discovering live. These are warnings rather than failures on purpose. */
+    const warnings = buildWarnings(found, images);
+    for (const warning of warnings) console.error('WORTH KNOWING: ' + warning);
+
     report(options.json, {
         ok: true,
         url: origin,
         slug,
         suffixed,
+        warnings,
         liveUrl,
         tier: found.tier,
         vertical: found.vertical,
@@ -687,6 +698,38 @@ async function main() {
 
 function config_currency(dest) {
     return JSON.parse(readFileSync(join(dest, 'demo.config.json'), 'utf8')).locale.currency;
+}
+
+/* WHAT A THIN BUILD QUIETLY LOSES, said while there is still time to act on it.
+   Each sentence is read by a salesperson on the issue, above the results table,
+   so it names the consequence on the call rather than the mechanism in the code.
+   The generated tier skips the photograph warning because its catalogue draws
+   artwork by design and the comment already says so in stronger words. */
+export function buildWarnings(found, images) {
+    const warnings = [];
+
+    const navigable = (found.categories || [])
+        .filter((name) => name !== 'More' && name.toLowerCase() !== 'all products');
+    if (navigable.length <= 1) {
+        warnings.push('Every product in this demo sits under '
+            + (navigable.length ? 'a single category, ' + navigable[0] : 'one catch-all category')
+            + '. Category navigation, category recommendations and category segments'
+            + ' will not show anything on this demo. If the store visibly has'
+            + ' departments, say so on this issue so the factory can look at why they'
+            + ' were not read.');
+    }
+
+    if (found.products.length < 15) {
+        warnings.push('Only ' + found.products.length + ' products could be read, so the'
+            + ' storefront will look thinner than the real store.');
+    }
+
+    if (found.tier !== 'generated' && images && images.downloaded === 0) {
+        warnings.push('No product photographs could be downloaded, so every tile shows'
+            + ' drawn artwork rather than the store\'s own photography.');
+    }
+
+    return warnings;
 }
 
 /* ONLY WHEN RUN AS A SCRIPT. Without this guard, importing anything from here

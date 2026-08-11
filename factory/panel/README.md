@@ -25,7 +25,7 @@ Builder template, and [`supabase/README.md`](supabase/README.md) for the Postgre
 > |---|---|
 > | `content/_shared/` | the abandoned cart email. **One template for every demo** |
 > | `content/_dynamic/` | the saved Dynamic Content assets. **Shared, created once** |
-> | `content/<slug>/` | the only per demo part: `messages/index.html` for the push, SMS, WhatsApp, inbox and on site copy, and `dps_product.csv` |
+> | `content/<slug>/` | the only per demo part: `messages/index.html` for the push, SMS, WhatsApp, inbox and on site copy. Product rows travel by Supabase, not by a committed file |
 >
 > `content/<slug>/messages/index.html` is one self contained page showing every
 > message rendered, with a copy button that puts the panel version on the clipboard.

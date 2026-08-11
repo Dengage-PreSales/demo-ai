@@ -28,7 +28,7 @@ trap cleanup EXIT
 
 command -v node >/dev/null 2>&1 || { echo "node is required"; exit 2; }
 node -e "require('playwright')" 2>/dev/null || {
-    echo "Playwright is required:  npm install playwright"; exit 2; }
+    echo "Playwright is required:  npm ci"; exit 2; }
 
 echo "Building a known-bad copy: the slug read before it is set (handoff 12.11)"
 

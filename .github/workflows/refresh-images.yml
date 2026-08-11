@@ -43,7 +43,7 @@ jobs:
       # build workflow, and for the same reasons.
       - name: Install Playwright
         run: |
-          npm install --no-save playwright@1.62.1
+          npm ci
           npx playwright install --with-deps chromium
 
       - name: Refresh

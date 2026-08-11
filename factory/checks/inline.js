@@ -70,7 +70,13 @@ const ok = (label, cond, detail) => {
   const dir = path.join(__dirname, '..', 'creatives', 'inline');
   const files = Object.keys(TARGETS).filter(f => fs.existsSync(path.join(dir, f)));
 
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
+       checks record is always the page's own stub, on every machine. The
+       comment used to claim the CDN was unreachable from the sandbox, which
+       was true here and false on any machine with internet, where the real
+       SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] });
 
   for (const file of files) {
     const content = fs.readFileSync(path.join(dir, file), 'utf8');
@@ -90,8 +96,8 @@ const ok = (label, cond, detail) => {
     /* The message text for a failed subresource is just "Failed to load resource",
        so the URL has to be checked too or the font CDN being unreachable in this
        sandbox reads as a defect in the creative. */
-    /* The Dengage CDN is unreachable from this sandbox, so the SDK loader request
-       always fails here. That is the environment, not a defect, and its failure is
+    /* The SDK hosts are refused by the launch flags above, so the loader request
+       always fails, by construction rather than by circumstance, and its failure is
        actually the positive signal this suite was missing: a demo REQUESTS the loader
        and the template does not. So the request is asserted below and its failure is
        ignored, rather than ignoring both. */

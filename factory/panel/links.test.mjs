@@ -77,7 +77,7 @@ ok('there is panel content to check', files.length > 0, files.length);
 /* Both quoted attributes and bare occurrences, because a JSON asset carries the URL as
    a value and a CSV carries it as a field.
 
-   THE COMMA IS EXCLUDED DELIBERATELY. dps_product.csv holds an image URL in one field,
+   THE COMMA IS EXCLUDED DELIBERATELY. A dps_product.csv export holds an image URL in one field,
    and without stopping at the delimiter the pattern swallowed the rest of the row and
    reported thirty one images as missing files. None of the URLs this factory writes
    contains a comma. */

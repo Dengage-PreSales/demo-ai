@@ -220,11 +220,11 @@ try { (await import('playwright')); } catch (err) { canvasAvailable = false; }
 if (!canvasAvailable) {
     console.log('\nThe playwright package does not resolve, so the canvas path below');
     console.log('cannot run and section 1 will fail. Its browser being on disk is not');
-    console.log('enough. With no package.json here every install is --no-save, and npm');
-    console.log('prunes whatever the current command did not name, so installing two');
-    console.log('packages one after the other leaves only the second. Install them in');
-    console.log('one command:');
-    console.log('\n    npm install --no-save playwright@1.62.1 amphtml-validator\n');
+    console.log('enough: the PACKAGE is what the canvas path imports. The pinned set');
+    console.log('lives in package.json since 11 August 2026, precisely because two');
+    console.log('bare --no-save installs once pruned each other and this suite failed');
+    console.log('for a reason none of its assertions could name. Install with:');
+    console.log('\n    npm ci\n');
 }
 
 /* -------------------------------------------------------------------------- */

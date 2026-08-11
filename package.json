@@ -1,0 +1,9 @@
+{
+  "name": "dengage-demo-factory",
+  "private": true,
+  "description": "Build and check dependencies for the Dengage demo factory. The demos are static files and load none of this.",
+  "devDependencies": {
+    "amphtml-validator": "1.0.38",
+    "playwright": "1.62.1"
+  }
+}

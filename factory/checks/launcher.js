@@ -71,11 +71,17 @@ function creativesOnDisk() {
   console.log('\n0. What is on disk');
   console.log('   ' + disk.length + ' campaign(s): ' + disk.join(' '));
 
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+    /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
+       checks record is always the page's own stub, on every machine. The
+       comment used to claim the CDN was unreachable from the sandbox, which
+       was true here and false on any machine with internet, where the real
+       SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] });
   const page = await browser.newPage();
   const errors = [];
-  /* The Dengage CDN is unreachable from this sandbox, so the SDK loader request
-     always fails here. That is the environment. */
+  /* The SDK hosts are refused by the launch flags above, so the loader request
+     always fails, by construction rather than by circumstance. */
   const IGNORE = /fonts\.googleapis|fonts\.gstatic|favicon|404|pcdn\.dengage\.com/;
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => {

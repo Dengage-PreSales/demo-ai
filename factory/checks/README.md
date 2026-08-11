@@ -3,7 +3,7 @@
 Browser checks of `template/` itself. Handoff 9.1.
 
 ```bash
-npm install playwright        # once
+npm ci                        # once, installs the pinned set from package.json
 bash factory/checks/run.sh
 ```
 

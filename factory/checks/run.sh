@@ -32,7 +32,7 @@ trap cleanup EXIT
 
 command -v node >/dev/null 2>&1 || { echo "node is required"; exit 2; }
 node -e "require('playwright')" 2>/dev/null || {
-    echo "Playwright is required:  npm install playwright"
+    echo "Playwright is required:  npm ci"
     exit 2
 }
 

@@ -1313,6 +1313,127 @@ async function fixtureServer(build) {
 }
 
 {
+    /* A ROUTING WORD IS NOT A CATEGORY. thegivingmovement.com shipped with all
+       thirty products filed under "Products" because every address began
+       /products/ and the head-segment rule read that as taxonomy. The head only
+       counts when it names something. */
+    const noCategory = (pageUrl) => extractProductsFromHtml(htmlPage(ldScript({
+        '@type': 'Product', name: 'Anything', sku: 'A1',
+        offers: { price: 10, priceCurrency: 'USD' }
+    })), pageUrl).products[0].category;
+
+    is('a /products/ head contributes nothing', noCategory('https://store.example/products/blue-shirt'), '');
+    is('nor does /collections/', noCategory('https://store.example/collections/tops'), '');
+    is('nor /shop/', noCategory('https://store.example/shop/blue-shirt'), '');
+    is('a head that names a real category still counts',
+       noCategory('https://store.example/glasses/spectus-flexi.html'), 'glasses');
+    is('behind a locale prefix too',
+       noCategory('https://store.example/ae-en/glasses/spectus-flexi.html'), 'glasses');
+}
+
+{
+    /* THE COLLECTIONS PASS, END TO END. Product pages carry no category and sit
+       under /products/, which is exactly the store shape that shipped with one
+       bucket. The sitemap also names the store's collection pages, and each one
+       lists its products as ordinary links, so the taxonomy is recovered from
+       there: the most specific collection wins, and a collection that is the
+       whole store contributes nothing. */
+    const site = await fixtureServer((origin) => {
+        const locs = [];
+        for (let i = 1; i <= 9; i++) locs.push(origin + '/products/widget-' + i);
+        for (const slug of ['shirts', 'shoes', 'all', 'apparel']) {
+            locs.push(origin + '/collections/' + slug);
+        }
+        const links = (from, to) => {
+            let body = '';
+            for (let i = from; i <= to; i++) {
+                body += '<a href="/products/widget-' + i + '">Widget ' + i + '</a>';
+            }
+            return body;
+        };
+        const routes = {
+            '/sitemap.xml': {
+                type: 'application/xml',
+                body: '<?xml version="1.0"?><urlset>' +
+                    locs.map((loc) => '<url><loc>' + loc + '</loc></url>').join('') +
+                    '</urlset>'
+            },
+            /* Five shirts, four shoes. Apparel holds all nine, so it is less
+               specific than either and must never win. All is the whole store
+               by name and must not even be read. */
+            '/collections/shirts':  { body: htmlPage(links(1, 5)) },
+            '/collections/shoes':   { body: htmlPage(links(6, 9)) },
+            '/collections/apparel': { body: htmlPage(links(1, 9)) },
+            '/collections/all':     { body: htmlPage(links(1, 9)) }
+        };
+        for (let i = 1; i <= 9; i++) {
+            routes['/products/widget-' + i] = {
+                body: htmlPage(ldScript({
+                    '@type': 'Product', name: 'Widget ' + i, sku: 'W-' + i,
+                    offers: { price: '12.00', priceCurrency: 'EUR' }
+                }))
+            };
+        }
+        return routes;
+    });
+    const result = await catalogue(site.origin, null, { render: false });
+    await site.close();
+
+    ok('the store builds a catalogue', result.ok, result.attempts);
+    is('nine products arrive', result.products.length, 9);
+    same('the navigation is the store\'s own collections, largest first',
+         result.categories, ['Shirts', 'Shoes']);
+    ok('the five shirts are shirts',
+       result.products.filter((p) => p.category === 'Shirts').length === 5,
+       result.products.map((p) => p.name + ':' + p.category));
+    ok('the four shoes are shoes',
+       result.products.filter((p) => p.category === 'Shoes').length === 4);
+    ok('the whole-store collections never win',
+       result.products.every((p) => p.category !== 'Apparel' && p.category !== 'All'));
+
+    const attempt = result.attempts.find((a) => a.tier === 'jsonld');
+    ok('the attempts detail says where the categories came from',
+       /categories for 9 of 9 products from 3 collection pages/.test(attempt.detail),
+       attempt.detail);
+}
+
+{
+    /* THE PASS FINDING NOTHING IS SAID, NOT HIDDEN. A store whose collection
+       pages render client side yields no links, and the detail quoted on the
+       issue must say the recovery ran and came back empty rather than imply it
+       was never needed. */
+    const site = await fixtureServer((origin) => {
+        const routes = {
+            '/sitemap.xml': {
+                type: 'application/xml',
+                body: '<?xml version="1.0"?><urlset>' +
+                    Array.from({ length: 9 }, (_, i) =>
+                        '<url><loc>' + origin + '/products/thing-' + (i + 1) + '</loc></url>').join('') +
+                    '</urlset>'
+            }
+        };
+        for (let i = 1; i <= 9; i++) {
+            routes['/products/thing-' + i] = {
+                body: htmlPage(ldScript({
+                    '@type': 'Product', name: 'Thing ' + i, sku: 'T-' + i,
+                    offers: { price: '9.00', priceCurrency: 'EUR' }
+                }))
+            };
+        }
+        return routes;
+    });
+    const result = await catalogue(site.origin, null, { render: false });
+    await site.close();
+
+    ok('the store still builds', result.ok, result.attempts);
+    same('and degrades to the one honest bucket', result.categories, ['All products']);
+    const attempt = result.attempts.find((a) => a.tier === 'jsonld');
+    ok('while the detail admits the recovery found nothing',
+       /categories for 0 of 9 products from 0 collection pages/.test(attempt.detail),
+       attempt.detail);
+}
+
+{
     /* Everything missing: every tier reports a clean miss, in order, and with no
        generateIfUnreadable flag the answer is an honest refusal. */
     const site = await fixtureServer({});

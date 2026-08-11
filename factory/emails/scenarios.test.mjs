@@ -588,7 +588,7 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
         validator = (await import('amphtml-validator')).default;
     } catch (err) {
         console.log('   skip  AMP: official validator not installed ' +
-                    '(npm install --no-save amphtml-validator to run it)');
+                    '(npm ci to run it)');
     }
     if (validator) {
         const instance = await validator.getInstance();
