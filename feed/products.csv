@@ -1,4 +1,13 @@
 product_id,demo_slug,name,category,brand,price,original_price,discount,currency,in_stock,stock_level,url,image_url
+0302020098-NAJD-COLLECTION-3-X-75ML,arabianoud,Najd Collection 3 x 75ml,All products,,320,320,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0302020098-NAJD-COLLECTION-3-X-75ML,
+0301020531-RAMZ-100-ML,arabianoud,Ramz 100 ml,All products,,210,210,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0301020531-RAMZ-100-ML,
+0401010283-MAKAREM-COLLECTION,arabianoud,Makarem Collection,All products,,685,685,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0401010283-MAKAREM-COLLECTION,
+0102010094-SPECIAL-CAMBODIAN-DEHN-OUD-14-TOLA,arabianoud,Special Cambodian Dehn Oud 1/4 Tola,All products,,150,150,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0102010094-SPECIAL-CAMBODIAN-DEHN-OUD-14-TOLA,
+0302010001-MAJOON-AL-SHIOUKH-INCENSE-100GM,arabianoud,Majoon Al Shioukh Incense 100gm,All products,,125,125,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0302010001-MAJOON-AL-SHIOUKH-INCENSE-100GM,
+0302010333-KINGDOM-MAJOON-INCENSE-120GM,arabianoud,Kingdom Majoon Incense 120gm,All products,,125,125,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0302010333-KINGDOM-MAJOON-INCENSE-120GM,
+0401020041-SILVER-SPECIAL-CENSER,arabianoud,Silver Special Censer,All products,,200,200,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0401020041-SILVER-SPECIAL-CENSER,
+0302020091-ONLY-COLLECTION-4-X-100ML,arabianoud,Only Collection 4 x 100ml,All products,,255,255,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0302020091-ONLY-COLLECTION-4-X-100ML,
+0102010111-MUKHALAT-AL-TAMAYOZ-12-TOLA,arabianoud,Mukhalat Al Tamayoz 1/2 tola,All products,,98,98,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/arabianoud/product.html?id=0102010111-MUKHALAT-AL-TAMAYOZ-12-TOLA,
 FSH-JKT-001,showcase,Quilted Field Jacket,Fashion,,149,189,40,USD,true,12,https://dengage-presales.github.io/demo-ai/demos/showcase/product.html?id=FSH-JKT-001,https://dengage-presales.github.io/demo-ai/assets/motifs/jacket.jpg
 FSH-KNT-002,showcase,Merino Crew Knit,Fashion,,95,95,0,USD,true,3,https://dengage-presales.github.io/demo-ai/demos/showcase/product.html?id=FSH-KNT-002,https://dengage-presales.github.io/demo-ai/assets/motifs/knit.jpg
 FSH-BOO-003,showcase,Leather Chelsea Boot,Fashion,,240,240,0,USD,true,,https://dengage-presales.github.io/demo-ai/demos/showcase/product.html?id=FSH-BOO-003,https://dengage-presales.github.io/demo-ai/assets/motifs/boot.jpg
