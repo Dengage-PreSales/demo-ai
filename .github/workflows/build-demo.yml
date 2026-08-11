@@ -493,14 +493,37 @@ jobs:
           git commit -m "Add the $SLUG demo storefront" \
                      -m "Built from ${{ steps.request.outputs.url }} for issue #${{ github.event.issue.number || 0 }}." \
                      -m "Expires $(node -e "console.log(require('/tmp/report.json').expiresAt)")."
+          # EVERYTHING A BUILD PUBLISHES WAS STAGED EXPLICITLY ABOVE, so any
+          # modification still unstaged is a regeneration byproduct, and it is
+          # discarded here because it blocks the rebase below. On 11 August 2026
+          # a build left one behind, all four pull attempts refused with
+          # "You have unstaged changes", and the loop as it then was could not
+          # fail: the step carried on, the comment told the operator the demo
+          # was publishing, and the issue closed over a storefront that existed
+          # nowhere. The leftovers are printed before they go, so the log names
+          # the file if one ever appears again.
+          git status --short
+          git checkout -- .
           # main moves while a build runs, so rebase rather than fail. A demo
           # folder is a new path, so there is nothing for a rebase to conflict
           # with.
+          PUSHED=0
           for attempt in 1 2 3 4; do
-            git pull --rebase origin main && git push origin HEAD:main && break
+            if git pull --rebase origin main && git push origin HEAD:main; then
+              PUSHED=1
+              break
+            fi
             echo "Retrying push ($attempt)"
             sleep $((attempt * 4))
           done
+          # A PUSH THAT NEVER LANDED IS A FAILED BUILD, whatever the earlier
+          # steps proved. Exiting here routes the run to the failure comment,
+          # keeps the issue open, and uploads the built demo as evidence,
+          # instead of announcing an address that will never answer.
+          if [ "$PUSHED" != 1 ]; then
+            echo "The demo was built and verified, and the push to main failed four times."
+            exit 1
+          fi
           echo "slug=$SLUG" >> "$GITHUB_OUTPUT"
 
       # ------------------------------------------------------- ask for a deploy
