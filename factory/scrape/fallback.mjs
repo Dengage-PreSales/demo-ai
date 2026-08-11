@@ -299,9 +299,13 @@ const VERTICALS = [
     },
     {
         id: 'beauty',
+        /* oud, attar and parfum arrived 11 August 2026, from a Gulf perfume house
+           whose stand-in demo offered its prospect kitchenware and headphones. The
+           store's own name said exactly what it sells, in the word this list did
+           not have. */
         words: ['beauty', 'cosmetic', 'cosmetics', 'skin', 'skincare', 'care', 'perfume',
                 'fragrance', 'hair', 'salon', 'belleza', 'beleza', 'kozmetik', 'pharmacy',
-                'farmacia', 'wellness', 'spa'],
+                'farmacia', 'wellness', 'spa', 'oud', 'attar', 'parfum', 'scent'],
         categories: [
             { name: 'Skincare', low: 12, high: 180, items: [
                 'Gentle Foaming Cleanser 150ml',

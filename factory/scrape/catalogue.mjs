@@ -581,8 +581,17 @@ function sitemapUrls(xml) {
 /* A path that looks like a product page. Used only to prioritise, never to
    exclude: if the guesses find nothing the whole list is read instead, because
    plenty of stores put products at the root. */
+/* The /p\d+ shape is how Salla addresses a product page: /en/<slug>/p1533516573.
+   Added 11 August 2026, from a store where the OLD rule matched exactly the
+   wrong things: its real products all ended in /p<digits>, which nothing here
+   recognised, while its static pages sat under /p/ (about, contact, terms in
+   twelve languages), which the segment rule matched enthusiastically. The
+   reader spent its whole budget on about pages and the demo shipped stand-ins
+   for a store whose catalogue was one URL pattern away. */
 function looksLikeProduct(url) {
-    return /\/(product|products|p|item|items|shop|dp)\//i.test(url) || /-p-\d+/i.test(url);
+    return /\/(product|products|p|item|items|shop|dp)\//i.test(url) ||
+           /-p-\d+/i.test(url) ||
+           /\/p\d+\/?$/i.test(url);
 }
 
 /* Reads only as much of a sitemap as it takes to collect LOC_TARGET entries.
@@ -631,8 +640,35 @@ async function sitemapProductUrls(origin) {
     }
 
     const likely = candidates.filter(looksLikeProduct);
-    const pool = oneUrlPerProduct(likely.length ? likely : candidates);
+    const pool = oneUrlPerProduct(preferEnglish(likely.length ? likely : candidates));
     return spreadBySection(pool).slice(0, PAGE_FANOUT);
+}
+
+/* PREFER ENGLISH ONE LEVEL DOWN FROM WHERE IT ALREADY LIVES. scoreSitemap has
+   preferred an en sitemap over an Estonian one since the multilanguage index
+   that motivated it, but a store that mixes every locale into ONE sitemap
+   never passes through that choice: its URL list arrives here with the same
+   product twelve times, /ar/ first because the file leads with it, and
+   oneUrlPerProduct keeps the first spelling it sees. The demo then reads the
+   Arabic pages and ships Arabic product names under English page copy.
+
+   The preference only acts when it clearly applies: an en locale segment must
+   exist in the list, and most of the list must be locale prefixed at all.
+   Anything else passes through untouched, so a store with no locales, or
+   without an English one, behaves exactly as before. */
+function preferEnglish(urls) {
+    const EN = /\/en(?:[-_][a-z]{2,3})?\//i;
+    const english = urls.filter((url) => EN.test(url));
+    if (!english.length) return urls;
+
+    let localised = 0;
+    for (const url of urls) {
+        let path;
+        try { path = new URL(url).pathname; } catch (err) { continue; }
+        const head = path.split('/').filter(Boolean)[0] || '';
+        if (LOCALE_SEGMENT.test(head)) localised++;
+    }
+    return localised >= urls.length / 2 ? english : urls;
 }
 
 /* ONE STORE LISTED EVERY PRODUCT AT FOUR ADDRESSES, AND THE READ SPENT ITS WHOLE

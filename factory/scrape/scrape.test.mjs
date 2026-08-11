@@ -401,6 +401,10 @@ console.log('\n1f. The stand-in catalogue, for a store that answers nothing');
     is('a gym store is read', verticalFor('citygym.com CityGym').id, 'sport');
     is('a home store is read', verticalFor('casadecor.com.br').id, 'home');
     is('a cosmetics store is read', verticalFor('bellabeauty.com').id, 'beauty');
+    /* The store that motivated the words: its stand-in demo offered kitchenware
+       to a perfume house because nothing here knew the word oud. */
+    is('a Gulf perfume house is read', verticalFor('https://arabianoud.com arabian_oud').id, 'beauty');
+    is('an attar house is read', verticalFor('attar-collection.com').id, 'beauty');
     is('an electronics store is read', verticalFor('megaeletronicos.com.br').id, 'electronics');
     is('a clothing store is read', verticalFor('northfield-apparel.com').id, 'fashion');
     /* A name that says nothing must not be forced into a vertical. A tyre shop
