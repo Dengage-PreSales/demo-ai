@@ -5,9 +5,9 @@
   "createdAt": "2026-08-11",
   "expiresAt": "2026-11-09",
   "theme": {
-    "primary": "#ffce21",
-    "onPrimary": "#14181b",
-    "accent": "#09b83f",
+    "primary": "#141414",
+    "onPrimary": "#ffffff",
+    "accent": "#ffce21",
     "ink": "#14181b",
     "muted": "#667085",
     "surface": "#ffffff",
