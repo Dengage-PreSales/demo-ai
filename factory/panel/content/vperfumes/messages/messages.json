@@ -250,11 +250,11 @@
           "checks": [
             {
               "field": "title",
-              "cost": 32,
+              "cost": 38,
               "max": 50,
               "source": "client",
               "over": false,
-              "resolvedTo": "Still looking at valueFragrance?"
+              "resolvedTo": "Still looking at valueUnisex Perfumes?"
             },
             {
               "field": "body",
@@ -640,11 +640,11 @@
             },
             {
               "field": "body",
-              "cost": 67,
+              "cost": 73,
               "max": 120,
               "source": "client",
               "over": false,
-              "resolvedTo": "New ranges in valueFragrance, and your saved items are still saved."
+              "resolvedTo": "New ranges in valueUnisex Perfumes, and your saved items are still saved."
             }
           ]
         },

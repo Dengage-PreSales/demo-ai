@@ -608,6 +608,16 @@ async function readSitemap(url) {
     return { isIndex: /<sitemapindex/i.test(result.body), urls: sitemapUrls(result.body) };
 }
 
+/* A loc that is itself a sitemap, whatever container it arrived in. The spec
+   says nested sitemaps only appear inside a <sitemapindex>, and a real Gulf
+   store publishes a <urlset> whose twenty locs are its other sitemap files.
+   Read as pages, those files then match looksLikeProduct on the word products
+   in their path, and the reader fetches XML as product pages and reports a
+   fully readable store as not-found. A page URL never ends in .xml. */
+function looksLikeSitemap(url) {
+    return /\.xml(\.gz)?([?#]|$)/i.test(url);
+}
+
 async function sitemapProductUrls(origin) {
     const parsed = await robots(origin);
     const roots = parsed.sitemaps.length ? parsed.sitemaps : [origin + '/sitemap.xml'];
@@ -627,16 +637,19 @@ async function sitemapProductUrls(origin) {
         /* A sitemap index points at more sitemaps. Product ones are opened first
            where the name says so, because a large retailer's index can hold two
            thousand entries and only some of them are products. */
-        if (result.isIndex) {
-            const nested = result.urls
+        /* Nested sitemaps are recognised by what they are, not only by the
+           container's tag: see looksLikeSitemap. */
+        const children = result.urls.filter(looksLikeSitemap);
+        const pages = result.urls.filter((url) => !looksLikeSitemap(url));
+        if (result.isIndex || children.length) {
+            const nested = children
                 .slice()
                 .sort((a, b) => scoreSitemap(b) - scoreSitemap(a));
             for (const child of nested.slice(0, SITEMAP_FANOUT)) {
                 if (!seen.has(child)) queue.push(child);
             }
-            continue;
         }
-        candidates.push(...result.urls);
+        candidates.push(...pages);
     }
 
     const likely = candidates.filter(looksLikeProduct);
@@ -657,7 +670,9 @@ async function sitemapProductUrls(origin) {
    Anything else passes through untouched, so a store with no locales, or
    without an English one, behaves exactly as before. */
 function preferEnglish(urls) {
-    const EN = /\/en(?:[-_][a-z]{2,3})?\//i;
+    /* Both spellings of an English locale: en, en-GB, and the country first
+       ae-en shape the Gulf platforms use. */
+    const EN = /\/(?:[a-z]{2,3}[-_])?en(?:[-_][a-z]{2,3})?\//i;
     const english = urls.filter((url) => EN.test(url));
     if (!english.length) return urls;
 
@@ -786,8 +801,12 @@ function scoreSitemap(url) {
     if (/(^|[^a-z])prod(uct)?s?([^a-z]|$)/i.test(url)) score += 3;
     else if (/item|shop|catalog/i.test(url)) score += 2;
     if (/categor|collection|page|post|blog|store-?locator/i.test(url)) score -= 2;
-    if (/[-_/](en)([-_.]|\d|$)/i.test(url)) score += 4;
-    else if (/[-_/](de|fr|es|it|nl|pl|sv|da|fi|no|pt|tr|ru|zh|ja|ko|ar|et|lv|lt)([-_.]|\d|$)/i.test(url)) {
+    /* The boundary class after the code includes a slash since 11 August 2026:
+       a Gulf store publishes /ae-en/sitemap.xml and /ae-ar/sitemap.xml, and with
+       no slash in the class both scored identically, so which language the demo
+       was read in came down to file order. */
+    if (/[-_/](en)([-_./]|\d|$)/i.test(url)) score += 4;
+    else if (/[-_/](de|fr|es|it|nl|pl|sv|da|fi|no|pt|tr|ru|zh|ja|ko|ar|et|lv|lt)([-_./]|\d|$)/i.test(url)) {
         score -= 3;
     }
     return score;
@@ -1105,16 +1124,17 @@ async function sitemapCollectionUrls(origin) {
         const result = await readSitemap(next);
         if (!result) continue;
 
-        if (result.isIndex) {
-            const nested = result.urls
+        const children = result.urls.filter(looksLikeSitemap);
+        if (result.isIndex || children.length) {
+            const nested = children
                 .slice()
                 .sort((a, b) => scoreSitemap(a) - scoreSitemap(b));
             for (const child of nested.slice(0, SITEMAP_FANOUT)) {
                 if (!seen.has(child)) queue.push(child);
             }
-            continue;
         }
-        found.push(...result.urls.filter((url) => COLLECTION_PATH.test(url)));
+        found.push(...result.urls.filter(
+            (url) => !looksLikeSitemap(url) && COLLECTION_PATH.test(url)));
     }
     return found.slice(0, COLLECTION_FANOUT);
 }

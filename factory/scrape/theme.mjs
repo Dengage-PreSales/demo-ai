@@ -330,8 +330,34 @@ export function isFrameworkDefault(name, hex) {
    declared channel accepts because the token is not in the table above, and the
    rendered channel sees it painted on the actual buttons. Losing a frequency vote
    is recoverable. Handing every Bootstrap store the same blue is not. */
+/* TAILWIND'S STOCK PALETTE, REFUSED THE SAME WAY, added 11 August 2026 after a
+   perfume house's demo shipped in blue-500 and orange-400 under Poppins. The
+   vendor-filename rule above cannot catch Tailwind, because Tailwind is never
+   served as its own file: it compiles into the store's app bundle, which is
+   exactly the file the counted channel is right to read. So its famous defaults
+   arrive by frequency wearing the store's own filename, and the only place to
+   refuse them is by value, the same trade the Bootstrap table makes and for the
+   same reason: losing a frequency vote is recoverable through the declared and
+   rendered channels, and handing every Tailwind store the same blue is not.
+   Only the core 400 to 600 shades are listed, the ones a stock utility class
+   actually paints. */
+const TAILWIND_STOCK = [
+    '#3b82f6', '#2563eb', '#1d4ed8', '#60a5fa', '#93c5fd',
+    '#ef4444', '#dc2626', '#f87171',
+    '#f97316', '#fb923c', '#ea580c',
+    '#f59e0b', '#fbbf24', '#d97706',
+    '#22c55e', '#16a34a', '#4ade80',
+    '#10b981', '#059669', '#14b8a6',
+    '#06b6d4', '#0ea5e9', '#38bdf8', '#0284c7',
+    '#6366f1', '#4f46e5', '#818cf8',
+    '#8b5cf6', '#7c3aed', '#a855f7', '#9333ea',
+    '#d946ef', '#ec4899', '#db2777', '#f43f5e', '#e11d48'
+];
+
 const FRAMEWORK_VALUES = new Set(
-    Object.values(FRAMEWORK_DEFAULTS).flat().map((hex) => hex.toLowerCase()));
+    Object.values(FRAMEWORK_DEFAULTS).flat()
+        .concat(TAILWIND_STOCK)
+        .map((hex) => hex.toLowerCase()));
 
 export function isFrameworkValue(hex) {
     return FRAMEWORK_VALUES.has(String(hex || '').toLowerCase());

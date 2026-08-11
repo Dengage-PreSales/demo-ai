@@ -459,8 +459,30 @@ async function main() {
 
     const templateConfig = JSON.parse(readFileSync(join(ROOT, 'template', 'demo.config.json'), 'utf8'));
     const extracted = await theme(origin, templateConfig.theme);
-    console.error('Theme: primary ' + extracted.theme.primary + ', accent ' + extracted.theme.accent +
-                  ', ' + extracted.theme.displayFont + '/' + extracted.theme.bodyFont);
+
+    /* A STORE THAT BLOCKED EVERY CATALOGUE READER DOES NOT GET TO THEME THE DEMO
+       FROM A RENDERED PAGE. Added 11 August 2026, after a store whose bot wall
+       refused all four tiers served the theme reader a challenge page instead,
+       and the demo shipped in that page's Tailwind blue and orange under the
+       label "inferred from how the site uses colour". The inference was correct
+       about the page and the page was not the store.
+
+       Declared tokens stay trusted: a wall page carries no brand custom
+       properties, so when those were read they were read from the real site,
+       which is how a blocked store can still ship its own palette. Everything
+       weaker is refused, because on a blocked store there is no way to know
+       which page answered, and the standard palette said honestly beats the
+       wall's palette said confidently. */
+    if (found.tier === 'generated' && extracted.found.primary &&
+        extracted.found.primarySource !== 'declared') {
+        extracted.theme = { ...templateConfig.theme };
+        extracted.found = { primary: false, accent: false, fonts: false, radius: false };
+        console.error('Theme: refused. The store blocked every catalogue reader, so the'
+            + ' rendered page cannot be trusted to be the storefront. Standard palette.');
+    } else {
+        console.error('Theme: primary ' + extracted.theme.primary + ', accent ' + extracted.theme.accent +
+                      ', ' + extracted.theme.displayFont + '/' + extracted.theme.bodyFont);
+    }
 
     const base = options.slug && options.slug !== true ? String(options.slug) : slugFromUrl(origin);
     if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(base)) {

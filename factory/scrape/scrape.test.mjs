@@ -1484,7 +1484,7 @@ const SALLA_SHAPE = `
     --store-text-primary: #111827;
     --color-text-primary: #111827;
   }
-  .btn-sale { background-color: #f87171; }
+  .btn-sale { background-color: #e0533d; }
   ` + '.u-grey { color: #374151; background-color: #374151; }\n'.repeat(60);
 
 const TEMPLATE_THEME = JSON.parse(
@@ -1506,7 +1506,7 @@ const TEMPLATE_THEME = JSON.parse(
        !['#cccccc', '#262626', '#111827'].includes(out.theme.primary),
        out.theme.primary);
     is('the accent against an achromatic brand is the colourful thing, not a grey',
-       out.theme.accent, '#f87171');
+       out.theme.accent, '#e0533d');
 }
 
 {
