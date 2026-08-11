@@ -17,12 +17,28 @@
      9   every product tile resolves locally, so nothing can 404 mid call
      10  no product carries a fabricated price or stock count
 
-   WHAT THIS CANNOT SEE, and why the other suite exists. The SDK loader is
-   unreachable from CI, so `dengage` here is always the queue stub the page
-   installs itself. That is enough to prove what the page SENDS and in what order,
-   which is what these assertions are about. It is not enough to prove a row
-   landed in Data Space, and no headless check can be: only the row proves that
-   (handoff 12.5).
+   WHAT THIS CANNOT SEE, and why the other suite exists. `dengage` here is the
+   recorder this file installs, never the real SDK. That is enough to prove what
+   the page SENDS and in what order, which is what these assertions are about. It
+   is not enough to prove a row landed in Data Space, and no headless check can
+   be: only the row proves that (handoff 12.5).
+
+   THE LOADER IS BLOCKED TO KEEP THAT TRUE, and until 11 August 2026 this comment
+   claimed it was already true because the loader was "unreachable from CI". It is
+   reachable. GitHub's runners resolve pcdn.dengage.com perfectly well, so the real
+   SDK loaded and assigned over window.dengage, and every assertion about what the
+   page sent then depended on which finished first: the SDK replacing the recorder,
+   or the catalogue resolving so pageview() could fire.
+
+   That race decided builds. One run reported the product page firing pageView
+   exactly once, and the next reported zero from the same store, on a page that had
+   rendered the product correctly both times. Locally it never reproduced, because
+   locally the loader really is unreachable and the recorder always survived.
+
+   So the two hosts are refused at the network layer, which makes the documented
+   assumption enforced rather than hoped for. Nothing is lost: this suite cannot
+   verify the SDK anyway, and the one assertion about it reads the page source for
+   the loader URL rather than the loaded script.
    ========================================================================== */
 import { chromium } from 'playwright';
 import { existsSync } from 'node:fs';
@@ -101,11 +117,11 @@ function installRecorder() {
    load, and any transport failure. Checked FIRST, and pcdn.dengage.com is no
    longer on this list.
 
-   That removal is the point of the split. The SDK loader is unreachable from CI
-   and from a local run, so it fails to fetch every time, and matching on its host
-   meant a genuine fault inside the SDK was silenced by the same rule that hid
-   that expected 404. Now the transport failure is dropped for being a transport
-   failure, and anything the SDK actually throws survives to be reported. */
+   That removal is the point of the split. The loader is refused on purpose now,
+   so it fails to fetch on every run, and matching on its host meant a genuine
+   fault inside the SDK was silenced by the same rule that hid that intended
+   refusal. Now the transport failure is dropped for being a transport failure,
+   and anything a third party script actually throws survives to be reported. */
 const NOISE = /fonts\.googleapis|fonts\.gstatic|favicon|ERR_CONNECTION|ERR_NAME|net::|Failed to load resource/;
 
 const IGNORE_CONSOLE = NOISE;
@@ -172,13 +188,20 @@ async function openPage(browser, path) {
     });
     await page.addInitScript(installRecorder);
 
+    /* Refuse the SDK, so the recorder installed above is what every call reaches.
+       See the header: this is the enforcement of an assumption the file used to
+       merely assert. Aborted rather than fulfilled with an empty body, because an
+       empty script would still let the page believe a loader arrived. */
+    let blocked = 0;
+    await page.route(/(pcdn|push)\.dengage\.com/, (route) => { blocked++; return route.abort(); });
+
     const response = await page.goto(BASE + path, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => window.Catalog && window.Catalog.all().length &&
         window.DEMO_CONFIG, null, { timeout: 25000 });
     /* boot() fires pageView after the catalogue resolves, so the recorder needs a
        moment past domcontentloaded before it is read. */
     await page.waitForTimeout(700);
-    return { page, errors, foreign, status: response ? response.status() : 0 };
+    return { page, errors, foreign, blocked, status: response ? response.status() : 0 };
 }
 
 (async () => {
@@ -197,6 +220,11 @@ async function openPage(browser, path) {
     ok('the SDK loader names this application',
         html.includes('pcdn.dengage.com/p/push/' + config.dengage.accountId + '/' + config.dengage.appGuid),
         config.dengage.appGuid);
+    /* ASSERTED, NOT ASSUMED. The line above proves the page asks for the loader, so
+       this one must follow, and if the route stops matching one day it fails here
+       rather than silently reintroducing the race described in the header. */
+    ok('and the loader was refused, so the recorder is what recorded',
+        home.blocked > 0, { blocked: home.blocked });
     ok('the app guid is not a placeholder',
         !!config.dengage.appGuid && !config.dengage.appGuid.startsWith('__'));
 
