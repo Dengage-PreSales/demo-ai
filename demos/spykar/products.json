@@ -1,0 +1,454 @@
+{
+  "products": [
+    {
+      "id": "8907966986145",
+      "name": "Men Nico Jeans Skinny Fit Black Low Rise",
+      "category": "Jeans",
+      "price": 3299,
+      "discountedPrice": 1813,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "36",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8907966986145.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566122383",
+      "name": "Men Diego Jeans Super Skinny Fit Light Blue Low Rise",
+      "category": "Jeans",
+      "price": 3699,
+      "discountedPrice": 1663,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Light Blue",
+        "Size": "30",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566122383.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566046603",
+      "name": "Women Alexa Jeans Super Skinny Fit Black High Rise",
+      "category": "Jeans",
+      "price": 3199,
+      "discountedPrice": 1278,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "26",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566046603.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566210691",
+      "name": "Women Emma Jeans Slim Fit Mid Blue Mid Rise",
+      "category": "Jeans",
+      "price": 3599,
+      "discountedPrice": 1438,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Mid Blue",
+        "Size": "24",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566210691.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566179066",
+      "name": "Women Alexa Jeans Super Skinny Fit Light Blue High Rise",
+      "category": "Jeans",
+      "price": 3199,
+      "discountedPrice": 1278,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Light Blue",
+        "Size": "24",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566179066.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566163133",
+      "name": "Men Nico Jeans Skinny Fit Vintage Blue Mid Rise",
+      "category": "Jeans",
+      "price": 5699,
+      "discountedPrice": 2563,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Blue",
+        "Size": "30",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566163133.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566179035",
+      "name": "Women Alexa Jeans Super Skinny Fit Mid Blue High Rise",
+      "category": "Jeans",
+      "price": 3199,
+      "discountedPrice": 1278,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Mid Blue",
+        "Size": "24",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566179035.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8905566210905",
+      "name": "Women Bella Jeans Straight Fit Green High Rise",
+      "category": "Jeans",
+      "price": 3399,
+      "discountedPrice": 1358,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "24",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566210905.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "8907966913325",
+      "name": "Men Shirt Check Red Regular Fit",
+      "category": "Shirts",
+      "price": 2999,
+      "discountedPrice": 1348,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Red",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8907966913325.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566091849",
+      "name": "Men Shirt Check Green Slim Fit",
+      "category": "Shirts",
+      "price": 2699,
+      "discountedPrice": 1213,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566091849.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566092815",
+      "name": "Men Shirt Print Navy Blue Slim Fit",
+      "category": "Shirts",
+      "price": 2299,
+      "discountedPrice": 918,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Navy Blue",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566092815.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566094918",
+      "name": "Men Shirt Check Black Slim Fit",
+      "category": "Shirts",
+      "price": 2699,
+      "discountedPrice": 1213,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "M",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566094918.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566095540",
+      "name": "Men Shirt Check White Slim Fit",
+      "category": "Shirts",
+      "price": 2499,
+      "discountedPrice": 1123,
+      "stockCount": null,
+      "attributes": {
+        "Color": "White",
+        "Size": "M",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566095540.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566093447",
+      "name": "Men Shirt Solid Blue Slim Fit",
+      "category": "Shirts",
+      "price": 2399,
+      "discountedPrice": 1078,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Blue",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566093447.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566093812",
+      "name": "Men Shirt Solid Khaki Slim Fit",
+      "category": "Shirts",
+      "price": 2299,
+      "discountedPrice": 1033,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Khaki",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566093812.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566095779",
+      "name": "Men Shirt Print Aqua Slim Fit",
+      "category": "Shirts",
+      "price": 2499,
+      "discountedPrice": 1123,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Blue",
+        "Size": "M",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566095779.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566170834",
+      "name": "Women T-Shirt Solid White Slim Fit",
+      "category": "T-shirts",
+      "price": 1499,
+      "discountedPrice": 598,
+      "stockCount": null,
+      "attributes": {
+        "Color": "White",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566170834.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566227910",
+      "name": "Women T-Shirt Print Pink Regular Fit",
+      "category": "T-shirts",
+      "price": 1299,
+      "discountedPrice": 518,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Pink",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566227910.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566171060",
+      "name": "Women T-Shirt Print Peach Regular Fit",
+      "category": "T-shirts",
+      "price": 1299,
+      "discountedPrice": 518,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Peach",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566171060.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566170735",
+      "name": "Women T-Shirt Print Green Regular Fit",
+      "category": "T-shirts",
+      "price": 1199,
+      "discountedPrice": 478,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566170735.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566141803",
+      "name": "Men T-Shirt Print Navy Blue Slim Fit",
+      "category": "T-shirts",
+      "price": 1299,
+      "discountedPrice": 583,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Navy Blue",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566141803.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566141094",
+      "name": "Men T-Shirt Stripe Dusty Ice Green Regular Fit",
+      "category": "T-shirts",
+      "price": 2199,
+      "discountedPrice": 878,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566141094.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566062023",
+      "name": "Women T-Shirt Solid Dark Blue Regular Fit",
+      "category": "T-shirts",
+      "price": 3599,
+      "discountedPrice": 1438,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Dark Blue",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566062023.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566007086",
+      "name": "Women Dress Print Olive Green Slim Fit",
+      "category": "More",
+      "price": 2599,
+      "discountedPrice": 1038,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566007086.jpg",
+      "motif": "dress"
+    },
+    {
+      "id": "8905566007031",
+      "name": "Women Dress Solid Wine Slim Fit",
+      "category": "More",
+      "price": 2599,
+      "discountedPrice": 1038,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Wine",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566007031.jpg",
+      "motif": "dress"
+    },
+    {
+      "id": "8905566174153",
+      "name": "Women Trackpant Print Off-White Regular Fit Mid Rise",
+      "category": "More",
+      "price": 2499,
+      "discountedPrice": 998,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Off-White",
+        "Size": "26",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566174153.jpg",
+      "motif": null
+    },
+    {
+      "id": "8905566089631",
+      "name": "Women Top Solid White Slim Fit",
+      "category": "More",
+      "price": 1799,
+      "discountedPrice": 718,
+      "stockCount": null,
+      "attributes": {
+        "Color": "White",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566089631.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566142909",
+      "name": "Men Polo T-Shirt Print Green Regular Fit",
+      "category": "More",
+      "price": 2199,
+      "discountedPrice": 878,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566142909.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566142596",
+      "name": "Men Polo T-Shirt Print Yellow Regular Fit",
+      "category": "More",
+      "price": 2199,
+      "discountedPrice": 988,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Yellow",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566142596.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "8905566089501",
+      "name": "Women Top Print Pink Slim Fit",
+      "category": "More",
+      "price": 1799,
+      "discountedPrice": 718,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Pink",
+        "Size": "S",
+        "Brand": "Spykar Lifestyles Pvt Ltd"
+      },
+      "image": "images/8905566089501.jpg",
+      "motif": "shirt"
+    }
+  ]
+}
