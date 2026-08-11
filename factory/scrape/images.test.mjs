@@ -203,6 +203,30 @@ function reasonOf(result, id) {
     return row ? row.reason : undefined;
 }
 
+/* SAY WHY BEFORE SECTION 1 FAILS, because on 11 August 2026 it failed for a
+   reason none of its own assertions could name. Section 1 needs the real
+   Chromium, so with the playwright package missing it reported
+   "the canvas path is the one that ran: raw-bytes" and then died on a jpg that
+   was never written. Every one of those messages describes the image pipeline,
+   and the image pipeline was fine: two --no-save installs had run in sequence
+   and the second pruned the first.
+
+   The assertions below are deliberately left as failures rather than skips. A
+   build that cannot compress a photograph must not pass, because the demo it
+   would ship carries the prospect's product images at full size. This only adds
+   the sentence that points at the cause. */
+let canvasAvailable = true;
+try { (await import('playwright')); } catch (err) { canvasAvailable = false; }
+if (!canvasAvailable) {
+    console.log('\nThe playwright package does not resolve, so the canvas path below');
+    console.log('cannot run and section 1 will fail. Its browser being on disk is not');
+    console.log('enough. With no package.json here every install is --no-save, and npm');
+    console.log('prunes whatever the current command did not name, so installing two');
+    console.log('packages one after the other leaves only the second. Install them in');
+    console.log('one command:');
+    console.log('\n    npm install --no-save playwright@1.62.1 amphtml-validator\n');
+}
+
 /* -------------------------------------------------------------------------- */
 console.log('\n1. The batch, through the canvas path');
 

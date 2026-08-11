@@ -239,18 +239,35 @@ jobs:
       # oversized images or none, and no render tier at all) while passing every
       # check in an environment that happened to have a browser. The smoke test
       # further down needs it anyway, so the cost moves rather than grows.
-      - name: Install Playwright
+      # BOTH PACKAGES INSTALL IN ONE npm COMMAND, and that is the whole point of
+      # this step rather than a tidy-up. There is no package.json here, so every
+      # install is --no-save, and npm treats a --no-save install as the complete
+      # intended contents of node_modules: it PRUNES anything already there that
+      # the current command did not name. So installing them one after the other
+      # left whichever went second, and removed the other.
+      #
+      # THIS TOOK A BUILD DOWN ON 11 AUGUST 2026 and the failure pointed
+      # everywhere except here. Playwright was installed, its browser was
+      # downloaded, and then the AMP validator's own install removed the
+      # playwright package while leaving the browser on disk. The image pipeline
+      # self test failed with "the canvas path is the one that ran: raw-bytes",
+      # which reads like a broken image pipeline rather than a missing package,
+      # and the request that triggered it was never reached at all.
+      #
+      # THE FALLBACK KEEPS WHAT SPLITTING THEM WAS PROTECTING. Playwright is
+      # required, because the motif pass, the hero, the push banners, the render
+      # tier and the smoke test all need a browser. The AMP validator is needed
+      # by one assertion that skips itself and says so, so it must never be able
+      # to take a build down. If the pair cannot be installed, playwright is
+      # installed alone and that assertion skips, which is the same outcome the
+      # continue-on-error step used to give.
+      - name: Install Playwright and the AMP validator
         run: |
-          npm install --no-save playwright@1.62.1
+          npm install --no-save playwright@1.62.1 amphtml-validator \
+            || npm install --no-save playwright@1.62.1
           npx playwright install --with-deps chromium
-
-      # SEPARATE FROM PLAYWRIGHT, AND ALLOWED TO FAIL. Playwright is required: the motif
-      # pass, the hero, the push banners and the smoke test all need a browser. The AMP
-      # validator is needed by one assertion that skips itself and says so, so it must not
-      # be able to take a build down with it.
-      - name: AMP validator
-        continue-on-error: true
-        run: npm install --no-save amphtml-validator
+          node -e "require.resolve('playwright')" \
+            && echo "playwright is present after both installs"
 
       # THE PIPELINE PROVES ITSELF BEFORE IT TOUCHES THE PROSPECT'S SITE. These
       # suites are fixture based and quick, and a regression in either one means
