@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-demo-slug="meridian-college">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Media | Dengage Education Demo</title>
+<meta name="description" content="Campus, competitions, classrooms and results.">
+
+<!--
+    THE DENGAGE EDUCATION DEMO. A working college website for a conversation
+    about personalization on an education account.
+
+    It is a demonstration, not a live college. The institution, its staff and its
+    students are fictional, every portrait is drawn rather than photographed, and
+    the mark in the header is the Dengage one.
+
+    ORDER IN THE HEAD IS LOAD BEARING:
+      1. js/identity.js resolves the contact key synchronously and sets __dnInit
+      2. the SDK snippet initializes WITH that key, so the contact is attached
+         before any event goes out
+      3. the page view fires later, from js/dengageEvents.js, through
+         js/edu-site.js
+
+    The page view is what makes this demo's rows findable. The SDK fills page_url
+    and session_id on that row itself, and session_id is the only join from it to
+    the application, shortlist and search rows the same visit writes.
+-->
+
+<link rel="icon" href="vendor/assets/dengage-logo.svg" type="image/svg+xml">
+
+<!-- Scripts before stylesheets. A pending stylesheet blocks every script after
+     it, and the font request below goes to a third party, so with it above these
+     the Dengage bootstrap would wait on Google Fonts: slow on a bad network and
+     indefinite on a network that blocks it. Neither script reads a style. -->
+<script src="js/identity.js"></script>
+
+<!-- DENGAGE SDK START -->
+<script>
+  (function (window, document) {
+    window.dengage = window.dengage || function () {
+      (window.dengage.q = window.dengage.q || []).push(arguments);
+    };
+    var accountId = '28';
+    var appGuid = '99d9b8fb-0c62-5a85-3e43-2402554d93a5';
+    if (accountId.indexOf('__') !== 0 && appGuid.indexOf('__') !== 0) {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://pcdn.dengage.com/p/push/' + accountId + '/' + appGuid + '/dengage_sdk_loader.js';
+      document.getElementsByTagName('head')[0].appendChild(script);
+    }
+    window.__dnInit ? window.dengage('initialize', window.__dnInit) : window.dengage('initialize');
+  })(window, document);
+</script>
+<!-- DENGAGE SDK END -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page-type="other">
+
+<div id="site-chrome-top"></div>
+<div class="inline-slot container" id="dn_inline_target_edu_below_header"></div>
+
+<section class="page-hero">
+    <div class="container">
+        <h1>Media</h1>
+        <div class="breadcrumb"><a href="index.html">Meridian College</a><span>/</span><span>Media</span></div>
+        <p class="lede">Campus, competitions, classrooms and results, as they happened.</p>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+        <div class="grid grid-4" data-render="media"></div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head"><span class="eyebrow">Our students</span>
+            <h2>The faces that carry the legacy</h2></div>
+        <div class="grid grid-3" data-render="showcase"></div>
+    </div>
+</section>
+
+<div class="inline-slot container" id="dn_inline_target_edu_above_footer"></div>
+<div id="site-chrome-bottom"></div>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="application" aria-label="Your application">
+    <div class="drawer-head">
+        <h2>Your application</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="application-body"></div>
+    <div class="drawer-foot" id="application-foot" hidden>
+        <button type="button" class="btn btn-primary btn-block" data-start-application="1">Start my application</button>
+    </div>
+</aside>
+
+<aside class="drawer" id="shortlist" aria-label="Shortlist">
+    <div class="drawer-head">
+        <h2>Your shortlist</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="shortlist-body"></div>
+</aside>
+
+<aside class="drawer" id="inbox" aria-label="Messages">
+    <div class="drawer-head">
+        <h2>Messages</h2>
+        <button type="button" class="link-btn" id="inbox-refresh">Refresh</button>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="inbox-body"></div>
+</aside>
+
+<aside class="drawer left" id="search-panel" aria-label="Search subjects">
+    <div class="drawer-head">
+        <h2>Find a subject</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <form id="search-form">
+            <div class="field">
+                <label for="search-input">Subject, syllabus code or pathway</label>
+                <input id="search-input" type="search" placeholder="Physics, 9702, Commerce" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Search</button>
+        </form>
+        <div id="search-results" style="margin-top:20px"></div>
+    </div>
+</aside>
+
+<div class="modal" id="account" aria-label="Account">
+    <div class="modal-head">
+        <h2>Your account</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div id="account-body"></div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="js/dengageEvents.js"></script>
+<script src="js/store.js"></script>
+<script src="js/inbox.js"></script>
+<script src="js/slots.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/edu-artwork.js"></script>
+<script src="js/edu-site.js"></script>
+<script src="js/edu-pages.js"></script>
+<script src="js/edu-journey.js"></script>
+<script src="js/edu-usecases.js"></script>
+<script src="js/edu-boot.js"></script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+{
+  "institution": {
+    "name": "Meridian College",
+    "shortName": "Meridian",
+    "people": "Meridians",
+    "group": "Northline Group",
+    "city": "Karachi",
+    "address": "49-L Block 6, Karachi",
+    "phone": "(+92) 300 000 0000",
+    "email": "info@meridian.example",
+    "admissionsEmail": "admissions@meridian.example",
+    "admissionsPhone": "(+92) 337 000 0000",
+    "copyright": "2026 Meridian College. All Rights Reserved"
+  },
+
+  "nav": [
+    { "label": "Home", "href": "index.html" },
+    { "label": "About", "href": "about.html" },
+    { "label": "Academics", "href": "academics.html", "children": [
+      { "label": "Subjects Offered", "href": "academics.html#subjects" },
+      { "label": "Faculty", "href": "academics.html#faculty" },
+      { "label": "Unique Programs", "href": "academics.html#programs" }
+    ] },
+    { "label": "Admissions", "href": "admissions.html" },
+    { "label": "Counselling", "href": "counselling.html" },
+    { "label": "Life At Meridian", "href": "life.html", "children": [
+      { "label": "News & Updates", "href": "life.html#news" },
+      { "label": "Campus Life", "href": "life.html#campus" },
+      { "label": "Student Societies", "href": "life.html#societies" },
+      { "label": "Student Houses", "href": "life.html#houses" }
+    ] },
+    { "label": "Media", "href": "media.html" },
+    { "label": "Contact", "href": "contact.html" }
+  ],
+
+  "utilityNav": [
+    { "label": "How To Apply", "href": "how-to-apply.html" },
+    { "label": "Eligibility Criteria", "href": "how-to-apply.html#eligibility" }
+  ],
+
+  "footer": {
+    "campus": [
+      { "label": "Home", "href": "index.html" },
+      { "label": "About", "href": "about.html" },
+      { "label": "Admission", "href": "admissions.html" },
+      { "label": "Blogs", "href": "blogs.html" },
+      { "label": "Contact", "href": "contact.html" }
+    ],
+    "useful": [
+      { "label": "Apply Now", "href": "apply.html" },
+      { "label": "How to Apply", "href": "how-to-apply.html" },
+      { "label": "Academics", "href": "academics.html" },
+      { "label": "Counselling", "href": "counselling.html" },
+      { "label": "Life at Meridian", "href": "life.html" },
+      { "label": "Media", "href": "media.html" }
+    ],
+    "social": ["Facebook", "Instagram", "Tiktok", "Youtube", "Linkedin"]
+  },
+
+  "faculties": [
+    {
+      "id": "sciences",
+      "name": "Sciences",
+      "blurb": "For the curious, the analytical, and the ambitious. With pathways leading into Pre-Engineering, Pre-Medical, and Allied Sciences."
+    },
+    {
+      "id": "commerce",
+      "name": "Commerce",
+      "blurb": "For the next generation of business leaders, entrepreneurs, and financial minds. With pathways into Accounting, Economics, and Business."
+    },
+    {
+      "id": "hybrid",
+      "name": "Hybrid",
+      "blurb": "For the creatives, the analysts, and the future changemakers. With pathways into Psychology, Sociology, Media Studies, and Languages."
+    }
+  ],
+
+  "subjects": [
+    { "id": "9702", "name": "Physics", "faculty": "sciences", "motif": "physics" },
+    { "id": "9701", "name": "Chemistry", "faculty": "sciences", "motif": "chemistry" },
+    { "id": "9700", "name": "Biology", "faculty": "sciences", "motif": "biology" },
+    { "id": "9709", "name": "Mathematics", "faculty": "sciences", "motif": "maths" },
+    { "id": "9618", "name": "Computer Science", "faculty": "sciences", "motif": "computing" },
+    { "id": "9706", "name": "Accounting", "faculty": "commerce", "motif": "accounting" },
+    { "id": "9609", "name": "Business Studies", "faculty": "commerce", "motif": "business" },
+    { "id": "9708", "name": "Economics", "faculty": "commerce", "motif": "economics" },
+    { "id": "9084", "name": "Law", "faculty": "hybrid", "motif": "law" },
+    { "id": "9990", "name": "Psychology", "faculty": "hybrid", "motif": "psychology" },
+    { "id": "9699", "name": "Sociology", "faculty": "hybrid", "motif": "sociology" },
+    { "id": "9481", "name": "Digital Media and Design", "faculty": "hybrid", "motif": "media" },
+    { "id": "9093", "name": "English Language", "faculty": "hybrid", "motif": "english" },
+    { "id": "9980", "name": "International Project Qualification", "faculty": "hybrid", "motif": "project" },
+    { "id": "9686", "name": "Urdu", "faculty": "hybrid", "motif": "urdu" },
+    { "id": "9489", "name": "History", "faculty": "hybrid", "motif": "history" }
+  ],
+
+  "faculty": [
+    { "name": "Sir Adnan Rehmat", "subject": "Accounting", "faculty": "commerce" },
+    { "name": "Sir Bilal Qureshi", "subject": "Mathematics", "faculty": "sciences" },
+    { "name": "Miss Hina Farooq", "subject": "Physics", "faculty": "sciences" },
+    { "name": "Sir Danish Iftikhar", "subject": "Chemistry", "faculty": "sciences" },
+    { "name": "Sir Ehtesham Baig", "subject": "Business Studies", "faculty": "commerce" },
+    { "name": "Miss Faryal Nadeem", "subject": "Economics", "faculty": "commerce" },
+    { "name": "Sir Gohar Iqbal", "subject": "Physics", "faculty": "sciences" },
+    { "name": "Sir Hamza Shaikh", "subject": "Biology", "faculty": "sciences" },
+    { "name": "Miss Iqra Siddiqi", "subject": "Psychology", "faculty": "hybrid" },
+    { "name": "Sir Jibran Mehmood", "subject": "English Language", "faculty": "hybrid" },
+    { "name": "Sir Kashif Anwar", "subject": "Sociology", "faculty": "hybrid" },
+    { "name": "Miss Laiba Tanveer", "subject": "Law", "faculty": "hybrid" },
+    { "name": "Sir Faraz Rafiq", "subject": "Computer Science", "faculty": "sciences" },
+    { "name": "Miss Nida Aslam", "subject": "Digital Media and Design", "faculty": "hybrid" },
+    { "name": "Sir Omair Zaidi", "subject": "Mathematics", "faculty": "sciences" },
+    { "name": "Sir Parvez Alam", "subject": "Urdu", "faculty": "hybrid" },
+    { "name": "Miss Quratulain Nasir", "subject": "History", "faculty": "hybrid" },
+    { "name": "Sir Rehan Mustafa", "subject": "International Project Qualification", "faculty": "hybrid" },
+    { "name": "Sir Saad Bashir", "subject": "Chemistry", "faculty": "sciences" },
+    { "name": "Miss Tehreem Abbas", "subject": "Biology", "faculty": "sciences" },
+    { "name": "Sir Umair Sultan", "subject": "Accounting", "faculty": "commerce" },
+    { "name": "Miss Vania Rashid", "subject": "English Language", "faculty": "hybrid" },
+    { "name": "Sir Wajahat Noor", "subject": "Economics", "faculty": "commerce" },
+    { "name": "Sir Zohaib Karim", "subject": "Business Studies", "faculty": "commerce" }
+  ],
+
+  "directors": [
+    {
+      "name": "Sir Arsalan Haque",
+      "role": "Director",
+      "message": "When we sat down to build Meridian College, the first question we asked was not about curriculum or infrastructure; it was about the student. Who are they? What do they need? What does the world they are entering actually demand from them? Every decision we have made since that day has been made with that student in mind. You are not a number here. You are not a face in a crowd. You are the entire reason this institution exists, and everything we do, every standard we set, every program we build, is built around making sure that when you leave Meridian, you leave ready for anything the world throws at you."
+    },
+    {
+      "name": "Sir Nabeel Wasti",
+      "role": "Director",
+      "message": "I have spent years in education, standing in front of students, watching them grow, watching them struggle, watching them discover what they are truly capable of. What I have learned more than anything else is this: the right environment changes everything. A student who feels seen, supported, and genuinely valued will always outperform every expectation placed on them. That is what we have built at Meridian: not just a college, but an environment. One where every Meridian walks in feeling like they belong, and walks out knowing exactly what they are worth."
+    },
+    {
+      "name": "Miss Rabia Shafi",
+      "role": "Director",
+      "message": "Physics taught me one thing above everything else: every force has an equal and opposite reaction. At Meridian, that principle drives everything we do. The effort you put in, the dedication you show, the standard you hold yourself to, we match it. Every single time. We invest in you because we believe in you, not as a batch, not as a statistic, but as an individual with a unique mind, a unique path, and a unique potential that this world genuinely needs."
+    },
+    {
+      "name": "Sir Tanveer Ahsan",
+      "role": "Director",
+      "message": "I want every student who visits this page, whether you are a prospective Meridian, a current one, or a parent trying to make the most important decision of your child's academic life, to hear this clearly: Meridian College was not built for the average. It was built for the ambitious. But ambition alone is not enough; it needs the right place to grow, the right people to guide it, and the right environment to let it flourish. That is exactly what we have created here."
+    }
+  ],
+
+  "programs": [
+    {
+      "id": "ai-robotics",
+      "title": "AI, Robotics and Prompt Engineering",
+      "summary": "A comprehensive, hands on journey into the technology that is reshaping every industry on the planet. This is not theory for the sake of theory; it is practical, purposeful, and built around the skills the modern world is actively demanding.",
+      "learn": "The program begins at the foundation, exploring the logic behind Artificial Intelligence and how machines are trained to recognise patterns, process data, and make autonomous decisions. From there, students go into Robotics, understanding how intelligent systems are designed to operate in the real world. The core of the program focuses on Prompt Engineering, one of the highest demand skills of the century, through a series of intensive hands on workshops.",
+      "outcome": "By the time you complete this program, you will not just understand how AI works; you will know how to use it. As a productivity engine. As a creative tool. As a professional advantage that sets you well ahead of your peers entering university and the workforce."
+    },
+    {
+      "id": "filmmaking",
+      "title": "Filmmaking and Content Creation",
+      "summary": "Designed for students who believe that every great idea deserves to be seen, heard, and remembered. In today's digital world, content is more than entertainment. It builds brands, shapes opinions, and creates opportunities for those who know how to tell powerful stories.",
+      "learn": "Students start with the foundations of visual storytelling, then explore camera technique, composition, lighting, audio and video production, while developing the practical editing skills used by today's leading creators. They also learn how to adapt a storytelling style for different digital platforms.",
+      "outcome": "By the end of this program you will have the confidence and practical experience to plan, shoot, edit and publish professional quality content, whether you want to become a filmmaker, a content creator, a social media professional, or to build your own personal brand."
+    },
+    {
+      "id": "communication",
+      "title": "Interview Skills and Communication Mastery",
+      "summary": "For students who understand that opportunities are earned not only through knowledge, but through the confidence to communicate it. The ability to present yourself clearly, think critically, and leave a lasting impression is one of the most valuable skills you can develop.",
+      "learn": "The program covers the fundamentals of effective communication, from building confidence and improving body language to speaking with clarity and purpose. As it progresses, students prepare for real interview situations through practical exercises, mock interviews and personalised feedback.",
+      "outcome": "You will have the confidence to communicate effectively, perform successfully in interviews, and represent yourself professionally in every opportunity that comes your way, whether you are applying for internships, scholarships, university admissions or your first job."
+    },
+    {
+      "id": "markets",
+      "title": "Financial Markets and Trading Discipline",
+      "summary": "A professional, disciplined introduction to global financial markets: the mechanics, the strategy and the psychology. This is not a get rich quick course. It is a structured program that builds financial intelligence and a strategic mindset.",
+      "learn": "The program begins by building economic literacy, helping students understand how global events, government policy and international relations move markets. Students then learn to read professional charts and identify trends, with a deep focus on the psychology of trading: managing emotion, maintaining discipline under pressure, and following risk management rules.",
+      "outcome": "You will finish with a foundational understanding of global financial markets, the technical skills to analyse them, and the disciplined mindset of someone who makes decisions based on research and risk management rather than guesswork."
+    }
+  ],
+
+  "scholarships": [
+    { "id": "academic", "name": "Academic", "blurb": "For the ones who let results do the talking. Awarded to students with outstanding board examination results. If you came in with the grades, Meridian rewards the grind." },
+    { "id": "sports", "name": "Sports", "blurb": "Champions on the field deserve champions in the classroom. Awarded to students who have demonstrated exceptional athletic ability at district, provincial or national level, because a Meridian's arena is not limited to academics." },
+    { "id": "talent", "name": "Talent", "blurb": "Because greatness is not always measured by grades. For students with extraordinary abilities in arts, music, debate, drama, or any creative field. If you have got the gift, Meridian will back it." },
+    { "id": "huffaz", "name": "Huffaz", "blurb": "For those who carry the greatest knowledge of all. Students who have completed the memorisation of the Holy Quran are eligible to apply. Awards are granted according to the college scholarship policy." },
+    { "id": "financial-aid", "name": "Financial Aid", "blurb": "If you are looking to apply for financial aid, a simple application process is available. Download the form, fill in all the required details carefully, and submit it as soon as possible." }
+  ],
+
+  "admissionSteps": [
+    {
+      "step": "Step 1",
+      "title": "Application",
+      "points": [
+        "Online Form Submission: complete the initial application form with your details.",
+        "Documents Submission: upload all required supporting documentation to finalise your application."
+      ]
+    },
+    {
+      "step": "Step 2",
+      "title": "Form Evaluation",
+      "points": [
+        "Screening: a thorough review of your submitted application and documents.",
+        "Interview Call: a conversation with our team to discuss your goals and fit for the program."
+      ]
+    },
+    {
+      "step": "Step 3",
+      "title": "Session",
+      "points": [
+        "Orientation and Tour: get familiar with our facilities and culture.",
+        "Counseling and Q/A: receive personalised guidance and get all your questions answered.",
+        "Offer Letter: receive your official invitation to join us."
+      ]
+    }
+  ],
+
+  "criteria": [
+    "Academic Record: minimum passing grade in O Level or equivalent board examination.",
+    "Entry: appear for the college orientation session.",
+    "Conduct and Character: a clean academic and disciplinary record from your previous institution.",
+    "Subject Selection: choose your combination based on your desired faculty.",
+    "Document Submission: submit all required documents within the given deadline."
+  ],
+
+  "eligibility": [
+    { "title": "O-Level", "detail": "Minimum 3 passing grades" },
+    { "title": "Matriculation, AKU Board, Federal Board", "detail": "Minimum 60% marks required" },
+    { "title": "Unconditional Offer", "detail": "For students meeting final academic requirements" },
+    { "title": "Conditional Offer", "detail": "For students awaiting results or appearing in upcoming exams" }
+  ],
+
+  "counselling": [
+    { "id": "career", "name": "Career Counselling", "blurb": "Mapping the path from where you are to where you want to end up, subject choices included, with people who know what universities and employers actually look for." },
+    { "id": "academic", "name": "Academic Counselling", "blurb": "Struggling? Stuck? Every student learns differently. Every student has strengths, and every student has subjects that do not come as naturally. Academic Counselling is built on one principle: nobody gets left behind." },
+    { "id": "wellbeing", "name": "Well-Being Counselling", "blurb": "A safe, confidential space for the parts of the journey that are not academic. No judgment. No pressure. No scripts. Just honest guidance from people who care where you end up." }
+  ],
+
+  "societies": [
+    { "id": "speaking", "name": "Speaking Society", "blurb": "The definitive authority on presence, precision and the power of the spoken word. Built on oratorical discipline and unyielding confidence, this is the home of voices that lead, persuade and leave a lasting legacy." },
+    { "id": "ai-robotics", "name": "AI and Robotics Society", "blurb": "The frontier of modern engineering and cognitive computing. A collective of visionaries who design intelligent systems and develop the autonomous technologies that redefine what people can do." },
+    { "id": "community", "name": "Community Service Society", "blurb": "Leadership rooted in social responsibility. This is for students who understand that real influence is measured by the difference created in the lives of others. We turn empathy into action." },
+    { "id": "media", "name": "Media Society", "blurb": "The intersection of creativity and perception. Modern communicators who master the power of the lens and the weight of the narrative. We do not just report the world, we shape how it is seen." },
+    { "id": "drama", "name": "Drama and Arts Society", "blurb": "Refined discipline and transcendent creativity. Practitioners who turn abstract imagination into performance, built on artistic mastery, originality and the rare ability to move an audience." },
+    { "id": "entrepreneur", "name": "Entrepreneur Society", "blurb": "A mindset defined by strategic audacity and relentless execution. A space for those who find untapped opportunity where others see uncertainty, and who drive innovation that creates real value." }
+  ],
+
+  "houses": [
+    { "id": "samurai", "name": "Samurai", "mentor": "Sir Adnan Rehmat", "creed": "A Samurai earns their victory through discipline, precision, and an unbreakable focus. Wear this badge with honour, carry this house with pride, and when the Clash arrives, let every opponent remember the name." },
+    { "id": "spartan", "name": "Spartan", "mentor": "Sir Bilal Qureshi", "creed": "A Spartan never stands alone. We fight as one, we win as one, and when the Clash comes, every point this house has earned all year will prove that Spartans were built for exactly this moment." },
+    { "id": "gladiator", "name": "Gladiator", "mentor": "Miss Hina Farooq", "creed": "Gladiators were made for the arena. Wear this badge like the champion you are, bring everything you have to every single day, and when the Clash begins, show this college what Gladiators are truly made of." },
+    { "id": "viking", "name": "Viking", "mentor": "Sir Kashif Anwar", "creed": "Vikings were never afraid of the unknown, never stopped by the storm, and never settled for second. Join this house, own that spirit, and together we will sail straight to the top of the Clash." }
+  ],
+
+  "houseRules": [
+    { "title": "Academics", "blurb": "Every A, every distinction, every board result adds points to your house. Excellence in the classroom is the foundation of every great house." },
+    { "title": "ECA and Sports", "blurb": "Win a debate, score a goal, lead a society. Every achievement outside the classroom is points on the board." },
+    { "title": "Behaviour and Conduct", "blurb": "Respect, discipline and character matter here. Positive conduct earns your house points. Disciplinary issues cost them." },
+    { "title": "Campus Participation", "blurb": "Attendance, participation in events and campus contributions all feed directly into your house score. Being present is being powerful." }
+  ],
+
+  "showcase": [
+    { "id": "academic", "name": "Academic Achievers", "blurb": "The ones who showed up, locked in, and topped the board. From city wide distinctions to international scholarships, they did not just study, they dominated." },
+    { "id": "eca", "name": "ECA Achievers", "blurb": "Debate stages, sports arenas, drama floors, music halls. These are the ones who proved that greatness is not only academic." },
+    { "id": "society", "name": "Society Leaders", "blurb": "Behind every event, every society milestone, every initiative that moved the campus, there were students who made it happen. These are them." }
+  ],
+
+  "news": [
+    {
+      "id": "round-2-closing-soon",
+      "title": "Round 2 Closing Soon",
+      "date": "1 May 2026",
+      "kicker": "Admissions",
+      "summary": "Round 2 of admissions for the incoming academic batch is in its final stretch. Seats are limited by design, and the strongest applications arrive early.",
+      "body": "Admissions open once a year for the incoming academic batch, and when they open, they move fast. Seats are limited by design because we maintain a standard of quality that large numbers compromise. Deadlines are announced officially on the admissions portal and across our social channels. Our advice is simple: do not wait for the last day. The best applicants apply early, and the best seats go first."
+    },
+    {
+      "id": "shirt-signing-day",
+      "title": "Shirt Signing Day 2026",
+      "date": "16 April 2026",
+      "kicker": "Campus Life",
+      "summary": "The day the graduating A2 batch puts down their pens for the last time and picks up a marker to leave their mark on each other.",
+      "body": "Every journey has a beginning, and every great journey deserves an ending worth remembering. Shirt Signing Day is that moment: the day the graduating A2 batch steps away from the classroom and leaves its mark on something far more personal than an exam paper. The uniform was theirs for two years. The memories written on it, forever."
+    },
+    {
+      "id": "individual-talents",
+      "title": "How Meridian College Nurtures Individual Talents and Collective Skills",
+      "date": "7 April 2026",
+      "kicker": "Academics",
+      "summary": "Focused class sizes, three pillars of counselling and a house system that counts everything. A look at how the parts fit together.",
+      "body": "Class sizes here are focused, because quality education is never a numbers game. Every student deserves to be seen, heard and genuinely supported by their faculty rather than lost in a sea of faces. Focused class sizes mean more direct interaction with teachers, more personalised attention, more meaningful feedback, and a learning environment where every student actually matters."
+    },
+    {
+      "id": "counselling-week",
+      "title": "Counselling Week: book your session",
+      "date": "20 March 2026",
+      "kicker": "Counselling",
+      "summary": "Career, academic and well-being sessions run all week, and every slot is bookable from the counselling page.",
+      "body": "For one week the counselling team runs extended hours across all three pillars. Career sessions cover subject combinations and university pathways, academic sessions focus on the subjects that are not clicking yet, and well-being sessions are exactly what they sound like. Sessions are one to one and confidential."
+    },
+    {
+      "id": "open-day",
+      "title": "Campus Open Day",
+      "date": "8 March 2026",
+      "kicker": "Admissions",
+      "summary": "Walk the campus, sit in on a class, and meet the faculty who would be teaching your combination.",
+      "body": "An open day is the shortest route from a website to a decision. Walk the labs, the library and the sports ground, sit in on a live class, and talk to the faculty who teach the subjects you are considering. Registration is open and places are allocated in order."
+    }
+  ],
+
+  "faqs": [
+    {
+      "q": "What is the admission deadline?",
+      "a": "Admissions open once a year for the incoming academic batch, and when they open, they move fast. Seats are limited by design because we maintain a standard of quality that large numbers compromise. Deadlines are announced officially on the admissions portal and across our social media channels. Our advice? Do not wait for the last day. The best applicants apply early and the best seats go first."
+    },
+    {
+      "q": "How can I apply?",
+      "a": "Applying is straightforward, but it means something. Head to the admissions page, fill out your application form, upload your required documents, and appear for the orientation session. From there the process is clean, transparent and fully online. No connections. No shortcuts. Just merit, the way it should be."
+    },
+    {
+      "q": "Is student counselling available?",
+      "a": "Not just available, it is built into the experience. Every student has access to a three pillar counselling program covering career, academic and well-being counselling. Whether you need help mapping a career path, support with a subject that is not clicking, or simply a safe and confidential space to talk, the counsellors are here. No judgment. No pressure."
+    },
+    {
+      "q": "What are the class sizes like?",
+      "a": "Class sizes are focused, because quality education is never a numbers game. We believe every student deserves to be seen, heard and genuinely supported by their faculty rather than lost in a sea of faces. Focused class sizes mean more direct interaction, more personalised attention, more meaningful feedback, and a learning environment where every student actually matters."
+    },
+    {
+      "q": "Are there any scholarships or financial aid options?",
+      "a": "Yes, and we are proud of it. Talent should never be limited by financial circumstance. The scholarship program offers the Huffaz Scholarship, the Sports Scholarship, the Talent Scholarship and the Academic Scholarship, each awarded on the basis of merit, achievement and demonstrated potential."
+    }
+  ],
+
+  "testimonials": [
+    { "name": "Areeba K.", "role": "A2, Pre-Medical", "quote": "I picked my combination in a counselling session in week one and never once felt like I was guessing. The faculty know your name and they know your target." },
+    { "name": "Hasan M.", "role": "AS, Commerce", "quote": "The house system sounds like a gimmick until you are in it. Every result you post counts for something bigger than you, and that changes how you study." },
+    { "name": "Zoya R.", "role": "Alumna, Class of 2025", "quote": "The interview skills program is the reason my university interview went the way it did. I had done the whole thing twice already in a mock room." },
+    { "name": "Bilal A.", "role": "A2, Hybrid", "quote": "Societies here are student led in the real sense. We pitched an event, got a budget, and ran it. Nobody did it for us." }
+  ],
+
+  "universities": [
+    "IBA Karachi", "LUMS", "NUST", "Aga Khan University", "Habib University",
+    "GIKI", "University of Toronto", "University of Manchester", "Monash", "NED University"
+  ],
+
+  "campusLife": {
+    "title": "A Day in the Life",
+    "body": "The experience does not end when the bell rings. Campus life here is everything the classroom is not: loud, electric and completely alive. From the buzz of society events to the roar of the sports ground, from friendships made in corridors to late study sessions before boards, this is where students come into their own. Every corner of this campus has a story. Every event leaves a memory."
+  },
+
+  "clash": {
+    "title": "Clash of the Houses",
+    "body": [
+      "All year long, every student fights for their house. Every grade earned, every trophy lifted, every act of discipline and excellence, it all leads to this.",
+      "The Clash is the most anticipated event of the year. For one week the four houses go head to head in a series of competitions decided by the management, including academic challenges, sports battles and creative showdowns.",
+      "The house that has built the most points throughout the year enters with the advantage. But anything can happen in the arena. When the final scores are tallied, only one house is crowned champion."
+    ]
+  },
+
+  "media": [
+    { "id": "campus-tour", "title": "Campus Tour", "kicker": "Video" },
+    { "id": "clash-highlights", "title": "Clash of the Houses, Highlights", "kicker": "Video" },
+    { "id": "science-labs", "title": "Inside the Science Labs", "kicker": "Video" },
+    { "id": "results-day", "title": "Results Day", "kicker": "Video" },
+    { "id": "society-showcase", "title": "Society Showcase", "kicker": "Video" },
+    { "id": "open-day-walkthrough", "title": "Open Day Walkthrough", "kicker": "Video" },
+    { "id": "faculty-in-focus", "title": "Faculty in Focus", "kicker": "Video" },
+    { "id": "sports-gala", "title": "Sports Gala", "kicker": "Video" }
+  ]
+}

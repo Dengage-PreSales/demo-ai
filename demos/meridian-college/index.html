@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-demo-slug="meridian-college">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian College | Dengage Education Demo</title>
+<meta name="description" content="A working college website for a conversation about personalization.">
+
+<!--
+    THE DENGAGE EDUCATION DEMO. A working college website for a conversation
+    about personalization on an education account.
+
+    It is a demonstration, not a live college. The institution, its staff and its
+    students are fictional, every portrait is drawn rather than photographed, and
+    the mark in the header is the Dengage one.
+
+    ORDER IN THE HEAD IS LOAD BEARING:
+      1. js/identity.js resolves the contact key synchronously and sets __dnInit
+      2. the SDK snippet initializes WITH that key, so the contact is attached
+         before any event goes out
+      3. the page view fires later, from js/dengageEvents.js, through
+         js/edu-site.js
+
+    The page view is what makes this demo's rows findable. The SDK fills page_url
+    and session_id on that row itself, and session_id is the only join from it to
+    the application, shortlist and search rows the same visit writes.
+-->
+
+<link rel="icon" href="vendor/assets/dengage-logo.svg" type="image/svg+xml">
+
+<!-- Scripts before stylesheets. A pending stylesheet blocks every script after
+     it, and the font request below goes to a third party, so with it above these
+     the Dengage bootstrap would wait on Google Fonts: slow on a bad network and
+     indefinite on a network that blocks it. Neither script reads a style. -->
+<script src="js/identity.js"></script>
+
+<!-- DENGAGE SDK START -->
+<script>
+  (function (window, document) {
+    window.dengage = window.dengage || function () {
+      (window.dengage.q = window.dengage.q || []).push(arguments);
+    };
+    var accountId = '28';
+    var appGuid = '99d9b8fb-0c62-5a85-3e43-2402554d93a5';
+    if (accountId.indexOf('__') !== 0 && appGuid.indexOf('__') !== 0) {
+      var script = document.createElement('script');
+      script.async = true;
+      script.src = 'https://pcdn.dengage.com/p/push/' + accountId + '/' + appGuid + '/dengage_sdk_loader.js';
+      document.getElementsByTagName('head')[0].appendChild(script);
+    }
+    window.__dnInit ? window.dengage('initialize', window.__dnInit) : window.dengage('initialize');
+  })(window, document);
+</script>
+<!-- DENGAGE SDK END -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bitter:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page-type="home">
+
+<div id="site-chrome-top"></div>
+<div class="inline-slot container" id="dn_inline_target_edu_below_header"></div>
+
+<section class="hero">
+    <div class="hero-art" data-render="hero-art"></div>
+    <div class="container">
+        <h1><span>We Are Meridians,</span><span class="line-2">We Are The Future!</span></h1>
+        <p class="hero-body">The most ambitious A Levels college in Karachi, built for students who
+            intend to lead rather than to keep up.</p>
+        <div class="hero-actions">
+            <a class="btn btn-accent" href="apply.html">Apply Now</a>
+            <a class="btn btn-light" href="life.html#campus">Discover Campus Life</a>
+        </div>
+    </div>
+</section>
+
+<div class="inline-slot container" id="dn_inline_target_edu_below_hero"></div>
+
+<section class="section">
+    <div class="container">
+        <div class="split">
+            <div>
+                <span class="eyebrow">Why Meridian College?</span>
+                <h2>Some colleges prepare you for exams. We prepare you for everything.</h2>
+                <p>Meridian College is the most ambitious A Levels college in Karachi, with one
+                    uncompromising vision: to create a space where the next generation does not just
+                    study, but transforms. Founded under the leadership of the Northline Group, and led
+                    by four of the city's most accomplished educators, Meridian was never built to be
+                    just another college on the map. It was built to be the standard everything else is
+                    measured against.</p>
+                <p>This is not just a college. This is where you become who you were always meant to be.</p>
+                <p class="tagline">We Are Meridians, We Are The Future!</p>
+            </div>
+            <div class="art" data-render="campus-art"></div>
+        </div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Beyond the classroom</span>
+            <h2>Life Hits Different Beyond the Classroom</h2>
+            <p class="lede">There is a version of college that exists only in textbooks, and then there is
+                this one. What happens beyond the classroom here is not an afterthought. It is intentional,
+                electric and completely alive. Do not just take our word for it, see it for yourself.</p>
+        </div>
+        <div class="grid grid-4" data-render="media"></div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Academic pathways</span>
+            <h2>Every discipline. Every ambition. Covered.</h2>
+        </div>
+        <div class="grid grid-3" data-render="pathways"></div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Faculty</span>
+            <h2>The Minds Behind the Meridians</h2>
+            <p class="lede">Karachi's sharpest academic minds. Our faculty do not just teach, they transform.</p>
+        </div>
+        <div class="rail" data-render="faculty" data-limit="12"></div>
+        <div style="text-align:center"><a class="btn btn-ghost" href="academics.html#faculty">Meet the full faculty</a></div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Admissions</span>
+            <h2>Your Meridian Era Starts Here</h2>
+            <p class="lede">Seats are limited. Standards are not. If you have got what it takes, this is
+                your moment.</p>
+        </div>
+        <div data-render="admission-steps"></div>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head">
+            <span class="eyebrow">Our Meridians</span>
+            <h2>The names that define the standard</h2>
+            <p class="lede">The faces that carry the legacy.</p>
+        </div>
+        <div class="grid grid-3" data-render="showcase"></div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container" style="max-width:900px">
+        <div class="section-head"><span class="eyebrow">Questions</span><h2>FAQs</h2></div>
+        <div data-render="faqs"></div>
+        <p style="text-align:center;margin-top:30px">Still have questions? We are one message away.
+            <a href="contact.html">Contact us</a>.</p>
+    </div>
+</section>
+
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-head"><span class="eyebrow">Testimonials</span><h2>Their Words. Our Pride.</h2></div>
+        <div class="grid grid-4" data-render="testimonials"></div>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="section-head left" style="display:flex;justify-content:space-between;align-items:flex-end;max-width:none">
+            <div><span class="eyebrow">News</span><h2>Read Our Latest News</h2></div>
+            <a class="btn btn-ghost btn-sm" href="blogs.html">View all posts</a>
+        </div>
+        <div class="grid grid-3" data-render="news" data-limit="3"></div>
+    </div>
+</section>
+
+<div class="inline-slot container" id="dn_inline_target_edu_above_footer"></div>
+<div id="site-chrome-bottom"></div>
+
+<div class="scrim" id="scrim"></div>
+
+<aside class="drawer" id="application" aria-label="Your application">
+    <div class="drawer-head">
+        <h2>Your application</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="application-body"></div>
+    <div class="drawer-foot" id="application-foot" hidden>
+        <button type="button" class="btn btn-primary btn-block" data-start-application="1">Start my application</button>
+    </div>
+</aside>
+
+<aside class="drawer" id="shortlist" aria-label="Shortlist">
+    <div class="drawer-head">
+        <h2>Your shortlist</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="shortlist-body"></div>
+</aside>
+
+<aside class="drawer" id="inbox" aria-label="Messages">
+    <div class="drawer-head">
+        <h2>Messages</h2>
+        <button type="button" class="link-btn" id="inbox-refresh">Refresh</button>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body" id="inbox-body"></div>
+</aside>
+
+<aside class="drawer left" id="search-panel" aria-label="Search subjects">
+    <div class="drawer-head">
+        <h2>Find a subject</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div class="drawer-body">
+        <form id="search-form">
+            <div class="field">
+                <label for="search-input">Subject, syllabus code or pathway</label>
+                <input id="search-input" type="search" placeholder="Physics, 9702, Commerce" autocomplete="off">
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Search</button>
+        </form>
+        <div id="search-results" style="margin-top:20px"></div>
+    </div>
+</aside>
+
+<div class="modal" id="account" aria-label="Account">
+    <div class="modal-head">
+        <h2>Your account</h2>
+        <button type="button" class="icon-btn" data-close="1" aria-label="Close">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+    </div>
+    <div id="account-body"></div>
+</div>
+
+<div class="toast-stack" id="toast-stack"></div>
+
+<script src="js/dengageEvents.js"></script>
+<script src="js/store.js"></script>
+<script src="js/inbox.js"></script>
+<script src="js/slots.js"></script>
+<script src="js/debug.js"></script>
+<script src="js/edu-artwork.js"></script>
+<script src="js/edu-site.js"></script>
+<script src="js/edu-pages.js"></script>
+<script src="js/edu-journey.js"></script>
+<script src="js/edu-usecases.js"></script>
+<script src="js/edu-boot.js"></script>
+</body>
+</html>
