@@ -1017,10 +1017,17 @@ function pathCategory(pageUrl) {
    merchandising pages would be worse: schema.org category is curated taxonomy,
    collection membership includes every promotional shelf a product sits on.
 
-   THE MOST SPECIFIC COLLECTION WINS. A store files one garment under Apparel,
-   Bottoms and Bottoms Men all at once. The collection with the fewest members
-   is the one that says the most about the product, so it is the one used. Ties
-   break alphabetically so two runs of the same build agree.
+   THE MOST SPECIFIC COLLECTION WITH COMPANY WINS, and the second half of that
+   rule was learned from the store that prompted the first. A store files one
+   garment under Apparel, Bottoms and Bottoms Men at once, so the smallest
+   collection says the most about the product. But this same store publishes
+   217 collections against a thirty product sample, and pure specificity handed
+   nearly every product a private collection of its own; categorise then
+   correctly refused thirty categories of one, and the demo shipped with the
+   same single bucket the pass exists to prevent. So collections are taken
+   smallest first, but only ones holding at least two of the sampled products
+   are taken at all, which is the same floor the navigation itself applies.
+   Ties break alphabetically so two runs of the same build agree.
 
    WHAT IT REFUSES TO GUESS. A collection whose slug is the whole store
    (all, all-products, frontpage) contributes nothing. A store whose collection
@@ -1096,11 +1103,12 @@ function productLinksIn(html, pageUrl) {
     return keys;
 }
 
-/* Reads the collection pages and answers: for this product page slug, what is
-   the most specific collection that lists it. */
+/* Reads the collection pages and answers: which collections list which of the
+   page slugs this build actually read. Choosing between them happens in the
+   caller, where the sampled products are known. */
 async function collectionCategories(origin) {
     const urls = await sitemapCollectionUrls(origin);
-    if (!urls.length) return { byProduct: new Map(), pagesRead: 0 };
+    if (!urls.length) return { collections: [], pagesRead: 0 };
 
     /* slug -> { name, members: Set of product keys } */
     const collections = new Map();
@@ -1133,18 +1141,74 @@ async function collectionCategories(origin) {
     }
     await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
 
-    /* Most specific wins: fewest members, then alphabetical, so the answer is
-       the same on every run of the same build. */
-    const ranked = [...collections.values()]
-        .sort((a, b) => a.members.size - b.members.size || a.name.localeCompare(b.name));
+    return { collections: [...collections.values()], pagesRead };
+}
 
+/* Assigns a category to every sampled product a collection can vouch for, by
+   choosing a FEW LARGE buckets rather than many exact ones. Three rules, each
+   learned from a way this went wrong on one real store:
+
+   1. A collection covering most of the sample is an umbrella, however real its
+      name, and is excluded: Apparel over every garment is the single bucket
+      this pass exists to prevent, wearing a better name.
+   2. Each round, the collection vouching for the MOST still unassigned
+      products wins, tying towards the smaller collection and then the earlier
+      name so two runs agree. Choosing smallest first read as more precise and
+      shattered a thirty product sample across two hundred collections into
+      buckets of one and two, every one of which the navigation minimum then
+      threw away, and the demo shipped with one bucket anyway.
+   3. A collection must vouch for at least as many products as the navigation
+      itself will require, or it is skipped: a category assigned here only to
+      be discarded by categorise is work dressed as progress.
+
+   Rounds stop at CATEGORY_CAP, because a sixth category cannot appear in the
+   header whatever happens here. */
+const MIN_COLLECTION_SUPPORT = 2;
+const UMBRELLA_COVERAGE = 0.6;
+
+export function assignFromCollections(productKeys, collections) {
+    const sample = new Set(productKeys);
+    const unassigned = new Set(productKeys);
     const byProduct = new Map();
-    for (const collection of ranked) {
-        for (const key of collection.members) {
-            if (!byProduct.has(key)) byProduct.set(key, collection.name);
+    /* The floor is the SHIPPED catalogue's floor, not the raw sample's. The
+       sample here can be eighty rows of colourways that collapse to thirty
+       shipped products, and demanding minPerCategory(80) support meant no real
+       collection qualified at all: the store's own Bottoms Men holds four of a
+       thirty product sample, which is a perfectly good navigation entry. */
+    const floor = Math.max(MIN_COLLECTION_SUPPORT,
+        minPerCategory(Math.min(sample.size, PRODUCT_CAP)));
+
+    const usable = collections.filter((collection) => {
+        let coverage = 0;
+        for (const key of sample) if (collection.members.has(key)) coverage++;
+        return coverage > 0 && coverage <= sample.size * UMBRELLA_COVERAGE;
+    });
+
+    for (let round = 0; round < CATEGORY_CAP && unassigned.size >= floor; round++) {
+        let best = null;
+        let bestSupport = 0;
+        for (const collection of usable) {
+            let support = 0;
+            for (const key of unassigned) if (collection.members.has(key)) support++;
+            if (support < floor) continue;
+            if (support > bestSupport ||
+                (support === bestSupport && best &&
+                 (collection.members.size < best.members.size ||
+                  (collection.members.size === best.members.size &&
+                   collection.name.localeCompare(best.name) < 0)))) {
+                best = collection;
+                bestSupport = support;
+            }
+        }
+        if (!best) break;
+        for (const key of [...unassigned]) {
+            if (best.members.has(key)) {
+                byProduct.set(key, best.name);
+                unassigned.delete(key);
+            }
         }
     }
-    return { byProduct, pagesRead };
+    return byProduct;
 }
 
 /* schema.org lets any of these be a bare string or an object with a name, and
@@ -1372,7 +1436,7 @@ async function jsonld(origin) {
     const urls = await sitemapProductUrls(origin);
     if (!urls.length) return { ok: false, reason: REASON.NOT_FOUND, tier: 'jsonld' };
 
-    const found = [];
+    let found = [];
     const currencies = [];
     /* COUNTED BY DISTINCT NAME, NOT BY ROW, and counting rows made the
        ProductGroup fix look half broken. One garment in six sizes is six rows and
@@ -1431,16 +1495,36 @@ async function jsonld(origin) {
     const uncategorised = found.filter((product) => !product.category).length;
     if (uncategorised >= Math.ceil(found.length / 2)) {
         const recovered = await collectionCategories(origin);
+        const keys = found.filter((p) => !p.category)
+            .map((p) => pageKey.get(p)).filter(Boolean);
+        const byProduct = assignFromCollections(keys, recovered.collections);
         let filled = 0;
         for (const product of found) {
             if (product.category) continue;
-            const name = recovered.byProduct.get(pageKey.get(product));
+            const name = byProduct.get(pageKey.get(product));
             if (name) { product.category = name; filled++; }
         }
         /* Quoted on the issue through attempts, so a thin build says where its
            categories came from, or that the recovery found nothing. */
         detail += ', categories for ' + filled + ' of ' + found.length +
                   ' products from ' + recovered.pagesRead + ' collection pages';
+
+        /* SHIP THE LABELLED PRODUCTS RATHER THAN DILUTING THEM. The read pulls
+           up to ninety pages and the demo ships thirty, so when the collections
+           pass has labelled a full catalogue's worth, the unlabelled remainder
+           is surplus, not signal. Keeping it was how twenty eight labelled rows
+           drowned in a pool of eighty two: categorise floors its counts against
+           the WHOLE pool, every collection bucket came in under the floor, and
+           the demo shipped with one bucket despite the recovery having worked.
+           When the labelled set is too small to be a catalogue on its own,
+           everything is kept and the thin build warning tells the operator. */
+        const labelled = found.filter((product) => product.category);
+        const labelledNames = new Set(labelled.map((p) => p.name.toLowerCase()));
+        if (labelledNames.size >= PRODUCT_FLOOR) {
+            const surplus = found.length - labelled.length;
+            found = labelled;
+            detail += ', ' + surplus + ' uncategorised rows set aside';
+        }
     }
 
     return {

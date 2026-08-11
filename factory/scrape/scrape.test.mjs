@@ -1341,7 +1341,8 @@ async function fixtureServer(build) {
     const site = await fixtureServer((origin) => {
         const locs = [];
         for (let i = 1; i <= 9; i++) locs.push(origin + '/products/widget-' + i);
-        for (const slug of ['shirts', 'shoes', 'all', 'apparel']) {
+        for (const slug of ['shirts', 'shoes', 'all', 'apparel',
+                            'gift-wrap', 'staff-pick']) {
             locs.push(origin + '/collections/' + slug);
         }
         const links = (from, to) => {
@@ -1360,11 +1361,19 @@ async function fixtureServer(build) {
             },
             /* Five shirts, four shoes. Apparel holds all nine, so it is less
                specific than either and must never win. All is the whole store
-               by name and must not even be read. */
-            '/collections/shirts':  { body: htmlPage(links(1, 5)) },
-            '/collections/shoes':   { body: htmlPage(links(6, 9)) },
-            '/collections/apparel': { body: htmlPage(links(1, 9)) },
-            '/collections/all':     { body: htmlPage(links(1, 9)) }
+               by name and must not even be read. Gift wrap and staff pick each
+               hold ONE product, which is the shape that broke the real store:
+               217 fine grained collections against a thirty product sample
+               handed nearly every product a private collection, and the
+               navigation minimum then threw every one of them away. A
+               collection vouching for a single product must lose to any
+               department that also lists it. */
+            '/collections/shirts':     { body: htmlPage(links(1, 5)) },
+            '/collections/shoes':      { body: htmlPage(links(6, 9)) },
+            '/collections/apparel':    { body: htmlPage(links(1, 9)) },
+            '/collections/all':        { body: htmlPage(links(1, 9)) },
+            '/collections/gift-wrap':  { body: htmlPage(links(9, 9)) },
+            '/collections/staff-pick': { body: htmlPage(links(3, 3)) }
         };
         for (let i = 1; i <= 9; i++) {
             routes['/products/widget-' + i] = {
@@ -1390,10 +1399,13 @@ async function fixtureServer(build) {
        result.products.filter((p) => p.category === 'Shoes').length === 4);
     ok('the whole-store collections never win',
        result.products.every((p) => p.category !== 'Apparel' && p.category !== 'All'));
+    ok('a collection vouching for one product never wins either',
+       result.products.every((p) => p.category !== 'Gift Wrap' && p.category !== 'Staff Pick'),
+       result.products.map((p) => p.name + ':' + p.category));
 
     const attempt = result.attempts.find((a) => a.tier === 'jsonld');
     ok('the attempts detail says where the categories came from',
-       /categories for 9 of 9 products from 3 collection pages/.test(attempt.detail),
+       /categories for 9 of 9 products from 5 collection pages/.test(attempt.detail),
        attempt.detail);
 }
 
