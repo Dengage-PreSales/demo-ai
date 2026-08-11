@@ -1,0 +1,39 @@
+{
+  "slug": "meridian-college",
+  "displayName": "Dengage Education Demo",
+  "vertical": "education",
+  "sourceUrl": "https://titan.edu.pk/college/",
+  "createdAt": "2026-08-11",
+  "expiresAt": "2026-11-09",
+  "theme": {
+    "primary": "#622d91",
+    "onPrimary": "#ffffff",
+    "accent": "#f0b323",
+    "ink": "#051435",
+    "muted": "#4c4c4c",
+    "surface": "#ffffff",
+    "page": "#f6f4ee",
+    "line": "#e4e4e4",
+    "radius": "10px",
+    "displayFont": "Bitter",
+    "bodyFont": "Inter"
+  },
+  "locale": {
+    "language": "en",
+    "currency": "PKR",
+    "currencySymbol": "Rs ",
+    "numberLocale": "en-PK"
+  },
+  "dengage": {
+    "accountId": "28",
+    "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
+    "scenarioPrefix": "demo_dengage_edu_"
+  },
+  "faculties": [
+    "Sciences",
+    "Commerce",
+    "Hybrid"
+  ],
+  "subjectCount": 16,
+  "catalogueSource": "replica"
+}
