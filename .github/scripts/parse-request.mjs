@@ -125,6 +125,21 @@ export function readCsvUrl(text) {
     return match[0].replace(/[),.]+$/, '');
 }
 
+/* THE PASTED SCREENSHOT. Pasting an image into the form's box makes GitHub
+   host it and write a markdown image or a bare address into the field, and
+   both spellings land on GitHub's own attachment hosts, which are the only
+   hosts accepted for the same reason readCsvUrl accepts them: fetching an
+   arbitrary address because an issue contained one is how a workflow becomes
+   somebody else's download client. */
+const IMAGE_ATTACHMENT = /https:\/\/(?:github\.com\/user-attachments\/assets\/[^\s)"'\]>]+|(?:[a-z0-9-]+\.)?user-images\.githubusercontent\.com\/[^\s)"'\]>]+|private-user-images\.githubusercontent\.com\/[^\s)"'\]>]+)/i;
+
+export function readImageUrl(text) {
+    if (!text) return '';
+    const match = String(text).match(IMAGE_ATTACHMENT);
+    if (!match) return '';
+    return match[0].replace(/[),.]+$/, '');
+}
+
 /* -------------------------------------------------------------------------- */
 
 export function parse(env) {
@@ -147,7 +162,13 @@ export function parse(env) {
        stay an exception rather than become the normal route. */
     const csvUrl = readCsvUrl(comment);
 
-    return { url, slug, currency, name, csv_url: csvUrl };
+    /* The screenshot is read from the form first and from the retry comment
+       second, so a request filed before the field existed can supply one by
+       pasting it into the retry comment rather than editing the issue. */
+    const screenshotUrl = readImageUrl(fieldFromForm(body, 'Product listing screenshot')) ||
+                          readImageUrl(comment);
+
+    return { url, slug, currency, name, csv_url: csvUrl, screenshot_url: screenshotUrl };
 }
 
 /* Only runs as a script, so the test can import the functions above. */

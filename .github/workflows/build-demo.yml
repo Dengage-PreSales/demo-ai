@@ -63,7 +63,13 @@ concurrency:
 jobs:
   build:
     name: Generate and verify
-    runs-on: ubuntu-latest
+    # A REPOSITORY VARIABLE CAN MOVE EVERY BUILD OFF THE SHARED RUNNER POOL.
+    # Stores with bot walls serve GitHub's datacenter addresses a challenge page
+    # instead of the storefront, which no code can fix. Set DEMO_RUNNER in the
+    # repository's Actions variables to a self-hosted runner's label and every
+    # build reads from that machine's address instead; unset, this is exactly
+    # ubuntu-latest as before.
+    runs-on: ${{ vars.DEMO_RUNNER || 'ubuntu-latest' }}
 
     # WHAT COUNTS AS A REQUEST. The title prefix or the label, either one.
     #
@@ -212,6 +218,20 @@ jobs:
       # ------------------------------------------------------------------ CSV
       # Only fetched when a comment carried one. Tier 3 stays an exception path:
       # nobody is asked for a CSV until the first two tiers have failed.
+      # THE SCREENSHOT IS MANDATORY, and the refusal is a report rather than a
+      # bare exit so the failure path posts the reason in the operator's own
+      # channel with the next step spelt out. Manual dispatches and the drill
+      # are exempt: both are engineering surfaces.
+      - name: A screenshot is required before anything is read
+        if: github.event_name != 'workflow_dispatch' && steps.request.outputs.screenshot_url == ''
+        run: |
+          cat > /tmp/report.json <<'JSON'
+          {"ok": false, "stage": "screenshot",
+           "message": "This build needs one more thing: a screenshot of the store's product listing page. Open the store in your browser, screenshot the listing, and paste the image straight into the issue's screenshot box, or into a comment together with the word retry. It is how the demo gets the store's real look even when the store hides itself from automated readers.",
+           "nextStep": "Paste the screenshot, then comment **retry**."}
+          JSON
+          exit 1
+
       - name: Fetch an attached CSV, if there is one
         id: csv
         if: steps.request.outputs.csv_url != ''
@@ -270,6 +290,7 @@ jobs:
         run: |
           node factory/scrape/images.test.mjs
           node factory/scrape/render.test.mjs
+          node factory/scrape/screenshot.test.mjs
           node factory/scrape/stock.test.mjs
           # The rendered theme channel, which is what makes a dark store produce a
           # dark demo. Its fixtures are served from 127.0.0.1, so this is quick and
@@ -328,6 +349,7 @@ jobs:
           node factory/generate-demo.mjs \
             --url "${{ steps.request.outputs.url }}" \
             ${{ steps.request.outputs.slug && format('--slug {0}', steps.request.outputs.slug) || '' }} \
+            ${{ steps.request.outputs.screenshot_url && format('--screenshot {0}', steps.request.outputs.screenshot_url) || '' }} \
             ${{ steps.request.outputs.currency && format('--currency {0}', steps.request.outputs.currency) || '' }} \
             ${{ steps.csv.outputs.path && format('--csv {0}', steps.csv.outputs.path) || '' }} \
             "${named[@]}" \
@@ -683,7 +705,9 @@ jobs:
               .filter(([what, was]) => was && what !== 'primarySource')
               .map(([what]) => what)
             const paletteHow = found.primary
-              ? (found.primarySource === 'declared'
+              ? (found.primarySource === 'screenshot'
+                  ? ' (read from the screenshot pasted on this issue, the strongest ground truth)'
+                  : found.primarySource === 'declared'
                   ? ' (the site declares its own colour tokens, the strongest signal)'
                   : ' (inferred from how the site uses colour; worth a two second look)')
               : ''

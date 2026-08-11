@@ -39,7 +39,9 @@ concurrency:
 jobs:
   drill:
     name: Practice build, discarded
-    runs-on: ubuntu-latest
+    # Same override as the build: point DEMO_RUNNER at a self-hosted runner and
+    # the drill practises from the address real builds will use.
+    runs-on: ${{ vars.DEMO_RUNNER || 'ubuntu-latest' }}
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -78,6 +80,7 @@ jobs:
         run: |
           node factory/scrape/images.test.mjs
           node factory/scrape/render.test.mjs
+          node factory/scrape/screenshot.test.mjs
 
       # One build per listed site, sequentially, with the same three gates a
       # real request passes: generate, guard, smoke. The loop keeps going after

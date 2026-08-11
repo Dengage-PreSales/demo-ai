@@ -7,7 +7,8 @@
    the same applies here: this parser turns text a stranger wrote into command
    line arguments, so the cases that matter are the malformed ones.
    ========================================================================== */
-import { parse, fieldFromForm, readUrl, readSlug, readCurrency, readCsvUrl, readName }
+import { parse, fieldFromForm, readUrl, readSlug, readCurrency, readCsvUrl, readName,
+         readImageUrl }
     from './parse-request.mjs';
 
 let pass = 0;
@@ -214,6 +215,30 @@ is('undefined is refused rather than thrown at', readName(undefined), '');
 for (const hostile of ['Demo: a"b', 'Demo: a`b', 'Demo: a;b', 'Demo: a|b',
                        'Demo: a$b', 'Demo: a\\b', 'Demo: a>b', 'Demo: a{b']) {
     is('shell punctuation is refused: ' + hostile, readName(hostile), '');
+}
+
+/* THE PASTED SCREENSHOT. GitHub writes a markdown image for a paste, and only
+   its own attachment hosts are read, for the same reason the CSV rule holds. */
+is('a pasted screenshot markdown is read',
+   readImageUrl('![Image](https://github.com/user-attachments/assets/abc-123)'),
+   'https://github.com/user-attachments/assets/abc-123');
+is('a bare user-images address is read',
+   readImageUrl('https://user-images.githubusercontent.com/1/shot.png'),
+   'https://user-images.githubusercontent.com/1/shot.png');
+is('an off-host image is refused',
+   readImageUrl('![Image](https://evil.example.com/shot.png)'), '');
+is('an empty field is empty', readImageUrl(''), '');
+{
+    const body = '### Prospect website address\n\nhttps://store.example\n\n' +
+        '### Product listing screenshot\n\n' +
+        '![Image](https://github.com/user-attachments/assets/shot-1)\n';
+    const parsed = parse({ BODY: body });
+    is('the screenshot rides the parse', parsed.screenshot_url,
+       'https://github.com/user-attachments/assets/shot-1');
+    const viaComment = parse({ BODY: '### Prospect website address\n\nhttps://store.example\n',
+        COMMENT: 'retry ![Image](https://github.com/user-attachments/assets/shot-2)' });
+    is('a retry comment can supply it', viaComment.screenshot_url,
+       'https://github.com/user-attachments/assets/shot-2');
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

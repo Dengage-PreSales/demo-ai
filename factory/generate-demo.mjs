@@ -59,7 +59,7 @@ function args(argv) {
 function usage(message) {
     console.error(message);
     console.error('\nusage: node factory/generate-demo.mjs --url <prospect url> [--slug s]' +
-                  ' [--csv file] [--currency USD] [--name "Store Name"]' +
+                  ' [--csv file] [--currency USD] [--name "Store Name"] [--screenshot url]' +
                   ' [--no-generate] [--no-images] [--no-stock] [--json report.json]');
     process.exit(2);
 }
@@ -484,6 +484,48 @@ async function main() {
                       ', ' + extracted.theme.displayFont + '/' + extracted.theme.bodyFont);
     }
 
+    /* THE SCREENSHOT IS THE HUMAN'S EYES, AND IT OUTRANKS EVERYTHING SCRAPED
+       EXCEPT THE STORE'S OWN DECLARED TOKENS. Added 11 August 2026. Bot walls
+       show automated readers a challenge page and the pre-sales person the real
+       store, so the pasted listing screenshot is the one ground truth that is
+       always of the actual storefront. It drives look and feel only; products
+       stay scrape or CSV. Three outcomes, all said out loud: it CONFIRMS a
+       scraped palette that appears in it, it REPLACES one that does not, and it
+       SUPPLIES one when the scrape found nothing. Unreadable screenshots change
+       nothing and say so, because a build must never die over a palette. */
+    const screenshotNotes = [];
+    if (options.screenshot && options.screenshot !== true) {
+        const { paletteFromImage, presentIn } = await import('./scrape/screenshot.mjs');
+        const shot = await paletteFromImage(String(options.screenshot));
+        if (!shot.ok) {
+            console.error('Screenshot: not read (' + shot.reason + '), so it neither helps nor blocks.');
+        } else {
+            console.error('Screenshot: ground ' + shot.ground + ', ink ' + shot.ink +
+                          ', accents ' + (shot.accents.join(' ') || 'none'));
+            const declared = extracted.found.primarySource === 'declared';
+            const primaryPresent = presentIn(shot, extracted.theme.primary);
+            if (!extracted.found.primary || (!declared && !primaryPresent)) {
+                if (extracted.found.primary && !primaryPresent) {
+                    screenshotNotes.push('The colours read from the store\'s pages do not'
+                        + ' appear in the screenshot, so the demo is themed from the'
+                        + ' screenshot instead. If the demo looks unlike the store,'
+                        + ' the screenshot is the thing to re-take.');
+                }
+                extracted.theme.primary = shot.ink || extracted.theme.primary;
+                extracted.theme.onPrimary = '#ffffff';
+                if (shot.accents[0]) extracted.theme.accent = shot.accents[0];
+                extracted.found.primary = true;
+                extracted.found.accent = Boolean(shot.accents[0]);
+                extracted.found.primarySource = 'screenshot';
+                console.error('Theme: from the screenshot. primary ' + extracted.theme.primary +
+                              ', accent ' + extracted.theme.accent);
+            } else if (!declared && shot.accents[0] && !presentIn(shot, extracted.theme.accent)) {
+                extracted.theme.accent = shot.accents[0];
+                console.error('Theme: accent corrected from the screenshot to ' + shot.accents[0]);
+            }
+        }
+    }
+
     const base = options.slug && options.slug !== true ? String(options.slug) : slugFromUrl(origin);
     if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(base)) {
         usage('A slug must be lowercase letters, digits and hyphens, 3 to 40 characters: ' + base);
@@ -680,7 +722,7 @@ async function main() {
        segmentation, three of the things a call is booked to show. A build that
        loses one of those is still worth publishing, and it is not worth
        discovering live. These are warnings rather than failures on purpose. */
-    const warnings = buildWarnings(found, images);
+    const warnings = buildWarnings(found, images).concat(screenshotNotes);
     for (const warning of warnings) console.error('WORTH KNOWING: ' + warning);
 
     report(options.json, {

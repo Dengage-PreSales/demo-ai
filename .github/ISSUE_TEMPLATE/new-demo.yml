@@ -22,6 +22,19 @@ body:
     validations:
       required: true
 
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: Product listing screenshot
+      description: >-
+        Open the store's product listing page in your browser, take a
+        screenshot, click into this box and paste it. That is the whole step:
+        the image uploads itself. It is how the demo gets the store's real
+        look when the store hides itself from automated readers.
+      placeholder: Paste the screenshot here with Ctrl+V or Cmd+V.
+    validations:
+      required: true
+
   - type: input
     id: slug
     attributes:
