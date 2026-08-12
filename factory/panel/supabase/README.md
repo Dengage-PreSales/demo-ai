@@ -25,13 +25,13 @@ trigger.
 |---|---|
 | Table | `public.dps_product`, 27 Dengage columns plus 3 for our own bookkeeping |
 | View | `public.dengage_dps_product`, exactly the 27, for the ETL to select |
-| Rows | 45. `techiestore-in` 30, `showcase` 15, all active |
+| Rows | one per product per demo, and superseded rows stay with `is_active = false`. `select demo_slug, count(*) from dps_product group by 1` is the live answer |
 | Keys | natural catalogue ids, not namespaced. See the last section |
 | Loader | `select public.load_dps_product('<slug>');` idempotent |
 | Schedule | `refresh-dengage-catalogues`, pg_cron, every 10 minutes, active |
 | History | `public.dengage_sync_log` |
-| Read role | `dengage_ro`, read only, **no password set yet** |
-| Vault | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, **not set yet** |
+| Read role | `dengage_ro`, read only, still no password and login disabled, so the flow connects as something else today. Moving it onto this role is the one open hardening |
+| Vault | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, **set 10 August 2026** |
 
 Verified rather than assumed: a repeat load changes nothing, a withdrawn product comes
 back `is_active = 0`, `dengage_ro` reads every row through RLS while an `UPDATE` as that
@@ -61,9 +61,12 @@ login from Postgres returned 200 with a token and a flow trigger returned `code 
 **Nothing has to be told about a new demo.** The demo list is read from the factory's
 own `feed/products.json`, which every build regenerates.
 
-**It is armed but idle** until the Vault secrets exist. Until then every pass that finds
-a change records `rows changed but vault secrets are missing` in `dengage_sync_log`, so
-the gap is visible rather than silent.
+**It has been live since 10 August 2026, 15:31 UTC**, when the Vault secrets were set:
+every pass since then that finds a change logs `triggered = true` and calls the flow. If
+the secrets are ever removed, the same pass records `rows changed but vault secrets are
+missing` in `dengage_sync_log` instead, so the gap is visible rather than silent.
+
+To rotate a credential later, one statement per value:
 
 ```sql
 select vault.create_secret('<api user key>', 'dengage_api_userkey');

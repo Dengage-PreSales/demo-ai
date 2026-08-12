@@ -165,24 +165,25 @@ before uploading.
 One campaign serves every demo, for the same reason the template does. Trigger and
 segment are yours; the content half is done.
 
-### 7. Put the four secrets in the Supabase vault. This is the broken link
+### 7. The Supabase vault secrets. Set on 10 August 2026, and the chain is live
 
-**Diagnosed 10 August 2026, and it is the reason a product can be in Postgres and not in
-an email.** The chain has four steps and the third has never run:
+**Diagnosed 10 August 2026 as the reason a product could sit in Postgres and never reach
+an email, and resolved the same evening: the secrets went into the vault at 15:31 UTC.**
+The chain has four steps and all four now run:
 
 | Step | State |
 |---|---|
 | The factory publishes `products.json` | working |
-| Postgres reloads what changed, every ten minutes | **working.** 187 runs, last one minutes ago |
-| Postgres tells the Dengage Automated Flow something changed | **has never happened once** |
-| The flow copies Postgres into `dps_product` | only when somebody presses Run by hand |
+| Postgres reloads what changed, every ten minutes | working |
+| Postgres tells the Dengage Automated Flow something changed | **working since 10 August, 15:31 UTC** |
+| The flow copies Postgres into `dps_product` | triggered on every change since. Each run shows in the panel's Job History |
 
-`dengage_sync_log` names the cause in its own words on every run that had changes to send:
-`rows changed but vault secrets are missing, so Dengage was not told`. The vault is empty.
-
-So set `dengage_api_userkey`, `dengage_api_password` and `dengage_flow_id` in the Supabase
-vault, plus a password on the `dengage_ro` role. `supabase/README.md` has the chain and
-`autonomous-refresh.sql` is what reads them.
+`dengage_sync_log` is the audit trail: every pass since then that found changes reads
+`triggered = true`, and the newest build's thirty products had the flow called for them
+six seconds after the demo was published. One hardening remains open, listed in the
+table at the end of this page: the flow's database login. The `dengage_ro` role built
+for it still has no password and cannot log in, so whatever credential the flow was
+configured with in the panel, it is not the read only one.
 
 **Why the trigger has to live in Postgres rather than in GitHub Actions**, which is the
 question this design gets asked most: the Dengage API is allowlisted per address and a
@@ -242,7 +243,7 @@ else is waiting on anything.
 |---|---|
 | **Rotate the API credentials** | they were pasted into a chat. Nothing wrote them to disk here, and rotating is still the right move |
 | The unsubscribe link | the shared email footer has none, because there is no one storefront to point it at. If Dengage exposes an unsubscribe URL or tag, tell me and it goes in |
-| **Supabase Vault secrets. THIS IS THE ONE THAT BREAKS THE CHAIN** | `dengage_api_userkey`, `dengage_api_password`, `dengage_flow_id`, plus a password on the `dengage_ro` role. The vault is **empty**, checked 10 August 2026, so **Postgres has never once told Dengage that a catalogue changed**: 187 scheduled runs, `triggered = 0`, and `dengage_sync_log` says `rows changed but vault secrets are missing, so Dengage was not told`. Until these are set, `dps_product` inside Dengage only holds whatever a manual run of the flow last put there, whenever that was. This row used to read "only needed for Postgres to trigger the flow itself", which made it sound optional. It is the blocker |
+| Supabase Vault secrets | **set, 10 August 2026 at 15:31 UTC**, and Postgres has told Dengage about every catalogue change since. `dengage_sync_log` shows it on this side and Job History shows it in the panel. This row spent a day in capitals as the blocker; it is not one any more. One hardening left, and it is small: give `dengage_ro` a password and point the flow's database connection at it, so the ETL reads with a role that can only read |
 | GitHub | repository visibility and protection on `main` need your admin access |
 
 ---
