@@ -418,6 +418,23 @@ for (const snippet of SNIPPETS) {
     ok('view line: and the products are that demo\'s, not the other one\'s',
        out('view-line.txt', both) === 'Cast Iron Skillet', out('view-line.txt', both));
 
+    /* TWO DEMOS INSIDE ONE SESSION, which is the 13 August 2026 send: one origin and
+       one Dengage application mean one session id per browser SITTING, so a visitor
+       who opens two demos in one sitting writes both demos' rows under one session and
+       a session level join cannot split them. A page view row carries its own
+       page_url, so each row now attributes itself: the other demo's views must not
+       ride along on the shared session id, not even into the count. */
+    const sharedSitting = {
+        page_view_events: views(['p1'], { base: OTHER, session: 'ses-x', hour: 9 })
+            .concat(views(['p2'], { base: BASE, session: 'ses-x', hour: 10 }))
+    };
+    ok('url home: two demos inside ONE session resolve to the one the visitor is in now',
+       out('url-home.txt', sharedSitting) === BASE + 'index.html',
+       out('url-home.txt', sharedSitting));
+    ok('view line: and the other demo\'s views in the same session are not even counted',
+       out('view-line.txt', sharedSitting) === 'Cast Iron Skillet',
+       out('view-line.txt', sharedSitting));
+
     /* EVERY VIEW ON ANOTHER DEMO, so this one has nothing to show. The catalogue here holds
        only this demo's products, and the other demo's ids happen to be the same strings,
        which is the case below. */

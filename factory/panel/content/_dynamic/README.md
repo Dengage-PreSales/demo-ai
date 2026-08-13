@@ -96,7 +96,7 @@ abandoned carts at all.
 | 1. Build the key set: `contact_key`, plus every `device_id` in `master_device` for that contact | no |
 | 2. Read the scenario's event table, `where('key', 'in', keys)` | **the table** |
 | 3. Sort in JavaScript, by `event_date` and then by `id` | no |
-| 4. Scope to one demo: session ids to `page_view_events` to the slug in `page_url`, keep the newest row's demo, filter | no |
+| 4. Scope to one demo, row by row: a row with a product belongs to the demo its `dps_product.link` places it on, a row without one to the demo of its session's latest page view at that moment. Keep the newest row's demo | no |
 | 5. Fold the events into a current state | **the fold** |
 | 6. Look the products up in `dps_product`, render | no |
 
@@ -112,7 +112,12 @@ most contacts and renders its fallback, which looks like an empty basket rather 
 origin, so one device id carries the events of every demo that browser ever visited, and
 there is no demo column to filter on: columns cannot be added to the six standard tables.
 Scoping after the fold is worse than not scoping, because another demo's `delete_cart` will
-empty a basket that was not its own.
+empty a basket that was not its own. And the scoping is per ROW rather than per session,
+corrected 13 August 2026: one origin and one web application also mean one SDK session per
+browser sitting, so a visitor who opens two demos in one sitting writes both demos' rows
+under one `session_id`, and a session level join cannot split them. A real send mixed two
+storefronts into one basket exactly that way. The full story is in "One demo's basket"
+below.
 
 Which table each scenario reads:
 
@@ -311,9 +316,15 @@ lookup window. A discounted price above the full price is treated as a data faul
 contributes no discount rather than a negative one. All four are pinned in the test.
 
 **It emits no currency symbol, because it cannot know one.** `dps_product` has no
-currency column, so the symbol stays in the template as static text beside the
-snippet, the same way the product rows already emit a bare number. Every demo the
-factory builds is one currency at a time, so the template is where that belongs.
+currency column, so no asset can print a symbol it can stand behind. And neither can
+the email around it: the scenario emails and the abandoned cart campaign are SHARED by
+every demo, so a symbol typed into the template as static text prints beside every
+demo's numbers, including the demos it is wrong for. That is not hypothetical, it is
+what the 13 August 2026 send did: Dengage's own abandoned cart system template ships
+its totals as literal text, the literals said `Rs`, and an AED basket went out priced
+in rupees. So a shared template carries **bare numbers everywhere**, exactly as the
+product cards already do, and the ones this repository generates carry no symbol
+anywhere. If a template in the panel still shows one, delete the literal.
 
 The discount row disappears when there is no reduction, rather than printing a zero.
 
@@ -473,28 +484,47 @@ every demo that browser has ever visited, and a send showed all of them mixed to
 four garments from one storefront and a laptop keyboard from another, in one basket.
 
 There is no demo column to filter on and there never was, because columns cannot be
-added to the six standard tables. What there is, is **`session_id`**:
+added to the six standard tables.
+
+**The first fix scoped by session, and a real send broke it on 13 August 2026.** One
+origin and one Dengage web application also mean the SDK issues ONE session per browser
+sitting, not one per demo. A visitor tested one storefront, opened a second one in the
+same sitting, and filled a basket on each: every one of those cart rows carried the same
+`session_id`, so the session join could not split them and the email showed ten of one
+prospect's jeans and two of another's perfumes as a single basket. On a shared origin the
+session is the browser's, never the demo's.
+
+So each row is attributed **on its own** now:
 
 ```
-shopping_cart_events.session_id
-     ->  page_view_events for those sessions
-     ->  page_url, which contains /demos/<slug>/
+a row that names a product
+     ->  dps_product, whose link is absolute and contains /demos/<slug>/
+     ->  that slug, exactly, whatever the session says
+
+a row that names none, delete_cart being the one that matters
+     ->  page_view_events for its session
+     ->  the latest view at or before the row's own moment, its page_url, its slug
 ```
 
-Which is the same join CLAUDE.md 1b names as the only way back to a demo's rows. So the
-asset resolves session to demo, takes the demo of the **newest** cart row, and keeps only
-that demo's rows. The basket in the email is the basket of the storefront the visitor was
-last in, which is also what a sales call needs.
+The newest attributable row names the demo, and only that demo's rows are kept. The
+basket in the email is the basket of the storefront the visitor was last in, which is
+also what a sales call needs. A product id claimed by two demos attributes nothing and
+falls back to the page views, because a colliding SKU is not evidence of a demo. The
+session-at-that-moment fallback is still the join CLAUDE.md 1b names, just per row and
+time aware instead of first-view-wins.
 
 **Scoping happens before the replay, not after**, and that ordering is the point. A
 `delete_cart` on one demo must not empty another demo's basket, and filtering afterwards
-would let it.
+would let it. Attributing the delete at its own moment is what lets a wipe on the demo
+itself still count while the neighbour's basket survives, and `cart.test.mjs` section 13b
+holds both directions.
 
-**If no page view resolves, it does not filter at all.** An unscoped basket is a bad
+**If nothing attributes any row, it does not filter at all.** An unscoped basket is a bad
 email; an empty one is a worse email, because the recipient sees nothing rather than
-seeing too much. `?debug=1` and the `pageview-required` guard are what keep the join
-available in the first place: a page that skips `pageView` writes cart rows that no demo
-can claim.
+seeing too much. The products themselves now carry the demo even when a session has no
+page views at all, so that fallback is reached far less often than it was. `?debug=1` and
+the `pageview-required` guard keep the page view half of this available: a page that
+skips `pageView` writes `delete_cart` rows that no demo can claim.
 
 ## The basket is replayed, not read off the newest rows
 

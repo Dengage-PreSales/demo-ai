@@ -570,10 +570,15 @@ function catalogue(ids) {
        one storefront and a laptop keyboard from another, in one basket.
 
        There is no demo column to filter on and there never was: columns cannot be added
-       to the six standard tables. What there is, is session_id. A session belongs to one
-       page, page_view_events carries that page's URL, and the slug is in the URL. So the
-       asset resolves session to demo, takes the demo of the newest cart row, and keeps
-       only that demo's rows. */
+       to the six standard tables. Since 13 August 2026 each row is attributed on its
+       own: by its product's dps_product link first, and by the page views of its
+       session at its own moment when it has no product. The newest attributable row
+       names the demo, and only that demo's rows are kept.
+
+       THE PRODUCTS IN THESE FIXTURES CARRY NO DEMO LINK ON PURPOSE, so every case in
+       this section runs on the page view fallback and keeps it honest. Section 13b
+       gives its products real demo links and exercises the product path, including the
+       one thing the fallback can never resolve: two demos inside one session. */
     const cart = [
         event('add_to_cart', 'shirt', '2026-08-09T09:00:00Z', 1, DEVICE, 'session-fashion'),
         event('add_to_cart', 'boot', '2026-08-09T09:01:00Z', 1, DEVICE, 'session-fashion'),
@@ -662,6 +667,94 @@ function catalogue(ids) {
     }), CONTACT);
     ok('and the total is the scoped basket\'s total, not the combined one',
        scopedTotal.counted === 2, scopedTotal);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 13b. ONE SITTING, TWO DEMOS, ONE SESSION. The 13 August 2026 send            */
+
+{
+    /* THE SEND THAT FORCED THE RESCOPE. A visitor tested one demo, then opened another
+       and filled a second basket, in one browser sitting. Every demo is served from one
+       origin and one Dengage web application, so the SDK issued ONE session id for the
+       whole sitting, and a session level join cannot split what one session contains:
+       the email showed ten of one prospect's garments and two of another's perfumes as
+       one basket, totalled in the wrong currency.
+
+       So a row is attributed on its own now. A row that names a product belongs to the
+       demo the product's own dps_product link places it on, and only a row with no
+       product falls back to the page views, at its own moment rather than whichever
+       view happened to be read first. These fixtures give the products real demo
+       links, which the sections above deliberately do not, so this section exercises
+       the product path while they keep the fallback path honest. */
+    const DEMOS = 'https://dengage-presales.github.io/demo-ai/demos/';
+    const demoProduct = (id, slug) => Object.assign(product(id), {
+        link: DEMOS + slug + '/product.html?id=' + id
+    });
+    const wardrobe = [
+        demoProduct('jean-1', 'denimstore'), demoProduct('jean-2', 'denimstore'),
+        demoProduct('scent-1', 'scentstore'), demoProduct('scent-2', 'scentstore')
+    ];
+    const sitting = [
+        event('add_to_cart', 'jean-1', '2026-08-13T09:00:00Z', 1, DEVICE, 'session-sitting'),
+        event('add_to_cart', 'jean-2', '2026-08-13T09:01:00Z', 1, DEVICE, 'session-sitting'),
+        event('add_to_cart', 'scent-1', '2026-08-13T10:00:00Z', 1, DEVICE, 'session-sitting'),
+        event('add_to_cart', 'scent-2', '2026-08-13T10:01:00Z', 1, DEVICE, 'session-sitting')
+    ];
+    /* The session's first page view is the FIRST demo's, which is exactly the row the
+       old first-view-wins join would have crowned. */
+    const sittingViews = [
+        { session_id: 'session-sitting', page_url: DEMOS + 'denimstore/index.html',
+          event_date: '2026-08-13T08:59:00Z' },
+        { session_id: 'session-sitting', page_url: DEMOS + 'scentstore/index.html',
+          event_date: '2026-08-13T09:59:00Z' }
+    ];
+    const tables = (cart, views) => ({
+        master_device: devices, shopping_cart_events: cart,
+        page_view_events: views, dps_product: wardrobe
+    });
+
+    const out = html(stubFrom(tables(sitting, sittingViews)), CONTACT);
+    ok('one sitting across two demos shows only the demo the visitor is in now',
+       out.ids.join(',') === 'scent-2,scent-1', out.ids);
+    ok('and the earlier demo\'s items are gone, not merely pushed past the window',
+       out.all.length === 2, out.all.length);
+
+    const summed = total(stubFrom(tables(sitting, sittingViews)), CONTACT);
+    ok('the totals add up the scoped basket, not the whole sitting',
+       summed.counted === 2, summed.counted);
+
+    const landing = url(stubFrom(tables(sitting, sittingViews)), CONTACT);
+    ok('and the way back is the newer demo\'s basket',
+       landing.basketUrl === DEMOS + 'scentstore/index.html?open=cart', landing.basketUrl);
+
+    /* A delete_cart carries no product, so it is attributed to the demo the visitor
+       was on at that MOMENT. Cleared while still on the first demo, it must not empty
+       the second demo's basket. */
+    const clearedEarly = sitting.slice(0, 2).concat(
+        [event('delete_cart', null, '2026-08-13T09:30:00Z', 1, DEVICE, 'session-sitting')],
+        sitting.slice(2));
+    const survived = html(stubFrom(tables(clearedEarly, sittingViews)), CONTACT);
+    ok('a delete_cart on the first demo does not empty the second demo\'s basket',
+       survived.ids.join(',') === 'scent-2,scent-1', survived.ids);
+
+    /* And cleared on the second demo, it does, with a later add surviving the wipe. */
+    const clearedLate = sitting.concat([
+        event('delete_cart', null, '2026-08-13T10:30:00Z', 1, DEVICE, 'session-sitting'),
+        event('add_to_cart', 'scent-1', '2026-08-13T10:40:00Z', 1, DEVICE, 'session-sitting')
+    ]);
+    const cleared = html(stubFrom(tables(clearedLate, sittingViews)), CONTACT);
+    ok('and a delete_cart on the demo itself still empties it',
+       cleared.ids.join(',') === 'scent-1', cleared.ids);
+
+    /* The products alone are enough. With no page view at all the old join left the
+       basket unscoped and the push with no address; the product's own link now
+       carries both the demo and the way back to it. */
+    const blindOut = html(stubFrom(tables(sitting, [])), CONTACT);
+    ok('with no page views at all, the products alone still scope the basket',
+       blindOut.ids.join(',') === 'scent-2,scent-1', blindOut.ids);
+    const blindUrl = url(stubFrom(tables(sitting, [])), CONTACT);
+    ok('and still address the right storefront',
+       blindUrl.basketUrl === DEMOS + 'scentstore/index.html?open=cart', blindUrl.basketUrl);
 }
 
 /* -------------------------------------------------------------------------- */

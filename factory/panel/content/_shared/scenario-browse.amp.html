@@ -44,8 +44,6 @@ table{border-collapse:collapse;}
     return 0;
   });
 
-  var views = rows;
-
   var slugOf = function (url) {
     var u = (url == null) ? "" : String(url);
     var at = u.indexOf('/demos/');
@@ -55,34 +53,34 @@ table{border-collapse:collapse;}
     return cut === -1 ? rest : rest.slice(0, cut);
   };
 
-  var demoOf = {};
   var rootOf = {};
-  for (var v = 0; views.length > v; v++) {
-    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
-    if (vs === "" || demoOf[vs]) { continue; }
-    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
-    var vslug = slugOf(vurl);
-    if (vslug !== "") {
-      demoOf[vs] = vslug;
-      if (!rootOf[vslug]) {
-        var mark = '/demos/' + vslug + '/';
-        var atRoot = vurl.indexOf(mark);
-        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }
-      }
-    }
+  var noteRoot = function (url, slug) {
+    if (slug === "" || rootOf[slug]) { return; }
+    var mark = '/demos/' + slug + '/';
+    var atRoot = String(url).indexOf(mark);
+    if (atRoot !== -1) { rootOf[slug] = String(url).slice(0, atRoot + mark.length); }
+  };
+
+  for (var v = 0; rows.length > v; v++) {
+    var vurl = (rows[v] && rows[v].page_url != null) ? String(rows[v].page_url) : "";
+    noteRoot(vurl, slugOf(vurl));
   }
+
+  var whereOf = function (row) {
+    if (!row) { return ""; }
+    return slugOf((row.page_url == null) ? "" : String(row.page_url));
+  };
 
   var target = "";
   for (var t = rows.length - 1; t >= 0; t--) {
-    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
-    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+    var tslug = whereOf(rows[t]);
+    if (tslug !== "") { target = tslug; break; }
   }
 
   if (target !== "") {
     var mine = [];
     for (var m = 0; rows.length > m; m++) {
-      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
-      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+      if (whereOf(rows[m]) === target) { mine.push(rows[m]); }
     }
     rows = mine;
   }

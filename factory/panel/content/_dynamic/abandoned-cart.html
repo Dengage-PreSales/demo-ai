@@ -45,25 +45,81 @@
     return cut === -1 ? rest : rest.slice(0, cut);
   };
 
-  var demoOf = {};
+  var rootOf = {};
+  var noteRoot = function (url, slug) {
+    if (slug === "" || rootOf[slug]) { return; }
+    var mark = '/demos/' + slug + '/';
+    var atRoot = String(url).indexOf(mark);
+    if (atRoot !== -1) { rootOf[slug] = String(url).slice(0, atRoot + mark.length); }
+  };
+
+  var pids = [];
+  for (var q = rows.length - 1; q >= 0; q--) {
+    var qp = (rows[q] && rows[q].product_id != null) ? String(rows[q].product_id).trim() : "";
+    if (qp !== "" && pids.indexOf(qp) === -1 && pids.length < 50) { pids.push(qp); }
+  }
+
+  var located = pids.length
+    ? $from('$db.dps_product').where('product_id', 'in', pids).take(60).get()
+    : [];
+  if (!located) { located = []; }
+
+  var pidDemo = {};
+  for (var l0 = 0; l0 < located.length; l0++) {
+    var lp = located[l0];
+    if (!lp || lp.product_id == null) { continue; }
+    var lurl = (lp.link == null) ? "" : String(lp.link);
+    var lslug = slugOf(lurl);
+    if (lslug !== "") {
+      var lkey = String(lp.product_id);
+      if (pidDemo[lkey] === undefined) { pidDemo[lkey] = lslug; }
+      else if (pidDemo[lkey] !== lslug) { pidDemo[lkey] = ""; }
+      noteRoot(lurl, lslug);
+    }
+  }
+
+  var sessViews = {};
+  var sessIds = [];
   for (var v = 0; v < views.length; v++) {
     var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";
-    if (vs === "" || demoOf[vs]) { continue; }
-    var vslug = slugOf(views[v].page_url);
-    if (vslug !== "") { demoOf[vs] = vslug; }
+    if (vs === "") { continue; }
+    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";
+    var vslug = slugOf(vurl);
+    if (vslug === "") { continue; }
+    var vwhen = (views[v] && views[v].event_date) ? new Date(views[v].event_date) : new Date(0);
+    if (!sessViews[vs]) { sessViews[vs] = []; sessIds.push(vs); }
+    sessViews[vs].push({ when: vwhen, slug: vslug });
+    noteRoot(vurl, vslug);
   }
+  for (var sv = 0; sv < sessIds.length; sv++) {
+    sessViews[sessIds[sv]].sort(function (x, y) { return x.when - y.when; });
+  }
+
+  var whereOf = function (row) {
+    if (!row) { return ""; }
+    var wp = (row.product_id == null) ? "" : String(row.product_id).trim();
+    if (wp !== "" && pidDemo[wp]) { return pidDemo[wp]; }
+    var ws = (row.session_id == null) ? "" : String(row.session_id).trim();
+    if (ws === "" || !sessViews[ws]) { return ""; }
+    var list = sessViews[ws];
+    var when = (row.event_date) ? new Date(row.event_date) : new Date(0);
+    var best = "";
+    for (var w0 = 0; w0 < list.length; w0++) {
+      if (when >= list[w0].when) { best = list[w0].slug; }
+    }
+    return best === "" ? list[0].slug : best;
+  };
 
   var target = "";
   for (var t = rows.length - 1; t >= 0; t--) {
-    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";
-    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }
+    var tslug = whereOf(rows[t]);
+    if (tslug !== "") { target = tslug; break; }
   }
 
   if (target !== "") {
     var mine = [];
     for (var m = 0; m < rows.length; m++) {
-      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";
-      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }
+      if (whereOf(rows[m]) === target) { mine.push(rows[m]); }
     }
     rows = mine;
   }

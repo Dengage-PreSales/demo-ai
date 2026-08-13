@@ -93,11 +93,12 @@ export function resolveBlock(options) {
     }
     const tie = TIE_BREAK[table];
     /* STOP AFTER THE DEMO ROOT, for anything that wants an address and no products.
-       A push Target URL is the case: it needs step 4 and nothing after it, and running
-       the fold and the dps_product lookup for it would cost two queries per recipient to
-       produce a value neither one contributes to. So the same source emits a short block
-       rather than a second copy of the scoping, which is the whole reason this file
-       exists. Everything up to and including `root` is identical either way. */
+       A push Target URL is the case: it needs step 4 and nothing after it, so the fold
+       and the per card dps_product lookup are skipped. The scoping itself still reads
+       dps_product once, because since 13 August 2026 the demo is decided by the
+       products' own links first, and that same lookup also supplies the root when a
+       session has no page views. Everything up to and including `root` is identical
+       either way. */
     const stopAtRoot = o.stop === 'root';
     const fold = String(o.fold || '').trim();
     if (fold === '' && !stopAtRoot) {
@@ -160,6 +161,40 @@ export function resolveBlock(options) {
     push('  });');
     push('');
 
+    /* THE DEMO IS DECIDED PER ROW, NOT PER SESSION, corrected 13 August 2026 after a
+       real send. Every demo is served from one origin and one Dengage web application,
+       so the SDK issues ONE session per browser sitting: a visitor who opens two demos
+       in one sitting writes both demos' rows under one session_id, and a session-level
+       join cannot split them. The send that proved it mixed ten of one prospect's
+       garments with two of another's perfumes in a single basket email.
+
+       So each row is attributed on its own. A row that names a product belongs to the
+       demo that product belongs to: dps_product.link is absolute and carries the slug,
+       which is the same fact the product lookup below already relies on. A row that
+       names no product, delete_cart being the case that matters, belongs to the demo
+       the visitor was on at that MOMENT: the latest page view in its session at or
+       before its own timestamp. The old first-page-view-of-the-session join survives
+       only inside that fallback, and time-aware rather than arbitrary.
+
+       When the source table is page_view_events, every row carries its own page_url,
+       so the row attributes itself and no product lookup is spent. */
+    push('  var slugOf = function (url) {');
+    push('    var u = (url == null) ? "" : String(url);');
+    push("    var at = u.indexOf('/demos/');");
+    push('    if (at === -1) { return ""; }');
+    push("    var rest = u.slice(at + 7).split('?')[0].split('#')[0];");
+    push("    var cut = rest.indexOf('/');");
+    push('    return cut === -1 ? rest : rest.slice(0, cut);');
+    push('  };');
+    push('');
+    push('  var rootOf = {};');
+    push('  var noteRoot = function (url, slug) {');
+    push('    if (slug === "" || rootOf[slug]) { return; }');
+    push("    var mark = '/demos/' + slug + '/';");
+    push('    var atRoot = String(url).indexOf(mark);');
+    push('    if (atRoot !== -1) { rootOf[slug] = String(url).slice(0, atRoot + mark.length); }');
+    push('  };');
+    push('');
     if (!viewsAreRows) {
         push('  var sessions = [];');
         push('  for (var s0 = 0; rows.length > s0; s0++) {');
@@ -170,47 +205,89 @@ export function resolveBlock(options) {
         push('  var views = sessions.length');
         push("    ? $from('$db.page_view_events').where('session_id', 'in', sessions).take(" + VIEWS + ').get()');
         push('    : [];');
+        push('');
+        push('  var pids = [];');
+        push('  for (var q = rows.length - 1; q >= 0; q--) {');
+        push('    var qp = (rows[q] && rows[q].product_id != null) ? String(rows[q].product_id).trim() : "";');
+        push('    if (qp !== "" && pids.indexOf(qp) === -1 && 50 > pids.length) { pids.push(qp); }');
+        push('  }');
+        push('');
+        push('  var located = pids.length');
+        push("    ? $from('$db.dps_product').where('product_id', 'in', pids).take(60).get()");
+        push('    : [];');
+        push('');
+        push('  var pidDemo = {};');
+        push('  for (var l0 = 0; located.length > l0; l0++) {');
+        push('    var lp = located[l0];');
+        push('    if (!lp || lp.product_id == null) { continue; }');
+        push('    var lurl = (lp.link == null) ? "" : String(lp.link);');
+        push('    var lslug = slugOf(lurl);');
+        /* A PRODUCT ID CLAIMED BY TWO DEMOS ATTRIBUTES NOTHING. Ids are the prospect's
+           own SKUs and nothing makes them unique across demos, so a colliding id is not
+           evidence of a demo: it falls through to the moment-of-the-row fallback, where
+           the session still knows. The dedicated collision test in scenarios.test.mjs is
+           what caught the version of this line that let the later row win. */
+        push('    if (lslug !== "") {');
+        push('      var lkey = String(lp.product_id);');
+        push('      if (pidDemo[lkey] === undefined) { pidDemo[lkey] = lslug; }');
+        push('      else if (pidDemo[lkey] !== lslug) { pidDemo[lkey] = ""; }');
+        push('      noteRoot(lurl, lslug);');
+        push('    }');
+        push('  }');
+        push('');
+        push('  var sessViews = {};');
+        push('  var sessIds = [];');
+        push('  for (var v = 0; views.length > v; v++) {');
+        push('    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";');
+        push('    if (vs === "") { continue; }');
+        push('    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";');
+        push('    var vslug = slugOf(vurl);');
+        push('    if (vslug === "") { continue; }');
+        push('    var vwhen = (views[v] && views[v].event_date) ? new Date(views[v].event_date) : new Date(0);');
+        push('    if (!sessViews[vs]) { sessViews[vs] = []; sessIds.push(vs); }');
+        push('    sessViews[vs].push({ when: vwhen, slug: vslug });');
+        push('    noteRoot(vurl, vslug);');
+        push('  }');
+        push('  for (var sv = 0; sessIds.length > sv; sv++) {');
+        push('    sessViews[sessIds[sv]].sort(function (x, y) { return x.when - y.when; });');
+        push('  }');
+        push('');
+        push('  var whereOf = function (row) {');
+        push('    if (!row) { return ""; }');
+        push('    var wp = (row.product_id == null) ? "" : String(row.product_id).trim();');
+        push('    if (wp !== "" && pidDemo[wp]) { return pidDemo[wp]; }');
+        push('    var ws = (row.session_id == null) ? "" : String(row.session_id).trim();');
+        push('    if (ws === "" || !sessViews[ws]) { return ""; }');
+        push('    var list = sessViews[ws];');
+        push('    var when = (row.event_date) ? new Date(row.event_date) : new Date(0);');
+        push('    var best = "";');
+        push('    for (var w0 = 0; list.length > w0; w0++) {');
+        push('      if (when >= list[w0].when) { best = list[w0].slug; }');
+        push('    }');
+        push('    return best === "" ? list[0].slug : best;');
+        push('  };');
     } else {
-        push('  var views = rows;');
+        push('  for (var v = 0; rows.length > v; v++) {');
+        push('    var vurl = (rows[v] && rows[v].page_url != null) ? String(rows[v].page_url) : "";');
+        push('    noteRoot(vurl, slugOf(vurl));');
+        push('  }');
+        push('');
+        push('  var whereOf = function (row) {');
+        push('    if (!row) { return ""; }');
+        push('    return slugOf((row.page_url == null) ? "" : String(row.page_url));');
+        push('  };');
     }
-    push('');
-    push('  var slugOf = function (url) {');
-    push('    var u = (url == null) ? "" : String(url);');
-    push("    var at = u.indexOf('/demos/');");
-    push('    if (at === -1) { return ""; }');
-    push("    var rest = u.slice(at + 7).split('?')[0].split('#')[0];");
-    push("    var cut = rest.indexOf('/');");
-    push('    return cut === -1 ? rest : rest.slice(0, cut);');
-    push('  };');
-    push('');
-    push('  var demoOf = {};');
-    push('  var rootOf = {};');
-    push('  for (var v = 0; views.length > v; v++) {');
-    push('    var vs = (views[v] && views[v].session_id != null) ? String(views[v].session_id).trim() : "";');
-    push('    if (vs === "" || demoOf[vs]) { continue; }');
-    push('    var vurl = (views[v] && views[v].page_url != null) ? String(views[v].page_url) : "";');
-    push('    var vslug = slugOf(vurl);');
-    push('    if (vslug !== "") {');
-    push('      demoOf[vs] = vslug;');
-    push('      if (!rootOf[vslug]) {');
-    push("        var mark = '/demos/' + vslug + '/';");
-    push('        var atRoot = vurl.indexOf(mark);');
-    push('        if (atRoot !== -1) { rootOf[vslug] = vurl.slice(0, atRoot + mark.length); }');
-    push('      }');
-    push('    }');
-    push('  }');
     push('');
     push('  var target = "";');
     push('  for (var t = rows.length - 1; t >= 0; t--) {');
-    push('    var ts = (rows[t] && rows[t].session_id != null) ? String(rows[t].session_id).trim() : "";');
-    push('    if (ts !== "" && demoOf[ts]) { target = demoOf[ts]; break; }');
+    push('    var tslug = whereOf(rows[t]);');
+    push('    if (tslug !== "") { target = tslug; break; }');
     push('  }');
     push('');
     push('  if (target !== "") {');
     push('    var mine = [];');
     push('    for (var m = 0; rows.length > m; m++) {');
-    push('      var ms = (rows[m] && rows[m].session_id != null) ? String(rows[m].session_id).trim() : "";');
-    push('      if (ms !== "" && demoOf[ms] === target) { mine.push(rows[m]); }');
+    push('      if (whereOf(rows[m]) === target) { mine.push(rows[m]); }');
     push('    }');
     push('    rows = mine;');
     push('  }');
