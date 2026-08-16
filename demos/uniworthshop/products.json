@@ -1,0 +1,439 @@
+{
+  "products": [
+    {
+      "id": "TEE2507-1",
+      "name": "Olive Plain Basic Tee",
+      "category": "Configurable",
+      "price": 1695,
+      "discountedPrice": 1356,
+      "stockCount": null,
+      "attributes": {
+        "Size": "S",
+        "Color": "Olive",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tee2507-1.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "FGT2603-1",
+      "name": "Navy Plain Gym Tee",
+      "category": "Configurable",
+      "price": 2795,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Size": "S",
+        "Color": "Navy",
+        "Brand": "Uniworth"
+      },
+      "image": "images/fgt2603-1.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "TEE2302-2",
+      "name": "Grey Plain Basic Tee",
+      "category": "Configurable",
+      "price": 1695,
+      "discountedPrice": 1102,
+      "stockCount": null,
+      "attributes": {
+        "Size": "M",
+        "Color": "Grey",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tee2302-2.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "UBS28150",
+      "name": "D Green Stripe Woven Boxer",
+      "category": "Configurable",
+      "price": 1995,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Size": "L",
+        "Color": "D Green",
+        "Brand": "Uniworth"
+      },
+      "image": "images/ubs28150.jpg",
+      "motif": null
+    },
+    {
+      "id": "LPJ2606",
+      "name": "Black Self Cross Pocket Woven Pajama",
+      "category": "Configurable",
+      "price": 4195,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Size": "S",
+        "Color": "Black",
+        "Brand": "Uniworth"
+      },
+      "image": "images/lpj2606.jpg",
+      "motif": null
+    },
+    {
+      "id": "FS2398-2SF",
+      "name": "Grey Plain Tailored Smart Fit Shirt",
+      "category": "Configurable",
+      "price": 9975,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Collar Size": "14½",
+        "Color": "Grey",
+        "Brand": "Uni Black"
+      },
+      "image": "images/fs2398-2sf.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "FS2398-2RF",
+      "name": "Grey Plain Classic Fit Shirt",
+      "category": "Configurable",
+      "price": 9975,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Collar Size": "15½",
+        "Color": "Grey",
+        "Brand": "Uni Black"
+      },
+      "image": "images/fs2398-2rf.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "UBS28140",
+      "name": "Black Check Woven Boxer",
+      "category": "Configurable",
+      "price": 1995,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "S",
+        "Color": "Black",
+        "Brand": "Uniworth"
+      },
+      "image": "images/ubs28140.jpg",
+      "motif": null
+    },
+    {
+      "id": "TEE2604",
+      "name": "Maroon Plain Basic Tee",
+      "category": "Configurable",
+      "price": 1695,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "S",
+        "Color": "Maroon",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tee2604.jpg",
+      "motif": "shirt"
+    },
+    {
+      "id": "LPJ2608",
+      "name": "Green Check Cross Pocket Woven Pajama",
+      "category": "Configurable",
+      "price": 4195,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "S",
+        "Color": "Green",
+        "Brand": "Uniworth"
+      },
+      "image": "images/lpj2608.jpg",
+      "motif": null
+    },
+    {
+      "id": "FTC2641S",
+      "name": "Stone Plain Smart Fit Cotton Trouser",
+      "category": "Configurable",
+      "price": 7975,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "32",
+        "Color": "Stone",
+        "Brand": "Uni Black"
+      },
+      "image": "images/ftc2641s.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "FTC2641C",
+      "name": "Stone Plain Classic Fit Cotton Trouser",
+      "category": "Configurable",
+      "price": 7975,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "32",
+        "Color": "Stone",
+        "Brand": "Uni Black"
+      },
+      "image": "images/ftc2641c.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "FTC2639S",
+      "name": "Khaki Plain Smart Fit Cotton Trouser",
+      "category": "Configurable",
+      "price": 7975,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "32",
+        "Color": "Khaki",
+        "Brand": "Uni Black"
+      },
+      "image": "images/ftc2639s.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "FTC2639C",
+      "name": "Khaki Plain Classic Fit Cotton Trouser",
+      "category": "Configurable",
+      "price": 7975,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "32",
+        "Color": "Khaki",
+        "Brand": "Uni Black"
+      },
+      "image": "images/ftc2639c.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "FTC2638S",
+      "name": "Grey Plain Smart Fit Cotton Trouser",
+      "category": "Configurable",
+      "price": 7975,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "32",
+        "Color": "Grey",
+        "Brand": "Uni Black"
+      },
+      "image": "images/ftc2638s.jpg",
+      "motif": "trousers"
+    },
+    {
+      "id": "TIE2699",
+      "name": "Aqua Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2699.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2696",
+      "name": "Sky Blue Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2696.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2695",
+      "name": "D Beige Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2695.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2687",
+      "name": "Teal Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2687.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2686",
+      "name": "Olive Green Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2686.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2680",
+      "name": "Pista Green Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2680.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2678",
+      "name": "Off White Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2678.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2677",
+      "name": "Beige Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2677.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2667",
+      "name": "Off White Dotted Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2667.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2663",
+      "name": "L Blue Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2663.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2662",
+      "name": "L Pink Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2662.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2649",
+      "name": "Green Floral Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2649.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2648",
+      "name": "L Green Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2648.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2646",
+      "name": "Navy Geometric Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2646.jpg",
+      "motif": null
+    },
+    {
+      "id": "TIE2638",
+      "name": "Teal Dotted Tie",
+      "category": "Simple",
+      "price": 2495,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "Size": "F.S",
+        "Brand": "Uniworth"
+      },
+      "image": "images/tie2638.jpg",
+      "motif": null
+    }
+  ]
+}
