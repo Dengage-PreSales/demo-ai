@@ -95,7 +95,7 @@ these:
 
 | It used | The column is | Effect at send time |
 |---|---|---|
-| `contact_key` | **`key`** | the query fails outright: `42703: column contact_key does not exist`. Every one of the six event tables has `key TEXT` as its first column and no `contact_key` at all. `$Contact.contact_key` is still correct on the contact side, which is what made assuming they matched so easy |
+| `contact_key` | **`key`** | the query fails outright: `42703: column contact_key does not exist`. Every one of the six event tables has `key TEXT` as its first column and no `contact_key` at all. `$Contact.contact_key` is still correct on the contact side, which is what made assuming they matched so easy. **Renaming the column is only half the correction: see below** |
 | `event_time` | `event_date` | every ordering referenced a column that does not exist, on all five queries |
 | `search_query` | `keywords` | the searched words never appeared |
 | `unit_price` on wishlist | `price` | the saved item's price never appeared |
@@ -105,6 +105,33 @@ these:
 
 The first four are name errors and are corrected. The last two are not errors in
 naming, they are absences, and no correction to a query can fix them.
+
+### `key` holds a device id, not a contact key
+
+Added 17 August 2026, and it is the second half of the first row above. Getting
+the column's **name** right is not the same as getting its **contents** right,
+and correcting one while assuming the other produced a second failure that
+looked nothing like the first.
+
+`key` is the device id on every row, whether or not the visitor is signed in. A
+query that renames `contact_key` to `key` and then compares it to
+`$Contact.contact_key` is still wrong: it runs cleanly, matches nothing, and
+returns an empty list. There is no error, because an empty result is not one.
+
+Reaching a contact's own events from a `$from` query means walking the Star
+Schema by hand, because the event tables hang off `master_device` and only
+`master_device.contact_key` reaches `master_contact`:
+
+```
+$from('$db.master_device').where('contact_key', '=', $Contact.contact_key)
+   -> the device ids
+      -> $from('$db.page_view_events').where('key', '=', <each device id>)
+```
+
+Segments and event definitions need none of this. Dengage performs the hop
+itself when it evaluates one, which is exactly why the mistake is invisible
+until a piece of content tries to read a row directly.
+`factory/panel/EVENTS-AND-SEGMENTS.md` carries the working detail.
 
 ## dps_product, the product dimension
 

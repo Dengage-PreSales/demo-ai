@@ -38,7 +38,7 @@ empty because they look usable: `payment_method` is always `credit_card` and
 
 | Column | Filled | By what |
 |---|---|---|
-| `key` | yes | the SDK. Contact key when identified, device id when not |
+| `key` | yes | the SDK. **The device id, always.** See [what `key` actually holds](#what-key-actually-holds) |
 | `event_date` | yes | the SDK |
 | `session_id` | yes | the SDK. The only join to the other five tables |
 | `page_type` | yes | `home`, `category`, `product`, `other`, `login`, `logout` |
@@ -110,6 +110,40 @@ only table that answers "what did they actually buy".
 | `keywords` | yes | the settled query, once per search rather than once per keystroke |
 | `result_count` | yes | `0` when the search found nothing, which is a real zero rather than a missing value |
 | `filters` | **never** | the demo's search has no facets |
+
+### What `key` actually holds
+
+**The device id, on every row, signed in or not.** Corrected 17 August 2026,
+against rows read from the live account. This table used to say "contact key when
+identified, device id when not", which was inferred from the column's name and
+never checked.
+
+It cost a real failure. A message template joined `key` to
+`$Contact.contact_key`, matched nothing, and fell through to a default while the
+contact was signed in and its rows sat in the table under a device uuid. Nothing
+errored, because an empty result is not an error.
+
+**Segments and event definitions are unaffected, and that is why this survived.**
+The Star Schema hangs the six event tables off `master_device`, and
+`master_device.contact_key` reaches `master_contact`, so Dengage performs that
+hop itself whenever a segment or an event definition is evaluated. Everything in
+Part 1 and Part 2 of this document works exactly as written.
+
+**A `$from` query in a piece of content gets no such help.** It reads one table
+and joins nothing, so content that wants a contact's own events has to walk both
+steps by hand:
+
+```
+$from('$db.master_device').where('contact_key', '=', $Contact.contact_key)
+   -> the device ids
+      -> $from('$db.page_view_events').where('key', '=', <each device id>)
+```
+
+Two things fall out of that and neither is optional. A contact with a laptop and
+a phone has more than one device, so take the newest row across all of them
+rather than the first device returned. And the column naming a device in
+`master_device` is not documented, so read it off a row rather than assuming
+`device_id`.
 
 ### The one thing to verify
 
