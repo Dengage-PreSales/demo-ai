@@ -31,6 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { SCENARIOS } from './scenarios.mjs';
 import { scenarioHtml } from './build-scenarios.mjs';
 import { emailPalette } from './palette.mjs';
+import { demoWithProducts } from '../catalogue.mjs';
 import { dengageTheme } from './dengage-theme.mjs';
 import { render, arrayFrom, transpile } from './dengage-template.mjs';
 
@@ -473,15 +474,22 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
     ok('AMP: a carousel only when there is more than one slide',
        amp.includes('{% if (view.length > 1) { %}'));
 
-    const rendered = previewOf(scenario, amp, 'techiestore-in', (() => {
-        const list = JSON.parse(readFileSync(
-            join(ROOT, 'demos', 'techiestore-in', 'products.json'), 'utf8')).products;
-        const base = ORIGIN + 'demos/techiestore-in/';
-        return list.map((p) => ({
+    /* AGAINST WHICHEVER DEMO THE TREE HOLDS TODAY, not a named one. This section used
+       to read demos/techiestore-in directly, and the day that demo was retired the
+       whole suite crashed, which said nothing about the emails. The image address
+       mirrors the loader: a product photograph when the catalogue has one, the shared
+       motif when it does not, exactly what dps_product carries for that row. */
+    const sampled = demoWithProducts();
+    ok('there is a committed demo to render the preview against',
+       Boolean(sampled), sampled && sampled.slug);
+    const rendered = previewOf(scenario, amp, sampled.slug, (() => {
+        const base = ORIGIN + 'demos/' + sampled.slug + '/';
+        return sampled.list.map((p) => ({
             product_id: String(p.id), title: p.name,
             price: p.price == null ? null : String(p.price),
             discounted_price: p.discountedPrice == null ? null : String(p.discountedPrice),
-            image_link: p.image ? base + p.image : null,
+            image_link: p.image ? base + p.image
+                : (p.motif ? ORIGIN + 'assets/motifs/' + p.motif + '.jpg' : null),
             link: base + 'product.html?id=' + encodeURIComponent(String(p.id)),
             category_path: p.category || '', stock_count: null, is_active: true
         }));

@@ -205,6 +205,7 @@ function jpegSize(bytes) {
     const tooLarge = [];
     const pairs = [];
     let checked = 0;
+    let declared = 0;
 
     for (const slug of demos) {
         const path = join(ROOT, 'demos', slug, 'products.json');
@@ -214,6 +215,7 @@ function jpegSize(bytes) {
 
         for (const product of list) {
             if (!product || !product.image) continue;
+            declared++;
             const rel = bannerPathFor(product.image);
             if (!rel) continue;
             checked++;
@@ -246,7 +248,15 @@ function jpegSize(bytes) {
         }
     }
 
-    ok('there are product photographs to check', checked > 0, checked);
+    /* A TREE WITH NO PRODUCT PHOTOGRAPHS IS A REAL STATE, not a broken scan: the
+       reference demo draws from the shared motifs, and there are stretches when it is
+       the only demo committed. So the fail-open guard keys on what the catalogues
+       declare rather than on a constant: every product that declares a photograph
+       must have been checked, and when none declares one there is nothing to judge. */
+    ok('every declared photograph was checked', checked === declared, { checked, declared });
+    if (declared === 0) {
+        console.log('   note  no committed demo carries product photographs today, so the banner pairing has nothing to judge');
+    }
     ok('every product photograph has a push banner beside it', missing.length === 0, missing);
     ok('every banner is ' + WIDTH + 'x' + HEIGHT, wrongRatio.length === 0, wrongRatio);
     ok('no banner is above the size the push editor warns about',
