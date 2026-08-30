@@ -473,6 +473,21 @@ function idFor(name) {
     return name.toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
 }
 
+/* THE STORE'S OWN NAME OPENS EVERY INVENTED ID, and it is correctness rather than
+   branding. Every demo's catalogue lands in one shared product table keyed on the
+   bare product id, and until 30 August 2026 two blocked stores in the same vertical
+   invented byte-identical ids from the shared item names alone. Their rows then
+   fought over ownership on every sync pass, and the product sync ran continuously
+   for thirteen days. The prefix is derived from the store's address, so a rebuild
+   of the same store still produces the same ids while two stores never share one.
+   factory/build-feed.mjs refuses a cross-demo id collision outright; this is what
+   makes a generated catalogue unable to cause that refusal. */
+function prefixFor(origin, hint) {
+    const source = String(origin || hint || '');
+    const stem = source.replace(/^[a-z]+:\/\//i, '').replace(/^www\./i, '').split(/[/?#.]/)[0];
+    return idFor(stem).slice(0, 16);
+}
+
 /* ONE CATALOGUE, AND IT ANNOUNCES WHAT IT IS. tier 'generated' is what every
    caller keys off: the report leads with it, the config records it, and the issue
    comment says it in its first line. Nothing here is allowed to look like a scrape.
@@ -481,14 +496,15 @@ function idFor(name) {
    a catalogue was asked for; inventing a stock level on top of it would put "Only 3
    left" on a product nobody counted, and that is the specific failure non-negotiable
    5 was written about. */
-export function generatedCatalogue(hint) {
+export function generatedCatalogue(hint, origin) {
     const vertical = verticalFor(hint);
+    const prefix = prefixFor(origin, hint);
     const products = [];
 
     for (const category of vertical.categories) {
         category.items.forEach((name, index) => {
             products.push({
-                id: idFor(name),
+                id: ((prefix ? prefix + '-' : '') + idFor(name)).slice(0, 48),
                 name,
                 category: category.name,
                 price: priceFor(category.low, category.high, index, category.items.length),

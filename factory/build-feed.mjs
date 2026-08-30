@@ -173,12 +173,32 @@ export function toJson(rows, generatedAt) {
 
 /* -------------------------------------------------------------------------- */
 
+/* ONE TABLE HOLDS EVERY CATALOGUE, keyed on the product id alone, so an id claimed
+   by two demos is two demos overwriting one row on every sync pass: the loader keeps
+   moving ownership, every pass reports changes, and the Dengage flow gets triggered
+   every ten minutes forever. That exact loop ran for thirteen days in August 2026,
+   started by two invented catalogues sharing item names. "No product id is claimed
+   by two demos" used to be a verified observation; this is where it became a rule.
+   It is enforced at build time because that is where the fix is cheap: the build
+   that would introduce the collision fails before anything publishes. */
+export function assertUnclaimed(claimed, slug, id) {
+    const owner = claimed.get(id);
+    if (owner !== undefined && owner !== slug) {
+        throw new Error('product id ' + id + ' is claimed by two demos, ' + owner +
+            ' and ' + slug + '. Every demo shares one product table keyed on that id, ' +
+            'so the two demos would overwrite each other\'s row on every sync. Change ' +
+            'the id in the newer demo\'s catalogue, then rebuild it.');
+    }
+    claimed.set(id, slug);
+}
+
 export function collect(today) {
     if (!existsSync(DEMOS)) return { rows: [], demos: [], skipped: [] };
 
     const rows = [];
     const demos = [];
     const skipped = [];
+    const claimed = new Map();
 
     for (const slug of readdirSync(DEMOS).sort()) {
         const folder = join(DEMOS, slug);
@@ -189,7 +209,9 @@ export function collect(today) {
         const config = readJson(configPath);
         if (!isLive(config, today)) { skipped.push({ slug, expiresAt: config.expiresAt }); continue; }
 
-        const list = rowsFor(slug, config, products(readJson(productsPath)));
+        const catalogue = products(readJson(productsPath));
+        for (const product of catalogue) assertUnclaimed(claimed, slug, String(product.id));
+        const list = rowsFor(slug, config, catalogue);
         rows.push(...list);
         demos.push({ slug, products: list.length, expiresAt: config.expiresAt || null });
     }

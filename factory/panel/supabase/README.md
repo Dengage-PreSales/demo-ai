@@ -38,6 +38,19 @@ back `is_active = 0`, `dengage_ro` reads every row through RLS while an `UPDATE`
 role is refused, no product id is claimed by two demos, and the change gate reports
 exactly one row when exactly one row differs.
 
+**"No product id is claimed by two demos" is enforced now, not observed.** It was an
+observation until 30 August 2026, when two generated catalogues that had invented the
+same six ids kept the sync triggering every ten minutes for thirteen days: one demo
+re-activated the shared rows on every pass and the other's withdraw sweep switched them
+back off, because the conflict update moved everything except `demo_slug`. Three things
+closed it. The loader now moves `demo_slug` and `source_product_id` with the write and
+compares them in the change gate, so ownership follows the feed and a moved row settles
+(`ownership-moves-on-conflict.sql`, deployed). `factory/build-feed.mjs` refuses any
+build whose catalogue claims an id another live demo already holds, so a collision now
+fails a build instead of reaching this table. And `factory/scrape/fallback.mjs` opens
+every invented id with the store's own name, so two generated catalogues cannot mint
+the same id in the first place.
+
 ---
 
 ## It runs itself now

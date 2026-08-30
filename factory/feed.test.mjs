@@ -13,7 +13,8 @@
    are left is usually UNKNOWN. Confusing the two writes a zero, and a zero
    announces every product out of stock.
    ========================================================================== */
-import { rowsFor, toCsv, toJson, COLUMNS, collect } from './build-feed.mjs';
+import { rowsFor, toCsv, toJson, COLUMNS, collect, assertUnclaimed } from './build-feed.mjs';
+import { generatedCatalogue } from './scrape/fallback.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -186,6 +187,47 @@ console.log('\n6. The JSON form');
     is('it declares its own columns', parsed.columns.join(','), COLUMNS.join(','));
     is('and carries the rows', parsed.products.length, 1);
     is('with the same values as the csv', parsed.products[0].product_id, 'A-1');
+}
+
+/* -------------------------------------------------------------------------- */
+console.log('\n7. One id, one demo, and it is enforced rather than observed');
+
+{
+    /* THE 30 AUGUST 2026 LOOP. Two blocked stores in the same vertical invented the
+       same product ids, one demo's dead first build left its copies behind, and the
+       shared product table had two demos rewriting six rows on every pass: the
+       Dengage flow was triggered every ten minutes for thirteen days. Two guards
+       came out of it, and both are probed here with input that must fail, because a
+       guard that has only ever seen clean input proves nothing. */
+    const claimed = new Map();
+    assertUnclaimed(claimed, 'alpha', 'SKU-1');
+    assertUnclaimed(claimed, 'alpha', 'SKU-1');
+    assertUnclaimed(claimed, 'beta', 'SKU-2');
+    ok('a demo may state its own id twice', claimed.get('SKU-1') === 'alpha');
+
+    let refusal = '';
+    try { assertUnclaimed(claimed, 'beta', 'SKU-1'); } catch (error) { refusal = error.message; }
+    ok('an id already claimed by another demo is refused', refusal !== '');
+    ok('and the refusal names the id and both demos',
+       refusal.includes('SKU-1') && refusal.includes('alpha') && refusal.includes('beta'),
+       refusal);
+
+    /* The generated tier is where the collision came from, so its ids now carry the
+       store they were invented for. */
+    const one = generatedCatalogue('perfume and fragrance store', 'https://storeone.example');
+    const two = generatedCatalogue('perfume and fragrance store', 'https://www.storetwo.example/shop');
+    const ids = (made) => made.products.map((p) => String(p.id));
+    ok('two blocked stores in one vertical invent disjoint ids',
+       ids(one).every((id) => !ids(two).includes(id)),
+       ids(one).filter((id) => ids(two).includes(id)).slice(0, 3));
+    ok('every invented id opens with its own store',
+       ids(one).every((id) => id.indexOf('STOREONE-') === 0), ids(one).slice(0, 2));
+    ok('and the www prefix is not part of a store\'s name',
+       ids(two).every((id) => id.indexOf('STORETWO-') === 0), ids(two).slice(0, 2));
+
+    const again = generatedCatalogue('perfume and fragrance store', 'https://storeone.example');
+    ok('a rebuild of the same store invents the same ids',
+       ids(one).join(',') === ids(again).join(','));
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

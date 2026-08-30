@@ -224,6 +224,10 @@ begin
         case when i.stock = 0 then 'out of stock' else 'in stock' end,
         1, 'Dengage eComm Demo', p_slug, i.id
     from _incoming i
+    -- SUPERSEDED, 30 August 2026: the deployed loader is the one in
+    -- ownership-moves-on-conflict.sql, which also moves demo_slug and
+    -- source_product_id here and gates the update on a full change comparison.
+    -- This file stays as the original schema script rather than being rewritten.
     on conflict (product_id) do update set
         title            = excluded.title,
         price            = excluded.price,

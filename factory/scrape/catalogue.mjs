@@ -2159,7 +2159,7 @@ export async function catalogue(origin, csvText, options) {
        direct caller of catalogue() gets the old refusal, so nothing starts inventing
        a catalogue because it forgot to check a flag. */
     if (settings.generateIfUnreadable) {
-        const made = generatedCatalogue(settings.hint || origin);
+        const made = generatedCatalogue(settings.hint || origin, origin);
         attempts.push({ tier: 'generated', ok: true, found: made.products.length });
         return finish(made, attempts);
     }
