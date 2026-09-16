@@ -61,6 +61,49 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A REQUEST THE GATE DECLINES GETS AN ANSWER, not silence. The first refusal
+  # the author gate ever made, 16 September 2026, was a colleague whose account
+  # the repository did not know: both runs skipped in a second, the issue sat
+  # without a word on it, and the factory was reported broken. This job runs
+  # exactly when a request shaped issue arrives from an unknown account, and it
+  # does nothing except say so: no checkout, nothing from the issue is executed,
+  # and its permissions reach no further than writing the one comment.
+  refuse:
+    name: Explain a declined request
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    if: >-
+      github.event_name == 'issues' &&
+      github.event.action == 'opened' &&
+      (contains(github.event.issue.labels.*.name, 'new-demo') ||
+       startsWith(github.event.issue.title, 'Demo:')) &&
+      !(contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                 github.event.issue.author_association) ||
+        contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
+                 format(' {0} ', github.event.issue.user.login)))
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner, repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: [
+                'This factory only builds for accounts it knows, and GitHub does not',
+                'list yours as one of them yet, so nothing was read and nothing was',
+                'built.',
+                '',
+                'To be added, ask the owner of this repository to put your GitHub',
+                'username into the DEMO_REQUESTERS variable, under Settings, then',
+                'Secrets and variables, then Actions, then Variables. That lets you',
+                'request demos without any other access to the repository.',
+                '',
+                'Once that is done, comment retry here and the build starts from',
+                'this same request. Nothing needs to be filled in again.'
+              ].join('\n')
+            })
+
   build:
     name: Generate and verify
     # A REPOSITORY VARIABLE CAN MOVE EVERY BUILD OFF THE SHARED RUNNER POOL.
@@ -91,13 +134,27 @@ jobs:
     # comment on every issue in the repository would start a build.
     #
     # AND THE AUTHOR HAS TO BE ONE OF US. This is the half the title prefix made
-    # necessary, added 7 August 2026 alongside it. The label was privileged without
-    # anybody arranging it: only an account with write access can put a label on an
-    # issue, so the old gate could never be reached by a stranger. A title prefix is
-    # not privileged at all. This repository is public, so anyone can open an issue
-    # called "Demo: anything", and this workflow reads a website, commits to main and
-    # starts a deployment. Matching on the title alone would have handed all three to
-    # the internet.
+    # necessary, added 7 August 2026 alongside it. This repository is public, so
+    # anyone can open an issue called "Demo: anything", and this workflow reads a
+    # website, commits to main and starts a deployment. Matching on the title
+    # alone would have handed all three to the internet.
+    #
+    # THE LABEL IS NO PROTECTION EITHER, corrected 16 September 2026. This gate's
+    # comments used to say only an account with write access can label an issue,
+    # and a real request disproved it: the issue form applies new-demo itself,
+    # whoever submits the form. So the author test carries the whole burden, and
+    # it accepts two kinds of requester: an account GitHub already knows as ours
+    # (owner, member or collaborator), or a login listed in the DEMO_REQUESTERS
+    # repository variable. The variable exists so a colleague can be allowed to
+    # request demos without being handed write access to the repository: put
+    # their GitHub logins in it separated by spaces, under Settings, Secrets and
+    # variables, Actions, Variables. Logins are matched with a space on each
+    # side, so one login can never match inside another.
+    #
+    # A REFUSED REQUEST IS TOLD SO. The refuse job below answers a request shaped
+    # issue from an unknown account with one comment saying who to ask, because
+    # the first refusal this gate ever made was silent, and the colleague simply
+    # thought the factory was broken.
     #
     # The comment's own author is tested on the retry path, not the issue's. A
     # stranger commenting "retry" on a real request is the same problem wearing
@@ -129,15 +186,19 @@ jobs:
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issues' &&
-       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
-                github.event.issue.author_association) &&
+       (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                 github.event.issue.author_association) ||
+        contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
+                 format(' {0} ', github.event.issue.user.login))) &&
        (github.event.action == 'opened' ||
         !startsWith(github.event.issue.title, 'Demo:')) &&
        (contains(github.event.issue.labels.*.name, 'new-demo') ||
         startsWith(github.event.issue.title, 'Demo:'))) ||
       (github.event_name == 'issue_comment' &&
-       contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
-                github.event.comment.author_association) &&
+       (contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                 github.event.comment.author_association) ||
+        contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
+                 format(' {0} ', github.event.comment.user.login))) &&
        (contains(github.event.issue.labels.*.name, 'new-demo') ||
         startsWith(github.event.issue.title, 'Demo:')) &&
        contains(toJSON(github.event.comment.body), 'retry'))
