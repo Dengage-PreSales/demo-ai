@@ -250,11 +250,11 @@
           "checks": [
             {
               "field": "title",
-              "cost": 38,
+              "cost": 31,
               "max": 50,
               "source": "client",
               "over": false,
-              "resolvedTo": "Still looking at valueShirts And Tops?"
+              "resolvedTo": "Still looking at valueSandália?"
             },
             {
               "field": "body",
@@ -640,11 +640,11 @@
             },
             {
               "field": "body",
-              "cost": 73,
+              "cost": 66,
               "max": 120,
               "source": "client",
               "over": false,
-              "resolvedTo": "New ranges in valueShirts And Tops, and your saved items are still saved."
+              "resolvedTo": "New ranges in valueSandália, and your saved items are still saved."
             }
           ]
         },

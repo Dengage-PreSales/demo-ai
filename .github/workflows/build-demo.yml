@@ -846,6 +846,8 @@ jobs:
               }[report.currencySource] || '') + ' |',
               '| Catalogue read from | ' + ({
                 shopify: 'the store\'s product feed',
+                woocommerce: 'the store\'s product feed',
+                vtex: 'the store\'s own catalogue service',
                 jsonld: 'the store\'s product pages',
                 csv: 'the CSV attached to this issue',
                 generated: 'nothing. The store blocked every reader, so these products'

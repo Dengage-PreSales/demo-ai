@@ -1231,6 +1231,95 @@ async function fixtureServer(build) {
 }
 
 {
+    /* VTEX end to end, against the shape the real API serves: accented names,
+       slash category paths deepest first, prices inside sellers, images inside
+       SKUs. Added 16 September 2026 with the tier itself, for the Brazilian
+       store whose pages blocked GitHub's runners while this endpoint answered. */
+    const vtexItems = [
+        {
+            productId: '101', productReference: 'REF-101', linkText: 'tenis-raiden',
+            productName: 'Tênis Feminino Raiden Asics Azul', brand: 'Asics',
+            categories: ['/Feminino/Tênis/', '/Feminino/'],
+            items: [{
+                itemId: '11',
+                images: [{ imageUrl: 'https://cdn.example.com/raiden.jpg' }],
+                sellers: [{ commertialOffer:
+                    { Price: 299.99, ListPrice: 379.99, IsAvailable: true, AvailableQuantity: 8 } }]
+            }]
+        },
+        {
+            /* Sold out in the first SKU, sellable in the second: the price must
+               come from the sellable one and the product must not read as out
+               of stock. */
+            productId: '102', productReference: 'REF-102', linkText: 'sandalia-verao',
+            productName: 'Sandália Verão Couro', brand: 'Di Santinni',
+            categories: ['/Feminino/Sandálias/'],
+            items: [
+                { itemId: '21', images: [{ imageUrl: 'https://cdn.example.com/stale.jpg' }],
+                  sellers: [{ commertialOffer:
+                      { Price: 89.99, ListPrice: 89.99, IsAvailable: false, AvailableQuantity: 0 } }] },
+                { itemId: '22', images: [{ imageUrl: 'https://cdn.example.com/sandalia.jpg' }],
+                  sellers: [{ commertialOffer:
+                      { Price: 129.99, ListPrice: 129.99, IsAvailable: true, AvailableQuantity: 3 } }] }
+            ]
+        },
+        {
+            /* No readable price, so it is dropped rather than shipped with a
+               null one. */
+            productId: '103', productReference: 'REF-103', linkText: 'sem-preco',
+            productName: 'Produto Sem Preço', categories: ['/Outros/'],
+            items: [{ itemId: '31', images: [],
+                      sellers: [{ commertialOffer:
+                          { Price: 0, ListPrice: 0, IsAvailable: true, AvailableQuantity: 1 } }] }]
+        }
+    ].concat(Array.from({ length: 7 }, (_, i) => ({
+        /* Spread across the three shelves so every category clears the
+           balancer's floor and the shelf names above survive to the shipped
+           catalogue rather than folding into More. */
+        productId: String(200 + i), productReference: 'REF-2' + i, linkText: 'par-' + i,
+        productName: ['Tênis Corrida ', 'Sandália Praia ', 'Bota Urbana '][i % 3] + (i + 1),
+        brand: 'Di Santinni',
+        categories: [['/Feminino/Tênis/', '/Feminino/Sandálias/', '/Masculino/Botas/'][i % 3]],
+        items: [{ itemId: '4' + i, images: [{ imageUrl: 'https://cdn.example.com/b' + i + '.jpg' }],
+                  sellers: [{ commertialOffer:
+                      { Price: 199.9, ListPrice: 199.9, IsAvailable: true, AvailableQuantity: 5 } }] }]
+    })));
+    const site = await fixtureServer({
+        '/api/catalog_system/pub/products/search': {
+            type: 'application/json', body: JSON.stringify(vtexItems)
+        }
+    });
+    const result = await catalogue(site.origin, null, { render: false });
+    await site.close();
+
+    ok('the vtex fixture builds a catalogue', result.ok, result.attempts);
+    is('via the vtex tier', result.tier, 'vtex');
+    is('after shopify and woocommerce reported their misses',
+       result.attempts.map((a) => a.tier).slice(0, 3).join(','), 'shopify,woocommerce,vtex');
+    const raiden = result.products.find((p) => p.id === 'REF-101');
+    ok('the store reference is the product id', Boolean(raiden),
+       result.products.map((p) => p.id));
+    is('an accented name survives intact', raiden && raiden.name,
+       'Tênis Feminino Raiden Asics Azul');
+    is('the deepest category path supplies the shelf name', raiden && raiden.category, 'Tênis');
+    is('the reduced price is the price and the list price is the reduction',
+       raiden && raiden.discountedPrice, 299.99);
+    is('with the full price kept beside it', raiden && raiden.price, 379.99);
+    const sandal = result.products.find((p) => p.id === 'REF-102');
+    is('a sold out first variant does not supply the price',
+       sandal && sandal.price, 129.99);
+    is('and a product with a sellable variant is not out of stock',
+       sandal && sandal.stockCount, null);
+    ok('the sellable variant supplies the photograph too',
+       sandal && /sandalia\.jpg$/.test(sandal.imageUrl), sandal && sandal.imageUrl);
+    ok('a product with no readable price is dropped rather than shipped',
+       result.products.every((p) => p.id !== 'REF-103'),
+       result.products.map((p) => p.id));
+    ok('every product leaves image null for the downloader',
+       result.products.every((p) => p.image === null));
+}
+
+{
     /* The dispatcher's order: shopify misses, woocommerce answers, and the
        attempts list says so in that order because the issue comment quotes it. */
     const site = await fixtureServer({
@@ -1458,7 +1547,7 @@ async function fixtureServer(build) {
 
     ok('a site that answers nothing is a clean failure', !result.ok, result);
     same('every tier was tried, in the documented order',
-         result.attempts.map((a) => a.tier), ['shopify', 'woocommerce', 'jsonld']);
+         result.attempts.map((a) => a.tier), ['shopify', 'woocommerce', 'vtex', 'jsonld']);
     is('and nothing was found to quote back', result.thin, 0);
 }
 

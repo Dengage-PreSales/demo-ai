@@ -398,6 +398,82 @@ async function shopifyCurrency(origin) {
     return plain ? plain[1].toUpperCase() : null;
 }
 
+/* VTEX serves its whole catalogue on the storefront domain with no key, fifty
+   products a page, and most large Brazilian and Latin American stores are built
+   on it. Added 16 September 2026 for a store whose pages served GitHub's
+   runners a challenge while this endpoint answered a plain request: a platform
+   feed is cheaper and steadier than walking pages, so it sits with the other
+   platform feeds ahead of the generic tiers. The search API carries no
+   currency, so the tier returns none and the address inference downstream
+   answers it, which the report says out loud either way. */
+async function vtex(origin) {
+    const products = [];
+    for (let from = 0; from < 150; from += 50) {
+        const result = await getJson(origin + '/api/catalog_system/pub/products/search'
+            + '?_from=' + from + '&_to=' + (from + 49));
+        if (!result.ok) {
+            if (from === 0) return { ok: false, reason: result.reason, tier: 'vtex' };
+            break;
+        }
+        const raw = result.data;
+        if (!Array.isArray(raw)) return { ok: false, reason: REASON.NOT_FOUND, tier: 'vtex' };
+        if (!raw.length) break;
+
+        for (const item of raw) {
+            /* The same any-of rule the shopify tier explains at length: a product
+               is out of stock only when NO variant is sellable, and the price
+               comes from a sellable variant where there is one, because a sold
+               out one can carry a stale price. */
+            const offers = [];
+            for (const sku of (item.items || [])) {
+                for (const seller of (sku.sellers || [])) {
+                    if (seller.commertialOffer) offers.push({ sku, offer: seller.commertialOffer });
+                }
+            }
+            const sellable = offers.filter((entry) =>
+                entry.offer.IsAvailable !== false && Number(entry.offer.AvailableQuantity) !== 0);
+            const priceFrom = sellable[0] || offers[0];
+            if (!priceFrom) continue;
+
+            const id = productId([item.productReference, item.linkText, item.productId]);
+            const name = clean(item.productName);
+            if (!id || !name) continue;
+
+            /* Price is the current price and ListPrice the one before the
+               reduction, so the pair maps onto prices() the same way Shopify's
+               price and compare_at_price do. */
+            const { price, discountedPrice } = prices(priceFrom.offer.Price, priceFrom.offer.ListPrice);
+            if (price === null) continue;
+
+            /* Categories arrive as slash paths with the deepest first, in the
+               shape /Feminino/Tênis/. The deepest leaf is the shelf a shopper
+               would name, so it is the category. */
+            let deepest = [];
+            for (const path of (item.categories || [])) {
+                const segments = String(path).split('/').map((s) => clean(s)).filter(Boolean);
+                if (segments.length > deepest.length) deepest = segments;
+            }
+
+            const shot = priceFrom.sku.images && priceFrom.sku.images[0];
+            products.push({
+                id,
+                name,
+                category: deepest.length ? deepest[deepest.length - 1] : '',
+                price,
+                discountedPrice,
+                stockCount: sellable.length ? null : 0,
+                attributes: clean(item.brand) ? { Brand: clean(item.brand) } : {},
+                image: null,
+                imageUrl: httpsImage(shot && shot.imageUrl, origin)
+            });
+        }
+        if (products.length >= PRODUCT_CAP * 3) break;
+    }
+
+    if (!products.length) return { ok: false, reason: REASON.NOT_FOUND, tier: 'vtex' };
+    return { ok: true, tier: 'vtex', products, currency: null };
+}
+
 /* Shopify names its option axes in `options` and gives the chosen value per
    variant in option1..3. Junk names are skipped: a store that calls an axis
    "Title" with the value "Default Title" is telling us it has no options. */
@@ -2127,7 +2203,7 @@ export async function catalogue(origin, csvText, options) {
         if (consider(fromCsv(csvText))) return finish(best, attempts);
     }
 
-    for (const tier of [shopify, woocommerce, jsonld]) {
+    for (const tier of [shopify, woocommerce, vtex, jsonld]) {
         if (consider(await tier(origin))) return finish(best, attempts);
     }
 

@@ -7,15 +7,15 @@
   "theme": {
     "primary": "#404040",
     "onPrimary": "#ffffff",
-    "accent": "#202040",
-    "ink": "#14181b",
-    "muted": "#667085",
+    "accent": "#c8102e",
+    "ink": "#5f6368",
+    "muted": "#9c9ea1",
     "surface": "#ffffff",
-    "page": "#f6f7f8",
-    "line": "#e4e7ec",
-    "radius": "10px",
-    "displayFont": "Sora",
-    "bodyFont": "Inter"
+    "page": "#ffffff",
+    "line": "#ececed",
+    "radius": "10.364px",
+    "displayFont": "Poppins",
+    "bodyFont": "Poppins"
   },
   "locale": {
     "language": "en",
@@ -29,12 +29,11 @@
     "scenarioPrefix": "dengage_demo_"
   },
   "categories": [
-    "Accessories",
-    "Audio",
-    "Body",
-    "Kitchen",
-    "Shirts And Tops"
+    "Sandália",
+    "Tênis",
+    "Chinelo",
+    "More"
   ],
   "productCount": 30,
-  "catalogueSource": "generated"
+  "catalogueSource": "store"
 }

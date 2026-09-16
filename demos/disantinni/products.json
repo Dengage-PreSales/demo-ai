@@ -1,334 +1,394 @@
 {
   "products": [
     {
-      "id": "DISANTINNI-GPS-FITNESS-WATCH",
-      "name": "GPS Fitness Watch",
-      "category": "Accessories",
-      "price": 9.9,
+      "id": "92988022",
+      "name": "Sandália Grendene Baby Bluey Azul",
+      "category": "Sandália",
+      "price": 59.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-gps-fitness-watch.jpg",
-      "motif": "smartwatch"
-    },
-    {
-      "id": "DISANTINNI-HEART-RATE-CHEST-STRAP",
-      "name": "Heart Rate Chest Strap",
-      "category": "Accessories",
-      "price": 50.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-heart-rate-chest-strap.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92988022.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-FOAM-ROLLER-45CM",
-      "name": "Foam Roller 45cm",
-      "category": "Accessories",
-      "price": 92.9,
+      "id": "92988013",
+      "name": "Sandália Grendene Baby Bluey Rosa",
+      "category": "Sandália",
+      "price": 59.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-foam-roller-45cm.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92988013.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-RESISTANCE-BAND-SET",
-      "name": "Resistance Band Set",
-      "category": "Accessories",
-      "price": 133.9,
+      "id": "92988031",
+      "name": "Sandália Grendene Baby Bluey Marrom",
+      "category": "Sandália",
+      "price": 59.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-resistance-band-set.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92988031.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-YOGA-MAT-6MM",
-      "name": "Yoga Mat 6mm",
-      "category": "Accessories",
-      "price": 174.9,
+      "id": "92991026",
+      "name": "Sandália Grendene Barbie Dourada Menina",
+      "category": "Sandália",
+      "price": 69.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-yoga-mat-6mm.jpg",
-      "motif": "rug"
-    },
-    {
-      "id": "DISANTINNI-SKIPPING-ROPE",
-      "name": "Skipping Rope",
-      "category": "Accessories",
-      "price": 215.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-skipping-rope.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92991026.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-OVER-EAR-NOISE-CANCELLING-HEADPHONES",
-      "name": "Over Ear Noise Cancelling Headphones",
-      "category": "Audio",
-      "price": 34.9,
+      "id": "92991017",
+      "name": "Sandália Grendene Barbie Rosa Menina",
+      "category": "Sandália",
+      "price": 69.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-over-ear-noise-cancelling-headphones.jpg",
-      "motif": "headphones"
-    },
-    {
-      "id": "DISANTINNI-ON-EAR-WIRELESS-HEADPHONES",
-      "name": "On Ear Wireless Headphones",
-      "category": "Audio",
-      "price": 101.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-on-ear-wireless-headphones.jpg",
-      "motif": "headphones"
-    },
-    {
-      "id": "DISANTINNI-TRUE-WIRELESS-EARBUDS",
-      "name": "True Wireless Earbuds",
-      "category": "Audio",
-      "price": 168.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-true-wireless-earbuds.jpg",
-      "motif": "headphones"
-    },
-    {
-      "id": "DISANTINNI-SPORT-WIRELESS-EARBUDS",
-      "name": "Sport Wireless Earbuds",
-      "category": "Audio",
-      "price": 236.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-sport-wireless-earbuds.jpg",
-      "motif": "headphones"
-    },
-    {
-      "id": "DISANTINNI-STUDIO-MONITOR-HEADPHONES",
-      "name": "Studio Monitor Headphones",
-      "category": "Audio",
-      "price": 303.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-studio-monitor-headphones.jpg",
-      "motif": "headphones"
-    },
-    {
-      "id": "DISANTINNI-PORTABLE-BLUETOOTH-SPEAKER",
-      "name": "Portable Bluetooth Speaker",
-      "category": "Audio",
-      "price": 370.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-portable-bluetooth-speaker.jpg",
-      "motif": "speaker"
-    },
-    {
-      "id": "DISANTINNI-SHOWER-GEL-250ML",
-      "name": "Shower Gel 250ml",
-      "category": "Body",
-      "price": 7.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-shower-gel-250ml.jpg",
-      "motif": "tube"
-    },
-    {
-      "id": "DISANTINNI-BODY-WASH-500ML",
-      "name": "Body Wash 500ml",
-      "category": "Body",
-      "price": 17.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-body-wash-500ml.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92991017.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-BODY-LOTION-250ML",
-      "name": "Body Lotion 250ml",
-      "category": "Body",
-      "price": 28.9,
+      "id": "92991035",
+      "name": "Sandália Grendene Barbie Branca Menina",
+      "category": "Sandália",
+      "price": 69.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-body-lotion-250ml.jpg",
-      "motif": "tube"
-    },
-    {
-      "id": "DISANTINNI-RICH-BODY-BUTTER-200ML",
-      "name": "Rich Body Butter 200ml",
-      "category": "Body",
-      "price": 38.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-rich-body-butter-200ml.jpg",
-      "motif": "jar"
-    },
-    {
-      "id": "DISANTINNI-HAND-CREAM-75ML",
-      "name": "Hand Cream 75ml",
-      "category": "Body",
-      "price": 48.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-hand-cream-75ml.jpg",
-      "motif": "jar"
-    },
-    {
-      "id": "DISANTINNI-EXFOLIATING-BODY-SCRUB-200ML",
-      "name": "Exfoliating Body Scrub 200ml",
-      "category": "Body",
-      "price": 58.9,
-      "discountedPrice": null,
-      "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-exfoliating-body-scrub-200ml.jpg",
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92991035.jpg",
       "motif": null
     },
     {
-      "id": "DISANTINNI-CAST-IRON-CASSEROLE-24CM",
-      "name": "Cast Iron Casserole 24cm",
-      "category": "Kitchen",
-      "price": 14.9,
+      "id": "92994014",
+      "name": "Sandália Grendene Clog Babuch Disney com Led Bege Menina",
+      "category": "Sandália",
+      "price": 99.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-cast-iron-casserole-24cm.jpg",
-      "motif": "cookware"
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92994014.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-STAINLESS-FRYING-PAN-28CM",
-      "name": "Stainless Frying Pan 28cm",
-      "category": "Kitchen",
-      "price": 55.9,
-      "discountedPrice": null,
+      "id": "92995013",
+      "name": "Sandália Grendene Clog Babuch Barbie com Led Rosa Menina",
+      "category": "Sandália",
+      "price": 109.99,
+      "discountedPrice": 99.99,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-stainless-frying-pan-28cm.jpg",
-      "motif": "cookware"
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/92995013.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-NON-STICK-FRYING-PAN-24CM",
-      "name": "Non Stick Frying Pan 24cm",
-      "category": "Kitchen",
-      "price": 95.9,
-      "discountedPrice": null,
+      "id": "90916021",
+      "name": "Tênis Feminino Raiden Asics Azul",
+      "category": "Tênis",
+      "price": 379.99,
+      "discountedPrice": 341.99,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-non-stick-frying-pan-24cm.jpg",
-      "motif": "cookware"
+      "attributes": {
+        "Brand": "Asics"
+      },
+      "image": "images/90916021.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-FIVE-PIECE-SAUCEPAN-SET",
-      "name": "Five Piece Saucepan Set",
-      "category": "Kitchen",
-      "price": 136.9,
-      "discountedPrice": null,
+      "id": "86460057",
+      "name": "Tênis Mizuno Jet 8 Feminino Lilás",
+      "category": "Tênis",
+      "price": 359.99,
+      "discountedPrice": 323.99,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-five-piece-saucepan-set.jpg",
-      "motif": "cookware"
+      "attributes": {
+        "Brand": "Mizuno"
+      },
+      "image": "images/86460057.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-STONEWARE-DINNER-PLATE-SET-OF-4",
-      "name": "Stoneware Dinner Plate Set of 4",
-      "category": "Kitchen",
-      "price": 176.9,
+      "id": "92741014",
+      "name": "Tênis Masculino Box 200 Preto",
+      "category": "Tênis",
+      "price": 109.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-stoneware-dinner-plate-set-of-4.jpg",
-      "motif": "plate"
+      "attributes": {
+        "Brand": "Box"
+      },
+      "image": "images/92741014.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-PORCELAIN-MUG-SET-OF-4",
-      "name": "Porcelain Mug Set of 4",
-      "category": "Kitchen",
-      "price": 217.9,
+      "id": "92484021",
+      "name": "Tênis Moleca Paris Rosa Feminino",
+      "category": "Tênis",
+      "price": 129.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": "images/disantinni-porcelain-mug-set-of-4.jpg",
-      "motif": "mug"
+      "attributes": {
+        "Brand": "Moleca"
+      },
+      "image": "images/92484021.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-OXFORD-BUTTON-DOWN-SHIRT",
-      "name": "Oxford Button Down Shirt",
-      "category": "Shirts And Tops",
-      "price": 24.9,
-      "discountedPrice": null,
+      "id": "91940016",
+      "name": "Tênis Feminino Esportivo Actvitta Rosa",
+      "category": "Tênis",
+      "price": 289.99,
+      "discountedPrice": 260.99,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Actvitta"
+      },
+      "image": "images/91940016.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-LINEN-SHORT-SLEEVE-SHIRT",
-      "name": "Linen Short Sleeve Shirt",
-      "category": "Shirts And Tops",
-      "price": 37.9,
+      "id": "91393014",
+      "name": "Tênis Menino Esportivo Box Preto",
+      "category": "Tênis",
+      "price": 79.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Box Kids"
+      },
+      "image": "images/91393014.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-BRUSHED-FLANNEL-SHIRT",
-      "name": "Brushed Flannel Shirt",
-      "category": "Shirts And Tops",
-      "price": 50.9,
+      "id": "91668015",
+      "name": "Tênis Masculino Box Preto",
+      "category": "Tênis",
+      "price": 89.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Box"
+      },
+      "image": "images/91668015.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-POPLIN-DRESS-SHIRT",
-      "name": "Poplin Dress Shirt",
-      "category": "Shirts And Tops",
-      "price": 62.9,
+      "id": "91699015",
+      "name": "Tênis Feminino Box Azul Marinho",
+      "category": "Tênis",
+      "price": 89.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Box"
+      },
+      "image": "images/91699015.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-HEAVYWEIGHT-COTTON-T-SHIRT",
-      "name": "Heavyweight Cotton T Shirt",
-      "category": "Shirts And Tops",
-      "price": 75.9,
+      "id": "93000011",
+      "name": "Chinelo Ipanema Baby Cerejinhas Rosa",
+      "category": "Chinelo",
+      "price": 29.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Ipanema Grendene"
+      },
+      "image": "images/93000011.jpg",
+      "motif": null
     },
     {
-      "id": "DISANTINNI-PIMA-COTTON-LONG-SLEEVE-TEE",
-      "name": "Pima Cotton Long Sleeve Tee",
-      "category": "Shirts And Tops",
-      "price": 88.9,
+      "id": "93000020",
+      "name": "Chinelo Ipanema Baby Cerejinhas Amarelo",
+      "category": "Chinelo",
+      "price": 29.99,
       "discountedPrice": null,
       "stockCount": null,
-      "attributes": {},
-      "image": null,
-      "motif": "shirt"
+      "attributes": {
+        "Brand": "Ipanema Grendene"
+      },
+      "image": "images/93000020.jpg",
+      "motif": null
+    },
+    {
+      "id": "93001010",
+      "name": "Chinelo Baby Rider Slide Marrom",
+      "category": "Chinelo",
+      "price": 69.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/93001010.jpg",
+      "motif": null
+    },
+    {
+      "id": "93001029",
+      "name": "Chinelo Baby Rider Slide Azul",
+      "category": "Chinelo",
+      "price": 69.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/93001029.jpg",
+      "motif": null
+    },
+    {
+      "id": "93019019",
+      "name": "Chinelo Grendene Slide Batman Preto Menino",
+      "category": "Chinelo",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Grendene Kids"
+      },
+      "image": "images/93019019.jpg",
+      "motif": null
+    },
+    {
+      "id": "93025029",
+      "name": "Chinelo Rider Video Game Azul Menino",
+      "category": "Chinelo",
+      "price": 29.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Rider Grendene"
+      },
+      "image": "images/93025029.jpg",
+      "motif": null
+    },
+    {
+      "id": "93025010",
+      "name": "Chinelo Rider Racing Preto Menino",
+      "category": "Chinelo",
+      "price": 29.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Rider Grendene"
+      },
+      "image": "images/93025010.jpg",
+      "motif": null
+    },
+    {
+      "id": "91700010",
+      "name": "Bota Moleca Cano Médio Preto Feminino",
+      "category": "More",
+      "price": 319.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Moleca"
+      },
+      "image": "images/91700010.jpg",
+      "motif": null
+    },
+    {
+      "id": "91597018",
+      "name": "Bota Feminina Salto Country Mississipi Preta",
+      "category": "More",
+      "price": 299.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Mississipi"
+      },
+      "image": "images/91597018.jpg",
+      "motif": null
+    },
+    {
+      "id": "88548012",
+      "name": "Alpargata Moleca com Furtinhos Feminina Preta",
+      "category": "More",
+      "price": 69.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Moleca"
+      },
+      "image": "images/88548012.jpg",
+      "motif": null
+    },
+    {
+      "id": "90926028",
+      "name": "Bota Cano Curto Country e Salto Quadrado Via Marte Feminina Caramelo",
+      "category": "More",
+      "price": 299.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Via Marte"
+      },
+      "image": "images/90926028.jpg",
+      "motif": null
+    },
+    {
+      "id": "90817012",
+      "name": "Bota de Cano Curto com Salto Baixo Baixo Crocodilo Feminina Preta",
+      "category": "More",
+      "price": 239.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Modare"
+      },
+      "image": "images/90817012.jpg",
+      "motif": null
+    },
+    {
+      "id": "91700029",
+      "name": "Bota Moleca Cano Médio Marrom Feminino",
+      "category": "More",
+      "price": 319.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Moleca"
+      },
+      "image": "images/91700029.jpg",
+      "motif": null
+    },
+    {
+      "id": "91597027",
+      "name": "Bota Feminina Salto Country Mississipi Café",
+      "category": "More",
+      "price": 299.99,
+      "discountedPrice": 99.99,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "Mississipi"
+      },
+      "image": "images/91597027.jpg",
+      "motif": null
     }
   ]
 }

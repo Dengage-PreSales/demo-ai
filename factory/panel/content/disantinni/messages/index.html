@@ -5,70 +5,70 @@
 <style>
   :root{color-scheme:light dark}
   *{box-sizing:border-box}
-  body{margin:0;background:#f6f7f8;color:#14181b;font-family:Inter, Helvetica Neue, Helvetica, Arial, sans-serif;
+  body{margin:0;background:#ffffff;color:#5f6368;font-family:Poppins, Helvetica Neue, Helvetica, Arial, sans-serif;
        padding:34px 18px 80px;line-height:1.55}
   .head{max-width:1240px;margin:0 auto 28px}
-  h1{font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;margin:0 0 8px}
-  .sub{margin:0;font-size:15px;color:#5a6375;max-width:74ch}
-  .warn{max-width:1240px;margin:0 auto 26px;background:#f0f0f0;border:1px solid #c9cbd0;
-        border-left:3px solid #404040;border-radius:8px;padding:14px 16px;font-size:13.5px;color:#14181b}
+  h1{font-family:Poppins, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:27px;margin:0 0 8px}
+  .sub{margin:0;font-size:15px;color:#6a6b6e;max-width:74ch}
+  .warn{max-width:1240px;margin:0 auto 26px;background:#f0f0f0;border:1px solid #d0d0d1;
+        border-left:3px solid #404040;border-radius:8px;padding:14px 16px;font-size:13.5px;color:#5f6368}
   .grid{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
-  .j{background:#ffffff;border:1px solid #c9cbd0;border-radius:12px;overflow:hidden}
+  .j{background:#ffffff;border:1px solid #d0d0d1;border-radius:12px;overflow:hidden}
   .j header{display:flex;justify-content:space-between;align-items:baseline;
-            padding:15px 20px;border-bottom:1px solid #c9cbd0}
-  h2{font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;margin:0;color:#14181b}
-  .count{font-size:12px;color:#5a6375}
+            padding:15px 20px;border-bottom:1px solid #d0d0d1}
+  h2{font-family:Poppins, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:17px;margin:0;color:#5f6368}
+  .count{font-size:12px;color:#6a6b6e}
   .chs{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:0}
-  .ch{padding:17px 20px;border-right:1px solid #c9cbd0;border-bottom:1px solid #c9cbd0}
+  .ch{padding:17px 20px;border-right:1px solid #d0d0d1;border-bottom:1px solid #d0d0d1}
   .chhead{display:flex;flex-direction:column;gap:2px;margin-bottom:12px}
   .chname{font-size:12px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#404040}
-  .chpanel{font-size:11px;color:#5a6375;line-height:1.4}
+  .chpanel{font-size:11px;color:#6a6b6e;line-height:1.4}
 
-  .notif{display:flex;gap:11px;background:#f0f0f0;border:1px solid #c9cbd0;
+  .notif{display:flex;gap:11px;background:#f0f0f0;border:1px solid #d0d0d1;
          border-radius:10px;padding:11px 12px}
   .nicon{width:34px;height:34px;border-radius:8px;flex:0 0 auto}
-  .ntitle{font-size:13.5px;font-weight:bold;color:#14181b;line-height:1.3}
-  .nbody{font-size:13px;color:#14181b;padding-top:2px}
-  .nsrc{font-size:11px;color:#5a6375;padding-top:5px}
+  .ntitle{font-size:13.5px;font-weight:bold;color:#5f6368;line-height:1.3}
+  .nbody{font-size:13px;color:#5f6368;padding-top:2px}
+  .nsrc{font-size:11px;color:#6a6b6e;padding-top:5px}
 
-  .sms .sender{font-size:11px;color:#5a6375;padding-bottom:5px}
-  .sms .bubble{background:#f0f0f0;border:1px solid #c9cbd0;border-radius:14px 14px 14px 4px;
-               padding:11px 13px;font-size:13px;color:#14181b}
+  .sms .sender{font-size:11px;color:#6a6b6e;padding-bottom:5px}
+  .sms .bubble{background:#f0f0f0;border:1px solid #d0d0d1;border-radius:14px 14px 14px 4px;
+               padding:11px 13px;font-size:13px;color:#5f6368}
 
   .wa .wmeta{display:flex;gap:6px;padding-bottom:7px}
-  .wa .cat,.wa .typ{font-size:10.5px;padding:2px 7px;border-radius:999px;border:1px solid #c9cbd0;color:#5a6375}
+  .wa .cat,.wa .typ{font-size:10.5px;padding:2px 7px;border-radius:999px;border:1px solid #d0d0d1;color:#6a6b6e}
   .wa .cat{color:#404040}
-  .wbubble{background:#f0f0f0;border:1px solid #c9cbd0;border-radius:10px 10px 10px 3px;padding:11px 13px}
-  .whead{font-size:13px;font-weight:bold;color:#14181b;padding-bottom:5px}
-  .wbody{font-size:12.8px;color:#14181b}
-  .wfoot{font-size:11px;color:#5a6375;padding-top:7px}
+  .wbubble{background:#f0f0f0;border:1px solid #d0d0d1;border-radius:10px 10px 10px 3px;padding:11px 13px}
+  .whead{font-size:13px;font-weight:bold;color:#5f6368;padding-bottom:5px}
+  .wbody{font-size:12.8px;color:#5f6368}
+  .wfoot{font-size:11px;color:#6a6b6e;padding-top:7px}
   .wcarousel{display:flex;gap:5px;padding-top:9px}
-  .wcarousel span{flex:1;font-size:10px;color:#5a6375;text-align:center;
-                  border:1px dashed #c9cbd0;border-radius:6px;padding:14px 0}
-  .wcoupon{margin-top:9px;font-size:11.5px;text-align:center;border:1px dashed #c9cbd0;
+  .wcarousel span{flex:1;font-size:10px;color:#6a6b6e;text-align:center;
+                  border:1px dashed #d0d0d1;border-radius:6px;padding:14px 0}
+  .wcoupon{margin-top:9px;font-size:11.5px;text-align:center;border:1px dashed #d0d0d1;
            border-radius:6px;padding:7px;color:#404040}
   .wbtn{margin-top:5px;text-align:center;font-size:12.5px;color:#404040;
-        border:1px solid #c9cbd0;border-radius:8px;padding:8px;background:#ffffff}
+        border:1px solid #d0d0d1;border-radius:8px;padding:8px;background:#ffffff}
 
-  .inbox{display:flex;gap:11px;background:#f0f0f0;border:1px solid #c9cbd0;border-radius:10px;padding:11px 12px}
-  .ithumb{width:40px;height:40px;border-radius:7px;flex:0 0 auto;border:1px solid #c9cbd0}
-  .ititle{font-size:13.5px;font-weight:bold;color:#14181b}
-  .ibody{font-size:12.8px;color:#14181b;padding-top:2px}
-  .imeta{font-size:11px;color:#5a6375;padding-top:6px}
+  .inbox{display:flex;gap:11px;background:#f0f0f0;border:1px solid #d0d0d1;border-radius:10px;padding:11px 12px}
+  .ithumb{width:40px;height:40px;border-radius:7px;flex:0 0 auto;border:1px solid #d0d0d1}
+  .ititle{font-size:13.5px;font-weight:bold;color:#5f6368}
+  .ibody{font-size:12.8px;color:#5f6368;padding-top:2px}
+  .imeta{font-size:11px;color:#6a6b6e;padding-top:6px}
 
-  .otemplate{font-size:11px;color:#5a6375;padding-bottom:7px}
-  .owidget{background:#f0f0f0;border:1px solid #c9cbd0;border-radius:10px;padding:15px 14px;text-align:center}
-  .oheading{font-family:Sora, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#14181b}
-  .obody{font-size:12.8px;color:#14181b;padding:5px 0 11px}
-  .octa{display:inline-block;font-size:12.5px;font-weight:bold;padding:8px 16px;border-radius:10px}
-  .ogeneric{font-size:10.5px;color:#5a6375;padding-top:7px}
+  .otemplate{font-size:11px;color:#6a6b6e;padding-bottom:7px}
+  .owidget{background:#f0f0f0;border:1px solid #d0d0d1;border-radius:10px;padding:15px 14px;text-align:center}
+  .oheading{font-family:Poppins, Helvetica Neue, Helvetica, Arial, sans-serif;font-size:15px;font-weight:bold;color:#5f6368}
+  .obody{font-size:12.8px;color:#5f6368;padding:5px 0 11px}
+  .octa{display:inline-block;font-size:12.5px;font-weight:bold;padding:8px 16px;border-radius:8px}
+  .ogeneric{font-size:10.5px;color:#6a6b6e;padding-top:7px}
 
   .j.blocked{opacity:0.92}
   .j.blocked .count{color:#404040}
-  .why{margin:0;padding:14px 17px 17px;font-size:12.5px;line-height:1.6;color:#5a6375}
+  .why{margin:0;padding:14px 17px 17px;font-size:12.5px;line-height:1.6;color:#6a6b6e}
   .counts{display:flex;flex-wrap:wrap;gap:5px;padding-top:10px}
-  .ct{font-size:10.5px;color:#5a6375;border:1px solid #c9cbd0;border-radius:999px;padding:2px 8px}
-  .ct b{color:#14181b;font-variant-numeric:tabular-nums}
+  .ct{font-size:10.5px;color:#6a6b6e;border:1px solid #d0d0d1;border-radius:999px;padding:2px 8px}
+  .ct b{color:#5f6368;font-variant-numeric:tabular-nums}
   .ct.over{color:#404040;border-color:#404040}
   .ct.over b{color:#404040}
 </style></head>
@@ -321,14 +321,14 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/disantinni/</textare
         <div class="notif web">
           <div class="nicon" style="background:#404040"></div>
           <div class="ntext">
-            <div class="ntitle">Still looking at Accessories?</div>
+            <div class="ntitle">Still looking at Sandália?</div>
             <div class="nbody">The one you spent time with is still there, along with a few alternatives.</div>
             <div class="nsrc">Chrome</div>
           </div>
         </div>
         <div class="counts">
             <span class="ct " title="limit from: client">
-              title <b>29</b>/50</span>
+              title <b>26</b>/50</span>
             <span class="ct " title="limit from: client">
               body <b>74</b>/120</span></div>
       </div>
@@ -406,7 +406,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/disantinni/</textare
           <div class="nicon" style="background:#404040"></div>
           <div class="ntext">
             <div class="ntitle">Back in stock</div>
-            <div class="nbody">The GPS Fitness Watch you looked for is available again.</div>
+            <div class="nbody">The Sandália Grendene Baby you looked for is available again.</div>
             <div class="nsrc">Chrome</div>
           </div>
         </div>
@@ -414,7 +414,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/disantinni/</textare
             <span class="ct " title="limit from: client">
               title <b>13</b>/50</span>
             <span class="ct " title="limit from: client">
-              body <b>56</b>/120</span></div>
+              body <b>61</b>/120</span></div>
       </div>
       <div class="ch">
         <div class="chhead">
@@ -430,7 +430,7 @@ body: You looked for {% var r = $from('$db.search_events').where('key', '=', $Co
           <div class="ithumb" style="background:#f0f0f0"></div>
           <div class="itext">
             <div class="ititle">What you searched for is back</div>
-            <div class="ibody">You looked for GPS Fitness Watch when we had none. It is back, and a return like this can go quickly.</div>
+            <div class="ibody">You looked for Sandália Grendene Baby when we had none. It is back, and a return like this can go quickly.</div>
             <div class="imeta">expires in 3 days &middot; priority 2</div>
           </div>
         </div>
@@ -438,7 +438,7 @@ body: You looked for {% var r = $from('$db.search_events').where('key', '=', $Co
             <span class="ct " title="limit from: client">
               title <b>29</b>/60</span>
             <span class="ct " title="limit from: client">
-              body <b>101</b>/220</span></div>
+              body <b>106</b>/220</span></div>
       </div>
       <div class="ch">
         <div class="chhead">
@@ -686,7 +686,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/disantinni/</textare
           <div class="nicon" style="background:#404040"></div>
           <div class="ntext">
             <div class="ntitle">A few things changed</div>
-            <div class="nbody">New ranges in Accessories, and your saved items are still saved.</div>
+            <div class="nbody">New ranges in Sandália, and your saved items are still saved.</div>
             <div class="nsrc">Chrome</div>
           </div>
         </div>
@@ -694,7 +694,7 @@ targetUrl: https://dengage-presales.github.io/demo-ai/demos/disantinni/</textare
             <span class="ct " title="limit from: client">
               title <b>20</b>/50</span>
             <span class="ct " title="limit from: client">
-              body <b>64</b>/120</span></div>
+              body <b>61</b>/120</span></div>
       </div>
       <div class="ch">
         <div class="chhead">

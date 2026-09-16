@@ -513,9 +513,21 @@ async function main() {
                 }
                 extracted.theme.primary = shot.ink || extracted.theme.primary;
                 extracted.theme.onPrimary = '#ffffff';
-                if (shot.accents[0]) extracted.theme.accent = shot.accents[0];
+                /* THE ACCENT IS JUDGED ON ITS OWN EVIDENCE, not thrown out with the
+                   primary. Corrected 16 September 2026, from a build where the pages
+                   painted a framework blue primary, rightly overruled by the
+                   screenshot, next to a brand red accent that the screenshot itself
+                   contained: the old line replaced both, and shipped the
+                   screenshot's largest accent area instead of the brand red both
+                   channels agreed on. An accent the screenshot confirms is two
+                   independent reads of the same answer, so it stays. */
+                const accentPresent = extracted.found.accent
+                    && presentIn(shot, extracted.theme.accent);
+                if (!accentPresent && shot.accents[0]) {
+                    extracted.theme.accent = shot.accents[0];
+                }
                 extracted.found.primary = true;
-                extracted.found.accent = Boolean(shot.accents[0]);
+                extracted.found.accent = accentPresent || Boolean(shot.accents[0]);
                 extracted.found.primarySource = 'screenshot';
                 console.error('Theme: from the screenshot. primary ' + extracted.theme.primary +
                               ', accent ' + extracted.theme.accent);
