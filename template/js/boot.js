@@ -261,6 +261,25 @@
         window.DEMO_CONFIG = results[0];
         window.DEMO_COPY = results[1];
 
+        /* THE PROSPECT'S OWN LOGO, ONLY WHEN THE CONFIG NAMES ONE. The standing
+           rule is the Dengage mark and never the prospect's, CLAUDE.md 3.3, and
+           the generator never writes this key. It exists for the recorded
+           exceptions that rule now carries: Salil directs it for a named demo,
+           brandLogo is set by hand in that demo's config, and the footer still
+           says the storefront is a demonstration. Everything else, favicon
+           included, stays Dengage. */
+        if (results[0].brandLogo) {
+            var mark = document.querySelector('.logo');
+            if (mark) {
+                var brandImg = document.createElement('img');
+                brandImg.src = String(results[0].brandLogo);
+                brandImg.alt = String(results[0].name || 'Store');
+                brandImg.style.cssText = 'height:34px;max-width:200px;display:block;object-fit:contain';
+                while (mark.firstChild) mark.removeChild(mark.firstChild);
+                mark.appendChild(brandImg);
+            }
+        }
+
         /* VERIFY, DO NOT SET. This line used to call setAttribute, which looked
            harmless and hid a real bug for as long as it existed: every module
            that namespaced storage read the attribute before this ran, got

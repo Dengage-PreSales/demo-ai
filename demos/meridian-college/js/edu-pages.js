@@ -1,12 +1,4 @@
-/* Everything a page repeats, rendered from content.json.
-
-   The pages are ordinary HTML and keep their own section order, headings and
-   prose. What they do not carry is the twenty fourth copy of a faculty card, so
-   each collection is marked with data-render and filled in here. One correction
-   to a subject list reaches every page that shows subjects.
-
-   Nothing in here talks to Dengage. The buttons it draws carry data attributes,
-   and js/edu-journey.js owns what those attributes mean. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window, document) {
     'use strict';
 
@@ -21,14 +13,11 @@
         return found ? found.name : id;
     }
 
-    /* The subject page is one file serving sixteen subjects. */
     function currentSubject() {
         var id = new URLSearchParams(window.location.search).get('id');
         var list = content.subjects.filter(function (subject) { return String(subject.id) === String(id); });
         return list[0] || null;
     }
-
-    /* ------------------------------------------------------------- renderers */
 
     var RENDER = {
 

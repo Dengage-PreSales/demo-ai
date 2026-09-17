@@ -35,5 +35,6 @@
     "More"
   ],
   "productCount": 30,
-  "catalogueSource": "store"
+  "catalogueSource": "store",
+  "brandLogo": "images/brand-logo.png"
 }

@@ -1,33 +1,4 @@
-/* THE USE CASE LAUNCHER. Twenty education scenarios, on demand, in one panel.
-
-   HOW THESE ARE DELIVERED, WHICH IS THE WHOLE DESIGN.
-
-   Every card does two things when it is pressed:
-
-     1. It pushes a data layer event named demo_dengage_edu_<scenario>. That is
-        the trigger a Dengage On-Site campaign listens for, so any of these can be
-        answered by a real campaign later with no change to this website at all.
-        The prefix is set once, in demo.config.json, and the event module builds
-        the name from it.
-
-     2. It renders the scenario in the page itself.
-
-   Step 2 is what makes this demo work on the day it is published. Nothing has to
-   be built, configured or clicked in the Dengage panel first, and no card can go
-   dark mid call because a campaign was paused, a creative was edited, or an ad
-   blocker refused a request. Step 1 is what makes it upgradeable: the moment a
-   campaign exists for one of these names, that campaign answers the same button.
-
-   The two do not fight. A card is a demonstration of the scenario either way.
-
-   EVERY CARD IS RE-FIRABLE. A scenario shown once and unavailable for the rest of
-   the call is worse than no scenario, so nothing here latches, suppresses or
-   frequency caps. Press it as often as the conversation needs it.
-
-   WHAT IS DELIBERATELY NOT HERE. No card invents a fee, a scholarship amount, an
-   acceptance rate or a class size. The scenarios are about timing and relevance,
-   which is what the platform actually does, and a number nobody can source would
-   undermine every real thing on the page beside it. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window, document) {
     'use strict';
 
@@ -41,17 +12,12 @@
     function memoryKey(name) { return 'dps:' + slug() + ':' + name; }
 
     function remember(name, value) {
-        try { window.localStorage.setItem(memoryKey(name), String(value)); } catch (err) { /* private mode */ }
+        try { window.localStorage.setItem(memoryKey(name), String(value)); } catch (err) {  }
     }
     function recall(name) {
         try { return window.localStorage.getItem(memoryKey(name)); } catch (err) { return null; }
     }
 
-    /* ------------------------------------------------------- rolling dates */
-
-    /* The admissions round closes on the 25th, whichever 25th is next. A fixed
-       date would read correctly for a fortnight and then quietly turn a demo into
-       an advert for a deadline that has passed. */
     function nextDeadline() {
         var now = new Date();
         var target = new Date(now.getFullYear(), now.getMonth(), 25);
@@ -68,8 +34,6 @@
                       'August', 'September', 'October', 'November', 'December'];
         return date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear();
     }
-
-    /* ---------------------------------------------------------- the surfaces */
 
     function surface() {
         var host = $('#usecase-surface');
@@ -184,13 +148,6 @@
         return el;
     }
 
-    /* --------------------------------------------------------- inline slots */
-
-    /* The five inline positions a Dengage Inline campaign can target. They carry
-       an edu prefix rather than the storefront's names on purpose: an inline
-       campaign is targeted by selector and set to display on every URL, so
-       sharing the storefront's selectors would put ecommerce creative on a
-       college page the first time inline is switched on. */
     var INLINE_SLOTS = [
         { id: 'dn_inline_target_edu_below_header', label: 'Below the header', pages: 'every page' },
         { id: 'dn_inline_target_edu_below_hero', label: 'Below the hero', pages: 'home' },
@@ -214,8 +171,6 @@
         return true;
     }
 
-    /* ------------------------------------------------------------- scenarios */
-
     function subjectsInApplication() {
         return window.Store.cart();
     }
@@ -236,8 +191,6 @@
     }
 
     var SCENARIOS = {
-
-        /* ------------------------------------------- the admissions funnel */
 
         'application-started': function () {
             var lines = subjectsInApplication();
@@ -353,8 +306,6 @@
             });
         },
 
-        /* -------------------------------------------- discovery and shortlist */
-
         'browse-abandoned': function () {
             var subject = anySubject();
             card({
@@ -445,8 +396,6 @@
                 actions: [{ label: 'See all subjects', run: function () { window.location.href = 'academics.html#subjects'; } }]
             });
         },
-
-        /* ------------------------------------------- engagement and lifecycle */
 
         'prospectus-download': function () {
             formCard({
@@ -566,8 +515,6 @@
             });
         },
 
-        /* ------------------------------------------------ channel demonstrations */
-
         'app-inbox': function () {
             window.EduSite.openPanel('#inbox');
             if (window.Inbox) window.Inbox.refresh();
@@ -662,8 +609,6 @@
         }
     };
 
-    /* --------------------------------------------------- the inline five */
-
     INLINE_SLOTS.forEach(function (slot, index) {
         SCENARIOS['inline-' + slot.id.replace('dn_inline_target_edu_', '').replace(/_/g, '-')] = function () {
             var deadline = nextDeadline();
@@ -683,13 +628,10 @@
         };
     });
 
-    /* --------------------------------------------------------------- firing */
-
     function fire(name) {
         var run = SCENARIOS[name];
         if (!run) return;
-        /* The data layer event first, so a campaign built for this name later
-           answers the same button without this file changing. */
+
         window.DengageEvents.scenario(name);
         try {
             run();
@@ -698,8 +640,6 @@
             window.EduSite.toast('That scenario could not be shown. The console has the reason.');
         }
     }
-
-    /* ------------------------------------------------------------- the panel */
 
     var GROUPS = [
         {

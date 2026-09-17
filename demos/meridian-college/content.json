@@ -12,51 +12,139 @@
     "admissionsPhone": "(+92) 337 000 0000",
     "copyright": "2026 Meridian College. All Rights Reserved"
   },
-
   "nav": [
-    { "label": "Home", "href": "index.html" },
-    { "label": "About", "href": "about.html" },
-    { "label": "Academics", "href": "academics.html", "children": [
-      { "label": "Subjects Offered", "href": "academics.html#subjects" },
-      { "label": "Faculty", "href": "academics.html#faculty" },
-      { "label": "Unique Programs", "href": "academics.html#programs" }
-    ] },
-    { "label": "Admissions", "href": "admissions.html" },
-    { "label": "Counselling", "href": "counselling.html" },
-    { "label": "Life At Meridian", "href": "life.html", "children": [
-      { "label": "News & Updates", "href": "life.html#news" },
-      { "label": "Campus Life", "href": "life.html#campus" },
-      { "label": "Student Societies", "href": "life.html#societies" },
-      { "label": "Student Houses", "href": "life.html#houses" }
-    ] },
-    { "label": "Media", "href": "media.html" },
-    { "label": "Contact", "href": "contact.html" }
+    {
+      "label": "Home",
+      "href": "index.html"
+    },
+    {
+      "label": "About",
+      "href": "about.html"
+    },
+    {
+      "label": "Academics",
+      "href": "academics.html",
+      "children": [
+        {
+          "label": "Subjects Offered",
+          "href": "academics.html#subjects"
+        },
+        {
+          "label": "Faculty",
+          "href": "academics.html#faculty"
+        },
+        {
+          "label": "Unique Programs",
+          "href": "academics.html#programs"
+        }
+      ]
+    },
+    {
+      "label": "Admissions",
+      "href": "admissions.html"
+    },
+    {
+      "label": "Counselling",
+      "href": "counselling.html"
+    },
+    {
+      "label": "Life At Meridian",
+      "href": "life.html",
+      "children": [
+        {
+          "label": "News & Updates",
+          "href": "life.html#news"
+        },
+        {
+          "label": "Campus Life",
+          "href": "life.html#campus"
+        },
+        {
+          "label": "Student Societies",
+          "href": "life.html#societies"
+        },
+        {
+          "label": "Student Houses",
+          "href": "life.html#houses"
+        }
+      ]
+    },
+    {
+      "label": "Media",
+      "href": "media.html"
+    },
+    {
+      "label": "Contact",
+      "href": "contact.html"
+    }
   ],
-
   "utilityNav": [
-    { "label": "How To Apply", "href": "how-to-apply.html" },
-    { "label": "Eligibility Criteria", "href": "how-to-apply.html#eligibility" }
+    {
+      "label": "How To Apply",
+      "href": "how-to-apply.html"
+    },
+    {
+      "label": "Eligibility Criteria",
+      "href": "how-to-apply.html#eligibility"
+    }
   ],
-
   "footer": {
     "campus": [
-      { "label": "Home", "href": "index.html" },
-      { "label": "About", "href": "about.html" },
-      { "label": "Admission", "href": "admissions.html" },
-      { "label": "Blogs", "href": "blogs.html" },
-      { "label": "Contact", "href": "contact.html" }
+      {
+        "label": "Home",
+        "href": "index.html"
+      },
+      {
+        "label": "About",
+        "href": "about.html"
+      },
+      {
+        "label": "Admission",
+        "href": "admissions.html"
+      },
+      {
+        "label": "Blogs",
+        "href": "blogs.html"
+      },
+      {
+        "label": "Contact",
+        "href": "contact.html"
+      }
     ],
     "useful": [
-      { "label": "Apply Now", "href": "apply.html" },
-      { "label": "How to Apply", "href": "how-to-apply.html" },
-      { "label": "Academics", "href": "academics.html" },
-      { "label": "Counselling", "href": "counselling.html" },
-      { "label": "Life at Meridian", "href": "life.html" },
-      { "label": "Media", "href": "media.html" }
+      {
+        "label": "Apply Now",
+        "href": "apply.html"
+      },
+      {
+        "label": "How to Apply",
+        "href": "how-to-apply.html"
+      },
+      {
+        "label": "Academics",
+        "href": "academics.html"
+      },
+      {
+        "label": "Counselling",
+        "href": "counselling.html"
+      },
+      {
+        "label": "Life at Meridian",
+        "href": "life.html"
+      },
+      {
+        "label": "Media",
+        "href": "media.html"
+      }
     ],
-    "social": ["Facebook", "Instagram", "Tiktok", "Youtube", "Linkedin"]
+    "social": [
+      "Facebook",
+      "Instagram",
+      "Tiktok",
+      "Youtube",
+      "Linkedin"
+    ]
   },
-
   "faculties": [
     {
       "id": "sciences",
@@ -74,53 +162,226 @@
       "blurb": "For the creatives, the analysts, and the future changemakers. With pathways into Psychology, Sociology, Media Studies, and Languages."
     }
   ],
-
   "subjects": [
-    { "id": "9702", "name": "Physics", "faculty": "sciences", "motif": "physics" },
-    { "id": "9701", "name": "Chemistry", "faculty": "sciences", "motif": "chemistry" },
-    { "id": "9700", "name": "Biology", "faculty": "sciences", "motif": "biology" },
-    { "id": "9709", "name": "Mathematics", "faculty": "sciences", "motif": "maths" },
-    { "id": "9618", "name": "Computer Science", "faculty": "sciences", "motif": "computing" },
-    { "id": "9706", "name": "Accounting", "faculty": "commerce", "motif": "accounting" },
-    { "id": "9609", "name": "Business Studies", "faculty": "commerce", "motif": "business" },
-    { "id": "9708", "name": "Economics", "faculty": "commerce", "motif": "economics" },
-    { "id": "9084", "name": "Law", "faculty": "hybrid", "motif": "law" },
-    { "id": "9990", "name": "Psychology", "faculty": "hybrid", "motif": "psychology" },
-    { "id": "9699", "name": "Sociology", "faculty": "hybrid", "motif": "sociology" },
-    { "id": "9481", "name": "Digital Media and Design", "faculty": "hybrid", "motif": "media" },
-    { "id": "9093", "name": "English Language", "faculty": "hybrid", "motif": "english" },
-    { "id": "9980", "name": "International Project Qualification", "faculty": "hybrid", "motif": "project" },
-    { "id": "9686", "name": "Urdu", "faculty": "hybrid", "motif": "urdu" },
-    { "id": "9489", "name": "History", "faculty": "hybrid", "motif": "history" }
+    {
+      "id": "9702",
+      "name": "Physics",
+      "faculty": "sciences",
+      "motif": "physics"
+    },
+    {
+      "id": "9701",
+      "name": "Chemistry",
+      "faculty": "sciences",
+      "motif": "chemistry"
+    },
+    {
+      "id": "9700",
+      "name": "Biology",
+      "faculty": "sciences",
+      "motif": "biology"
+    },
+    {
+      "id": "9709",
+      "name": "Mathematics",
+      "faculty": "sciences",
+      "motif": "maths"
+    },
+    {
+      "id": "9618",
+      "name": "Computer Science",
+      "faculty": "sciences",
+      "motif": "computing"
+    },
+    {
+      "id": "9706",
+      "name": "Accounting",
+      "faculty": "commerce",
+      "motif": "accounting"
+    },
+    {
+      "id": "9609",
+      "name": "Business Studies",
+      "faculty": "commerce",
+      "motif": "business"
+    },
+    {
+      "id": "9708",
+      "name": "Economics",
+      "faculty": "commerce",
+      "motif": "economics"
+    },
+    {
+      "id": "9084",
+      "name": "Law",
+      "faculty": "hybrid",
+      "motif": "law"
+    },
+    {
+      "id": "9990",
+      "name": "Psychology",
+      "faculty": "hybrid",
+      "motif": "psychology"
+    },
+    {
+      "id": "9699",
+      "name": "Sociology",
+      "faculty": "hybrid",
+      "motif": "sociology"
+    },
+    {
+      "id": "9481",
+      "name": "Digital Media and Design",
+      "faculty": "hybrid",
+      "motif": "media"
+    },
+    {
+      "id": "9093",
+      "name": "English Language",
+      "faculty": "hybrid",
+      "motif": "english"
+    },
+    {
+      "id": "9980",
+      "name": "International Project Qualification",
+      "faculty": "hybrid",
+      "motif": "project"
+    },
+    {
+      "id": "9686",
+      "name": "Urdu",
+      "faculty": "hybrid",
+      "motif": "urdu"
+    },
+    {
+      "id": "9489",
+      "name": "History",
+      "faculty": "hybrid",
+      "motif": "history"
+    }
   ],
-
   "faculty": [
-    { "name": "Sir Adnan Rehmat", "subject": "Accounting", "faculty": "commerce" },
-    { "name": "Sir Bilal Qureshi", "subject": "Mathematics", "faculty": "sciences" },
-    { "name": "Miss Hina Farooq", "subject": "Physics", "faculty": "sciences" },
-    { "name": "Sir Danish Iftikhar", "subject": "Chemistry", "faculty": "sciences" },
-    { "name": "Sir Ehtesham Baig", "subject": "Business Studies", "faculty": "commerce" },
-    { "name": "Miss Faryal Nadeem", "subject": "Economics", "faculty": "commerce" },
-    { "name": "Sir Gohar Iqbal", "subject": "Physics", "faculty": "sciences" },
-    { "name": "Sir Hamza Shaikh", "subject": "Biology", "faculty": "sciences" },
-    { "name": "Miss Iqra Siddiqi", "subject": "Psychology", "faculty": "hybrid" },
-    { "name": "Sir Jibran Mehmood", "subject": "English Language", "faculty": "hybrid" },
-    { "name": "Sir Kashif Anwar", "subject": "Sociology", "faculty": "hybrid" },
-    { "name": "Miss Laiba Tanveer", "subject": "Law", "faculty": "hybrid" },
-    { "name": "Sir Faraz Rafiq", "subject": "Computer Science", "faculty": "sciences" },
-    { "name": "Miss Nida Aslam", "subject": "Digital Media and Design", "faculty": "hybrid" },
-    { "name": "Sir Omair Zaidi", "subject": "Mathematics", "faculty": "sciences" },
-    { "name": "Sir Parvez Alam", "subject": "Urdu", "faculty": "hybrid" },
-    { "name": "Miss Quratulain Nasir", "subject": "History", "faculty": "hybrid" },
-    { "name": "Sir Rehan Mustafa", "subject": "International Project Qualification", "faculty": "hybrid" },
-    { "name": "Sir Saad Bashir", "subject": "Chemistry", "faculty": "sciences" },
-    { "name": "Miss Tehreem Abbas", "subject": "Biology", "faculty": "sciences" },
-    { "name": "Sir Umair Sultan", "subject": "Accounting", "faculty": "commerce" },
-    { "name": "Miss Vania Rashid", "subject": "English Language", "faculty": "hybrid" },
-    { "name": "Sir Wajahat Noor", "subject": "Economics", "faculty": "commerce" },
-    { "name": "Sir Zohaib Karim", "subject": "Business Studies", "faculty": "commerce" }
+    {
+      "name": "Sir Adnan Rehmat",
+      "subject": "Accounting",
+      "faculty": "commerce"
+    },
+    {
+      "name": "Sir Bilal Qureshi",
+      "subject": "Mathematics",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Miss Hina Farooq",
+      "subject": "Physics",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Sir Danish Iftikhar",
+      "subject": "Chemistry",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Sir Ehtesham Baig",
+      "subject": "Business Studies",
+      "faculty": "commerce"
+    },
+    {
+      "name": "Miss Faryal Nadeem",
+      "subject": "Economics",
+      "faculty": "commerce"
+    },
+    {
+      "name": "Sir Gohar Iqbal",
+      "subject": "Physics",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Sir Hamza Shaikh",
+      "subject": "Biology",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Miss Iqra Siddiqi",
+      "subject": "Psychology",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Jibran Mehmood",
+      "subject": "English Language",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Kashif Anwar",
+      "subject": "Sociology",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Miss Laiba Tanveer",
+      "subject": "Law",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Faraz Rafiq",
+      "subject": "Computer Science",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Miss Nida Aslam",
+      "subject": "Digital Media and Design",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Omair Zaidi",
+      "subject": "Mathematics",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Sir Parvez Alam",
+      "subject": "Urdu",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Miss Quratulain Nasir",
+      "subject": "History",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Rehan Mustafa",
+      "subject": "International Project Qualification",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Saad Bashir",
+      "subject": "Chemistry",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Miss Tehreem Abbas",
+      "subject": "Biology",
+      "faculty": "sciences"
+    },
+    {
+      "name": "Sir Umair Sultan",
+      "subject": "Accounting",
+      "faculty": "commerce"
+    },
+    {
+      "name": "Miss Vania Rashid",
+      "subject": "English Language",
+      "faculty": "hybrid"
+    },
+    {
+      "name": "Sir Wajahat Noor",
+      "subject": "Economics",
+      "faculty": "commerce"
+    },
+    {
+      "name": "Sir Zohaib Karim",
+      "subject": "Business Studies",
+      "faculty": "commerce"
+    }
   ],
-
   "directors": [
     {
       "name": "Sir Arsalan Haque",
@@ -143,7 +404,6 @@
       "message": "I want every student who visits this page, whether you are a prospective Meridian, a current one, or a parent trying to make the most important decision of your child's academic life, to hear this clearly: Meridian College was not built for the average. It was built for the ambitious. But ambition alone is not enough; it needs the right place to grow, the right people to guide it, and the right environment to let it flourish. That is exactly what we have created here."
     }
   ],
-
   "programs": [
     {
       "id": "ai-robotics",
@@ -174,15 +434,33 @@
       "outcome": "You will finish with a foundational understanding of global financial markets, the technical skills to analyse them, and the disciplined mindset of someone who makes decisions based on research and risk management rather than guesswork."
     }
   ],
-
   "scholarships": [
-    { "id": "academic", "name": "Academic", "blurb": "For the ones who let results do the talking. Awarded to students with outstanding board examination results. If you came in with the grades, Meridian rewards the grind." },
-    { "id": "sports", "name": "Sports", "blurb": "Champions on the field deserve champions in the classroom. Awarded to students who have demonstrated exceptional athletic ability at district, provincial or national level, because a Meridian's arena is not limited to academics." },
-    { "id": "talent", "name": "Talent", "blurb": "Because greatness is not always measured by grades. For students with extraordinary abilities in arts, music, debate, drama, or any creative field. If you have got the gift, Meridian will back it." },
-    { "id": "huffaz", "name": "Huffaz", "blurb": "For those who carry the greatest knowledge of all. Students who have completed the memorisation of the Holy Quran are eligible to apply. Awards are granted according to the college scholarship policy." },
-    { "id": "financial-aid", "name": "Financial Aid", "blurb": "If you are looking to apply for financial aid, a simple application process is available. Download the form, fill in all the required details carefully, and submit it as soon as possible." }
+    {
+      "id": "academic",
+      "name": "Academic",
+      "blurb": "For the ones who let results do the talking. Awarded to students with outstanding board examination results. If you came in with the grades, Meridian rewards the grind."
+    },
+    {
+      "id": "sports",
+      "name": "Sports",
+      "blurb": "Champions on the field deserve champions in the classroom. Awarded to students who have demonstrated exceptional athletic ability at district, provincial or national level, because a Meridian's arena is not limited to academics."
+    },
+    {
+      "id": "talent",
+      "name": "Talent",
+      "blurb": "Because greatness is not always measured by grades. For students with extraordinary abilities in arts, music, debate, drama, or any creative field. If you have got the gift, Meridian will back it."
+    },
+    {
+      "id": "huffaz",
+      "name": "Huffaz",
+      "blurb": "For those who carry the greatest knowledge of all. Students who have completed the memorisation of the Holy Quran are eligible to apply. Awards are granted according to the college scholarship policy."
+    },
+    {
+      "id": "financial-aid",
+      "name": "Financial Aid",
+      "blurb": "If you are looking to apply for financial aid, a simple application process is available. Download the form, fill in all the required details carefully, and submit it as soon as possible."
+    }
   ],
-
   "admissionSteps": [
     {
       "step": "Step 1",
@@ -210,7 +488,6 @@
       ]
     }
   ],
-
   "criteria": [
     "Academic Record: minimum passing grade in O Level or equivalent board examination.",
     "Entry: appear for the college orientation session.",
@@ -218,49 +495,134 @@
     "Subject Selection: choose your combination based on your desired faculty.",
     "Document Submission: submit all required documents within the given deadline."
   ],
-
   "eligibility": [
-    { "title": "O-Level", "detail": "Minimum 3 passing grades" },
-    { "title": "Matriculation, AKU Board, Federal Board", "detail": "Minimum 60% marks required" },
-    { "title": "Unconditional Offer", "detail": "For students meeting final academic requirements" },
-    { "title": "Conditional Offer", "detail": "For students awaiting results or appearing in upcoming exams" }
+    {
+      "title": "O-Level",
+      "detail": "Minimum 3 passing grades"
+    },
+    {
+      "title": "Matriculation, AKU Board, Federal Board",
+      "detail": "Minimum 60% marks required"
+    },
+    {
+      "title": "Unconditional Offer",
+      "detail": "For students meeting final academic requirements"
+    },
+    {
+      "title": "Conditional Offer",
+      "detail": "For students awaiting results or appearing in upcoming exams"
+    }
   ],
-
   "counselling": [
-    { "id": "career", "name": "Career Counselling", "blurb": "Mapping the path from where you are to where you want to end up, subject choices included, with people who know what universities and employers actually look for." },
-    { "id": "academic", "name": "Academic Counselling", "blurb": "Struggling? Stuck? Every student learns differently. Every student has strengths, and every student has subjects that do not come as naturally. Academic Counselling is built on one principle: nobody gets left behind." },
-    { "id": "wellbeing", "name": "Well-Being Counselling", "blurb": "A safe, confidential space for the parts of the journey that are not academic. No judgment. No pressure. No scripts. Just honest guidance from people who care where you end up." }
+    {
+      "id": "career",
+      "name": "Career Counselling",
+      "blurb": "Mapping the path from where you are to where you want to end up, subject choices included, with people who know what universities and employers actually look for."
+    },
+    {
+      "id": "academic",
+      "name": "Academic Counselling",
+      "blurb": "Struggling? Stuck? Every student learns differently. Every student has strengths, and every student has subjects that do not come as naturally. Academic Counselling is built on one principle: nobody gets left behind."
+    },
+    {
+      "id": "wellbeing",
+      "name": "Well-Being Counselling",
+      "blurb": "A safe, confidential space for the parts of the journey that are not academic. No judgment. No pressure. No scripts. Just honest guidance from people who care where you end up."
+    }
   ],
-
   "societies": [
-    { "id": "speaking", "name": "Speaking Society", "blurb": "The definitive authority on presence, precision and the power of the spoken word. Built on oratorical discipline and unyielding confidence, this is the home of voices that lead, persuade and leave a lasting legacy." },
-    { "id": "ai-robotics", "name": "AI and Robotics Society", "blurb": "The frontier of modern engineering and cognitive computing. A collective of visionaries who design intelligent systems and develop the autonomous technologies that redefine what people can do." },
-    { "id": "community", "name": "Community Service Society", "blurb": "Leadership rooted in social responsibility. This is for students who understand that real influence is measured by the difference created in the lives of others. We turn empathy into action." },
-    { "id": "media", "name": "Media Society", "blurb": "The intersection of creativity and perception. Modern communicators who master the power of the lens and the weight of the narrative. We do not just report the world, we shape how it is seen." },
-    { "id": "drama", "name": "Drama and Arts Society", "blurb": "Refined discipline and transcendent creativity. Practitioners who turn abstract imagination into performance, built on artistic mastery, originality and the rare ability to move an audience." },
-    { "id": "entrepreneur", "name": "Entrepreneur Society", "blurb": "A mindset defined by strategic audacity and relentless execution. A space for those who find untapped opportunity where others see uncertainty, and who drive innovation that creates real value." }
+    {
+      "id": "speaking",
+      "name": "Speaking Society",
+      "blurb": "The definitive authority on presence, precision and the power of the spoken word. Built on oratorical discipline and unyielding confidence, this is the home of voices that lead, persuade and leave a lasting legacy."
+    },
+    {
+      "id": "ai-robotics",
+      "name": "AI and Robotics Society",
+      "blurb": "The frontier of modern engineering and cognitive computing. A collective of visionaries who design intelligent systems and develop the autonomous technologies that redefine what people can do."
+    },
+    {
+      "id": "community",
+      "name": "Community Service Society",
+      "blurb": "Leadership rooted in social responsibility. This is for students who understand that real influence is measured by the difference created in the lives of others. We turn empathy into action."
+    },
+    {
+      "id": "media",
+      "name": "Media Society",
+      "blurb": "The intersection of creativity and perception. Modern communicators who master the power of the lens and the weight of the narrative. We do not just report the world, we shape how it is seen."
+    },
+    {
+      "id": "drama",
+      "name": "Drama and Arts Society",
+      "blurb": "Refined discipline and transcendent creativity. Practitioners who turn abstract imagination into performance, built on artistic mastery, originality and the rare ability to move an audience."
+    },
+    {
+      "id": "entrepreneur",
+      "name": "Entrepreneur Society",
+      "blurb": "A mindset defined by strategic audacity and relentless execution. A space for those who find untapped opportunity where others see uncertainty, and who drive innovation that creates real value."
+    }
   ],
-
   "houses": [
-    { "id": "samurai", "name": "Samurai", "mentor": "Sir Adnan Rehmat", "creed": "A Samurai earns their victory through discipline, precision, and an unbreakable focus. Wear this badge with honour, carry this house with pride, and when the Clash arrives, let every opponent remember the name." },
-    { "id": "spartan", "name": "Spartan", "mentor": "Sir Bilal Qureshi", "creed": "A Spartan never stands alone. We fight as one, we win as one, and when the Clash comes, every point this house has earned all year will prove that Spartans were built for exactly this moment." },
-    { "id": "gladiator", "name": "Gladiator", "mentor": "Miss Hina Farooq", "creed": "Gladiators were made for the arena. Wear this badge like the champion you are, bring everything you have to every single day, and when the Clash begins, show this college what Gladiators are truly made of." },
-    { "id": "viking", "name": "Viking", "mentor": "Sir Kashif Anwar", "creed": "Vikings were never afraid of the unknown, never stopped by the storm, and never settled for second. Join this house, own that spirit, and together we will sail straight to the top of the Clash." }
+    {
+      "id": "samurai",
+      "name": "Samurai",
+      "mentor": "Sir Adnan Rehmat",
+      "creed": "A Samurai earns their victory through discipline, precision, and an unbreakable focus. Wear this badge with honour, carry this house with pride, and when the Clash arrives, let every opponent remember the name."
+    },
+    {
+      "id": "spartan",
+      "name": "Spartan",
+      "mentor": "Sir Bilal Qureshi",
+      "creed": "A Spartan never stands alone. We fight as one, we win as one, and when the Clash comes, every point this house has earned all year will prove that Spartans were built for exactly this moment."
+    },
+    {
+      "id": "gladiator",
+      "name": "Gladiator",
+      "mentor": "Miss Hina Farooq",
+      "creed": "Gladiators were made for the arena. Wear this badge like the champion you are, bring everything you have to every single day, and when the Clash begins, show this college what Gladiators are truly made of."
+    },
+    {
+      "id": "viking",
+      "name": "Viking",
+      "mentor": "Sir Kashif Anwar",
+      "creed": "Vikings were never afraid of the unknown, never stopped by the storm, and never settled for second. Join this house, own that spirit, and together we will sail straight to the top of the Clash."
+    }
   ],
-
   "houseRules": [
-    { "title": "Academics", "blurb": "Every A, every distinction, every board result adds points to your house. Excellence in the classroom is the foundation of every great house." },
-    { "title": "ECA and Sports", "blurb": "Win a debate, score a goal, lead a society. Every achievement outside the classroom is points on the board." },
-    { "title": "Behaviour and Conduct", "blurb": "Respect, discipline and character matter here. Positive conduct earns your house points. Disciplinary issues cost them." },
-    { "title": "Campus Participation", "blurb": "Attendance, participation in events and campus contributions all feed directly into your house score. Being present is being powerful." }
+    {
+      "title": "Academics",
+      "blurb": "Every A, every distinction, every board result adds points to your house. Excellence in the classroom is the foundation of every great house."
+    },
+    {
+      "title": "ECA and Sports",
+      "blurb": "Win a debate, score a goal, lead a society. Every achievement outside the classroom is points on the board."
+    },
+    {
+      "title": "Behaviour and Conduct",
+      "blurb": "Respect, discipline and character matter here. Positive conduct earns your house points. Disciplinary issues cost them."
+    },
+    {
+      "title": "Campus Participation",
+      "blurb": "Attendance, participation in events and campus contributions all feed directly into your house score. Being present is being powerful."
+    }
   ],
-
   "showcase": [
-    { "id": "academic", "name": "Academic Achievers", "blurb": "The ones who showed up, locked in, and topped the board. From city wide distinctions to international scholarships, they did not just study, they dominated." },
-    { "id": "eca", "name": "ECA Achievers", "blurb": "Debate stages, sports arenas, drama floors, music halls. These are the ones who proved that greatness is not only academic." },
-    { "id": "society", "name": "Society Leaders", "blurb": "Behind every event, every society milestone, every initiative that moved the campus, there were students who made it happen. These are them." }
+    {
+      "id": "academic",
+      "name": "Academic Achievers",
+      "blurb": "The ones who showed up, locked in, and topped the board. From city wide distinctions to international scholarships, they did not just study, they dominated."
+    },
+    {
+      "id": "eca",
+      "name": "ECA Achievers",
+      "blurb": "Debate stages, sports arenas, drama floors, music halls. These are the ones who proved that greatness is not only academic."
+    },
+    {
+      "id": "society",
+      "name": "Society Leaders",
+      "blurb": "Behind every event, every society milestone, every initiative that moved the campus, there were students who made it happen. These are them."
+    }
   ],
-
   "news": [
     {
       "id": "round-2-closing-soon",
@@ -303,7 +665,6 @@
       "body": "An open day is the shortest route from a website to a decision. Walk the labs, the library and the sports ground, sit in on a live class, and talk to the faculty who teach the subjects you are considering. Registration is open and places are allocated in order."
     }
   ],
-
   "faqs": [
     {
       "q": "What is the admission deadline?",
@@ -326,24 +687,44 @@
       "a": "Yes, and we are proud of it. Talent should never be limited by financial circumstance. The scholarship program offers the Huffaz Scholarship, the Sports Scholarship, the Talent Scholarship and the Academic Scholarship, each awarded on the basis of merit, achievement and demonstrated potential."
     }
   ],
-
   "testimonials": [
-    { "name": "Areeba K.", "role": "A2, Pre-Medical", "quote": "I picked my combination in a counselling session in week one and never once felt like I was guessing. The faculty know your name and they know your target." },
-    { "name": "Hasan M.", "role": "AS, Commerce", "quote": "The house system sounds like a gimmick until you are in it. Every result you post counts for something bigger than you, and that changes how you study." },
-    { "name": "Zoya R.", "role": "Alumna, Class of 2025", "quote": "The interview skills program is the reason my university interview went the way it did. I had done the whole thing twice already in a mock room." },
-    { "name": "Bilal A.", "role": "A2, Hybrid", "quote": "Societies here are student led in the real sense. We pitched an event, got a budget, and ran it. Nobody did it for us." }
+    {
+      "name": "Areeba K.",
+      "role": "A2, Pre-Medical",
+      "quote": "I picked my combination in a counselling session in week one and never once felt like I was guessing. The faculty know your name and they know your target."
+    },
+    {
+      "name": "Hasan M.",
+      "role": "AS, Commerce",
+      "quote": "The house system sounds like a gimmick until you are in it. Every result you post counts for something bigger than you, and that changes how you study."
+    },
+    {
+      "name": "Zoya R.",
+      "role": "Alumna, Class of 2025",
+      "quote": "The interview skills program is the reason my university interview went the way it did. I had done the whole thing twice already in a mock room."
+    },
+    {
+      "name": "Bilal A.",
+      "role": "A2, Hybrid",
+      "quote": "Societies here are student led in the real sense. We pitched an event, got a budget, and ran it. Nobody did it for us."
+    }
   ],
-
   "universities": [
-    "IBA Karachi", "LUMS", "NUST", "Aga Khan University", "Habib University",
-    "GIKI", "University of Toronto", "University of Manchester", "Monash", "NED University"
+    "IBA Karachi",
+    "LUMS",
+    "NUST",
+    "Aga Khan University",
+    "Habib University",
+    "GIKI",
+    "University of Toronto",
+    "University of Manchester",
+    "Monash",
+    "NED University"
   ],
-
   "campusLife": {
     "title": "A Day in the Life",
     "body": "The experience does not end when the bell rings. Campus life here is everything the classroom is not: loud, electric and completely alive. From the buzz of society events to the roar of the sports ground, from friendships made in corridors to late study sessions before boards, this is where students come into their own. Every corner of this campus has a story. Every event leaves a memory."
   },
-
   "clash": {
     "title": "Clash of the Houses",
     "body": [
@@ -352,15 +733,46 @@
       "The house that has built the most points throughout the year enters with the advantage. But anything can happen in the arena. When the final scores are tallied, only one house is crowned champion."
     ]
   },
-
   "media": [
-    { "id": "campus-tour", "title": "Campus Tour", "kicker": "Video" },
-    { "id": "clash-highlights", "title": "Clash of the Houses, Highlights", "kicker": "Video" },
-    { "id": "science-labs", "title": "Inside the Science Labs", "kicker": "Video" },
-    { "id": "results-day", "title": "Results Day", "kicker": "Video" },
-    { "id": "society-showcase", "title": "Society Showcase", "kicker": "Video" },
-    { "id": "open-day-walkthrough", "title": "Open Day Walkthrough", "kicker": "Video" },
-    { "id": "faculty-in-focus", "title": "Faculty in Focus", "kicker": "Video" },
-    { "id": "sports-gala", "title": "Sports Gala", "kicker": "Video" }
+    {
+      "id": "campus-tour",
+      "title": "Campus Tour",
+      "kicker": "Video"
+    },
+    {
+      "id": "clash-highlights",
+      "title": "Clash of the Houses, Highlights",
+      "kicker": "Video"
+    },
+    {
+      "id": "science-labs",
+      "title": "Inside the Science Labs",
+      "kicker": "Video"
+    },
+    {
+      "id": "results-day",
+      "title": "Results Day",
+      "kicker": "Video"
+    },
+    {
+      "id": "society-showcase",
+      "title": "Society Showcase",
+      "kicker": "Video"
+    },
+    {
+      "id": "open-day-walkthrough",
+      "title": "Open Day Walkthrough",
+      "kicker": "Video"
+    },
+    {
+      "id": "faculty-in-focus",
+      "title": "Faculty in Focus",
+      "kicker": "Video"
+    },
+    {
+      "id": "sports-gala",
+      "title": "Sports Gala",
+      "kicker": "Video"
+    }
   ]
 }

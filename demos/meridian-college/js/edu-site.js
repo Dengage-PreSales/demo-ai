@@ -1,16 +1,4 @@
-/* The site chrome, and the plumbing every page shares.
-
-   Header, navigation, footer, overlays and toasts are rendered here from
-   content.json, so eleven pages carry one copy of the chrome rather than eleven
-   copies that drift.
-
-   THE ONE THING IN HERE THAT IS NOT COSMETIC. Every page fires a page view, and
-   it fires before the content fetch resolves rather than after it. That call is
-   what makes this demo's rows findable at all: the SDK writes page_url and
-   session_id onto the row itself, and session_id is the only join from a page
-   view to the application, shortlist and search rows the same visit produces. A
-   page that skipped it would still look perfect and would write rows nobody can
-   attribute to anything. So it does not wait for the network. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window, document) {
     'use strict';
 
@@ -27,18 +15,10 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    /* The page type the SDK understands, taken from the body rather than guessed
-       from the file name. The vocabulary is fixed by the platform, so an
-       admissions page is a promotion and a subject page is a product: the shape
-       of the funnel is the same even though the words are not. */
     function pageType() {
         return document.body.getAttribute('data-page-type') || 'other';
     }
 
-    /* An attribute of the form query:name takes its value from the query string
-       instead. A subject page is one file serving sixteen subjects, and the page
-       view has to carry which one, or every subject view is indistinguishable
-       from every other in the table. */
     function attr(name) {
         var value = document.body.getAttribute(name);
         if (!value) return null;
@@ -58,8 +38,6 @@
         if (item) detail.productId = item;
         window.DengageEvents.pageview(pageType(), detail);
     }
-
-    /* ---------------------------------------------------------------- chrome */
 
     function navLink(item, current) {
         var isCurrent = current && item.href.split('#')[0] === current;
@@ -82,9 +60,6 @@
         '<path d="M36.9964 15.9687C38.288 17.303 38.3802 19.5905 36.9964 20.9248C35.6126 22.2591 33.3986 22.2591 32.0148 20.9248C31.369 20.2576 31 19.3045 31 18.4468C31 16.5406 32.476 14.9203 34.4134 14.9203C34.4134 14.9203 34.4134 14.9203 34.5056 14.9203C35.4281 14.9203 36.3507 15.3015 36.9964 15.9687Z"/>' +
         '</svg>';
 
-    /* The Dengage mark, always, and never the institution's own. This is a
-       demonstration storefront for a sales conversation, not a live college
-       site, and the header is where that has to be unambiguous. */
     function logo() {
         return '<a href="index.html" class="logo">' + LOGO_MARK +
             '<span><span class="logo-word">Dengage</span>' +
@@ -184,8 +159,6 @@
             '</div></footer>';
     }
 
-    /* -------------------------------------------------------------- overlays */
-
     function openPanel(selector) {
         var panel = $(selector);
         if (!panel) return;
@@ -224,8 +197,6 @@
         });
     }
 
-    /* ---------------------------------------------------------------- toasts */
-
     function toast(message, action) {
         var stack = $('#toast-stack');
         if (!stack) return;
@@ -249,8 +220,6 @@
         }, action ? 9000 : 4500);
     }
 
-    /* ------------------------------------------------------------- accordion */
-
     function wireAccordions(root) {
         $$('.accordion-head', root || document).forEach(function (head) {
             if (head.getAttribute('data-wired')) return;
@@ -265,7 +234,6 @@
         });
     }
 
-    /* Tab groups: one container with .tabs and one with .tab-panel per index. */
     function wireTabs(root) {
         $$('[data-tabs]', root || document).forEach(function (group) {
             if (group.getAttribute('data-wired')) return;
@@ -283,8 +251,6 @@
         });
     }
 
-    /* ------------------------------------------------------------------ boot */
-
     function ready(fn) {
         if (loaded) { fn(state); return; }
         waiting.push(fn);
@@ -298,8 +264,6 @@
             state.config = results[0];
             state.content = results[1];
 
-            /* The event module reads this at call time, so the scenario prefix
-               and the application are in place before any launcher card fires. */
             window.DEMO_CONFIG = state.config;
             window.DEMO_COPY = {
                 inboxTitle: 'Messages',
@@ -329,7 +293,7 @@
     }
 
     function init() {
-        /* Before anything else, and before the fetch. */
+
         firePageView();
         wireOverlays();
         load().then(function () {

@@ -118,8 +118,16 @@
         },
 
         similar: function (product, limit) {
+
+            var seed = hash(product.id);
             return products
                 .filter(function (p) { return p.id !== product.id && p.category === product.category; })
+                .sort(function (a, b) {
+                    var ha = (hash(a.id) + seed) % 97;
+                    var hb = (hash(b.id) + seed) % 97;
+                    if (ha !== hb) return ha - hb;
+                    return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+                })
                 .slice(0, limit || 6);
         },
         alsoViewed: function (product, limit) {

@@ -1,7 +1,4 @@
-/* Dengage Education Demo. A working college website for a conversation about
-   personalization. Every colour and every font below comes from the theme block
-   in demo.config.json. */
-
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 :root {
     --primary: #622d91;
     --primary-dark: #4b2170;
@@ -69,8 +66,6 @@ img, svg { max-width: 100%; }
     white-space: nowrap; border: 0;
 }
 
-/* ---------------------------------------------------------------- buttons */
-
 .btn {
     display: inline-flex;
     align-items: center;
@@ -129,8 +124,6 @@ img, svg { max-width: 100%; }
 }
 .icon-btn:hover { border-color: var(--primary); color: var(--primary); }
 .icon-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-
-/* ------------------------------------------------------------------ chrome */
 
 .topbar {
     background: var(--primary);
@@ -225,8 +218,6 @@ img, svg { max-width: 100%; }
 .pill-count[hidden] { display: none; }
 .has-count { position: relative; }
 
-/* -------------------------------------------------------------------- hero */
-
 .hero {
     position: relative;
     min-height: 620px;
@@ -280,8 +271,6 @@ img, svg { max-width: 100%; }
 .breadcrumb a { color: rgba(255, 255, 255, 0.9); }
 .page-hero .lede { color: rgba(255, 255, 255, 0.88); max-width: 720px; margin-top: 16px; }
 
-/* ---------------------------------------------------------------- sections */
-
 .section { padding: 84px 0; }
 .section-tight { padding: 56px 0; }
 .section-alt { background: var(--page); }
@@ -329,14 +318,10 @@ img, svg { max-width: 100%; }
 .pathway { text-align: center; }
 .pathway h3 { color: var(--primary); font-size: 26px; }
 
-/* ------------------------------------------------------------- stat strip */
-
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
 .stat { text-align: center; padding: 22px 12px; }
 .stat b { display: block; font-family: var(--display); font-size: 44px; color: var(--accent); line-height: 1; }
 .stat span { display: block; margin-top: 8px; font-size: 15px; }
-
-/* ---------------------------------------------------------------- subjects */
 
 .filter-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 34px; }
 .chip {
@@ -373,8 +358,6 @@ img, svg { max-width: 100%; }
     color: var(--primary);
 }
 
-/* ----------------------------------------------------------------- faculty */
-
 .rail { min-width: 0; display: flex; gap: 22px; overflow-x: auto; padding: 6px 2px 22px; scroll-snap-type: x mandatory; }
 .rail::-webkit-scrollbar { height: 6px; }
 .rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; }
@@ -385,8 +368,6 @@ img, svg { max-width: 100%; }
 .person .portrait svg { display: block; width: 100%; height: auto; }
 .person h4 { margin: 16px 0 2px; font-size: 18px; }
 .person span { display: block; font-size: 14px; color: var(--muted); padding-bottom: 18px; }
-
-/* -------------------------------------------------------------------- tabs */
 
 .tabs { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 22px; }
 .tab {
@@ -404,8 +385,6 @@ img, svg { max-width: 100%; }
 .tab-panel h3 { font-size: 24px; }
 .tab-panel ol { margin: 0; padding-left: 20px; }
 .tab-panel li { margin-bottom: 8px; }
-
-/* --------------------------------------------------------------- accordion */
 
 .accordion { border-top: 1px solid var(--line); }
 .accordion-item { border-bottom: 1px solid var(--line); }
@@ -429,8 +408,6 @@ img, svg { max-width: 100%; }
 .accordion-body { display: none; padding: 0 4px 24px; }
 .accordion-item.is-open .accordion-body { display: block; }
 
-/* -------------------------------------------------------------------- news */
-
 .post-hero-art { border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 26px; }
 .post-hero-art svg { display: block; width: 100%; height: auto; }
 
@@ -441,14 +418,10 @@ img, svg { max-width: 100%; }
 .post-card h3 { font-size: 20px; margin: 0; }
 .post-card .btn { margin-top: auto; align-self: flex-start; }
 
-/* ------------------------------------------------------------ testimonials */
-
 .quote { background: var(--surface); border-radius: var(--radius-lg); padding: 30px; border: 1px solid var(--line); }
 .quote p { font-family: var(--display); font-size: 18px; color: var(--ink); }
 .quote footer { font-size: 14px; color: var(--muted); }
 .quote footer b { color: var(--ink); display: block; font-size: 15px; }
-
-/* ------------------------------------------------------------------- forms */
 
 .field { margin-bottom: 18px; }
 .field label { display: block; font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
@@ -479,8 +452,6 @@ img, svg { max-width: 100%; }
 }
 .steps-bar span.is-done { background: var(--primary); }
 
-/* ------------------------------------------------------------------ footer */
-
 .site-footer { background: var(--ink); color: rgba(255, 255, 255, 0.72); padding: 70px 0 0; }
 .site-footer h4 { color: #ffffff; font-size: 17px; margin-bottom: 18px; }
 .site-footer a { color: rgba(255, 255, 255, 0.72); }
@@ -503,8 +474,6 @@ img, svg { max-width: 100%; }
 .newsletter input { flex: 1; padding: 12px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.28); background: rgba(255, 255, 255, 0.06); color: #ffffff; font: inherit; font-size: 14px; }
 .newsletter input::placeholder { color: rgba(255, 255, 255, 0.55); }
 .footer-note { margin-top: 56px; border-top: 1px solid rgba(255, 255, 255, 0.12); padding: 22px 0; font-size: 14px; text-align: center; }
-
-/* ----------------------------------------------------- overlays and panels */
 
 .scrim {
     position: fixed;
@@ -579,8 +548,6 @@ img, svg { max-width: 100%; }
 .line-item .meta { font-size: 13px; color: var(--muted); }
 .line-item .link-btn { font-size: 13px; }
 
-/* --------------------------------------------------------- the toast strip */
-
 .toast-stack {
     position: fixed;
     left: 50%;
@@ -605,8 +572,6 @@ img, svg { max-width: 100%; }
 }
 .toast b { font-weight: 600; }
 .toast .link-btn { color: var(--accent); margin-left: auto; white-space: nowrap; }
-
-/* --------------------------------------------------------- the demo launcher */
 
 .launcher-btn {
     position: fixed;
@@ -644,8 +609,6 @@ img, svg { max-width: 100%; }
 }
 .launcher.is-open { display: flex; }
 
-/* An open drawer or modal owns the screen. The launcher sits above everything
-   by design, which put it on top of the drawer's own button. */
 body.has-overlay .launcher-btn,
 body.has-overlay .launcher { display: none; }
 .launcher-head {
@@ -690,8 +653,6 @@ body.has-overlay .launcher { display: none; }
 .launcher-foot dt { color: var(--muted); }
 .launcher-foot dd { margin: 0; color: var(--ink); word-break: break-all; display: flex; gap: 8px; align-items: baseline; }
 
-/* ------------------------------------------------------------ inline slots */
-
 .inline-slot:empty { display: none; }
 .inline-slot { margin: 0 auto; }
 
@@ -702,8 +663,6 @@ body.has-overlay .launcher { display: none; }
     padding: 18px 20px;
     color: var(--ink);
 }
-
-/* ------------------------------------------------------------------- misc */
 
 .badge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
 .badge { text-align: center; }
@@ -755,8 +714,6 @@ body.has-overlay .launcher { display: none; }
 .timeline h4 { margin: 0 0 4px; font-size: 17px; }
 .timeline p { margin: 0; font-size: 14.5px; }
 
-/* -------------------------------------------------------------- responsive */
-
 @media (max-width: 1100px) {
     .site-nav { display: none; }
     .site-nav.is-open {
@@ -778,11 +735,6 @@ body.has-overlay .launcher { display: none; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* The header carries a burger, the mark, five controls and the primary call to
-   action, which is more than 350px of usable width holds. They move onto their
-   own row rather than any of them being dropped: every one of them is a demo
-   capability, and search and the account modal are the two most likely to be
-   wanted on a phone. */
 @media (max-width: 700px) {
     .header-inner { flex-wrap: wrap; gap: 10px; padding: 12px 0; min-height: 0; }
     .logo { margin-right: auto; }
@@ -809,8 +761,6 @@ body.has-overlay .launcher { display: none; }
     .footer-grid { grid-template-columns: 1fr; }
     .launcher, .launcher-btn { right: 10px; bottom: 10px; }
 }
-
-/* ------------------------------------------------- the use case surfaces */
 
 .uc {
     position: fixed;

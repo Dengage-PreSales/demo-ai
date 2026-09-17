@@ -531,7 +531,30 @@ async function openPage(browser, path) {
         SLOTS.filter((slot) => !everySlot.has(slot)));
 
     /* ------------------------------------------------------------------- 11 */
-    console.log('\n11. No console errors on either page');
+    console.log('\n11. The recommendation rails render without being asked');
+    /* Until 17 September 2026 the strategies only ran from the launcher's
+       parked cards, so every page shipped with its rails hidden and the group
+       read as decoration. The rails render on load now, and a fresh visitor
+       must still get at least one on each page: Trending carries the home page
+       when there is no behaviour yet, and a product page always has a shelf to
+       step up or cross from. */
+    const homeRails = await home.page.evaluate(() => {
+        const section = document.getElementById('recommendations');
+        return { hidden: !section || section.hidden,
+                 rails: section ? section.querySelectorAll('#rec-rails .rail').length : 0 };
+    });
+    ok('the home page shows at least one recommendation rail',
+        !homeRails.hidden && homeRails.rails >= 1, homeRails);
+    const productRails = await product.page.evaluate(() => {
+        const section = document.getElementById('recommendations');
+        return { hidden: !section || section.hidden,
+                 rails: section ? section.querySelectorAll('#rec-rails .rail').length : 0 };
+    });
+    ok('and so does the product page',
+        !productRails.hidden && productRails.rails >= 1, productRails);
+
+    /* ------------------------------------------------------------------- 12 */
+    console.log('\n12. No console errors on either page');
     ok('home is clean', home.errors.length === 0, home.errors.slice(0, 3));
     ok('the product page is clean', product.errors.length === 0, product.errors.slice(0, 3));
 

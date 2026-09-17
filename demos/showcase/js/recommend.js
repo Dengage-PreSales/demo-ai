@@ -36,6 +36,11 @@
         return list.filter(function (p) { return ids.indexOf(p.id) === -1; });
     }
 
+    function paid(product) {
+        var n = Number(product && (product.discountedPrice || product.price));
+        return isFinite(n) && n > 0 ? n : null;
+    }
+
     function seeded(list, seed) {
         var out = list.slice();
         var s = 0, i;
@@ -75,17 +80,72 @@
             }
         },
         {
-            id: 'also-viewed',
-            label: 'Others also viewed',
-            note: 'Co-viewing, across categories',
-            explain: 'Deliberately crosses category boundaries, which is what ' +
-                     'separates it from More like this. On a real engine this is ' +
-                     'driven by co-view data.',
-            needsProduct: true,
+            id: 'step-up',
+            label: 'Step up',
+            note: 'A higher spec pick from the same shelf',
+            explain: 'The classic upsell. Same shelf as the item in context, ' +
+                     'priced above it, nearest first, so the suggestion is a ' +
+                     'reachable upgrade rather than the most expensive thing in ' +
+                     'the store.',
             run: function (limit) {
-                var p = currentProduct();
-                if (!p) return [];
-                return catalog().alsoViewed(p, limit);
+                var anchor = currentProduct();
+                if (!anchor && window.Store) {
+                    var lines = window.Store.cart();
+                    if (lines.length) anchor = catalog().get(lines[lines.length - 1].id);
+                }
+                if (!anchor) return [];
+                var floor = paid(anchor);
+                if (floor === null) return [];
+                return catalog().all()
+                    .filter(function (p) {
+                        if (p.id === anchor.id || p.category !== anchor.category) return false;
+                        var cost = paid(p);
+                        return cost !== null && cost > floor;
+                    })
+                    .sort(function (a, b) {
+                        var da = paid(a) - floor;
+                        var db = paid(b) - floor;
+                        if (da !== db) return da - db;
+                        return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+                    })
+                    .slice(0, limit);
+            }
+        },
+        {
+            id: 'also-viewed',
+            label: 'You might also like',
+            note: 'From the other shelves in your visit',
+            explain: 'Crosses category boundaries, which is what separates it ' +
+                     'from More like this. It reads the shelves this visitor ' +
+                     'actually browsed or carted and offers from those, so two ' +
+                     'visitors with different histories see different rails. A ' +
+                     'fresh visitor with no history gets a stable cross ' +
+                     'category mix instead.',
+            run: function (limit) {
+                var here = currentProduct();
+                var exclude = [];
+                if (here) exclude.push(here.id);
+                var cats = {};
+                readViewed().forEach(function (id) {
+                    var p = catalog().get(id);
+                    if (p && (!here || p.category !== here.category)) cats[p.category] = 1;
+                });
+                var lines = window.Store ? window.Store.cart() : [];
+                lines.forEach(function (l) {
+                    exclude.push(l.id);
+                    var p = catalog().get(l.id);
+                    if (p && (!here || p.category !== here.category)) cats[p.category] = 1;
+                });
+                var browsed = Object.keys(cats);
+                if (browsed.length) {
+                    var pool = without(catalog().all(), exclude).filter(function (p) {
+                        return cats[p.category];
+                    });
+                    if (pool.length) return seeded(pool, (here ? here.id : slug)).slice(0, limit);
+                }
+
+                if (!here) return [];
+                return catalog().alsoViewed(here, limit);
             }
         },
         {
@@ -167,8 +227,98 @@
         strategies: STRATEGIES,
         get: get,
         render: render,
+        rails: rails,
+        refresh: refresh,
         noteViewed: noteViewed,
         viewed: readViewed,
         keys: { viewed: VIEWED_KEY }
     };
+
+    var RAIL_PLAN = {
+        home: ['recently-viewed', 'complete-basket', 'also-viewed', 'trending'],
+        product: ['step-up', 'also-viewed', 'recently-viewed']
+    };
+    var RAIL_CAP = { home: 2, product: 3 };
+
+    function railBlock(strategy, items) {
+        return '<div class="rec-block">' +
+            '<div class="section-head"><h2>' + strategy.label + '</h2>' +
+            '<span class="count">' + strategy.note + '</span></div>' +
+            '<div class="rail">' + items.map(window.Storefront.card).join('') + '</div>' +
+            '</div>';
+    }
+
+    function rails() {
+        var section = document.querySelector('#recommendations');
+        if (!section || !catalog() || !window.Storefront) return;
+        var container = section.querySelector('.container') || section;
+        var context = /product\.html/.test(window.location.pathname) ? 'product' : 'home';
+
+        var host = container.querySelector('#rec-rails');
+        if (!host) {
+            host = document.createElement('div');
+            host.id = 'rec-rails';
+            container.appendChild(host);
+        }
+
+        var legacy = container.querySelector('#rec-rail');
+        if (legacy && !legacy.innerHTML) {
+            var head = container.querySelector('.section-head');
+            if (head && head.parentNode === container) head.style.display = 'none';
+            legacy.style.display = 'none';
+        }
+
+        var blocks = [];
+        var plan = RAIL_PLAN[context];
+        for (var i = 0; i < plan.length && blocks.length < RAIL_CAP[context]; i++) {
+            var strategy = get(plan[i]);
+            if (!strategy) continue;
+            var items = [];
+            try { items = strategy.run(6) || []; }
+            catch (err) { if (window.console) console.error('[recommend] ' + plan[i], err); }
+            if (items.length > 1) blocks.push(railBlock(strategy, items));
+        }
+        host.innerHTML = blocks.join('');
+        if (blocks.length) section.hidden = false;
+        drawerRail();
+    }
+
+    function drawerRail() {
+        var drawer = document.querySelector('#cart');
+        if (!drawer || !catalog() || !window.Storefront) return;
+        var strategy = get('complete-basket');
+        var items = [];
+        try { items = strategy.run(3) || []; }
+        catch (err) {  }
+        var host = drawer.querySelector('#cart-rec');
+        if (!items.length) {
+            if (host) host.innerHTML = '';
+            return;
+        }
+        if (!host) {
+            host = document.createElement('div');
+            host.id = 'cart-rec';
+            drawer.appendChild(host);
+        }
+        host.innerHTML = '<div class="section-head"><h2>' + strategy.label + '</h2></div>' +
+            '<div class="rail">' + items.map(window.Storefront.card).join('') + '</div>';
+    }
+
+    function refresh() { rails(); }
+
+    var waited = 0;
+    function ready() {
+        return catalog() && catalog().all().length && window.Storefront;
+    }
+    function firstRender() {
+        if (ready()) { rails(); return; }
+        waited += 1;
+        if (waited < 80) window.setTimeout(firstRender, 150);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', firstRender);
+    } else {
+        firstRender();
+    }
+    if (window.Store && window.Store.onChange) window.Store.onChange(refresh);
 })(window, document);

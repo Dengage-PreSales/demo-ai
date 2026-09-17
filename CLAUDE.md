@@ -26,7 +26,12 @@ A demo is **done** when all twelve of these are true:
 2. It is themed to the prospect: their colours, their typography, their category
    structure, their real product names and product images
 3. It carries the Dengage logo with the subtext "eComm Demo", and never the
-   prospect's logo or word mark
+   prospect's logo or word mark. **One sanctioned exception path, added 17
+   September 2026**: when Salil directs it in writing for a named demo, that
+   demo's `demo.config.json` gets a hand-set `brandLogo` pointing at a committed
+   image, `js/boot.js` swaps the header mark, and the demo is recorded in §3.3.
+   The generator never writes the key, so no demo can acquire a prospect's logo
+   by being built
 4. It is a working storefront: home, product listing, product detail, cart,
    checkout, search and a wishlist
 5. Every Dengage on-site widget fires on demand from an in-page launcher, and can
@@ -258,9 +263,13 @@ report what you found and what you would remove. Then stop and ask.
    The campaigns exist once and serve every demo. A demo never gets its own, and
    the set does not grow when a demo is built. `factory/checks/launcher.js` is
    the count, not this file.
-3. **The Dengage logo, never the prospect's.** Their colours, typography,
-   category structure, product names and product photography are used. Their
-   logo and word mark are not.
+3. **The Dengage logo, never the prospect's, by default.** Their colours,
+   typography, category structure, product names and product photography are
+   used. Their logo and word mark are not, unless Salil directs the exception
+   for a named demo, in writing, as §0.3 describes. The footer's demonstration
+   disclaimer stays either way, because §6 still holds: the demo never claims to
+   be the prospect's own site, whatever mark the header carries. Demos the
+   exception currently applies to: **disantinni** (17 September 2026).
 4. **No external asset hosting at runtime.** Product images are downloaded,
    compressed and committed. A demo must never depend on a third-party CDN,
    because the prospect can change it between the build and the call.

@@ -6,35 +6,10 @@
 <title>Apply Now | Dengage Education Demo</title>
 <meta name="description" content="Your details, your documents and your subject combination.">
 
-<!--
-    THE DENGAGE EDUCATION DEMO. A working college website for a conversation
-    about personalization on an education account.
-
-    It is a demonstration, not a live college. The institution, its staff and its
-    students are fictional, every portrait is drawn rather than photographed, and
-    the mark in the header is the Dengage one.
-
-    ORDER IN THE HEAD IS LOAD BEARING:
-      1. js/identity.js resolves the contact key synchronously and sets __dnInit
-      2. the SDK snippet initializes WITH that key, so the contact is attached
-         before any event goes out
-      3. the page view fires later, from js/dengageEvents.js, through
-         js/edu-site.js
-
-    The page view is what makes this demo's rows findable. The SDK fills page_url
-    and session_id on that row itself, and session_id is the only join from it to
-    the application, shortlist and search rows the same visit writes.
--->
-
 <link rel="icon" href="vendor/assets/dengage-logo.svg" type="image/svg+xml">
 
-<!-- Scripts before stylesheets. A pending stylesheet blocks every script after
-     it, and the font request below goes to a third party, so with it above these
-     the Dengage bootstrap would wait on Google Fonts: slow on a bad network and
-     indefinite on a network that blocks it. Neither script reads a style. -->
 <script src="js/identity.js"></script>
 
-<!-- DENGAGE SDK START -->
 <script>
   (function (window, document) {
     window.dengage = window.dengage || function () {
@@ -51,7 +26,6 @@
     window.__dnInit ? window.dengage('initialize', window.__dnInit) : window.dengage('initialize');
   })(window, document);
 </script>
-<!-- DENGAGE SDK END -->
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

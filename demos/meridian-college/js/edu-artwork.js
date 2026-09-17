@@ -1,25 +1,7 @@
-/* Every picture on this site is drawn here, as inline SVG, from the theme's own
-   colours.
-
-   The storefront template made the same call for product photography and the
-   reasoning carries over unchanged: a demo must never depend on a host we do not
-   control at call time, and stock photography of students is both the wrong
-   students and a question nobody wants to answer on a sales call. Generated
-   artwork is always on palette, costs no requests, and is honest about being a
-   drawing.
-
-   Two rules it keeps:
-
-   1. No photograph of a real person appears anywhere on this site. Portraits are
-      geometric, built from a name, and look like nobody.
-   2. Nothing drawn here can be mistaken for data. No figure, no percentage, no
-      fee. A drawing is never a claim. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window, document) {
     'use strict';
 
-    /* Stable per subject, per person, per house. The same name always draws the
-       same picture, on every page and every reload, because variation seeded
-       from Math.random would change a face while a prospect is looking at it. */
     function seed(text) {
         var hash = 0, i;
         text = String(text || '');
@@ -43,10 +25,6 @@
     var PORTRAIT_INK = ['#622d91', '#4b2170', '#2b1240', '#7a44ab', '#3f1f63'];
     var PORTRAIT_BG = ['#f2ecf8', '#f6f4ee', '#efeaf6', '#f4f1ea'];
 
-    /* -------------------------------------------------------------- hero */
-
-    /* The campus at dusk. Building blocks, lit windows, a moon and a skyline,
-       none of it a photograph of anywhere. */
     function heroScene() {
         var windows = '';
         var blocks = [
@@ -85,7 +63,7 @@
             '<circle cx="1180" cy="130" r="54" fill="#f0b323" opacity="0.18"/>' +
             '<circle cx="1180" cy="130" r="34" fill="#f0b323" opacity="0.55"/>' +
             starField() +
-            /* The central hall, the one thing that reads as a college */
+
             '<path d="M590 620V330l150-96 150 96v290z" fill="url(#eduTower)"/>' +
             '<path d="M560 336 740 218l180 118v16H560z" fill="#622d91" opacity="0.85"/>' +
             '<rect x="700" y="470" width="80" height="150" rx="6" fill="#f0b323" opacity="0.55"/>' +
@@ -107,7 +85,6 @@
         return out;
     }
 
-    /* The campus block that sits beside the introduction. */
     function campusArt() {
         return '<svg viewBox="0 0 640 420" aria-hidden="true" focusable="false">' +
             '<defs><linearGradient id="eduDusk" x1="0" y1="0" x2="0" y2="1">' +
@@ -140,8 +117,6 @@
         }
         return out;
     }
-
-    /* ------------------------------------------------------- subject motifs */
 
     var MOTIFS = {
         physics: '<circle cx="12" cy="12" r="2.4"/><ellipse cx="12" cy="12" rx="10" ry="4.4"/>' +
@@ -184,10 +159,6 @@
         return '<svg viewBox="0 0 24 24"' + box + ' aria-hidden="true" focusable="false">' + body + '</svg>';
     }
 
-    /* ---------------------------------------------------------- portraits */
-
-    /* A person, drawn as shapes and initials. Deliberately not a likeness: this
-       site carries no photograph of anybody. */
     function portrait(name) {
         var ink = pick(PORTRAIT_INK, name);
         var bg = pick(PORTRAIT_BG, name, 3);
@@ -201,8 +172,6 @@
             'font-weight="700" fill="#ffffff">' + initials(name) + '</text>' +
             '</svg>';
     }
-
-    /* ------------------------------------------------------------- crests */
 
     var CREST_MARK = {
         samurai: '<path d="M60 34l26 22-26 22-26-22z"/><path d="M34 62h52"/>',
@@ -224,8 +193,6 @@
             '</svg>';
     }
 
-    /* ------------------------------------------------------ abstract scenes */
-
     var SCENE_PALETTE = [
         ['#622d91', '#f0b323'],
         ['#4b2170', '#7a44ab'],
@@ -233,8 +200,6 @@
         ['#7a44ab', '#f6f4ee']
     ];
 
-    /* A banner for a card: news, media, a pathway, a showcase. Abstract on
-       purpose, and never a stand in for a photograph of a person. */
     function scene(key, ratio) {
         var pair = pick(SCENE_PALETTE, key);
         var h = ratio === 'wide' ? 220 : 300;

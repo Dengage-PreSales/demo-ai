@@ -181,8 +181,20 @@
            mid-call, so until recommendations land the data source is local and
            the rails look identical. Handoff 5.0, 2.7. */
         similar: function (product, limit) {
+            /* Seeded by the product being viewed, not sliced off the head of the
+               catalogue: the head slice showed the same first products of the
+               shelf beside every item on it, which reads as filler because it
+               is. Seeding by the anchor gives every product its own stable
+               neighbours, and the same anchor always shows the same ones. */
+            var seed = hash(product.id);
             return products
                 .filter(function (p) { return p.id !== product.id && p.category === product.category; })
+                .sort(function (a, b) {
+                    var ha = (hash(a.id) + seed) % 97;
+                    var hb = (hash(b.id) + seed) % 97;
+                    if (ha !== hb) return ha - hb;
+                    return a.id < b.id ? -1 : (a.id > b.id ? 1 : 0);
+                })
                 .slice(0, limit || 6);
         },
         alsoViewed: function (product, limit) {

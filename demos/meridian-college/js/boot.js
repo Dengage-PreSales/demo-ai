@@ -141,6 +141,18 @@
         window.DEMO_CONFIG = results[0];
         window.DEMO_COPY = results[1];
 
+        if (results[0].brandLogo) {
+            var mark = document.querySelector('.logo');
+            if (mark) {
+                var brandImg = document.createElement('img');
+                brandImg.src = String(results[0].brandLogo);
+                brandImg.alt = String(results[0].name || 'Store');
+                brandImg.style.cssText = 'height:34px;max-width:200px;display:block;object-fit:contain';
+                while (mark.firstChild) mark.removeChild(mark.firstChild);
+                mark.appendChild(brandImg);
+            }
+        }
+
         if (results[0].slug && results[0].slug !== window.DEMO_SLUG) {
             if (window.console) {
                 console.error('[boot] slug mismatch. demo.config.json says "' + results[0].slug +

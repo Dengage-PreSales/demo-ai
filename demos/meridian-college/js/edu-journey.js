@@ -1,26 +1,4 @@
-/* The applicant's journey: shortlist, application, search and identity.
-
-   WHY THIS SITS ON TOP OF THE STOREFRONT MODULES RATHER THAN BESIDE THEM.
-
-   An admissions funnel and a shopping funnel are the same shape. A prospective
-   student browses subjects, saves the ones they like, assembles a combination,
-   starts an application and submits it, and every one of those steps is a step a
-   marketing platform already understands. So the journey here is expressed in the
-   platform's own vocabulary rather than in a private one:
-
-       subject added to the application      shopping_cart_events
-       application started                   shopping_cart_events, begin checkout
-       application submitted                 order_events, order_events_detail
-       subject shortlisted                   wishlist_events
-       subject search                        search_events
-       every page                            page_view_events
-
-   That is what makes recommendations, abandonment journeys and the contact card
-   work on day one instead of needing anything new configured.
-
-   NOTHING HERE INVENTS A FIGURE. A college publishes no price per subject, so no
-   price is sent. Empty is the honest value and the event module drops the key
-   rather than sending a zero, because a zero is a claim and an absent key is not. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window, document) {
     'use strict';
 
@@ -41,8 +19,6 @@
         return found ? found.name : id;
     }
 
-    /* The shape the storefront modules expect. Price and stock are deliberately
-       absent rather than zero. */
     function asItem(subject) {
         return {
             id: subject.id,
@@ -58,8 +34,6 @@
     function motifFor(subject) {
         return '<span class="motif">' + window.EduArtwork.motif(subject.motif) + '</span>';
     }
-
-    /* ------------------------------------------------------------- shortlist */
 
     function toggleShortlist(id) {
         var subject = subjectById(id);
@@ -95,8 +69,6 @@
             '</div>';
         }).join('');
     }
-
-    /* ----------------------------------------------------------- application */
 
     function addSubject(id) {
         var subject = subjectById(id);
@@ -150,9 +122,6 @@
         if (foot) foot.hidden = false;
     }
 
-    /* Starting the application is its own event, because the gap between
-       starting and submitting is the single most valuable moment in an
-       admissions funnel and the one a journey is built to rescue. */
     function startApplication() {
         if (!window.Store.cart().length) {
             window.EduSite.toast('Add at least one subject before you start');
@@ -168,8 +137,6 @@
         paint();
         return result;
     }
-
-    /* ---------------------------------------------------------------- search */
 
     function runSearch(term) {
         var host = $('#search-results');
@@ -204,8 +171,6 @@
             }).join('');
     }
 
-    /* -------------------------------------------------------------- identity */
-
     function currentKey() {
         return (window.DemoIdentity && window.DemoIdentity.contactKey) || null;
     }
@@ -214,7 +179,7 @@
         if (!key) return false;
         if (!window.DengageEvents.setContactKey(key)) return false;
         window.DemoIdentity.contactKey = key;
-        try { window.sessionStorage.setItem(window.DemoIdentity.storageKey, key); } catch (err) { /* private mode */ }
+        try { window.sessionStorage.setItem(window.DemoIdentity.storageKey, key); } catch (err) {  }
         window.DengageEvents.pageview('login');
         paint();
         return true;
@@ -222,8 +187,8 @@
 
     function signOut() {
         window.DemoIdentity.contactKey = null;
-        try { window.sessionStorage.removeItem(window.DemoIdentity.storageKey); } catch (err) { /* private mode */ }
-        try { window.localStorage.removeItem(window.DemoIdentity.storageKey); } catch (err) { /* private mode */ }
+        try { window.sessionStorage.removeItem(window.DemoIdentity.storageKey); } catch (err) {  }
+        try { window.localStorage.removeItem(window.DemoIdentity.storageKey); } catch (err) {  }
         window.DengageEvents.pageview('logout');
         paint();
     }
@@ -254,9 +219,6 @@
         });
     }
 
-    /* Used by the lead capture widgets: a visitor who hands over an email is a
-       contact, and they need a key before the form is sent rather than after,
-       or the platform mints one of its own and the demo contact is unfindable. */
     function ensureContactKey() {
         var key = currentKey();
         if (key) return key;
@@ -264,16 +226,12 @@
         return identify(minted) ? minted : null;
     }
 
-    /* ------------------------------------------------------------------ paint */
-
     function counter(id, value) {
         var el = $(id);
         if (!el) return;
         el.textContent = value;
         el.hidden = !value;
     }
-
-    /* --------------------------------------------------------- the apply page */
 
     function renderApplySubjects() {
         var host = $('#apply-subjects');
@@ -300,9 +258,6 @@
         var form = $('#apply-form');
         if (!form) return;
 
-        /* Reaching this page with subjects selected is the moment the funnel
-           calls a checkout, so it is recorded once per arrival rather than on
-           every keystroke. */
         if (window.Store.cart().length) {
             window.Store.beginCheckout();
             window.EduUseCases.remember('application-started', Date.now());
@@ -367,8 +322,6 @@
             }
         });
     }
-
-    /* ------------------------------------------------------------------- wire */
 
     function wire() {
         document.addEventListener('click', function (event) {

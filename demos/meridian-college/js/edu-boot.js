@@ -1,13 +1,4 @@
-/* Start the site, in the one order that works.
-
-   js/edu-site.js fires the page view immediately and then fetches the config and
-   the content. Everything below waits for that, because the launcher's event
-   names come from the scenario prefix in the config and the pages are drawn from
-   the content.
-
-   The page view is deliberately NOT in this file. It has to happen whether or not
-   the fetch succeeds, and putting it behind a promise is how a page ends up
-   writing application rows that no page view can be joined to. */
+/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
 (function (window) {
     'use strict';
 
