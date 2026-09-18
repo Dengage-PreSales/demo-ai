@@ -235,8 +235,22 @@ cat > "$TMP/good/template/index.html" <<'HTML'
 HTML
 mkdir -p "$TMP/good/demos/acme/images"
 cat > "$TMP/good/demos/acme/demo.config.json" <<'JSON'
-{ "slug": "acme", "dengage": { "accountId": "28", "appGuid": "11111111-2222-4333-8444-555555555555" } }
+{ "slug": "acme", "locale": { "language": "en" },
+  "dengage": { "accountId": "28", "appGuid": "11111111-2222-4333-8444-555555555555" } }
 JSON
+# THE STOREFRONT'S WORDS, in the same scrubbed-copy relationship as its modules.
+# Without these files demo-copy-current SKIPS on the correct tree, and a check
+# that skips on the only tree this suite calls correct proves nothing at all.
+# Two languages, because picking the wrong original for a translated demo is the
+# one way this check can be written wrongly and still look right.
+cat > "$TMP/good/template/copy.json" <<'JSON'
+{ "brand": "Dengage", "cartTotal": "Total", "heroTitle": "Everything you need" }
+JSON
+cat > "$TMP/good/template/copy.pt.json" <<'JSON'
+{ "brand": "Dengage", "cartTotal": "Total", "heroTitle": "Tudo o que precisa" }
+JSON
+python3 "$REPO/factory/scrub-demo.py" --file "$TMP/good/template/copy.json" \
+    > "$TMP/good/demos/acme/copy.json"
 # A built demo does carry the identifier, in the SDK loader URL. That is the
 # normal case and it has to pass, or every generated demo would be rejected.
 cat > "$TMP/good/demos/acme/index.html" <<'HTML'
@@ -302,6 +316,54 @@ assert_check FAIL demo-js-current "$OUT" "demo-js-current rejects a module missi
 printf '%s\n' "$OUT" | grep -q 'missing entirely' \
     && ok "and says it is missing rather than merely different" \
     || notok "and says it is missing rather than merely different"
+
+echo
+echo "5a. A demo serving stale storefront words is rejected"
+echo
+
+# THE SAME NEAR MISS AS GROUP 5, FOR THE WORDS, and it is not hypothetical: on
+# 18 September 2026 template/copy.json was corrected and three live demos went
+# on showing the previous sentence in the Recommendations panel, because only
+# the modules were ever compared.
+cp -r "$TMP/good" "$TMP/words"
+cat > "$TMP/words/template/copy.json" <<'JSON'
+{ "brand": "Dengage", "cartTotal": "Total", "heroTitle": "Everything, in one place" }
+JSON
+OUT="$("$GUARD" --root "$TMP/words" 2>&1)"
+STATUS=$?
+[ "$STATUS" -ne 0 ] && ok "guard exits non-zero when a demo's words are behind" \
+                    || notok "guard exits non-zero when a demo's words are behind"
+assert_check FAIL demo-copy-current "$OUT" "demo-copy-current rejects the stale copy file"
+printf '%s\n' "$OUT" | grep -q 'demos/acme/copy.json' \
+    && ok "and names the file that is behind" \
+    || notok "and names the file that is behind"
+
+# A TRANSLATED DEMO IS COMPARED TO ITS OWN LANGUAGE, which is the assertion that
+# earns this group its keep. A check that always compared against the English
+# file would pass every tree above and fail every Portuguese demo in the
+# repository, and nothing else here would notice.
+cp -r "$TMP/good" "$TMP/translated"
+CONF="$TMP/translated/demos/acme/demo.config.json"
+python3 -c "
+import io, json, sys
+conf = json.load(io.open(sys.argv[1], encoding='utf-8'))
+conf['locale'] = { 'language': 'pt' }
+json.dump(conf, io.open(sys.argv[1], 'w', encoding='utf-8'), indent=2)
+" "$CONF"
+python3 "$REPO/factory/scrub-demo.py" --file "$TMP/translated/template/copy.pt.json" \
+    > "$TMP/translated/demos/acme/copy.json"
+OUT="$("$GUARD" --root "$TMP/translated" 2>&1)"
+assert_check PASS demo-copy-current "$OUT" \
+    "a demo declaring pt is compared to template/copy.pt.json, not the English one"
+
+# And the same demo holding the English words is then wrong, which is the other
+# half of the same assertion.
+cp -r "$TMP/translated" "$TMP/mislanguaged"
+python3 "$REPO/factory/scrub-demo.py" --file "$TMP/mislanguaged/template/copy.json" \
+    > "$TMP/mislanguaged/demos/acme/copy.json"
+OUT="$("$GUARD" --root "$TMP/mislanguaged" 2>&1)"
+assert_check FAIL demo-copy-current "$OUT" \
+    "and a pt demo still holding the English words is rejected"
 
 echo
 echo "6. The reference build itself is rejected"

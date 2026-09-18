@@ -57,6 +57,8 @@ can see and nobody can easily undo.
 | `app-guid` | any application identifier that is not the configured sandbox one, and any identifier at all in `template/` |
 | `template-purity` | a brand name in `template/`, or a colour literal below the `:root` block |
 | `seed-removed` | `seed/` still present once `template/` exists |
+| `demo-js-current` | a live demo serving a module that is not the current template one |
+| `demo-copy-current` | a live demo serving storefront words that are not the current template ones, in the language its config declares |
 
 Each prints one line beginning `PASS`, `FAIL` or `SKIP`. Every check runs on
 every invocation: it does not stop at the first failure, because the test suite

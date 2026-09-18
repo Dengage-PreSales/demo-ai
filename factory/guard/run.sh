@@ -37,7 +37,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current"
+CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current"
 
 if [ "$LIST_ONLY" -eq 1 ]; then
     for id in $CHECK_IDS; do echo "$id"; done
@@ -615,6 +615,84 @@ else
         detail "or copy template/js over it and run: python3 factory/scrub-demo.py --dir demos/<slug>"
     else
         pass demo-js-current "$checked demo module(s) match their scrubbed template original"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# demo-copy-current
+#
+# THE SAME FAULT AS demo-js-current, FOR THE WORDS RATHER THAN THE CODE, and it
+# was found the hard way on 18 September 2026: template/copy.json was corrected
+# and three live demos went on serving the previous sentence, on screen, in the
+# Recommendations panel. Only the modules were checked, so nothing said so.
+#
+# WHICH FILE A DEMO SHOULD MATCH DEPENDS ON ITS LANGUAGE, which is why this is
+# not a second copy of the loop above. build-demo.sh ships all three copy files
+# and the generator keeps the chosen one as copy.json and deletes the rest, so a
+# Portuguese demo's copy.json is template/copy.pt.json and comparing it to the
+# English file would fail every time. demo.config.json records the choice in
+# locale.language, so that is what picks the original.
+#
+# A DEMO WITH NO copy.json IS SKIPPED BY NAME rather than passed silently. Not
+# every demo is a storefront: the college replica carries content.json and its
+# own markup instead. Naming the skips is what stops this check quietly covering
+# nothing.
+# ---------------------------------------------------------------------------
+if [ ! -f "$ROOT/template/copy.json" ]; then
+    skip demo-copy-current "template/copy.json does not exist yet"
+elif [ -z "$(find "$ROOT/demos" -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
+    pass demo-copy-current "no demos yet, nothing to drift"
+else
+    copy_drifted=""
+    copy_checked=0
+    copy_skipped=""
+    for demo_dir in "$ROOT"/demos/*/; do
+        [ -d "$demo_dir" ] || continue
+        demo="$(basename "$demo_dir")"
+        if [ ! -f "$demo_dir/copy.json" ]; then
+            copy_skipped="${copy_skipped}$demo"$'\n'
+            continue
+        fi
+        lang="$(python3 -c "
+import io, json, sys
+try:
+    conf = json.load(io.open('$demo_dir/demo.config.json', encoding='utf-8'))
+except Exception:
+    print('en'); sys.exit(0)
+print((conf.get('locale') or {}).get('language') or 'en')
+" 2>/dev/null)"
+        [ -n "$lang" ] || lang=en
+        if [ "$lang" = "en" ]; then
+            original="$ROOT/template/copy.json"
+        else
+            original="$ROOT/template/copy.$lang.json"
+        fi
+        if [ ! -f "$original" ]; then
+            copy_drifted="${copy_drifted}demos/$demo/copy.json (names language $lang, which has no template file)"$'\n'
+            continue
+        fi
+        copy_checked=$((copy_checked + 1))
+        scrubbed="$(python3 "$SCRUB" --file "$original" 2>/dev/null)"
+        if [ -z "$scrubbed" ]; then
+            copy_drifted="${copy_drifted}demos/$demo/copy.json (could not scrub its original)"$'\n'
+        elif [ "$scrubbed" != "$(cat "$demo_dir/copy.json")" ]; then
+            copy_drifted="${copy_drifted}demos/$demo/copy.json (against template/$(basename "$original"))"$'\n'
+        fi
+    done
+
+    if [ -n "$copy_drifted" ]; then
+        fail demo-copy-current "a demo is not serving the current storefront words"
+        printf '%s' "$copy_drifted" | while IFS= read -r f; do
+            [ -n "$f" ] && detail "differs from its template original: $f"
+        done
+        detail "re-scrub the demo so it serves the correction:"
+        detail "  python3 factory/scrub-demo.py --file template/copy.json > demos/<slug>/copy.json"
+    else
+        note="$copy_checked demo copy file(s) match their scrubbed template original"
+        if [ -n "$copy_skipped" ]; then
+            note="$note, no copy.json in: $(printf '%s' "$copy_skipped" | tr '\n' ' ')"
+        fi
+        pass demo-copy-current "$note"
     fi
 fi
 
