@@ -35,16 +35,20 @@ Three consequences, all load bearing:
    template can be moved between triggers without rewriting its tags. Section 3 is that
    vocabulary and it is the contract: the relay always sends these keys, the templates only
    ever print these keys.
-2. **Every key is sent on every send, always.** Not "when there is a value": always. An
-   unresolvable tag does not render as a gap, it renders as **the template code itself**,
-   visible in the delivered email, which section 6 records as a proven failure rather than a
-   worry.
+2. **Every key is sent on every send, always.** Not "when there is a value": always. A
+   plain tag whose key the call did not pass renders as empty, which is safe, and that is
+   measured rather than assumed. Sending every key anyway costs nothing and removes the
+   question.
 3. **The templates carry no logic whatsoever.** No `||` fallback, no conditional block, no
-   expression. A tag is a plain `{%= $Current.key %}` and nothing else. Every default, every
-   fallback and every sentence that would otherwise need an `if` is composed **in the relay**,
-   where it is ordinary code that can be unit tested offline and fixed without touching the
-   panel. So the greeting arrives already reading `Hello Ana` or `Hello`, and the template
-   prints `{%= $Current.greeting %}`.
+   expression. A tag is a plain `{%= $Current.key %}` and nothing else. **The engine does
+   evaluate logic**, so this is not a limitation being worked around: it is that an
+   expression referring to a key the call did not pass prints **its own source code into the
+   delivered message**, where the same missing key in a plain tag would have printed
+   nothing. Section 6 has the measurements. So every default, every fallback and every
+   sentence that would otherwise need an `if` is composed **in the relay**, where it is
+   ordinary code that can be unit tested offline and fixed without touching the panel. The
+   greeting arrives already reading `Hello Ana` or `Hello`, and the template prints
+   `{%= $Current.greeting %}`.
 
 **Numbers arrive bare.** A price passes as `299.99` and prints as `299.99`, so the currency
 goes in the template immediately before the tag, or in a parameter of its own. Never inside
@@ -111,6 +115,7 @@ omitting it, so a template never meets a missing key.
 | `item_count` | `3` | yes |
 | `basket_total` | `898.97` | yes |
 | `basket_line` | `3 items, R$ 898.97` | yes, already composed |
+| `basket_summary` | `Barbie Dourada and 1 more item`, or the product alone when it is the only one | yes, already composed |
 | `basket_url` | the demo's cart, opened | yes |
 | `search_term` | `sandalia dourada` | yes |
 | `order_id` | `DPS-10041` | yes |
@@ -176,7 +181,7 @@ that varies arrives already composed by the relay.
 
 ```
 Title    Leaving already?
-Message  {%= $Current.product_name %} and {%= $Current.item_count %} more are still in your basket at {%= $Current.store_name %}.
+Message  {%= $Current.basket_summary %}, still waiting at {%= $Current.store_name %}.
 Image    {%= $Current.product_image %}
 Target   {%= $Current.basket_url %}
 ```
@@ -185,14 +190,14 @@ Target   {%= $Current.basket_url %}
 
 ```
 Subject    Your basket at {%= $Current.store_name %} is still here
-Preheader  {%= $Current.product_name %}, and {%= $Current.item_count %} items waiting.
+Preheader  {%= $Current.basket_summary %}, waiting for you.
 ```
 
 Body, with the preheader in a hidden span because **the panel's Preheader field does not
 resolve tags**:
 
 ```html
-<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{%= $Current.product_name %}, and {%= $Current.item_count %} items waiting.</span>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{%= $Current.basket_summary %}, waiting for you.</span>
 <span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</span>
 
 <h1>Still thinking it over?</h1>
@@ -369,20 +374,31 @@ Verified against the live account, twice, on 18 September 2026.
 | `POST /rest/transactional/push` | route reachable, authenticated and permitted: it answers by naming the field it wants |
 | Push content resolution | proven to be the only remaining gate. See the trap below |
 
-**THE FIRST TRAP, AND IT REACHES THE INBOX.** A tag the engine cannot resolve is not
-dropped and does not render as a gap. **It prints its own source code into the delivered
-message.** Found by a real send on 18 September 2026, whose body arrived reading:
+**THE FIRST TRAP, AND IT REACHES THE INBOX.** An expression that refers to a key the call
+did not pass prints **its own source code into the delivered message**. Found by a real send
+on 18 September 2026, whose body arrived in a mail client reading, in bold, exactly as a
+recipient would have seen it:
 
 ```
 Fallback test, this should read Hello: {%= $Current.missing_value || 'Hello' %}
 ```
 
-in a mail client, in bold, exactly as a recipient would have seen it. Three values on the
-same send resolved perfectly, so this is not a broken account or a bad token: it is what an
-unresolvable expression does. Two rules follow, and they are why section 1 is written the way
-it is: **every key is sent on every send**, and **no template carries any logic at all**,
-because a construct the engine will not evaluate becomes visible text rather than an error a
-test could catch. Fallbacks and composed sentences belong in the relay.
+Three values on that same send resolved perfectly, so this was never a bad token or a broken
+account. A third round then isolated the mechanism, one question per line, and the engine is
+more capable than the failure suggests:
+
+| Asked | Answer |
+|---|---|
+| A key sent as an empty string | prints empty. Safe |
+| A key never sent at all, in a plain tag | prints empty. Safe |
+| An or-fallback on a key that **is** sent | evaluates, prints the value |
+| A code block, `{% if (1 > 0) { %}` | **runs.** The engine does execute logic |
+| A greeting composed by the relay | prints, which is the pattern this page uses |
+
+So the hazard is narrow and specific: **logic plus a key the call did not pass**. A plain tag
+in the same situation prints nothing. Since a template cannot know which keys a future
+trigger will omit, the rule is the blunt one: no logic in any template, every key sent on
+every send, and everything conditional composed in the relay where a test can reach it.
 
 **THE SECOND TRAP, and it is worth the capitals too.** A transactional push send only sees
 push content that was created with **Transactional content ticked**. Aimed at an ordinary
@@ -405,6 +421,10 @@ of two ways, both of which are good news:
 - `code 0`, accepted for delivery
 - `code 11`, token not found for that contact key, which means the template and the routing
   are correct and no browser has subscribed under that key yet
+
+**Where a sample or a test send goes.** `salil@dengage.com`, Salil's instruction on 18
+September 2026. Never an address this repository invented, and never a prospect's: a made up
+address either bounces or reaches a stranger, and the account is shared.
 
 **Two preconditions that belong to the demo script rather than to the code.** The email leg
 needs an identified visitor, because there is no address to send to otherwise, and the
