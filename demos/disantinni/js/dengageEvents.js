@@ -273,30 +273,44 @@
         catch (err) { return false; }
     }
 
+    var STATUS_WAIT = 1200;
+
     function pushStatus(done) {
+        var settled = false;
         function answer(value) {
-            if (typeof done === 'function') done(value === undefined ? null : value);
+            if (settled) return;
+            settled = true;
+            if (typeof done === 'function') done(value === undefined || value === '' ? null : value);
+        }
+        function browserSays() {
+            try {
+                return typeof window.Notification === 'function' && window.Notification.permission
+                    ? window.Notification.permission
+                    : null;
+            } catch (err) { return null; }
         }
         if (typeof window.dengage !== 'function') {
             if (window.console) console.log('[dengage dry] getNotificationPermission');
-            answer(null);
+            answer(browserSays());
             return;
         }
         var value;
         try { value = window.dengage('getNotificationPermission'); }
         catch (err) {
             if (window.console) console.error('[dengage] getNotificationPermission failed', err);
-            answer(null);
+            answer(browserSays());
             return;
         }
         if (value && typeof value.then === 'function') {
             value.then(answer, function (err) {
                 if (window.console) console.error('[dengage] getNotificationPermission rejected', err);
-                answer(null);
+                answer(browserSays());
             });
+
+            window.setTimeout(function () { answer(browserSays()); }, STATUS_WAIT);
             return;
         }
-        answer(value);
+        answer(value === undefined || value === null ? browserSays() : value);
     }
 
     function pushPrompt() {

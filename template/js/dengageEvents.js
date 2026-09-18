@@ -558,42 +558,68 @@
         catch (err) { return false; }
     }
 
-    /* CALLED BACK RATHER THAN RETURNED, and that is not decoration. In SDK 2.5.2
-       getNotificationPermission answers a Promise, so returning it straight to a
-       caller that prints the answer put the literal text "[object Promise]" in the
-       launcher's readout where "granted" or "denied" belonged. Found on 18
-       September 2026 by reading the readout in a real browser, which is the only
-       place a stringified Promise is visible at all: nothing throws, no request
-       fails, and every check was green.
+    /* THE PERMISSION IS THE BROWSER'S, SO THE BROWSER IS THE SOURCE OF TRUTH.
+       Notification.permission is a plain string, is always current, and needs no
+       SDK, which makes it the answer this returns. window.dengage is asked as well
+       and its reply wins when it comes, because it is the SDK's own view and worth
+       showing where the two could ever differ.
 
-       Both shapes are handled, because a future SDK returning the string directly
-       would otherwise put this straight back. A thenable is waited for, anything
-       else is handed over as it is, and either way the caller receives a value it
-       can print. */
+       WHY IT IS BUILT THIS WAY, both halves paid for on 18 September 2026 by
+       reading the launcher on the published site rather than a diff:
+
+         SDK 2.5.2 answers getNotificationPermission with a Promise. Returning it
+         to a caller that prints it put the literal text "[object Promise]" in the
+         readout where "granted" belonged. Nothing threw, no request failed, and
+         every check was green.
+
+         Waiting for that Promise instead is not enough on its own. In a browser
+         where push is unavailable it never settles, and the first fix turned a
+         wrong readout into an empty one, which is worse: a line that says nothing
+         reads as a button that did nothing.
+
+       So the callback always fires, once, from whichever of the three arrives
+       first: the SDK's reply, the browser's own value, or the guard below. A value
+       already in hand is never replaced by a later one. */
+    var STATUS_WAIT = 1200;
+
     function pushStatus(done) {
+        var settled = false;
         function answer(value) {
-            if (typeof done === 'function') done(value === undefined ? null : value);
+            if (settled) return;
+            settled = true;
+            if (typeof done === 'function') done(value === undefined || value === '' ? null : value);
+        }
+        function browserSays() {
+            try {
+                return typeof window.Notification === 'function' && window.Notification.permission
+                    ? window.Notification.permission
+                    : null;
+            } catch (err) { return null; }
         }
         if (typeof window.dengage !== 'function') {
             if (window.console) console.log('[dengage dry] getNotificationPermission');
-            answer(null);
+            answer(browserSays());
             return;
         }
         var value;
         try { value = window.dengage('getNotificationPermission'); }
         catch (err) {
             if (window.console) console.error('[dengage] getNotificationPermission failed', err);
-            answer(null);
+            answer(browserSays());
             return;
         }
         if (value && typeof value.then === 'function') {
             value.then(answer, function (err) {
                 if (window.console) console.error('[dengage] getNotificationPermission rejected', err);
-                answer(null);
+                answer(browserSays());
             });
+            /* The guard, not a nicety: a Promise that never settles is the case
+               this exists for, and it is the ordinary case wherever push is
+               unavailable. */
+            window.setTimeout(function () { answer(browserSays()); }, STATUS_WAIT);
             return;
         }
-        answer(value);
+        answer(value === undefined || value === null ? browserSays() : value);
     }
 
     /* Raise the browser's own permission dialog. Native rather than the custom

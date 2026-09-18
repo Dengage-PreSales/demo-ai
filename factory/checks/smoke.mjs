@@ -335,27 +335,52 @@ async function openPage(browser, path) {
        SDK does. Without the fix this fails; with a future SDK that answers the
        string directly it still passes, because both shapes are handled.
 
-       The second half is the general case rather than this one bug. Any value
-       stringified into the readout by accident lands as "[object Something]", so
-       the log is asserted to contain no such text at all. */
-    const readout = await home.page.evaluate(async () => {
-        window.dengage = function (command) {
-            if (command === 'getNotificationPermission') return Promise.resolve('granted');
-            return true;
-        };
-        const pane = document.querySelector('#panel-log');
-        if (pane) pane.textContent = '';
-        const card = document.querySelector('#launcher-grid [data-action="push-prompt"]');
-        if (!card) return { missing: true };
-        card.click();
-        await new Promise((done) => setTimeout(done, 2200));
-        return { text: (document.querySelector('#panel-log') || {}).textContent || '' };
-    });
+       The third case is the one that matters most, because it is the regression
+       the first fix introduced: an SDK whose Promise NEVER settles, which is the
+       ordinary state of a browser where push is unavailable. Waiting for it
+       turned a wrong readout into an empty one, and a line that says nothing
+       reads as a button that did nothing. So the stub here never resolves, and
+       the readout still has to name a permission.
+
+       Any value stringified into the readout by accident lands as
+       "[object Something]", so all three cases also assert the log carries no
+       such text at all. */
+    async function pressPush(page, sdk) {
+        return page.evaluate(async (kind) => {
+            window.dengage = function (command) {
+                if (command !== 'getNotificationPermission') return true;
+                if (kind === 'promise') return Promise.resolve('granted');
+                if (kind === 'never') return new Promise(() => {});
+                return 'granted';
+            };
+            const pane = document.querySelector('#panel-log');
+            if (pane) pane.textContent = '';
+            const card = document.querySelector('#launcher-grid [data-action="push-prompt"]');
+            if (!card) return { missing: true };
+            card.click();
+            await new Promise((done) => setTimeout(done, 2600));
+            return { text: (document.querySelector('#panel-log') || {}).textContent || '' };
+        }, sdk);
+    }
+    const PERMISSION = /granted|denied|default/;
+    const readout = await pressPush(home.page, 'promise');
     ok('the push card is offered', !readout.missing);
     ok('its readout names the permission rather than an object',
         !readout.missing && /granted/.test(readout.text), readout.text.slice(0, 120));
     ok('and nothing in the log is a stringified object',
         !readout.missing && readout.text.indexOf('[object ') === -1, readout.text.slice(0, 120));
+
+    const plain = await pressPush(home.page, 'plain');
+    ok('a plain string answer is printed as it is',
+        !plain.missing && /granted/.test(plain.text) && plain.text.indexOf('[object ') === -1,
+        plain.text.slice(0, 120));
+
+    const stuck = await pressPush(home.page, 'never');
+    ok('an answer that never arrives still names the permission',
+        !stuck.missing && PERMISSION.test(stuck.text), stuck.text.slice(0, 160));
+    ok('and it is never left blank',
+        !stuck.missing && stuck.text.trim().length > 0 && stuck.text.indexOf('[object ') === -1,
+        stuck.text.slice(0, 160));
 
     /* -------------------------------------------------------------------- 7 */
     console.log('\n7. All five inline slots exist, across the two pages');
