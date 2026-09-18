@@ -1,0 +1,39 @@
+{
+  "slug": "sharbatly-club",
+  "displayName": "Dengage eComm Demo",
+  "sourceUrl": "https://www.sharbatly.club",
+  "createdAt": "2026-09-18",
+  "expiresAt": "2026-12-17",
+  "theme": {
+    "primary": "#1a73e8",
+    "onPrimary": "#ffffff",
+    "accent": "#ff4b00",
+    "ink": "#5f6368",
+    "muted": "#9c9ea1",
+    "surface": "#ffffff",
+    "page": "#ffffff",
+    "line": "#ececed",
+    "radius": "5px",
+    "displayFont": "DM Sans",
+    "bodyFont": "DM Sans"
+  },
+  "locale": {
+    "language": "en",
+    "currency": "SAR",
+    "currencySymbol": "SAR",
+    "numberLocale": "en-US"
+  },
+  "dengage": {
+    "accountId": "28",
+    "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
+    "scenarioPrefix": "dengage_demo_"
+  },
+  "categories": [
+    "Flower",
+    "Vegetable",
+    "More"
+  ],
+  "storeName": "Sharbatly Club",
+  "productCount": 30,
+  "catalogueSource": "store"
+}

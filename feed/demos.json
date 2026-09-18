@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-18T11:43:07.373Z",
+  "generated": "2026-09-18T12:21:38.377Z",
   "demos": [
     {
       "slug": "bkc-link",
@@ -39,6 +39,25 @@
         "Sandália",
         "Tênis",
         "Chinelo",
+        "More"
+      ]
+    },
+    {
+      "slug": "sharbatly-club",
+      "products": 30,
+      "expiresAt": "2026-12-17",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "Sharbatly Club",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/sharbatly-club/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/sharbatly-club/vendor/assets/dengage-logo.svg",
+      "language": "en",
+      "currency": "SAR",
+      "currencySymbol": "SAR",
+      "brandPrimary": "#1a73e8",
+      "brandOnPrimary": "#ffffff",
+      "categories": [
+        "Flower",
+        "Vegetable",
         "More"
       ]
     },

@@ -1,0 +1,424 @@
+{
+  "products": [
+    {
+      "id": "FWZAGGGG1540ABHPDEF",
+      "name": "Carnations, Yukari Violet, 19 Stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": 29.99,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "SQ Flora Kenya"
+      },
+      "image": "images/fwzagggg1540abhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWBFGGGG1505ABHPDEF",
+      "name": "Roses Baby, Fire Flash, 10 Stems",
+      "category": "Flower",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "SQ Flora Kenya"
+      },
+      "image": "images/fwbfgggg1505abhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWC0GGGG15005BHPDEF",
+      "name": "Eucalyptus, Cinerea, 10 Stems",
+      "category": "Flower",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "SQ Flora Kenya"
+      },
+      "image": "images/fwc0gggg15005bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWJ5GGGG15002BHPDEF",
+      "name": "Chrysanthemums, Chic , pink, dyed, 10 stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwj5gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWJ6GGGG15002BHPDEF",
+      "name": "Chrysanthemums Topspin, Tinted Fuchsia Pink, 10 Stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwj6gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWJ7GGGG15002BHPDEF",
+      "name": "Chrysanthemums magnum, Dyed , Periwinkle Violet, 5 stem",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwj7gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWK7GGGG15002BHPDEF",
+      "name": "Chrysanthemums, Cipria, 5 stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwk7gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWK8GGGG15002BHPDEF",
+      "name": "Chrysanthemums magnum, Dyed, Red, 5 Stems",
+      "category": "Flower",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwk8gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWK9GGGG15002BHPDEF",
+      "name": "Chrysanthemums magnum, Dyed, Coral Magenta, 5 Stems",
+      "category": "Flower",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwk9gggg15002bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FWC8GGGG15012BHFDEF",
+      "name": "Gerbera pastini ravello, 10 Stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": 42.49,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fwc8gggg15012bhfdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FRCVGGGG1535ABHPDEF",
+      "name": "Campanula, White, 10 stems",
+      "category": "Flower",
+      "price": 49.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/frcvgggg1535abhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "CBBKGGGG1525DPUPDEF",
+      "name": "Kale baby *super food* 0.125 kg Pack",
+      "category": "Vegetable",
+      "price": 10.5,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Holland"
+      },
+      "image": "images/cbbkgggg1525dpupdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "ENWHGGGG15010PUPDEF",
+      "name": "Eggplant white, 1 kg Pack",
+      "category": "Vegetable",
+      "price": 5.5,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Local Market"
+      },
+      "image": "images/enwhgggg15010pupdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "CBSVGGGG1505APIPDEF",
+      "name": "Cabbage savoy, Single Piece",
+      "category": "Vegetable",
+      "price": 34.99,
+      "discountedPrice": 32.99,
+      "stockCount": null,
+      "attributes": {
+        "City": "Dammam",
+        "Brand": "Holland"
+      },
+      "image": "images/cbsvgggg1505apipdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "LTMLGGGG1525DPAPDEF",
+      "name": "Lettuce, Mesclun, 0.125 kg Pack",
+      "category": "Vegetable",
+      "price": 11.5,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Holland"
+      },
+      "image": "images/ltmlgggg1525dpapdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "PPCLGGGG15002TRPDEF",
+      "name": "Peppers, chilli Green, Qassimi 0.2 kg Pack",
+      "category": "Vegetable",
+      "price": 4.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Local Market"
+      },
+      "image": "images/ppclgggg15002trpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "PPCRGGGG15002TRPDEF",
+      "name": "Peppers, chilli Red, Qassimi 0.2 kg Pack",
+      "category": "Vegetable",
+      "price": 7.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Local Market"
+      },
+      "image": "images/ppcrgggg15002trpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "ZUMAGGGG15005TRPDEF",
+      "name": "Baby Zucchini, Courgette, Qassimi 0.5 kg Pack",
+      "category": "Vegetable",
+      "price": 10.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Local Market"
+      },
+      "image": "images/zumagggg15005trpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "PTFSGGGG15020BAPDEF",
+      "name": "Potatoes, for Fries, 2 kg Bag",
+      "category": "Vegetable",
+      "price": 13.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Local Market"
+      },
+      "image": "images/ptfsgggg15020bapdef.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "TTCAGGGG1525BPAPDEF",
+      "name": "Tomatoes Carnival, mix baby tomatoes, 0.25 kg Pack",
+      "category": "Vegetable",
+      "price": 16.5,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Sharbatly"
+      },
+      "image": "images/ttcagggg1525bpapdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "MSKBKNGG1540APUFDEF",
+      "name": "Mushrooms, king oyster, eryngii, 0.4 kg Pack",
+      "category": "Vegetable",
+      "price": 24,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "U.A.E"
+      },
+      "image": "images/mskbkngg1540apufdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "LTBTORGG1525DPALDEF",
+      "name": "Lettuce Boston, 0.125 kg Pack",
+      "category": "Vegetable",
+      "price": 12.5,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Mishkat"
+      },
+      "image": "images/ltbtorgg1525dpaldef.jpg",
+      "motif": null
+    },
+    {
+      "id": "CCGGGGGG15005PAPDEF",
+      "name": "Cucumber, Al Qassim, 0.5 kg pack",
+      "category": "More",
+      "price": 9.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Riyadh",
+        "Brand": "Local Market"
+      },
+      "image": "images/ccgggggg15005papdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FW89GGGG15004BHPDEF",
+      "name": "Chrysanthemums, Peony Mums light pink, Dyed, 5 stems",
+      "category": "More",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Dalat Hasfarm"
+      },
+      "image": "images/fw89gggg15004bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "TASWGGGG15003BHPDEF",
+      "name": "Tamarind, Sweet, 0.3 kg Pack",
+      "category": "More",
+      "price": 13.99,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Sharbatly"
+      },
+      "image": "images/taswgggg15003bhpdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "FGWHGGGG1513BCAPDEF",
+      "name": "Figs white 01 kg Carton",
+      "category": "More",
+      "price": 28.5,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Sharbatly"
+      },
+      "image": "images/fgwhgggg1513bcapdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "OGPTGGGG1510APIPDEF",
+      "name": "Oregano, plant in a pot, organic, Single Piece",
+      "category": "More",
+      "price": 15,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Blue Field"
+      },
+      "image": "images/ogptgggg1510apipdef.jpg",
+      "motif": "cookware"
+    },
+    {
+      "id": "CVPTGGGG1510APIPDEF",
+      "name": "Chives, plant in a pot, organic, Single Piece",
+      "category": "More",
+      "price": 15,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Blue Field"
+      },
+      "image": "images/cvptgggg1510apipdef.jpg",
+      "motif": "cookware"
+    },
+    {
+      "id": "JFPLGGGG1525BPUPDEF",
+      "name": "Jack fruit, Peeled, 0.25 kg Pack",
+      "category": "More",
+      "price": 19.99,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Jeddah",
+        "Brand": "Thailand"
+      },
+      "image": "images/jfplgggg1525bpupdef.jpg",
+      "motif": null
+    },
+    {
+      "id": "SBWHGGGG1525BPUPDEF",
+      "name": "Strawberries ,White , 0.25 kg Pack",
+      "category": "More",
+      "price": 39.99,
+      "discountedPrice": null,
+      "stockCount": 0,
+      "attributes": {
+        "City": "Dammam",
+        "Brand": "Sharbatly"
+      },
+      "image": "images/sbwhgggg1525bpupdef.jpg",
+      "motif": null
+    }
+  ]
+}
