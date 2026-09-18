@@ -101,6 +101,9 @@ omitting it, so a template never meets a missing key.
 
 | Parameter | Example | Always sent |
 |---|---|---|
+| `logo_url` | that demo's own committed logo, or the Dengage mark | yes |
+| `brand_primary` | `#141414`, read from that demo's own theme | yes |
+| `brand_on_primary` | `#ffffff`, the contrast clamped partner of `brand_primary` | yes |
 | `greeting` | `Hello Ana`, or `Hello` for a visitor with no name | yes, already composed |
 | `first_name` | `Ana`, empty for an anonymous visitor | yes |
 | `store_name` | `Di Santinni` | yes |
@@ -134,6 +137,36 @@ fabrication of a different kind.
 **Nothing in this table is invented.** Every value is read from the demo's own committed
 catalogue or from what the visitor actually did, which is the same rule the rest of the
 factory follows: a price that was never scraped is never printed.
+
+### Twelve objects, every demo, forever
+
+**A new demo needs no new templates and no panel work at all.** Eight push contents and four
+email bodies are created once, and every demo the factory builds afterwards is served by the
+same twelve, the same way one abandoned cart campaign and one set of on site creatives already
+serve all of them. CLAUDE.md 0 promises a live demo in thirty minutes with no clicks in the
+panel, and 3.2 says the campaign set does not grow when a demo is built. Twelve objects per
+store would break both.
+
+What makes that work is that **nothing demo specific is written into a template**. Every
+value above is read at send time from the demo the visitor was actually on:
+
+| What varies per demo | Where the relay reads it |
+|---|---|
+| store name, currency, addresses | that demo's `demo.config.json` and its slug |
+| products, prices, categories, photographs | that demo's own committed `products.json` |
+| the recommendations | the same catalogue, ranked the way that demo's storefront ranks it |
+| the logo | that demo's `brandLogo` where CLAUDE.md 3.3 applies, the Dengage mark otherwise |
+| the brand colour of the call to action | that demo's own extracted theme, with its clamped partner |
+
+So a store scraped tomorrow in a different country, currency and palette sends the same
+twelve messages, carrying its own products at its own prices under its own mark, with no
+template touched.
+
+**What does not adapt, stated plainly.** The copy is English. Every sentence in section 5 is
+fixed text, so a demo for a store whose customers read Portuguese sends English copy with
+Portuguese product names in it. Dengage supports a multi language content object on both
+endpoints, which is the clean way to solve it rather than a second set of twelve, and it is
+worth doing the first time a call needs it rather than guessing at translations now.
 
 ---
 
@@ -202,7 +235,7 @@ resolve tags**:
 
 <div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
   <div style="padding:18px 0;border-bottom:1px solid #eee">
-    <img src="THE DEMO'S OWN LOGO, see the note below" width="180" alt="{%= $Current.store_name %}">
+    <img src="{%= $Current.logo_url %}" width="180" alt="{%= $Current.store_name %}">
   </div>
 
   <h1 style="font-size:24px;margin:26px 0 8px">Still thinking it over?</h1>
@@ -225,7 +258,7 @@ resolve tags**:
   <div style="border:1px solid #eee;border-radius:8px;padding:18px;text-align:center">
     <div style="font-size:16px;font-weight:bold">Your cart is waiting</div>
     <div style="font-size:14px;padding:6px 0 14px">{%= $Current.basket_line %}</div>
-    <a href="{%= $Current.basket_url %}" style="display:inline-block;white-space:nowrap;background:#141414;color:#fff;text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Go to cart</a>
+    <a href="{%= $Current.basket_url %}" style="display:inline-block;white-space:nowrap;background:{%= $Current.brand_primary %};color:{%= $Current.brand_on_primary %};text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Go to cart</a>
   </div>
 
   <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding:34px 0 6px;text-align:center">More like this</div>
@@ -264,10 +297,17 @@ and one that looks right in a hand.
 | **The product image is 140px, not 200px** | a 200px image beside text in a 600px email leaves about 140px for the text column on a phone, which wraps a product name to five lines and squeezes the button |
 | **The recommendation images are `width="100%"` with `max-width:150px`** | fixed widths in a three column row overflow the screen instead of shrinking |
 
-**The logo line is the one thing to change per demo.** Point it at that demo's own committed
-logo where the exception in CLAUDE.md 3.3 applies, and at the Dengage mark otherwise. It is a
-literal address rather than a parameter because a template belongs to a demo, and a wrong
-logo is worse than a missing one.
+**Nothing in this body names a demo**, which is what lets one template serve all of them.
+The logo arrives as `logo_url`, the filled button takes the demo's own `brand_primary` with
+its contrast clamped `brand_on_primary`, and a tag inside a `style` attribute resolves the
+same way one inside text does: the engine substitutes before any mail client parses the
+markup, which the saved recommendation asset in this repository has relied on for weeks.
+
+**The outlined button stays near black on purpose.** A brand colour is safe as a button
+background against its clamped partner, which is the pair `demo.config.json` already holds,
+and it is not safe as text on white: a store whose primary is a pale yellow would render an
+unreadable link. So each message carries one brand coloured call to action and keeps
+everything else neutral.
 
 **Those three recommendation cards are the same products the storefront showed**, because
 the relay computes them from the same catalogue with the same ranking. That is the claim this
@@ -308,7 +348,7 @@ Preheader  {%= $Current.basket_line %}, ready when you are.
 
 <div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
   <div style="padding:18px 0;border-bottom:1px solid #eee">
-    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+    <img src="{%= $Current.logo_url %}" width="180" alt="{%= $Current.store_name %}">
   </div>
 
   <h1 style="font-size:24px;margin:26px 0 8px">You were one step away</h1>
@@ -328,7 +368,7 @@ Preheader  {%= $Current.basket_line %}, ready when you are.
   <div style="border:1px solid #eee;border-radius:8px;padding:18px;text-align:center">
     <div style="font-size:16px;font-weight:bold">{%= $Current.basket_line %}</div>
     <div style="padding:14px 0 10px">
-      <a href="{%= $Current.basket_url %}" style="display:inline-block;white-space:nowrap;background:#141414;color:#fff;text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Finish checkout</a>
+      <a href="{%= $Current.basket_url %}" style="display:inline-block;white-space:nowrap;background:{%= $Current.brand_primary %};color:{%= $Current.brand_on_primary %};text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Finish checkout</a>
     </div>
     <a href="{%= $Current.basket_url %}" style="font-size:13px;color:#5a6375">or look at your basket first</a>
   </div>
@@ -356,7 +396,7 @@ Preheader  Thank you. {%= $Current.item_count %} items on the way.
 
 <div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
   <div style="padding:18px 0;border-bottom:1px solid #eee">
-    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+    <img src="{%= $Current.logo_url %}" width="180" alt="{%= $Current.store_name %}">
   </div>
 
   <h1 style="font-size:24px;margin:26px 0 8px">{%= $Current.greeting %}, thank you</h1>
@@ -421,14 +461,14 @@ Preheader  Your account is ready.
 
 <div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
   <div style="padding:18px 0;border-bottom:1px solid #eee">
-    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+    <img src="{%= $Current.logo_url %}" width="180" alt="{%= $Current.store_name %}">
   </div>
 
   <h1 style="font-size:24px;margin:26px 0 8px">{%= $Current.greeting %}, welcome to {%= $Current.store_name %}</h1>
   <p style="font-size:15px;line-height:1.6">Your account is ready, and your basket now follows you between visits and devices.</p>
 
   <div style="padding:6px 0 4px">
-    <a href="{%= $Current.home_url %}" style="display:inline-block;white-space:nowrap;background:#141414;color:#fff;text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Start shopping</a>
+    <a href="{%= $Current.home_url %}" style="display:inline-block;white-space:nowrap;background:{%= $Current.brand_primary %};color:{%= $Current.brand_on_primary %};text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Start shopping</a>
   </div>
 
   <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding:34px 0 6px;text-align:center">Trending now</div>
