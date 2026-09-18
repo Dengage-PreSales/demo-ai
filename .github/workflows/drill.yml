@@ -87,7 +87,17 @@ jobs:
       # real request passes: generate, guard, smoke. The loop keeps going after
       # a failure so one broken store does not hide what the next one finds,
       # and the step fails at the end if anything failed.
-      - name: Build every listed site, and throw the results away
+      # EVERY STEP A REAL REQUEST RUNS, IN THE SAME ORDER. Rewritten 18 September
+      # 2026, because the loop this replaces ran generate, guard and smoke only, and
+      # a drill that skips a step cannot fail the way a request fails. Four of the
+      # real build's steps were missing, and one of them is the step vperfumes
+      # shipped without: the push banners. A demo can pass generate, guard and smoke
+      # with no banner beside a single product, and the first anyone knows is a
+      # notification with a broken image on a call.
+      #
+      # Publish and Supabase stay out, deliberately, and they are the only two. A
+      # drill must not reach GitHub Pages or tell Dengage a catalogue changed.
+      - name: Build every listed site the way a request is built, then throw it away
         if: steps.sites.outputs.empty == 'false'
         run: |
           set -uo pipefail
@@ -101,19 +111,75 @@ jobs:
             echo "Drill $N: $URL"
             echo "=============================================================="
             REPORT="/tmp/drill/report-$N.json"
+
+            # 1. Generate, exactly as the request path does.
             if ! node factory/generate-demo.mjs --url "$URL" --json "$REPORT"; then
               echo "DRILL FAILED at generation: $URL"
               FAILED=1
               continue
             fi
             SLUG=$(node -e "console.log(require('$REPORT').slug)")
+            keep() { cp -r "demos/$SLUG" "/tmp/drill/failed-$SLUG" 2>/dev/null || true; }
+            tidy() {
+              rm -rf "demos/$SLUG" "factory/panel/content/$SLUG"
+              git checkout -- . 2>/dev/null || true
+              git clean -fdq feed assets 2>/dev/null || true
+            }
+
+            # 1a. THE TIER, WHICH IS THE ONE THING ONLY THE SITE LIST CAN ASSERT. A
+            #     build on an invented catalogue passes everything below this line:
+            #     the theme, the images, the guard, the report, the feed, the
+            #     banners, the artwork and the smoke test all run and all pass. So a
+            #     reader that broke would leave the drill green for weeks. Every
+            #     address in drill-sites.txt is expected to read a real catalogue.
+            TIER=$(node -e "console.log(require('$REPORT').tier || '')")
+            echo "Tier: $TIER"
+            if [ "$TIER" = "generated" ]; then
+              echo "DRILL FAILED: $URL fell back to an invented catalogue."
+              echo "  One of three things happened and the drill cannot tell which:"
+              echo "  this repository's reader broke, the store changed platform, or"
+              echo "  the store began refusing GitHub's datacenter addresses."
+              echo "  factory/checks/drill-sites.txt says what to do with each."
+              FAILED=1; keep; tidy; continue
+            fi
+
+            # 2. The guard, which protects the core assets and every standing rule.
             if ! ./factory/guard/run.sh; then
               echo "DRILL FAILED at the guard: $URL (demos/$SLUG)"
-              FAILED=1
-              cp -r "demos/$SLUG" "/tmp/drill/failed-$SLUG" 2>/dev/null || true
-              rm -rf "demos/$SLUG"
-              continue
+              FAILED=1; keep; tidy; continue
             fi
+
+            # 3. The report a colleague is sent. It asserts every warning reaches
+            #    the comment and every file the comment names exists, which is how a
+            #    build that promised a missing file was caught in August.
+            if ! node factory/checks/report-step.mjs "$REPORT" --show; then
+              echo "DRILL FAILED at the report check: $URL"
+              FAILED=1; keep; tidy; continue
+            fi
+
+            # 4. The product feed, so a feed that no longer matches the tree fails
+            #    here rather than during a prospect's call.
+            if ! (node factory/make-motif-images.mjs && node factory/build-feed.mjs); then
+              echo "DRILL FAILED at the product feed: $URL"
+              FAILED=1; keep; tidy; continue
+            fi
+
+            # 5. The push banners and their own test. THE VPERFUMES STEP.
+            if ! (node factory/make-push-images.mjs --slug "$SLUG" &&
+                  node factory/push-images.test.mjs); then
+              echo "DRILL FAILED at the push banners: $URL"
+              FAILED=1; keep; tidy; continue
+            fi
+
+            # 6. The email artwork and the Email Builder template.
+            if ! (node factory/emails/make-hero.mjs --shared &&
+                  node factory/emails/make-hero.mjs --slug "$SLUG" &&
+                  node factory/emails/build-beefree.mjs); then
+              echo "DRILL FAILED at the email artwork: $URL"
+              FAILED=1; keep; tidy; continue
+            fi
+
+            # 7. The smoke test, in a browser, against the built demo.
             python3 -m http.server 8101 --directory . >/dev/null 2>&1 &
             SERVER=$!
             for _ in $(seq 1 20); do
@@ -122,13 +188,15 @@ jobs:
             done
             if ! node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"; then
               echo "DRILL FAILED at the smoke test: $URL (demos/$SLUG)"
-              FAILED=1
-              cp -r "demos/$SLUG" "/tmp/drill/failed-$SLUG" 2>/dev/null || true
+              FAILED=1; keep
             fi
             kill $SERVER 2>/dev/null || true
-            # Discarded on success and on failure alike: the workspace dies with
-            # the runner, and nothing here ever reaches a git push.
-            rm -rf "demos/$SLUG"
+
+            # Discarded on success and on failure alike. The workspace dies with the
+            # runner, and nothing here ever reaches a git push. The feed and the
+            # shared artwork are regenerated from the tree, so the working copy is
+            # returned to the committed state before the next site is read.
+            tidy
           done <<EOF
           $(grep -vE '^\s*(#|$)' factory/checks/drill-sites.txt)
           EOF

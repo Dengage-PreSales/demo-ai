@@ -1,16 +1,48 @@
-# The nightly drill list. One website address per line, comments start with #.
+# The stores the nightly drill practises on, one address per line.
 #
-# Every address here gets a full practice build every night: scrape, theme,
-# images, guard, smoke test, on the same runners and the same steps as a real
-# request, and then the result is thrown away. Nothing is published, nothing is
-# committed, no issue is opened for a colleague, and Supabase never hears about
-# it, because the sync only reads demos that are actually published.
+# WHY THIS FILE HAS CONTENT NOW. It shipped empty on 11 August 2026 so the drill
+# could land before the list was chosen, and an empty list is a quiet success, so
+# the drill passed every night for five weeks without ever building anything. A
+# green routine that runs no builds answers "is the factory working" with a yes
+# it has not earned, which is worse than having no routine at all.
 #
-# The point is that the factory finds its own faults before a salesperson does.
-# Three real defects shipped on 11 August 2026 that only showed on the real
-# runners, because until then the pipeline was only ever exercised by a real
-# request from a real colleague.
+# WHAT A FAILURE HERE MEANS. Every address below is expected to yield a REAL
+# catalogue read from the store. The drill fails a site that falls back to the
+# invented one, and that is deliberate: a build on stand-ins still exercises the
+# theme, the images, the guard, the report, the feed, the banners, the email
+# artwork and the smoke test, so it would pass every check while a broken reader
+# went unnoticed for weeks. The tier is the one thing only this list can assert.
 #
-# Add a couple of stores whose shapes differ: one Shopify, one rendered SPA,
-# one plain HTML store. A failed drill opens an issue labelled "drill" with the
-# evidence attached.
+# So a drill failure is one of three things, and the issue it opens says which:
+#   - this repository's reader broke, which is the case the drill exists for
+#   - the store changed platform, and the address needs a fresh look
+#   - the store began refusing GitHub's datacenter addresses, which no code here
+#     can fix. Set DEMO_RUNNER to a self hosted runner, or drop the address
+#
+# HOW AN ADDRESS EARNS A PLACE. It has to have read a real catalogue from a
+# GitHub runner, not from a developer's machine, because that is where the drill
+# runs and the two answers genuinely differ.
+
+# Read 30 real products through the store's product feed on a runner, 11 August
+# 2026, issue 11.
+https://www.spykar.com
+
+# Built green through a real request on 17 August 2026, issue 12. Its tier was
+# not recorded before that demo was retired, so the first night the drill runs is
+# what settles whether it reads a real catalogue from a runner. If it reports
+# stand-ins, move it down to the section below rather than deleting it.
+https://uniworthshop.com
+
+# NOT DRILLED, and each line says why. These are not rejects: every one is a
+# store this factory has built. They are addresses whose real catalogue a GitHub
+# runner cannot reach, so drilling them would fail every night and train
+# everybody to ignore the drill. Any of them becomes a candidate the day
+# DEMO_RUNNER points at a self hosted machine.
+#
+# https://bkc.link                 built 16 September 2026 and its committed
+#                                  config records catalogueSource generated, so
+#                                  a runner gets stand-ins from it today
+# https://www.disantinni.com.br    the most recently read store in the factory,
+#                                  and the clearest example of the rule: it
+#                                  reads perfectly from elsewhere and serves
+#                                  GitHub's addresses a challenge page
