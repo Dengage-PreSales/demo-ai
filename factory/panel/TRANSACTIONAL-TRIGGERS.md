@@ -6,9 +6,11 @@ cannot do that, because they compute an audience on a schedule. Dengage's transa
 API can, and this page is the whole design: what fires, what each message says, and the
 exact parameter names that carry the personalisation.
 
-**Verified against the live account on 18 September 2026**, not assumed. What was proven
-and what was not is in the last section, including the one trap that makes a correct
-template look like a missing one.
+**Verified against the live account on 18 September 2026**, not assumed, over three rounds.
+What was proven and what was not is in the last section, along with the two traps the rounds
+found: one prints template code into a delivered email, the other makes a correct push
+template indistinguishable from a missing one. Both shaped the rules in section 1, so read
+section 6 before writing a template.
 
 ---
 
@@ -33,15 +35,27 @@ Three consequences, all load bearing:
    template can be moved between triggers without rewriting its tags. Section 3 is that
    vocabulary and it is the contract: the relay always sends these keys, the templates only
    ever print these keys.
-2. **Always send a value a template always prints.** A tag with nothing behind it renders as
-   a gap in a sentence, not an error, so a message that always prints a price must always be
-   sent a price.
-3. **Every greeting needs a fallback**, written in the template: `{%= $Current.first_name || 'Hello' %}`.
-   Anonymous visitors are legitimate recipients and have no name.
+2. **Every key is sent on every send, always.** Not "when there is a value": always. An
+   unresolvable tag does not render as a gap, it renders as **the template code itself**,
+   visible in the delivered email, which section 6 records as a proven failure rather than a
+   worry.
+3. **The templates carry no logic whatsoever.** No `||` fallback, no conditional block, no
+   expression. A tag is a plain `{%= $Current.key %}` and nothing else. Every default, every
+   fallback and every sentence that would otherwise need an `if` is composed **in the relay**,
+   where it is ordinary code that can be unit tested offline and fixed without touching the
+   panel. So the greeting arrives already reading `Hello Ana` or `Hello`, and the template
+   prints `{%= $Current.greeting %}`.
 
 **Numbers arrive bare.** A price passes as `299.99` and prints as `299.99`, so the currency
 goes in the template immediately before the tag, or in a parameter of its own. Never inside
 the number.
+
+**Anything that would need a conditional arrives pre-composed.** A struck through was-price
+exists on some products and not others, and a template cannot ask. So the relay sends
+`price_line`, already reading either `R$ 299.99` or `R$ 299.99, was R$ 379.99`, and the
+template prints one tag. The same goes for `basket_line`. This is not a workaround, it is the
+better place for that decision: one implementation, covered by tests, rather than logic
+duplicated across eight templates in a panel nobody reviews.
 
 ---
 
@@ -83,26 +97,34 @@ omitting it, so a template never meets a missing key.
 
 | Parameter | Example | Always sent |
 |---|---|---|
-| `first_name` | `Ana` | yes, empty for an anonymous visitor |
+| `greeting` | `Hello Ana`, or `Hello` for a visitor with no name | yes, already composed |
+| `first_name` | `Ana`, empty for an anonymous visitor | yes |
 | `store_name` | `Di Santinni` | yes |
 | `currency` | `R$` | yes |
 | `home_url` | the demo's own address | yes |
-| `product_name` | `Tenis Feminino Raiden Asics Azul` | when a product is in context |
-| `product_price` | `299.99` | with `product_name` |
-| `product_was_price` | `379.99` | only on a real reduction, else empty |
-| `product_image` | an https address on our origin | with `product_name` |
-| `product_url` | that product's page on this demo | with `product_name` |
-| `product_category` | `Tenis` | with `product_name` |
-| `item_count` | `3` | on any basket message |
-| `basket_total` | `898.97` | on any basket message |
-| `basket_url` | the demo's cart, opened | on any basket message |
-| `search_term` | `sandalia dourada` | on a search message |
-| `order_id` | `DPS-10041` | on an order message |
-| `order_total` | `898.97` | on an order message |
-| `reco_1_name` … `reco_3_name` | | on any message carrying a rail |
-| `reco_1_price` … `reco_3_price` | | with each name |
-| `reco_1_image` … `reco_3_image` | | with each name |
-| `reco_1_url` … `reco_3_url` | | with each name |
+| `product_name` | `Tenis Feminino Raiden Asics Azul` | yes, empty when no product is in context |
+| `product_price` | `299.99` | yes |
+| `price_line` | `R$ 299.99`, or `R$ 299.99, was R$ 379.99` on a real reduction | yes, already composed |
+| `product_image` | an https address on our origin | yes |
+| `product_url` | that product's page on this demo | yes |
+| `product_category` | `Tenis` | yes |
+| `item_count` | `3` | yes |
+| `basket_total` | `898.97` | yes |
+| `basket_line` | `3 items, R$ 898.97` | yes, already composed |
+| `basket_url` | the demo's cart, opened | yes |
+| `search_term` | `sandalia dourada` | yes |
+| `order_id` | `DPS-10041` | yes |
+| `order_total` | `898.97` | yes |
+| `reco_1_name` … `reco_3_name` | | yes, always three |
+| `reco_1_price` … `reco_3_price` | | yes |
+| `reco_1_image` … `reco_3_image` | | yes |
+| `reco_1_url` … `reco_3_url` | | yes |
+
+**Always three recommendations, never two.** A template cannot hide a card it has no product
+for, so the relay guarantees three by falling through the same ladder the storefront uses,
+ending at trending, which always fills for a catalogue of this size. It fills with real
+products or it does not send the message at all: a duplicated card to pad a row would be a
+fabrication of a different kind.
 
 **Nothing in this table is invented.** Every value is read from the demo's own committed
 catalogue or from what the visitor actually did, which is the same rule the rest of the
@@ -144,15 +166,16 @@ Paste these into the panel as they stand. Each push needs **Transactional conten
 each email is a transactional template, and the tags are already written the way the relay
 sends them.
 
-Every fallback below is deliberate. A tag with no value prints nothing, so the fallback is
-what keeps a sentence whole for an anonymous visitor.
+**No tag below carries any logic**, because a tag the engine cannot resolve prints its own
+source code into the delivered message. Every greeting, every default and every sentence
+that varies arrives already composed by the relay.
 
 ### 1. Exit intent, basket has items
 
 **Push**
 
 ```
-Title    Leaving already, {%= $Current.first_name || 'friend' %}?
+Title    Leaving already?
 Message  {%= $Current.product_name %} and {%= $Current.item_count %} more are still in your basket at {%= $Current.store_name %}.
 Image    {%= $Current.product_image %}
 Target   {%= $Current.basket_url %}
@@ -173,19 +196,19 @@ resolve tags**:
 <span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</span>
 
 <h1>Still thinking it over?</h1>
-<p>{%= $Current.first_name || 'Hello' %}, everything you added at {%= $Current.store_name %} is saved.</p>
+<p>{%= $Current.greeting %}, everything you added at {%= $Current.store_name %} is saved.</p>
 
 <table><tr>
   <td><img src="{%= $Current.product_image %}" width="200" alt="{%= $Current.product_name %}"></td>
   <td>
     <div>{%= $Current.product_category %}</div>
     <div><b>{%= $Current.product_name %}</b></div>
-    <div>{%= $Current.currency %} {%= $Current.product_price %}</div>
+    <div>{%= $Current.price_line %}</div>
     <a href="{%= $Current.product_url %}">View item</a>
   </td>
 </tr></table>
 
-<p>{%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.basket_total %}</p>
+<p>{%= $Current.basket_line %}</p>
 <p><a href="{%= $Current.basket_url %}">Go to cart</a></p>
 
 <h2>You might also like</h2>
@@ -212,7 +235,7 @@ whole design exists to make, and it is checkable rather than asserted.
 
 ```
 Title    {%= $Current.product_name %}
-Message  Still on your mind? It is {%= $Current.currency %} {%= $Current.product_price %} at {%= $Current.store_name %}.
+Message  Still on your mind? It is {%= $Current.price_line %} at {%= $Current.store_name %}.
 Image    {%= $Current.product_image %}
 Target   {%= $Current.product_url %}
 ```
@@ -223,7 +246,7 @@ Target   {%= $Current.product_url %}
 
 ```
 Title    You were one step away
-Message  {%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.basket_total %}. Finish when you are ready.
+Message  {%= $Current.basket_line %}. Finish when you are ready.
 Image    {%= $Current.product_image %}
 Target   {%= $Current.basket_url %}
 ```
@@ -232,13 +255,13 @@ Target   {%= $Current.basket_url %}
 
 ```
 Subject    One step from done at {%= $Current.store_name %}
-Preheader  {%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.basket_total %}, ready when you are.
+Preheader  {%= $Current.basket_line %}, ready when you are.
 ```
 
 ```html
 <h1>You were one step away</h1>
-<p>{%= $Current.first_name || 'Hello' %}, your order at {%= $Current.store_name %} is not finished yet.</p>
-<p>{%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.basket_total %}</p>
+<p>{%= $Current.greeting %}, your order at {%= $Current.store_name %} is not finished yet.</p>
+<p>{%= $Current.basket_line %}</p>
 <p><a href="{%= $Current.basket_url %}">Finish checkout</a></p>
 <p>A demonstration storefront built for a sales conversation.</p>
 ```
@@ -253,7 +276,7 @@ Preheader  Thank you. {%= $Current.item_count %} items on the way.
 ```
 
 ```html
-<h1>Thank you, {%= $Current.first_name || 'and welcome' %}</h1>
+<h1>{%= $Current.greeting %}, thank you</h1>
 <p>Order <b>{%= $Current.order_id %}</b> at {%= $Current.store_name %} is confirmed.</p>
 <p>{%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.order_total %}</p>
 <h2>You might also like</h2>
@@ -284,8 +307,8 @@ Preheader  Your account is ready.
 ```
 
 ```html
-<h1>Welcome, {%= $Current.first_name || 'and hello' %}</h1>
-<p>Your account at {%= $Current.store_name %} is ready.</p>
+<h1>{%= $Current.greeting %}, welcome to {%= $Current.store_name %}</h1>
+<p>Your account is ready.</p>
 <h2>Popular right now</h2>
 <table><tr>
   <td><a href="{%= $Current.reco_1_url %}"><img src="{%= $Current.reco_1_image %}" width="150" alt=""></a>
@@ -315,7 +338,7 @@ Target   {%= $Current.product_url %}
 
 ```
 Title    Nothing for "{%= $Current.search_term %}"
-Message  Try {%= $Current.reco_1_name %} instead, {%= $Current.currency %} {%= $Current.reco_1_price %}.
+Message  Try {%= $Current.reco_1_name %} instead, at {%= $Current.currency %} {%= $Current.reco_1_price %}.
 Image    {%= $Current.reco_1_image %}
 Target   {%= $Current.reco_1_url %}
 ```
@@ -326,7 +349,7 @@ Target   {%= $Current.reco_1_url %}
 
 ```
 Title    Taking a closer look?
-Message  {%= $Current.product_name %} at {%= $Current.currency %} {%= $Current.product_price %}. Yours in two taps.
+Message  {%= $Current.product_name %} at {%= $Current.price_line %}. Yours in two taps.
 Image    {%= $Current.product_image %}
 Target   {%= $Current.product_url %}
 ```
@@ -346,9 +369,24 @@ Verified against the live account, twice, on 18 September 2026.
 | `POST /rest/transactional/push` | route reachable, authenticated and permitted: it answers by naming the field it wants |
 | Push content resolution | proven to be the only remaining gate. See the trap below |
 
-**THE TRAP, and it is worth the capitals.** A transactional push send only sees push content
-that was created with **Transactional content ticked**. Aimed at an ordinary push content the
-account really holds, the send answers:
+**THE FIRST TRAP, AND IT REACHES THE INBOX.** A tag the engine cannot resolve is not
+dropped and does not render as a gap. **It prints its own source code into the delivered
+message.** Found by a real send on 18 September 2026, whose body arrived reading:
+
+```
+Fallback test, this should read Hello: {%= $Current.missing_value || 'Hello' %}
+```
+
+in a mail client, in bold, exactly as a recipient would have seen it. Three values on the
+same send resolved perfectly, so this is not a broken account or a bad token: it is what an
+unresolvable expression does. Two rules follow, and they are why section 1 is written the way
+it is: **every key is sent on every send**, and **no template carries any logic at all**,
+because a construct the engine will not evaluate becomes visible text rather than an error a
+test could catch. Fallbacks and composed sentences belong in the relay.
+
+**THE SECOND TRAP, and it is worth the capitals too.** A transactional push send only sees
+push content that was created with **Transactional content ticked**. Aimed at an ordinary
+push content the account really holds, the send answers:
 
 ```
 code 11   <the content id> content is null
