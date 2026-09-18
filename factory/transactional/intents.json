@@ -1,0 +1,40 @@
+{
+  "_comment": [
+    "THE TRANSACTIONAL MOMENTS, AND THE ONLY PLACE THEY ARE DEFINED.",
+    "",
+    "Each entry names a moment the storefront can ask the relay to send. The",
+    "relay reads this through feed/messages.json and refuses any intent that is",
+    "not here, so a content id never travels in a request from a page.",
+    "",
+    "THE BODY LIVES BESIDE THIS FILE rather than in the panel. Dengage accepts a",
+    "subject and a whole HTML body on the send call, measured on 18 September",
+    "2026, so a content created in the panel and left empty works as long as",
+    "Transactional content is ticked. That keeps every template in this",
+    "repository, under review, next to the relay that fills it, and it turns a",
+    "new moment into one empty content in the panel rather than a paste and a",
+    "round of checking.",
+    "",
+    "Pasting a body into the panel instead still works and is the better choice",
+    "for anything a non developer should be able to change mid quarter: a",
+    "subject or a body on the call simply wins, so leaving html null here hands",
+    "that moment back to the panel.",
+    "",
+    "NO TAG IN ANY BODY CARRIES LOGIC. An expression referring to a key the call",
+    "did not pass prints its own source code into the delivered message, so",
+    "every default and every sentence that varies is composed by the relay and",
+    "printed with a plain tag. TRANSACTIONAL-TRIGGERS.md section 6 has the",
+    "measurements.",
+    "A SUBJECT MAY CARRY {key} PLACEHOLDERS, and only those. The relay fills each one from the same vocabulary the body prints, so a subject and a body can never disagree, and an unknown key is left alone rather than printed as a broken tag."
+  ],
+  "intents": [
+    {
+      "intent": "exit-intent-basket",
+      "label": "Exit intent, basket has items",
+      "subject": "Your basket at {store_name} is still here",
+      "emailContentId": "2c20bf23-7870-44ff-ac2d-17bffd0e1399",
+      "pushContentId": "d8a320fd-133e-4fbc-b1b4-b4b126c2acfd",
+      "html": "exit-intent-basket.html",
+      "enabled": true
+    }
+  ]
+}
