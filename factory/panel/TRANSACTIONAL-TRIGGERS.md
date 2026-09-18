@@ -303,12 +303,43 @@ Preheader  {%= $Current.basket_line %}, ready when you are.
 ```
 
 ```html
-<h1>You were one step away</h1>
-<p>{%= $Current.greeting %}, your order at {%= $Current.store_name %} is not finished yet.</p>
-<p>{%= $Current.basket_line %}</p>
-<p><a href="{%= $Current.basket_url %}">Finish checkout</a></p>
-<p>A demonstration storefront built for a sales conversation.</p>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">{%= $Current.basket_line %}, ready when you are.</span>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</span>
+
+<div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
+  <div style="padding:18px 0;border-bottom:1px solid #eee">
+    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+  </div>
+
+  <h1 style="font-size:24px;margin:26px 0 8px">You were one step away</h1>
+  <p style="font-size:15px;line-height:1.6">{%= $Current.greeting %}, your order at {%= $Current.store_name %} is not finished yet.</p>
+
+  <table cellpadding="0" cellspacing="0" width="100%" style="margin:18px 0"><tr>
+    <td width="140" valign="top">
+      <img src="{%= $Current.product_image %}" width="140" style="border-radius:8px;display:block" alt="{%= $Current.product_name %}">
+    </td>
+    <td valign="top" style="padding-left:16px">
+      <div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5">{%= $Current.product_category %}</div>
+      <div style="font-size:15px;font-weight:bold;line-height:1.35;padding:6px 0">{%= $Current.product_name %}</div>
+      <div style="font-size:15px">{%= $Current.price_line %}</div>
+    </td>
+  </tr></table>
+
+  <div style="border:1px solid #eee;border-radius:8px;padding:18px;text-align:center">
+    <div style="font-size:16px;font-weight:bold">{%= $Current.basket_line %}</div>
+    <div style="padding:14px 0 10px">
+      <a href="{%= $Current.basket_url %}" style="display:inline-block;white-space:nowrap;background:#141414;color:#fff;text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Finish checkout</a>
+    </div>
+    <a href="{%= $Current.basket_url %}" style="font-size:13px;color:#5a6375">or look at your basket first</a>
+  </div>
+
+  <p style="font-size:12px;opacity:.6;padding-top:28px;border-top:1px solid #eee;margin-top:28px">Nothing has been charged, and a basket is not a reservation.</p>
+  <p style="font-size:12px;opacity:.6">A demonstration storefront built for a sales conversation.</p>
+</div>
 ```
+
+**No recommendation rail here, deliberately.** At this point the only useful action is
+finishing, and a row of other products is an invitation to browse away from it.
 
 ### 4. Order placed
 
@@ -320,17 +351,51 @@ Preheader  Thank you. {%= $Current.item_count %} items on the way.
 ```
 
 ```html
-<h1>{%= $Current.greeting %}, thank you</h1>
-<p>Order <b>{%= $Current.order_id %}</b> at {%= $Current.store_name %} is confirmed.</p>
-<p>{%= $Current.item_count %} items, {%= $Current.currency %} {%= $Current.order_total %}</p>
-<h2>You might also like</h2>
-<table><tr>
-  <td><a href="{%= $Current.reco_1_url %}"><img src="{%= $Current.reco_1_image %}" width="150" alt=""></a>
-      <div>{%= $Current.reco_1_name %}</div><div>{%= $Current.currency %} {%= $Current.reco_1_price %}</div></td>
-  <td><a href="{%= $Current.reco_2_url %}"><img src="{%= $Current.reco_2_image %}" width="150" alt=""></a>
-      <div>{%= $Current.reco_2_name %}</div><div>{%= $Current.currency %} {%= $Current.reco_2_price %}</div></td>
-</tr></table>
-<p>A demonstration storefront built for a sales conversation.</p>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Order {%= $Current.order_id %}, {%= $Current.basket_line %}.</span>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</span>
+
+<div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
+  <div style="padding:18px 0;border-bottom:1px solid #eee">
+    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+  </div>
+
+  <h1 style="font-size:24px;margin:26px 0 8px">{%= $Current.greeting %}, thank you</h1>
+  <p style="font-size:15px;line-height:1.6">Order <b>{%= $Current.order_id %}</b> at {%= $Current.store_name %} is confirmed.</p>
+
+  <div style="border:1px solid #eee;border-radius:8px;padding:18px">
+    <table cellpadding="0" cellspacing="0" width="100%">
+      <tr><td style="font-size:14px;padding:0 0 6px">Order</td>
+          <td align="right" style="font-size:14px;padding:0 0 6px">{%= $Current.order_id %}</td></tr>
+      <tr><td style="font-size:14px;padding:0 0 6px">Items</td>
+          <td align="right" style="font-size:14px;padding:0 0 6px">{%= $Current.item_count %}</td></tr>
+      <tr><td style="font-size:16px;font-weight:bold;padding:10px 0 0;border-top:1px solid #eee">Total</td>
+          <td align="right" style="font-size:16px;font-weight:bold;padding:10px 0 0;border-top:1px solid #eee">{%= $Current.currency %} {%= $Current.order_total %}</td></tr>
+    </table>
+  </div>
+
+  <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding:34px 0 6px;text-align:center">More like this</div>
+  <div style="font-size:19px;font-weight:bold;text-align:center;padding-bottom:18px">You might also like</div>
+  <table cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_1_url %}"><img src="{%= $Current.reco_1_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_1_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_1_price %}</div>
+    </td>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_2_url %}"><img src="{%= $Current.reco_2_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_2_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_2_price %}</div>
+    </td>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_3_url %}"><img src="{%= $Current.reco_3_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_3_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_3_price %}</div>
+    </td>
+  </tr></table>
+
+  <p style="font-size:12px;opacity:.6;padding-top:28px;border-top:1px solid #eee;margin-top:28px">A confirmation of a demonstration order. Nothing has been charged and nothing will ship.</p>
+  <p style="font-size:12px;opacity:.6">A demonstration storefront built for a sales conversation.</p>
+</div>
 ```
 
 **Push**
@@ -351,18 +416,44 @@ Preheader  Your account is ready.
 ```
 
 ```html
-<h1>{%= $Current.greeting %}, welcome to {%= $Current.store_name %}</h1>
-<p>Your account is ready.</p>
-<h2>Popular right now</h2>
-<table><tr>
-  <td><a href="{%= $Current.reco_1_url %}"><img src="{%= $Current.reco_1_image %}" width="150" alt=""></a>
-      <div>{%= $Current.reco_1_name %}</div><div>{%= $Current.currency %} {%= $Current.reco_1_price %}</div></td>
-  <td><a href="{%= $Current.reco_2_url %}"><img src="{%= $Current.reco_2_image %}" width="150" alt=""></a>
-      <div>{%= $Current.reco_2_name %}</div><div>{%= $Current.currency %} {%= $Current.reco_2_price %}</div></td>
-  <td><a href="{%= $Current.reco_3_url %}"><img src="{%= $Current.reco_3_image %}" width="150" alt=""></a>
-      <div>{%= $Current.reco_3_name %}</div><div>{%= $Current.currency %} {%= $Current.reco_3_price %}</div></td>
-</tr></table>
-<p>A demonstration storefront built for a sales conversation.</p>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Your account at {%= $Current.store_name %} is ready.</span>
+<span style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</span>
+
+<div style="font-family:Helvetica,Arial,sans-serif;max-width:600px;margin:0 auto;color:#141414">
+  <div style="padding:18px 0;border-bottom:1px solid #eee">
+    <img src="THE DEMO'S OWN LOGO" width="180" alt="{%= $Current.store_name %}">
+  </div>
+
+  <h1 style="font-size:24px;margin:26px 0 8px">{%= $Current.greeting %}, welcome to {%= $Current.store_name %}</h1>
+  <p style="font-size:15px;line-height:1.6">Your account is ready, and your basket now follows you between visits and devices.</p>
+
+  <div style="padding:6px 0 4px">
+    <a href="{%= $Current.home_url %}" style="display:inline-block;white-space:nowrap;background:#141414;color:#fff;text-decoration:none;font-size:15px;font-weight:bold;padding:14px 30px;border-radius:8px">Start shopping</a>
+  </div>
+
+  <div style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5;padding:34px 0 6px;text-align:center">Trending now</div>
+  <div style="font-size:19px;font-weight:bold;text-align:center;padding-bottom:18px">Popular across the store</div>
+  <table cellpadding="0" cellspacing="0" width="100%"><tr>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_1_url %}"><img src="{%= $Current.reco_1_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_1_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_1_price %}</div>
+    </td>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_2_url %}"><img src="{%= $Current.reco_2_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_2_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_2_price %}</div>
+    </td>
+    <td width="33%" align="center" valign="top" style="padding:0 5px">
+      <a href="{%= $Current.reco_3_url %}"><img src="{%= $Current.reco_3_image %}" width="100%" style="max-width:150px;border-radius:8px;display:block;margin:0 auto" alt=""></a>
+      <div style="font-size:12px;font-weight:bold;line-height:1.35;padding:8px 0 3px">{%= $Current.reco_3_name %}</div>
+      <div style="font-size:12px">{%= $Current.currency %} {%= $Current.reco_3_price %}</div>
+    </td>
+  </tr></table>
+
+  <p style="font-size:12px;opacity:.6;padding-top:28px;border-top:1px solid #eee;margin-top:28px">Prices and availability can change.</p>
+  <p style="font-size:12px;opacity:.6">A demonstration storefront built for a sales conversation.</p>
+</div>
 ```
 
 ### 6. Wishlist save
