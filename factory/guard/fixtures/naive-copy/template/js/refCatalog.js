@@ -16,3 +16,9 @@ function sendScenarioEvent(item, menu) {
   };
   window.dengage('sendDeviceEvent', DENGAGE_EVENT_TABLE, payload);
 }
+
+/* A RUN TIME FETCH THAT CLIMBS OUT OF THE DEMO FOLDER, into a directory the
+   fixture's Pages workflow does not stage. This is the shape that shipped on 18
+   September 2026: correct on every developer machine, where a local server
+   serves the whole repository, and 404 on the published site. */
+fetch('../../factory/creatives/image-popup.html');

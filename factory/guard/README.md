@@ -59,6 +59,7 @@ can see and nobody can easily undo.
 | `seed-removed` | `seed/` still present once `template/` exists |
 | `demo-js-current` | a live demo serving a module that is not the current template one |
 | `demo-copy-current` | a live demo serving storefront words that are not the current template ones, in the language its config declares |
+| `published-paths` | a shipped page fetching a directory the Pages workflow does not stage, which answers 404 on the live site and nowhere else |
 
 Each prints one line beginning `PASS`, `FAIL` or `SKIP`. Every check runs on
 every invocation: it does not stop at the first failure, because the test suite

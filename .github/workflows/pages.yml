@@ -97,21 +97,33 @@ jobs:
 
       # ONLY WHAT A VISITOR LOADS. Trimmed 6 August 2026, for two reasons.
       #
-      # Nothing a visitor loads references factory/ or template/: a generated demo
-      # is a self contained copy, verified by grep before this was changed. So
-      # publishing them added about 1.4 MB and 110 files to every deployment for
-      # nothing, and deployment time is the one thing that cannot be waited out
-      # because the ten minute cap is immovable.
+      # Publishing the whole repository added about 1.4 MB and 110 files to every
+      # deployment for nothing, and deployment time is the one thing that cannot be
+      # waited out because the ten minute cap is immovable. It also stopped serving
+      # the repository's own tooling and internal documentation from a public URL,
+      # which is what the 6 August audit asked for. The repository stays public and
+      # readable on GitHub, which is deliberate. Serving the handoff and the guard
+      # fixtures as web pages was not.
       #
-      # It also stops serving the repository's own tooling and internal
-      # documentation from a public URL, which is what the 6 August audit asked
-      # for. The repository stays public and readable on GitHub, which is
-      # deliberate. Serving the handoff and the guard fixtures as web pages was
-      # not.
+      # factory/creatives/ IS PUBLISHED, AND IT IS THE ONE EXCEPTION. Added 18
+      # September 2026, because it had to be: js/standby.js fetches the committed
+      # creative at run time when Dengage does not answer, so the file has to be at
+      # an address a browser can reach. It is one shared copy rather than a copy per
+      # demo, which is the property that makes it worth the exception: correcting a
+      # creative reaches every live demo at once, exactly as changing a campaign
+      # does. Only the creatives, not the rest of factory/.
+      #
+      # THE LIST BELOW IS NOW CHECKED RATHER THAN TRUSTED. This comment used to say
+      # "nothing a visitor loads references factory/ or template/, verified by grep
+      # before this was changed", and that grep was true on the day it was run and
+      # false the moment a module fetched one. The module shipped, every creative
+      # answered 404 on the live site, and nothing failed: the guard's
+      # published-paths check exists so that cannot happen twice. CLAUDE.md 4.
       - name: Stage only the published site
         run: |
-          mkdir -p _site
+          mkdir -p _site/factory
           cp -r index.html assets demos feed pages-commit.txt _site/
+          cp -r factory/creatives _site/factory/
           # Stops Pages running its Jekyll pass over files that are already final.
           cp .nojekyll _site/ 2>/dev/null || touch _site/.nojekyll
           echo "Publishing:"

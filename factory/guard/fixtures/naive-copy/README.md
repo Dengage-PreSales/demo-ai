@@ -36,6 +36,7 @@ deleted at the end of Phase 1.
 | `seed-removed` | `seed/` still present once `template/` exists | `seed/` |
 | `demo-js-current` | the demo's modules are not the scrubbed form of the template's | `demos/acme-tools/js/` |
 | `demo-copy-current` | the demo serves words the template no longer has, and a brand name with them | `demos/acme-tools/copy.json` |
+| `published-paths` | a run time fetch that climbs to a directory the Pages workflow does not stage | `template/js/refCatalog.js`, `.github/workflows/pages.yml` |
 
 The two modules worth understanding rather than skimming are `refCatalog.js`
 and `eventModal.js`.

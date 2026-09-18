@@ -1,0 +1,13 @@
+# The known-bad fixture's Pages workflow. It stages the published site and
+# nothing else, which is what the real one did on the day a module began
+# fetching factory/creatives/ at run time and every fetch answered 404.
+name: Pages
+on: { push: { branches: [main] } }
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stage only the published site
+        run: |
+          mkdir -p _site
+          cp -r index.html assets demos feed _site/

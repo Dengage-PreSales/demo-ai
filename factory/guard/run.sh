@@ -37,7 +37,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current"
+CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current published-paths"
 
 if [ "$LIST_ONLY" -eq 1 ]; then
     for id in $CHECK_IDS; do echo "$id"; done
@@ -693,6 +693,75 @@ print((conf.get('locale') or {}).get('language') or 'en')
             note="$note, no copy.json in: $(printf '%s' "$copy_skipped" | tr '\n' ' ')"
         fi
         pass demo-copy-current "$note"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# published-paths
+#
+# A STOREFRONT MAY ONLY FETCH WHAT PAGES ACTUALLY PUBLISHES, and this check
+# exists because that was a comment rather than an assertion and the comment went
+# stale the way they do. The Pages workflow stages a short list of directories on
+# purpose: publishing the whole repository was slow and served this repository's
+# own tooling and notes as web pages. Its comment read "nothing a visitor loads
+# references factory/ or template/, verified by grep before this was changed",
+# which was true on the day it was written.
+#
+# On 18 September 2026 js/standby.js began fetching factory/creatives/<file>.html
+# at run time. It worked on every machine, because a local server serves the
+# whole repository, and every single fetch answered 404 on the live site. Nothing
+# failed: the module was there, the demo looked healthy, and the one thing it
+# existed to do could never happen. The symptom was a widget that did not appear,
+# which is indistinguishable from the fault it was written to cover.
+#
+# So: find every path a shipped page fetches that climbs out of its own folder,
+# and refuse any whose first directory the Pages workflow does not stage.
+#
+# WHAT IT READS RATHER THAN ASSUMES. The allowed list is parsed out of
+# .github/workflows/pages.yml, so adding a directory there is what makes it
+# allowed here. A list written twice is a list that drifts, which is the whole
+# lesson of this check.
+# ---------------------------------------------------------------------------
+PAGES_WORKFLOW="$ROOT/.github/workflows/pages.yml"
+if [ ! -f "$PAGES_WORKFLOW" ]; then
+    skip published-paths "no Pages workflow in this tree"
+elif [ -z "$STOREFRONT_FILES" ]; then
+    skip published-paths "no storefront files in scope"
+else
+    # Every top level name the workflow copies into _site, from any cp line.
+    staged="$(grep -E '^\s*cp -r ' "$PAGES_WORKFLOW" \
+        | sed -E 's/^\s*cp -r //; s/ _site.*$//' \
+        | tr ' ' '\n' \
+        | sed -E 's#/.*##' \
+        | grep -v '^$' | sort -u)"
+
+    # Paths a page climbs out of its own folder to reach, as written in the
+    # source: ../something or ../../something.
+    climbs="$(grep_list "\.\./" "$STOREFRONT_FILES" || true)"
+
+    bad=""
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        # Every ../ prefixed path on the line, reduced to its first real segment.
+        for hit in $(printf '%s\n' "$line" \
+                | grep -oE "(\.\./)+[A-Za-z0-9_-]+" \
+                | sed -E 's#(\.\./)+##' | sort -u); do
+            [ -n "$hit" ] || continue
+            if ! printf '%s\n' "$staged" | grep -qx -- "$hit"; then
+                bad="${bad}${hit}   <-  ${line}"$'\n'
+            fi
+        done
+    done <<EOF
+$climbs
+EOF
+
+    if [ -n "$bad" ]; then
+        fail published-paths "a shipped page fetches something Pages does not publish"
+        printf '%s' "$bad" | show
+        detail "either stage that directory in .github/workflows/pages.yml,"
+        detail "or ship the file inside the demo so nothing has to climb out"
+    else
+        pass published-paths "every path a shipped page climbs to is staged: $(printf '%s' "$staged" | tr '\n' ' ')"
     fi
 fi
 
