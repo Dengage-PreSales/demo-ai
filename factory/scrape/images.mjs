@@ -49,10 +49,10 @@
    hunts hotlinks.
    ========================================================================== */
 
-import { existsSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { allowed, UA } from './fetch.mjs';
+import { launchOptionsForScrape } from '../browser.mjs';
 
 const TIMEOUT_MS = 15000;
 const MAX_BYTES = 8 * 1024 * 1024;
@@ -175,23 +175,11 @@ async function fetchImage(url) {
 /* -------------------------------------------------------------------------- */
 /* The compressor                                                              */
 
-/* The same resolution order the motif pass uses: an explicit CHROMIUM_PATH
-   wins, the sandbox path is used when it exists, and otherwise Playwright's
-   own installed browser, which is what the build workflow provides. Forcing a
-   path that does not exist would turn every CI build into the raw fallback,
-   which is the degraded mode, not the normal one. */
-function launchOptions() {
-    const fromEnv = process.env.CHROMIUM_PATH;
-    if (fromEnv && existsSync(fromEnv)) return { executablePath: fromEnv };
-    if (existsSync('/opt/pw-browsers/chromium')) return { executablePath: '/opt/pw-browsers/chromium' };
-    return {};
-}
-
 /* Imported lazily so that a runner without the Playwright package still builds
    a demo: the import failure becomes the raw fallback rather than a crash. */
 async function launchChromium() {
     const { chromium } = await import('playwright');
-    return chromium.launch(launchOptions());
+    return chromium.launch(launchOptionsForScrape());
 }
 
 /* Runs inside the page. The image arrives as a data: URI, so nothing here

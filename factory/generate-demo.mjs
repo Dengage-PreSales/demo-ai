@@ -509,6 +509,29 @@ async function main() {
                       ', ' + extracted.theme.displayFont + '/' + extracted.theme.bodyFont);
     }
 
+    /* AND IF THE BROWSER NEVER SAW THE STORE, THAT IS SAID OUT LOUD. The
+       rendered channel is the one that reads what a page is actually painted
+       with, so a demo built without it is themed from declarations alone and
+       can be quietly wrong in ways nobody would attribute to a scrape. It was:
+       a machine whose outbound TLS is re-signed by a local authority gave
+       Chromium a certificate it would not accept, so the browser painted its own
+       warning page, and that page's blue became a Saudi grocer's brand colour.
+
+       A certificate refusal is the important one because the remedy is on the
+       build machine rather than at the store, and nothing else in the output
+       would ever point there. CLAUDE.md 6: the sentence is written for a
+       salesperson, and reachFailureNote is where it lives. */
+    const themeNotes = [];
+    const reach = extracted.rendered;
+    if (reach && reach.ok === false && reach.reason !== 'render-unavailable') {
+        const { reachFailureNote } = await import('./browser.mjs');
+        console.error('Theme: the browser could not read this store (' + reach.reason + ').');
+        console.error('  ' + reachFailureNote(reach.reason));
+        console.error('  The demo is themed from the store\'s stylesheets instead, which is'
+            + ' weaker but honest.');
+        themeNotes.push(reachFailureNote(reach.reason));
+    }
+
     /* THE SCREENSHOT IS THE HUMAN'S EYES, AND IT OUTRANKS EVERYTHING SCRAPED
        EXCEPT THE STORE'S OWN DECLARED TOKENS. Added 11 August 2026. Bot walls
        show automated readers a challenge page and the pre-sales person the real
@@ -775,7 +798,7 @@ async function main() {
        segmentation, three of the things a call is booked to show. A build that
        loses one of those is still worth publishing, and it is not worth
        discovering live. These are warnings rather than failures on purpose. */
-    const warnings = buildWarnings(found, images).concat(screenshotNotes);
+    const warnings = buildWarnings(found, images).concat(themeNotes, screenshotNotes);
     for (const warning of warnings) console.error('WORTH KNOWING: ' + warning);
 
     report(options.json, {

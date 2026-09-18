@@ -36,9 +36,9 @@
    below this one, the CSV path, still works on such a machine.
    ========================================================================== */
 
-import { existsSync } from 'node:fs';
 
 import { allowed, UA } from './fetch.mjs';
+import { launchOptionsForScrape, navigationFailure, pageIsSite } from '../browser.mjs';
 import { extractProductsFromHtml } from './catalogue.mjs';
 
 const TIER = 'render';
@@ -124,12 +124,22 @@ async function productLinks(page, origin) {
 async function settle(page, url, windowMs) {
     const deadline = Date.now() + windowMs;
     const left = () => Math.max(1, deadline - Date.now());
+    /* A NAVIGATION THAT FAILED LEAVES THE BROWSER'S OWN PAGE HERE, so "read
+       whatever is there" reads that. It cost nothing on this tier, because a
+       warning page holds no products and the tier simply found none, but it is
+       the same silence that themed a whole demo from one: see navigationFailure
+       in factory/browser.mjs. Reported rather than swallowed, so the dispatcher
+       can say why. A timeout still falls through, because a slow store has
+       usually painted its shelves. */
+    let failed = null;
     try {
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: left() });
-    } catch (err) { /* read whatever is there */ }
+    } catch (err) { failed = navigationFailure(err); }
+    if (failed) return failed;
     try {
         await page.waitForLoadState('networkidle', { timeout: left() });
     } catch (err) { /* never went quiet; the window is the answer */ }
+    return pageIsSite(page, url) ? null : 'not-the-site';
 }
 
 /* The tier. Answers with the same envelope as every static tier, so the
@@ -166,34 +176,17 @@ export async function rendered(origin, options) {
         return { ok: false, reason: 'robots', tier: TIER };
     }
 
-    /* WHERE THE BROWSER IS, ASKED IN THE ORDER THAT SURVIVES BOTH MACHINES.
-
-       Naming a path outright does not work here: CHROMIUM_PATH or the sandbox's
-       /opt/pw-browsers/chromium. That path exists on the machine this file was
-       written on and does NOT exist on a GitHub runner, where the workflow
-       installs Playwright's own browser under ~/.cache/ms-playwright. A launch
-       against a path that is right on one of those and absent on the other
-       reports the tier unavailable on exactly the runs it exists for.
-
-       An EXPLICIT CHROMIUM_PATH is still honoured even when it does not exist,
-       because the "no browser here" test sets it to a missing file on purpose
-       and must keep getting a refusal. Everything else falls through to
-       Playwright's own resolution, which is the only answer that is right on a
-       runner. factory/scrape/images.mjs resolves it the same way; the two must
-       not drift.
+    /* WHERE THE BROWSER IS, AND WHETHER IT CAN BE TRUSTED TO SEE THE STORE, are
+       both factory/browser.mjs now. Four copies of the path resolution had
+       drifted apart and the trust accommodation existed nowhere, which is what
+       let this tier read a certificate warning page as a store with no products.
 
        A launch failure of any kind is still the one reason the dispatcher reads
        as "this runner cannot render", never as "this store cannot be read". */
     let browser;
     try {
         const { chromium } = await import('playwright');
-        const fromEnv = process.env.CHROMIUM_PATH;
-        const options = { headless: true };
-        if (fromEnv) options.executablePath = fromEnv;
-        else if (existsSync('/opt/pw-browsers/chromium')) {
-            options.executablePath = '/opt/pw-browsers/chromium';
-        }
-        browser = await chromium.launch(options);
+        browser = await chromium.launch(launchOptionsForScrape({ headless: true }));
     } catch (err) {
         return { ok: false, reason: 'render-unavailable', tier: TIER };
     }
@@ -222,7 +215,12 @@ export async function rendered(origin, options) {
             }
         };
 
-        await settle(page, base.href, windowFor());
+        /* THE HOME PAGE IS THE ONE NAVIGATION WORTH REFUSING OVER. If the
+           browser never reached the store at all, every page below it would be
+           the same warning page and the tier would report "no products found"
+           for a store that has thousands. */
+        const reached = await settle(page, base.href, windowFor());
+        if (reached) return { ok: false, reason: reached, tier: TIER };
         harvest(extractProductsFromHtml(await page.content(), page.url() || base.href));
 
         const links = await productLinks(page, base.origin);

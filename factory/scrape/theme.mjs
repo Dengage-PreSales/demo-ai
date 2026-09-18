@@ -743,12 +743,18 @@ export async function theme(origin, defaults, options) {
     if (settings.render !== false) {
         try {
             const { renderedTheme } = await import('./theme-rendered.mjs');
-            const seen = await renderedTheme(origin, { settleMs: settings.settleMs });
-            if (seen.ok) rendered = seen;
+            /* A REFUSAL IS KEPT RATHER THAN DISCARDED, and it used to be thrown
+               away the moment it was not ok. The text answer standing alone is
+               still right, but the REASON it had to is the most useful sentence
+               in the whole scrape when it is "certificate": that one is about
+               the machine running the build rather than about the store, and
+               nobody would guess it from a palette that merely looks off. The
+               caller prints it. See reachFailureNote in factory/browser.mjs. */
+            rendered = await renderedTheme(origin, { settleMs: settings.settleMs });
         } catch (err) { /* module absent or unusable: the text answer stands */ }
     }
 
-    if (rendered) {
+    if (rendered && rendered.ok) {
         found.rendered = true;
         applyRendered(base, found, rendered);
     }
@@ -848,18 +854,31 @@ function applyRendered(base, found, seen) {
         }
     }
 
-    /* Fonts and radius are confirmations rather than reversals: the text channels
-       are reliable for both, so the rendered value is only taken where they found
-       nothing. A family the template cannot load is mapped exactly as a declared
-       one would be. */
-    if (!found.fonts) {
-        const display = mapFont(seen.displayFont);
-        const body = mapFont(seen.bodyFont);
-        if (display || body) {
-            base.displayFont = display || body;
-            base.bodyFont = body || display;
-            found.fonts = true;
-        }
+    /* A PAINTED FONT OUTRANKS A COUNTED ONE, exactly as a painted colour does,
+       and this paragraph used to say the opposite. It said the text channels
+       were reliable for typography, so the rendered family was taken only where
+       they found nothing. A Saudi grocer disproved it on 18 September 2026: its
+       stylesheets mention DM Sans often enough to win the count, and every word
+       on the page is painted in Poppins. The demo came out in a typeface the
+       store does not use, which is half of what CLAUDE.md 0.2 asks a demo to
+       get right about a prospect.
+
+       IT IS THE SAME LESSON AS THE COLOUR, for the same reason: a declaration
+       nobody applied still gets counted by a reader working from text, and a
+       browser only ever reports what it actually drew. There is no declared
+       FONT token to prefer over this the way there is for a brand colour, since
+       nobody writes --font-primary, so the count is the weaker channel in every
+       case rather than in some.
+
+       A family the template cannot load maps to null and changes nothing, which
+       is what keeps a store's licensed webfont from becoming a broken stack. */
+    const paintedDisplay = mapFont(seen.displayFont);
+    const paintedBody = mapFont(seen.bodyFont);
+    if (paintedDisplay || paintedBody) {
+        base.displayFont = paintedDisplay || paintedBody;
+        base.bodyFont = paintedBody || paintedDisplay;
+        found.fonts = true;
+        found.fontSource = 'painted';
     }
     if (!found.radius && seen.radius) {
         base.radius = seen.radius;

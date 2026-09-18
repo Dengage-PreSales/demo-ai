@@ -40,9 +40,8 @@
    demo because a browser was missing.
    ========================================================================== */
 
-import { existsSync } from 'node:fs';
-
 import { allowed, UA } from './fetch.mjs';
+import { launchOptionsForScrape, navigationFailure, pageIsSite } from '../browser.mjs';
 
 /* One page, so the budget is a page load rather than a crawl. Long enough for a
    hydrating storefront to paint, short enough that a dead site does not hold a
@@ -62,6 +61,17 @@ const SAMPLE_CAP = 400;
 /* A box smaller than this is a decoration, an icon or a tracking pixel, and its
    colour is not the page's. */
 const MIN_BOX = 24;
+
+/* NO FLOOR ON HOW MUCH A PAGE HAS TO PAINT, and one was written here and taken
+   straight back out, which is worth the four lines to say. The reasoning was
+   that Chromium's certificate warning paints twelve boxes and a real storefront
+   paints hundreds, so anything under two dozen could be refused as not a store.
+   It refused this module's own fixtures: a page with seven boxes can carry a
+   page colour, an ink, a surface, a hairline and a brand button, which is
+   everything read here, and a holding page or a single product store is a
+   perfectly buildable demo. A guard whose known-bad input turns out to be a
+   good one is the shape CLAUDE.md 4 warns about, so the address check above is
+   the guard, on its own, and it is exact rather than probable. */
 
 /* -------------------------------------------------------------------------- */
 
@@ -275,19 +285,6 @@ function readPaintedTheme(limits) {
 
 /* -------------------------------------------------------------------------- */
 
-/* Resolved exactly as images.mjs and render.mjs resolve it. The three must not
-   drift: a hardcoded sandbox path in render.mjs broke a real build on 8 August
-   2026 because it does not exist on a GitHub runner. */
-function launchOptions() {
-    const fromEnv = process.env.CHROMIUM_PATH;
-    const options = { headless: true };
-    if (fromEnv) options.executablePath = fromEnv;
-    else if (existsSync('/opt/pw-browsers/chromium')) {
-        options.executablePath = '/opt/pw-browsers/chromium';
-    }
-    return options;
-}
-
 export async function renderedTheme(origin, options) {
     const settings = options || {};
     const settleMs = settings.settleMs === undefined ? SETTLE_MS : settings.settleMs;
@@ -301,7 +298,7 @@ export async function renderedTheme(origin, options) {
     let browser;
     try {
         const { chromium } = await import('playwright');
-        browser = await chromium.launch(launchOptions());
+        browser = await chromium.launch(launchOptionsForScrape({ headless: true }));
     } catch (err) {
         return { ok: false, reason: 'render-unavailable' };
     }
@@ -313,12 +310,25 @@ export async function renderedTheme(origin, options) {
 
         const deadline = Date.now() + settleMs;
         const left = () => Math.max(1, deadline - Date.now());
+        /* "READ WHATEVER PAINTED" IS WHAT THIS USED TO SAY HERE, and it was the
+           single line that themed a demo from a browser warning page. What
+           painted after a failed navigation is the BROWSER'S own document, not
+           the store's, and it has a background, a text colour and a blue button
+           to offer. A timeout still falls through, because a slow store has
+           usually painted the parts this module reads. See navigationFailure. */
+        let failed = null;
         try {
             await page.goto(base.href, { waitUntil: 'domcontentloaded', timeout: left() });
-        } catch (err) { /* read whatever painted */ }
+        } catch (err) { failed = navigationFailure(err); }
+        if (failed) return { ok: false, reason: failed };
         try {
             await page.waitForLoadState('networkidle', { timeout: left() });
         } catch (err) { /* never went quiet; the window is the answer */ }
+
+        /* AND ASKED AGAIN AFTERWARDS, because the two are not the same question.
+           A navigation can resolve and then be replaced, and a page reached
+           through a redirect chain that ends somewhere else is not this store. */
+        if (!pageIsSite(page, base.href)) return { ok: false, reason: 'not-the-site' };
 
         const seen = await page.evaluate(readPaintedTheme,
             { cap: SAMPLE_CAP, minBox: MIN_BOX });

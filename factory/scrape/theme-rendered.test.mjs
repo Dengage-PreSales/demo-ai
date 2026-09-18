@@ -53,6 +53,38 @@ async function serve(pages) {
     };
 }
 
+/* A SERVER THE BROWSER WILL NOT TRUST, so the refusal under test is the
+   browser's real one rather than a simulation of it. The certificate is
+   generated here and signed by nobody, which is exactly what a local
+   interception authority looks like to a browser that has not been told about
+   it: same error code, same interstitial, same colours. */
+async function serveHttps() {
+    const chosen = port++;
+    const { generateKeyPairSync } = await import('node:crypto');
+    const { execFileSync } = await import('node:child_process');
+    const { mkdtempSync, writeFileSync, readFileSync: read } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const dir = mkdtempSync(join(tmpdir(), 'dps-cert-'));
+    /* openssl rather than a hand rolled certificate: it is present wherever this
+       suite runs, and a certificate this test builds itself would be one more
+       thing that can be subtly wrong in a way that makes the test pass. */
+    execFileSync('openssl', ['req', '-x509', '-newkey', 'rsa:2048', '-nodes',
+        '-keyout', join(dir, 'k.pem'), '-out', join(dir, 'c.pem'), '-days', '2',
+        '-subj', '/CN=127.0.0.1'], { stdio: 'ignore' });
+    const { createServer: createTls } = await import('node:https');
+    const server = createTls({ key: read(join(dir, 'k.pem')), cert: read(join(dir, 'c.pem')) },
+        (request, response) => {
+            response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+            response.end(storefront('body{background:#0b0b0b;color:#f2f2f2}'));
+        });
+    await new Promise((resolve) => server.listen(chosen, '127.0.0.1', resolve));
+    return {
+        origin: 'https://127.0.0.1:' + chosen,
+        close: () => new Promise((resolve) => server.close(resolve))
+    };
+}
+
 /* Enough of a storefront for the reader to have something real to measure:
    prose long enough to count as text, cards big enough to count as surfaces,
    and a button big enough to count as an action. */
@@ -330,6 +362,58 @@ if (!available.ok && available.reason === 'render-unavailable') {
     await grey.close();
     ok('an unstyled mid grey button is still refused',
        greyOut.theme.primary !== '#6c757d', greyOut.theme.primary);
+}
+
+/* -------------------------------------------------------------------------- */
+/* 8. A page the browser wrote itself is never read as the store               */
+
+{
+    /* THIS IS THE ONE THAT SHIPPED. On a machine whose outbound TLS is
+       re-signed by a local authority, Chromium refused a Saudi grocer's
+       certificate and painted "Your connection is not private" instead. That
+       page has a background, a text colour and a blue Back to safety button, so
+       this module read all three and reported success, and the demo went out in
+       Chromium's own palette and fallback font under the store's name.
+
+       DRIVEN RATHER THAN DESCRIBED, which is the whole point of putting it here.
+       A certificate the browser will not accept is served for real below, so the
+       browser paints its real error page and the module is asked about it. */
+    const cert = await serveHttps();
+    const light = { primary: '#125cfa', onPrimary: '#ffffff', accent: '#ff5a1f', ink: '#14181b',
+                    muted: '#667085', surface: '#ffffff', page: '#f6f7f8', line: '#e4e7ec',
+                    radius: '8px', displayFont: 'Inter', bodyFont: 'Inter' };
+    const seen = await renderedTheme(cert.origin, { settleMs: 9000 });
+    is('a certificate the browser refuses is reported as such', seen.reason, 'certificate');
+    ok('and nothing is returned to theme from it', seen.ok === false, seen);
+
+    /* The whole answer, not just this channel's: the demo must come out in the
+       standard palette rather than in the browser's. #1a73e8 is the exact blue
+       of Chromium's Back to safety button, which is what shipped. */
+    const out = await theme(cert.origin, light, { settleMs: 9000 });
+    await cert.close();
+    ok('so the theme is never the browser\'s own error page',
+       out.theme.primary !== '#1a73e8' && out.theme.ink !== '#5f6368', out.theme);
+    /* AND NOTHING FROM A BROWSER PAGE REACHED THE THEME. found.rendered is the
+       record of the rendered channel having contributed, so its absence is the
+       assertion: the palette above is the standard one because nothing overrode
+       it, rather than by coincidence.
+
+       WHAT THIS FIXTURE CANNOT REPRODUCE, said plainly because it is the half
+       that shipped. Here the certificate is refused by Node as well, so theme()
+       never gets as far as opening a browser. The real fault was an asymmetry:
+       Node was told about the local authority and the browser was not, so the
+       text channels read the real store and only the browser saw a warning
+       page. That asymmetry is what the assertion above covers, by asking
+       renderedTheme directly, which is the unit that was wrong. */
+    ok('and nothing from a browser page reached the theme',
+       out.found.rendered !== true, out.found);
+
+    /* A NAME THAT DOES NOT RESOLVE IS THE SAME CLASS OF FAULT and gets its own
+       reason, because the sentence a salesperson reads is different: one is the
+       build machine's setting and the other is a wrong address. */
+    const gone = await renderedTheme('https://not-a-real-store.invalid/', { settleMs: 9000 });
+    ok('an address that does not resolve is reported as unreachable',
+       gone.ok === false && gone.reason === 'unreachable', gone);
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

@@ -17,6 +17,36 @@ node factory/scrape/scrape.test.mjs        # offline, no network, about a second
 | `render.mjs` | the headless browser tier, loaded lazily by the dispatcher when present |
 | `fallback.mjs` | the generated stand-in catalogue, the one place allowed to invent |
 | `scrape.test.mjs` | every judgement above, tested offline |
+| `theme-rendered.mjs` | what the browser actually paints, which outranks what the stylesheets declare |
+
+---
+
+## If this machine inspects outbound TLS
+
+Some networks route outbound HTTPS through a proxy that re-signs every
+certificate with a local authority. Node, curl and everything else on such a
+machine is normally told where that authority's certificate is; a browser is
+not, because it keeps its own trust store.
+
+The symptom is not an error. Chromium refuses the store's certificate and paints
+its own "Your connection is not private" page, and every tier that uses a browser
+then reads that page: the render tier finds no products on it and the theme reader
+finds a white page, a grey ink and a blue button, which is how a Saudi grocer's
+demo shipped in the blue of Chromium's own Back to safety button on 18 September
+2026.
+
+Both tiers now refuse a page the browser wrote itself and say which kind of
+failure it was, so the build reports it rather than theming from it. To let the
+browser read the store instead, name the authority:
+
+```bash
+SCRAPE_CA_FILE=/path/to/local-authority.crt node factory/generate-demo.mjs --url https://store.example
+```
+
+Nothing else is needed and nothing is stored: the public key hashes are computed
+at launch and passed to the browser, which then accepts that authority and keeps
+refusing every other bad certificate. On a machine that reaches the internet
+directly, including a GitHub runner, leave it unset.
 
 ---
 
