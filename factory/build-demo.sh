@@ -74,10 +74,10 @@ mkdir -p "$ROOT/demos"
 cp -r "$ROOT/template" "$DEST"
 mkdir -p "$DEST/images"
 
-python3 - "$DEST" "$SLUG" "$NAME" "$ACCOUNT" "$APP" "$TITLE" <<'PY'
+python3 - "$DEST" "$SLUG" "$NAME" "$ACCOUNT" "$APP" "$TITLE" "$STORE" <<'PY'
 import io, json, sys, datetime
 
-dest, slug, name, account, app, title = sys.argv[1:7]
+dest, slug, name, account, app, title, store = sys.argv[1:8]
 dest = dest.rstrip('/') + '/'
 
 for page in ('index.html', 'product.html'):
@@ -108,6 +108,12 @@ for page in ('index.html', 'product.html'):
 config = json.load(io.open(dest + 'demo.config.json', encoding='utf-8'))
 config['slug'] = slug
 config['displayName'] = name
+# THE STORE THE DEMO IS ABOUT, recorded rather than left only in the tab title.
+# displayName above is the demo's own name and is always the Dengage one; this is
+# the prospect's store, and a message has to be able to name it without parsing
+# it back out of a <title>. Empty for a hand run with no store name, which the
+# relay treats as no name rather than as a blank one.
+config['storeName'] = store
 config['createdAt'] = datetime.date.today().isoformat()
 # 90 days, handoff 10. The folder deletion is automatic; the row deletion is parked
 # and is a human asking the backend team.

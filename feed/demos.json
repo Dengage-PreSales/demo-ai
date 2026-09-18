@@ -1,0 +1,65 @@
+{
+  "generated": "2026-09-18T11:43:07.373Z",
+  "demos": [
+    {
+      "slug": "bkc-link",
+      "products": 30,
+      "expiresAt": "2026-12-01",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "Bakcell Demo",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/bkc-link/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/bkc-link/vendor/assets/dengage-logo.svg",
+      "language": "en",
+      "currency": "AZN",
+      "currencySymbol": "AZN",
+      "brandPrimary": "#200000",
+      "brandOnPrimary": "#ffffff",
+      "categories": [
+        "Accessories",
+        "Audio",
+        "Body",
+        "Kitchen",
+        "Shirts And Tops"
+      ]
+    },
+    {
+      "slug": "disantinni",
+      "products": 30,
+      "expiresAt": "2026-12-15",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "Di Santinni",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/disantinni/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/disantinni/images/brand-logo.png",
+      "language": "en",
+      "currency": "BRL",
+      "currencySymbol": "R$",
+      "brandPrimary": "#404040",
+      "brandOnPrimary": "#ffffff",
+      "categories": [
+        "Sandália",
+        "Tênis",
+        "Chinelo",
+        "More"
+      ]
+    },
+    {
+      "slug": "showcase",
+      "products": 15,
+      "expiresAt": "2026-11-02",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/showcase/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/showcase/vendor/assets/dengage-logo.svg",
+      "language": "en",
+      "currency": "USD",
+      "currencySymbol": "$",
+      "brandPrimary": "#125cfa",
+      "brandOnPrimary": "#ffffff",
+      "categories": [
+        "Fashion",
+        "Electronics",
+        "Home"
+      ]
+    }
+  ]
+}

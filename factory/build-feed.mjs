@@ -192,6 +192,52 @@ export function assertUnclaimed(claimed, slug, id) {
     claimed.set(id, slug);
 }
 
+/* WHAT A MESSAGE NEEDS TO KNOW ABOUT A DEMO, published beside the catalogue.
+
+   THE POINT OF THIS IS THAT A NEW DEMO NEEDS NOTHING DOING TO IT. The
+   transactional relay composes every message from the demo's own facts: its
+   name, its brand colours, its currency, its language and the address of its
+   product pages. Holding those in a table somewhere would mean a row to write
+   by hand for each new store, which is exactly the manual step this factory
+   exists to remove. They are published here instead, with the catalogue the
+   relay already reads, so a demo becomes reachable by a message the moment it
+   is built and stops being reachable the day it expires.
+
+   NOTHING SECRET IS IN HERE and nothing can be. Every value is already visible
+   in the demo's own pages: its title, the colours on screen, the currency next
+   to every price. The file is served from the same public origin as the
+   storefront itself.
+
+   THE LOGO IS RESOLVED RATHER THAN ASSUMED. A demo carries the Dengage mark
+   unless Salil has directed the exception for it, in which case its config
+   names a committed image, so this reads the same key js/boot.js reads instead
+   of guessing at a path that may not exist. */
+function identity(slug, config) {
+    const home = SITE + '/demos/' + slug + '/';
+    const locale = config.locale || {};
+    const theme = config.theme || {};
+    return {
+        displayName: config.displayName || 'Dengage eComm Demo',
+        /* THE PROSPECT'S STORE, AND THE ONE PLACE A DEMO NAMES IT. displayName
+           above is the demo's own name and is always the Dengage one, which is
+           what the header carries, non-negotiable 3. A message has to be able to
+           say whose basket it is about, so this is the store the demo was built
+           from. Empty when nothing usable came through, and a message with no
+           store name reads perfectly well without one. */
+        storeName: config.storeName || '',
+        homeUrl: home,
+        logoUrl: config.brandLogo
+            ? home + String(config.brandLogo).replace(/^\.?\//, '')
+            : home + 'vendor/assets/dengage-logo.svg',
+        language: locale.language || 'en',
+        currency: locale.currency || null,
+        currencySymbol: locale.currencySymbol || null,
+        brandPrimary: theme.primary || null,
+        brandOnPrimary: theme.onPrimary || null,
+        categories: config.categories || []
+    };
+}
+
 export function collect(today) {
     if (!existsSync(DEMOS)) return { rows: [], demos: [], skipped: [] };
 
@@ -213,7 +259,9 @@ export function collect(today) {
         for (const product of catalogue) assertUnclaimed(claimed, slug, String(product.id));
         const list = rowsFor(slug, config, catalogue);
         rows.push(...list);
-        demos.push({ slug, products: list.length, expiresAt: config.expiresAt || null });
+        demos.push(Object.assign(
+            { slug, products: list.length, expiresAt: config.expiresAt || null },
+            identity(slug, config)));
     }
     return { rows, demos, skipped };
 }
@@ -243,6 +291,10 @@ function main() {
     mkdirSync(OUT, { recursive: true });
     writeFileSync(csvPath, csv);
     writeFileSync(jsonPath, toJson(rows, today));
+    writeFileSync(join(OUT, 'demos.json'), JSON.stringify({
+        generated: new Date().toISOString(),
+        demos
+    }, null, 2) + '\n');
 
     demos.forEach((demo) => console.log('  ' + demo.slug.padEnd(24) +
         String(demo.products).padStart(4) + ' products   expires ' + (demo.expiresAt || 'never')));
@@ -250,6 +302,7 @@ function main() {
         '  skipped, expired ' + demo.expiresAt));
     console.log('\n' + rows.length + ' products from ' + demos.length + ' demo(s)');
     console.log(SITE + '/feed/products.csv');
+    console.log(SITE + '/feed/demos.json');
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

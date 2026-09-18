@@ -1,6 +1,7 @@
 {
   "slug": "meridian-college",
   "displayName": "Dengage Education Demo",
+  "storeName": "Meridian College",
   "vertical": "education",
   "sourceUrl": "https://titan.edu.pk/college/",
   "createdAt": "2026-08-11",
