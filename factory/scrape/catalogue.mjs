@@ -354,7 +354,7 @@ async function shopify(origin) {
         products.push({
             id,
             name,
-            category: clean(item.product_type),
+            category: shelfName(item.product_type),
             price,
             discountedPrice,
             /* See the header. No variant available is a fact. Some variant
@@ -560,7 +560,7 @@ export function wooFromApi(raw, origin) {
         products.push({
             id, name,
             category: Array.isArray(item.categories) && item.categories[0]
-                ? clean(item.categories[0].name) : '',
+                ? shelfName(item.categories[0].name) : '',
             price, discountedPrice,
             /* ONLY A NUMERIC stock_quantity IS A COUNT. The API also carries
                is_in_stock, a boolean, and a boolean is not a number: reading
@@ -1099,6 +1099,38 @@ const LOCALE_SEGMENT = /^[a-z]{2}([-_][a-z]{2,3})?$/i;
    describe the store's routing rather than its taxonomy. The set errs small on
    purpose: a word wrongly listed here costs one recoverable category, a word
    wrongly missing invents a navigation entry every visitor can see. */
+/* PLATFORM PLUMBING THAT ARRIVES WHERE A SHELF NAME SHOULD BE. Added 18 September
+   2026, and the nightly drill's first real run is what found it: uniworthshop
+   read thirty real products through the product feed and shipped its storefront
+   with the categories "Configurable" and "Simple", which are Magento product
+   TYPES rather than anything a shopper would recognise. A prospect reads their own
+   navigation and sees the inside of their catalogue's database.
+
+   These are refused by value rather than by source, because the same words arrive
+   from several readers: product_type on a feed, a schema.org category, a CSV
+   column somebody exported. A product whose only category is one of these is
+   treated as uncategorised and picks up its shelf from the collections pass or
+   the tail, exactly as a product with no category at all does.
+
+   Kept separate from GENERIC_HEAD below, which refuses URL path segments. The two
+   lists answer different questions and merging them would refuse "shop" as a
+   shelf name, which is a real one. */
+const PLATFORM_CATEGORY = new Set([
+    /* Magento product types, which is what this rule was written for. */
+    'configurable', 'simple', 'virtual', 'bundle', 'grouped', 'downloadable',
+    /* Values that mean "nobody set one". */
+    'default', 'default category', 'uncategorized', 'uncategorised', 'none',
+    'n/a', 'na', 'misc', 'miscellaneous', 'other', 'others', 'general',
+    /* Shopify and WooCommerce leave these behind on an unconfigured product. */
+    'default title', 'untitled', 'test', 'sample'
+]);
+
+export function shelfName(value) {
+    const name = clean(value);
+    if (!name) return '';
+    return PLATFORM_CATEGORY.has(name.toLowerCase()) ? '' : name;
+}
+
 const GENERIC_HEAD = new Set([
     'product', 'products', 'prod', 'collection', 'collections',
     'category', 'categories', 'shop', 'store', 'item', 'items',
@@ -1457,7 +1489,7 @@ function microdataProducts(html, pageUrl) {
 
         products.push({
             id, name,
-            category: clean(props.category),
+            category: shelfName(props.category),
             price, discountedPrice,
             stockCount: ldStock(props.availability),
             attributes,
@@ -1870,7 +1902,7 @@ export function fromCsv(text) {
 
         products.push({
             id, name,
-            category: map.category !== undefined ? clean(row[map.category]) : '',
+            category: map.category !== undefined ? shelfName(row[map.category]) : '',
             price: resolved.price,
             discountedPrice: resolved.discountedPrice,
             /* An empty stock cell is unknown, not zero. Only a number that is

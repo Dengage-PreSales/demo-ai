@@ -14,7 +14,8 @@
    test that only covers the happy path would have caught none of them.
    ========================================================================== */
 import { fromCsv, categorise, capProducts, collectProducts, dropSentinelPrices,
-         wooFromApi, woocommerce, extractProductsFromHtml, catalogue } from './catalogue.mjs';
+         wooFromApi, woocommerce, extractProductsFromHtml, catalogue,
+         shelfName } from './catalogue.mjs';
 import { acceptHeader } from './fetch.mjs';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -1878,6 +1879,35 @@ const TEMPLATE_THEME = JSON.parse(
        !isFrameworkDefault('--bs-primary', '#c8102e'));
     ok('an untouched one is not',
        isFrameworkDefault('--bs-primary', '#0d6efd'));
+}
+
+/* -------------------------------------------------------------------------- */
+console.log('\nPlatform plumbing is not a shelf name');
+
+{
+    /* FOUND BY THE NIGHTLY DRILL'S FIRST REAL RUN, 18 September 2026.
+       uniworthshop read thirty real products through its product feed and shipped
+       the categories "Configurable" and "Simple", which are Magento product TYPES.
+       A prospect reading their own navigation would have seen the inside of their
+       catalogue's database. The same words arrive from several readers, so the
+       refusal is by value. */
+    is('Magento configurable is refused', shelfName('Configurable'), '');
+    is('so is simple', shelfName('Simple'), '');
+    is('and the rest of the type list', shelfName('Bundle'), '');
+    is('case does not save it', shelfName('  VIRTUAL '), '');
+    is('nor does a default category', shelfName('Default Category'), '');
+    is('uncategorized in either spelling', shelfName('Uncategorised'), '');
+
+    /* AND THE OTHER DIRECTION, which is the half that makes this a check rather
+       than a denylist that eats real shelves. Every one of these is a genuine
+       category name a store really uses. */
+    is('a real shelf survives', shelfName('Jeans'), 'Jeans');
+    is('and one that merely sounds generic', shelfName('Shop the Look'), 'Shop the Look');
+    is('and one that contains a refused word', shelfName('Simple Living'), 'Simple Living');
+    is('and a store whose shelf really is General Store',
+       shelfName('General Store'), 'General Store');
+    is('empty stays empty', shelfName(''), '');
+    is('and so does nothing at all', shelfName(undefined), '');
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
