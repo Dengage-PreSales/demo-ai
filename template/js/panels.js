@@ -295,18 +295,19 @@
 
     /* THESE ARE NOT CAMPAIGNS, and that is the point of the group. No creative to
        paste, no target selector, no panel setup, because nothing here comes from
-       Dengage: js/recommend.js computes all five from the demo's own catalogue.
+       Dengage: js/recommend.js computes every one from the demo's own catalogue,
+       and its STRATEGIES list is the only place their number lives.
 
        Which means they are always the prospect's vertical. A mobile retailer on
        Monday and a fashion retailer on Thursday each see their own products, from
        the same code, with no edit. Handoff 2.2c.
 
        DENGAGE'S OWN ENGINE IS A SEPARATE DECISION AND STAYS PARKED, above. These
-       five were briefly parked alongside it because a working Recommendations
-       section beside two cards reading "not yet set up" looked inconsistent on a
-       call. That was a presentation judgement rather than a technical one: these
-       never depended on the product catalogue inside Dengage, which is what the
-       engine, Product Box and Smart Search are waiting on. */
+       were briefly parked alongside it because a working Recommendations section
+       beside two cards reading "not yet set up" looked inconsistent on a call. That
+       was a presentation judgement rather than a technical one: these never
+       depended on the product catalogue inside Dengage, which is what the engine,
+       Product Box and Smart Search are waiting on. */
     function renderRecommendations() {
         var host = $('#rec-grid');
         if (!host || !window.Recommend) return;
@@ -840,14 +841,18 @@
                         'origin and a service worker, so it will not work from a file:// page.');
                     return;
                 }
-                log('Permission before asking: ' + (events.pushStatus() || 'unknown'));
+                events.pushStatus(function (before) {
+                    log('Permission before asking: ' + (before || 'unknown'));
+                });
                 events.pushPrompt();
                 /* The browser dialog is modal and the answer is asynchronous, so
                    report the outcome rather than guessing it. */
                 setTimeout(function () {
-                    log('Permission now: ' + (events.pushStatus() || 'unknown') +
-                        '. Granted means the device is subscribed and a campaign or ' +
-                        'journey in the panel can reach it.');
+                    events.pushStatus(function (now) {
+                        log('Permission now: ' + (now || 'unknown') +
+                            '. Granted means the device is subscribed and a campaign or ' +
+                            'journey in the panel can reach it.');
+                    });
                 }, 1500);
                 if (window.Storefront) window.Storefront.closeOverlays();
                 return;

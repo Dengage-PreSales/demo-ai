@@ -39,7 +39,23 @@ const ctx = await browser.newContext({ permissions: ['clipboard-read', 'clipboar
 const page = await ctx.newPage();
 const errs = [];
 page.on('pageerror', e => errs.push(e.message));
-page.on('console', m => { if (m.type()==='error' && !/pcdn\.dengage|fonts\.|favicon|404|ERR_CONNECTION|ERR_CERT/.test(m.text())) errs.push('console: '+m.text()); });
+/* A TRANSPORT FAILURE IS NOT A PAGE ERROR, and this list has to name every shape
+   one arrives in. The launch above MAPs both SDK hosts to ~NOTFOUND on purpose,
+   and Chromium reports that refusal as "Failed to load resource:
+   net::ERR_NAME_NOT_RESOLVED" with no host name in the text, so a filter that
+   matches on the host cannot see it. Whether the request is attempted before the
+   assertion runs is a race, so this file passed on its own and failed once inside
+   a long suite run on 18 September 2026: an intermittent failure on a check that
+   gates every demo build, which is worse than a steady one.
+
+   Matching the transport error rather than the host is deliberate and is the same
+   split smoke.mjs made: a genuine fault thrown INSIDE a third party script still
+   survives to be reported, because it is not a resource failure. A demo pointing
+   at a wrong host cannot hide behind this either, since the guard's
+   off-origin-assets check refuses an absolute URL off the allowed hosts before
+   anything reaches a browser. */
+const TRANSPORT = /pcdn\.dengage|fonts\.|favicon|404|net::|Failed to load resource/;
+page.on('console', m => { if (m.type()==='error' && !TRANSPORT.test(m.text())) errs.push('console: '+m.text()); });
 
 let pass=0, fail=0;
 const t=(ok,l)=>{ if(ok){pass++;console.log('   ok    '+l);} else {fail++;console.log('   FAIL  '+l);} };
@@ -191,6 +207,28 @@ const p2 = await ctx.newPage();
 await p2.goto('http://localhost:8187/demos/showcase/', { waitUntil: 'load' });
 await p2.waitForTimeout(500);
 t(await p2.locator('#dps-debug').count() === 0, 'no readout without ?debug=1 in a fresh tab');
+
+/* THE FILTER IS TESTED BEFORE IT IS TRUSTED. A page error list is the classic
+   fail-open assertion: widen the pattern by one character and it reports clean
+   forever, on a broken build, and nothing says so. So the two cases are driven
+   through it deliberately, on a throwaway page, and the recorded list is then put
+   back exactly as it was. Without this, the widening above would be an
+   unverified claim about a regular expression. */
+console.log('\n6. The page error filter keeps the difference\n');
+const keep = errs.splice(0, errs.length);
+const p3 = await ctx.newPage();
+p3.on('console', m => { if (m.type()==='error' && !TRANSPORT.test(m.text())) errs.push('console: '+m.text()); });
+await p3.goto('http://localhost:8187/demos/showcase/', { waitUntil: 'load' });
+await p3.evaluate(() => console.error('Failed to load resource: net::ERR_NAME_NOT_RESOLVED'));
+await p3.waitForTimeout(150);
+t(errs.length === 0, 'a refused host is not reported as a page error');
+await p3.evaluate(() => console.error('TypeError: something in the page is genuinely broken'));
+await p3.waitForTimeout(150);
+t(errs.length === 1 && /genuinely broken/.test(errs[0]),
+  'but a fault thrown in the page still is');
+await p3.close();
+errs.length = 0;
+for (const e of keep) errs.push(e);
 
 console.log('');
 t(errs.length===0, errs.length? 'page errors: '+errs.join(' | ') : 'no page errors');

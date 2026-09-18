@@ -273,16 +273,30 @@
         catch (err) { return false; }
     }
 
-    function pushStatus() {
+    function pushStatus(done) {
+        function answer(value) {
+            if (typeof done === 'function') done(value === undefined ? null : value);
+        }
         if (typeof window.dengage !== 'function') {
             if (window.console) console.log('[dengage dry] getNotificationPermission');
-            return null;
+            answer(null);
+            return;
         }
-        try { return window.dengage('getNotificationPermission'); }
+        var value;
+        try { value = window.dengage('getNotificationPermission'); }
         catch (err) {
             if (window.console) console.error('[dengage] getNotificationPermission failed', err);
-            return null;
+            answer(null);
+            return;
         }
+        if (value && typeof value.then === 'function') {
+            value.then(answer, function (err) {
+                if (window.console) console.error('[dengage] getNotificationPermission rejected', err);
+                answer(null);
+            });
+            return;
+        }
+        answer(value);
     }
 
     function pushPrompt() {

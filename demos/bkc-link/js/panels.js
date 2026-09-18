@@ -488,13 +488,17 @@
                         'origin and a service worker, so it will not work from a file:// page.');
                     return;
                 }
-                log('Permission before asking: ' + (events.pushStatus() || 'unknown'));
+                events.pushStatus(function (before) {
+                    log('Permission before asking: ' + (before || 'unknown'));
+                });
                 events.pushPrompt();
 
                 setTimeout(function () {
-                    log('Permission now: ' + (events.pushStatus() || 'unknown') +
-                        '. Granted means the device is subscribed and a campaign or ' +
-                        'journey in the panel can reach it.');
+                    events.pushStatus(function (now) {
+                        log('Permission now: ' + (now || 'unknown') +
+                            '. Granted means the device is subscribed and a campaign or ' +
+                            'journey in the panel can reach it.');
+                    });
                 }, 1500);
                 if (window.Storefront) window.Storefront.closeOverlays();
                 return;

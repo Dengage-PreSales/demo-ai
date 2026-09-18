@@ -558,16 +558,42 @@
         catch (err) { return false; }
     }
 
-    function pushStatus() {
+    /* CALLED BACK RATHER THAN RETURNED, and that is not decoration. In SDK 2.5.2
+       getNotificationPermission answers a Promise, so returning it straight to a
+       caller that prints the answer put the literal text "[object Promise]" in the
+       launcher's readout where "granted" or "denied" belonged. Found on 18
+       September 2026 by reading the readout in a real browser, which is the only
+       place a stringified Promise is visible at all: nothing throws, no request
+       fails, and every check was green.
+
+       Both shapes are handled, because a future SDK returning the string directly
+       would otherwise put this straight back. A thenable is waited for, anything
+       else is handed over as it is, and either way the caller receives a value it
+       can print. */
+    function pushStatus(done) {
+        function answer(value) {
+            if (typeof done === 'function') done(value === undefined ? null : value);
+        }
         if (typeof window.dengage !== 'function') {
             if (window.console) console.log('[dengage dry] getNotificationPermission');
-            return null;
+            answer(null);
+            return;
         }
-        try { return window.dengage('getNotificationPermission'); }
+        var value;
+        try { value = window.dengage('getNotificationPermission'); }
         catch (err) {
             if (window.console) console.error('[dengage] getNotificationPermission failed', err);
-            return null;
+            answer(null);
+            return;
         }
+        if (value && typeof value.then === 'function') {
+            value.then(answer, function (err) {
+                if (window.console) console.error('[dengage] getNotificationPermission rejected', err);
+                answer(null);
+            });
+            return;
+        }
+        answer(value);
     }
 
     /* Raise the browser's own permission dialog. Native rather than the custom

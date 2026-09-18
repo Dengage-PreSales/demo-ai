@@ -323,6 +323,40 @@ async function openPage(browser, path) {
     ok('a gesture card pushes nothing',
         (await home.page.evaluate(() => window.__dataLayerSeen.length)) === 0);
 
+    /* THE READOUT PRINTS AN ANSWER, NOT AN OBJECT, and this assertion exists
+       because it did not. SDK 2.5.2 answers getNotificationPermission with a
+       Promise, the launcher printed it straight into its log, and a sales call
+       pressing Web push read "Permission now: [object Promise]" where "granted"
+       belonged. Nothing threw and no request failed, so every check stayed green
+       for as long as nobody read the readout.
+
+       THE SDK IS ABSENT HERE BY DESIGN, so a stub stands in, and the stub is
+       deliberately the known-bad input: it answers a Promise, exactly as the real
+       SDK does. Without the fix this fails; with a future SDK that answers the
+       string directly it still passes, because both shapes are handled.
+
+       The second half is the general case rather than this one bug. Any value
+       stringified into the readout by accident lands as "[object Something]", so
+       the log is asserted to contain no such text at all. */
+    const readout = await home.page.evaluate(async () => {
+        window.dengage = function (command) {
+            if (command === 'getNotificationPermission') return Promise.resolve('granted');
+            return true;
+        };
+        const pane = document.querySelector('#panel-log');
+        if (pane) pane.textContent = '';
+        const card = document.querySelector('#launcher-grid [data-action="push-prompt"]');
+        if (!card) return { missing: true };
+        card.click();
+        await new Promise((done) => setTimeout(done, 2200));
+        return { text: (document.querySelector('#panel-log') || {}).textContent || '' };
+    });
+    ok('the push card is offered', !readout.missing);
+    ok('its readout names the permission rather than an object',
+        !readout.missing && /granted/.test(readout.text), readout.text.slice(0, 120));
+    ok('and nothing in the log is a stringified object',
+        !readout.missing && readout.text.indexOf('[object ') === -1, readout.text.slice(0, 120));
+
     /* -------------------------------------------------------------------- 7 */
     console.log('\n7. All five inline slots exist, across the two pages');
     const SLOTS = ['below_header', 'below_hero', 'in_grid', 'above_footer', 'pdp_below_price'];

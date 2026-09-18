@@ -1,5 +1,5 @@
 /* ============================================================================
-   THE FIVE RECOMMENDATION STRATEGIES, DRIVEN IN A BROWSER.
+   THE RECOMMENDATION STRATEGIES, DRIVEN IN A BROWSER.
 
    Handoff 2.2c, 9.1. Run from the repository root:  bash factory/checks/run.sh
 
@@ -10,10 +10,16 @@
    the opposite of the point being made. So every strategy's output is checked
    against the catalogue by product id.
 
-   THE EMPTY CASES ARE CHECKED TOO, AND THEY ARE NOT FAILURES. Three of the five are
+   THE EMPTY CASES ARE CHECKED TOO, AND THEY ARE NOT FAILURES. Some strategies are
    legitimately empty in some contexts: two need a product in view and one needs a
    basket. An empty rail must say why rather than render an empty strip, so the
    check asserts the explanation appears.
+
+   HOW MANY STRATEGIES THERE ARE IS READ FROM THE PAGE, NOT WRITTEN DOWN HERE.
+   This file asserted five, a sixth was added on 18 September 2026, and a correct
+   build failed two assertions in a check whose whole subject was still working.
+   js/recommend.js owns the list; a literal here is a second copy of it that only
+   ever drifts.
    ========================================================================== */
 const { chromium } = require('playwright');
 
@@ -54,13 +60,14 @@ const ok = (label, cond, detail) => {
   await page.waitForFunction(() => window.Catalog && window.Catalog.all().length && window.Recommend,
     null, { timeout: 20000 });
 
-  console.log('\n1. The module and its five strategies');
   const ids = await page.evaluate(() => window.Recommend.strategies.map(s => s.id));
-  ok('five strategies', ids.length === 5, ids);
+  console.log('\n1. The module and its ' + ids.length + ' strategies');
+  ok('it publishes at least one strategy', ids.length > 0, ids);
+  ok('every id is distinct', new Set(ids).size === ids.length, ids);
   ok('each has an id, a label and a note', await page.evaluate(() =>
     window.Recommend.strategies.every(s => s.id && s.label && s.note && typeof s.run === 'function')));
-  ok('the launcher lists all five',
-    await page.locator('#rec-grid [data-reco]').count() === 5);
+  ok('the launcher lists every one of them, ' + ids.length + ' in total',
+    await page.locator('#rec-grid [data-reco]').count() === ids.length, ids);
 
   console.log('\n2. Home page: trending fills, the context ones explain themselves');
   for (const id of ids) {

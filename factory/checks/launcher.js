@@ -191,18 +191,25 @@ function creativesOnDisk() {
   ok('each heading carries its count',
     groups.every(g => /\d+$/.test(g)), groups);
 
-  console.log('\n4. The five recommendation strategies are offered');
-  /* Restored 6 August 2026, Salil's call. These five compute from the demo's own
+  /* Restored 6 August 2026, Salil's call. These compute from the demo's own
      catalogue rather than from a product feed inside Dengage, so they were never
      blocked by what Product Box, Smart Search and Dengage's own engine are waiting
      on; they had been parked alongside those three on presentation grounds only.
      Dengage's engine stays parked, and js/panels.js keeps the two decisions apart.
 
-     Asserted as five rather than "some", because a page that restored the heading
-     and not the grid, or the grid on one page and not the other, is exactly the
-     half-done state this check exists to catch. */
-  ok('all five strategy cards render',
-    await page.locator('#rec-grid [data-reco]').count() === 5);
+     DERIVED, NOT HARDCODED, for the same reason as the group headings above, and
+     this one has already been paid for: the assertion read "all five" and a sixth
+     strategy was added on 18 September 2026, so a correct page failed this check.
+     A literal here is a third copy of a number that lives in js/recommend.js, so
+     ask the page how many strategies it has and require a card for each. That
+     still catches the half-done state the assertion was written for, a heading
+     restored without its grid or a grid on one page and not the other, because
+     zero cards never equals a non-zero strategy count. */
+  const strategies = await page.evaluate(() => window.Recommend.strategies.length);
+  console.log('\n4. The ' + strategies + ' recommendation strategies are offered');
+  ok('every strategy renders a card, ' + strategies + ' in total',
+    await page.locator('#rec-grid [data-reco]').count() === strategies && strategies > 0,
+    { strategies });
   ok('under their own heading',
     await page.locator('h2:has-text("Recommendations")').count() === 1);
   const offered =

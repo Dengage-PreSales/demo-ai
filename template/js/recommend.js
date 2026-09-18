@@ -21,8 +21,8 @@
    the ranking is local for the demo.
 
    If the engine is ever fed per demo, or a shared feed can be filtered by demo,
-   these five strategies become the fallback rather than the source and only the
-   body of each strategy changes. That is why they are named and separated.
+   these strategies become the fallback rather than the source and only the body of
+   each strategy changes. That is why they are named and separated.
 
    NO PANEL WORK FOR THIS GROUP AT ALL. There is no campaign, no creative to paste
    and no target selector, because nothing here comes from Dengage. The launcher
@@ -114,7 +114,7 @@
     }
 
     /* ------------------------------------------------------------------ */
-    /* The five strategies                                                 */
+    /* The strategies. STRATEGIES below is the only place the count lives    */
 
     /* Each returns products from THIS demo's catalogue, so every one of them is
        automatically the prospect's own vertical. None of them can return a phone to
