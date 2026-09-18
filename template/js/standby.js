@@ -206,9 +206,16 @@
             'background:transparent;padding:0;display:block;}' +
         '#%ID%.dps-at-top{top:0;}' +
         '#%ID%.dps-at-bottom{bottom:0;}' +
+        /* TRANSPARENT, BECAUSE THE CREATIVE BRINGS ITS OWN CARD. The engine's
+           frame is transparent and every popup here draws its own white panel,
+           rounded corners and shadow inside it. Giving our frame a surface
+           colour and a radius of its own put a second white box around the
+           first, visible as a band above and below the card, which is precisely
+           the sort of difference a prospect notices without being able to name.
+           A bar creative is full width with its own background, so the same
+           rule suits it. */
         '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
-            'background:var(--surface);border-radius:var(--radius);' +
-            'box-shadow:var(--shadow-lg);overflow:hidden;pointer-events:auto;}' +
+            'background:transparent;overflow:hidden;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
         /* THE CLOSE CONTROL SITS OUTSIDE THE CREATIVE, where the engine puts its
@@ -231,7 +238,7 @@
            min-height rather than a height so a creative is never clipped if the
            measurement cannot be taken at all. */
         '#%ID% iframe{border:0;width:100%;min-height:160px;display:block;' +
-            'background:var(--surface);}' +
+            'background:transparent;}' +
         '';
 
     function styleOnce(id, css) {

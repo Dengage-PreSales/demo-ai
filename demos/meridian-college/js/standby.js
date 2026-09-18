@@ -65,9 +65,9 @@
             'background:transparent;padding:0;display:block;}' +
         '#%ID%.dps-at-top{top:0;}' +
         '#%ID%.dps-at-bottom{bottom:0;}' +
+
         '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
-            'background:var(--surface);border-radius:var(--radius);' +
-            'box-shadow:var(--shadow-lg);overflow:hidden;pointer-events:auto;}' +
+            'background:transparent;overflow:hidden;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
 
@@ -83,7 +83,7 @@
             '{width:100%;max-width:none;}' +
 
         '#%ID% iframe{border:0;width:100%;min-height:160px;display:block;' +
-            'background:var(--surface);}' +
+            'background:transparent;}' +
         '';
 
     function styleOnce(id, css) {
