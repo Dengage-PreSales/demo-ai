@@ -181,7 +181,25 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .section-head h2 { font-size: 20px; }
 .section-head .count { color: var(--muted); font-size: 13px; }
 
-.rail { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+/* overflow-y IS SET EXPLICITLY, AND THAT IS THE WHOLE POINT OF THIS RULE.
+   Setting overflow-x alone does not leave the other axis alone: the spec says a
+   computed overflow of visible on one axis becomes auto when the other is not
+   visible, so `overflow-x: auto` silently made every rail scroll UP AND DOWN as
+   well. It only shows when the content is a pixel taller than the box, which
+   depends on whether a product name wraps to a third line, so it appeared on a
+   phone and not on a laptop and looked like a different bug each time. Reported
+   from a phone on 18 September 2026.
+
+   THE PADDING IS WHAT MAKES hidden SAFE. A card lifts a 6px by 20px shadow on
+   hover, which hidden would cut off, so the rail carries enough room for it and
+   takes the same amount back in negative margin. The net spacing above and below
+   is exactly what it was, and factory/checks/recommend.js measures both. */
+.rail {
+    display: flex; gap: 14px;
+    overflow-x: auto; overflow-y: hidden;
+    padding: 16px 0 26px; margin: -16px 0 -20px;
+    scroll-snap-type: x mandatory;
+}
 .rail > * { flex: 0 0 232px; scroll-snap-align: start; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 16px; }
@@ -588,6 +606,32 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     .site-header.nav-open .site-nav { display: flex; }
     /* A comfortable tap target, and full width so the whole row is pressable. */
     .site-nav a { padding: 12px; font-size: 15px; }
+
+    /* A RAIL HEADING AND ITS NOTE STACK RATHER THAN COMPETE. Side by side they
+       share one line, and a recommendation rail is the case where both are long:
+       "You might also like" against "From the other shelves in your visit" left
+       the heading at two words a line with the note crushed beside it, which is
+       what a prospect sees on a phone. The storefront's own headings have no note
+       so they never showed it. */
+    .section-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .section-head h2 { font-size: 18px; }
+    .section-head .count { font-size: 12.5px; }
+
+    /* A CARD THAT LEAVES THE NEXT ONE VISIBLE. 232px on a 353px rail shows one
+       and a half cards, which reads as a cut off card rather than as a row that
+       scrolls. Narrower shows two with the edge of a third, so the gesture is
+       obvious without a scrollbar to announce it. */
+    .rail > * { flex: 0 0 176px; }
+
+    /* A PRICE AND ITS STRUCK THROUGH WAS-PRICE STOP SHARING A LINE, because on a
+       narrow card they do not fit and the browser breaks them mid amount: the
+       currency on one line and the digits on the next, on both prices, which
+       reads as a rendering fault rather than as a reduction. Each keeps its own
+       line and neither can break inside itself. */
+    .rail .card-price { flex-wrap: wrap; gap: 0 8px; }
+    .rail .card-price .now,
+    .rail .card-price .was { white-space: nowrap; }
+    .rail .card-price .was { font-size: 12.5px; }
 }
 
 /* A small phone. The eComm Demo subtext stays whatever the width, non-negotiable

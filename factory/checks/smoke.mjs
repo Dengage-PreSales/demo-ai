@@ -612,6 +612,72 @@ async function openPage(browser, path) {
     ok('and so does the product page',
         !productRails.hidden && productRails.rails >= 1, productRails);
 
+    /* ------------------------------------------------------------------ 11a */
+    console.log('\n11a. The rails behave on a phone');
+    /* A CALL IS OFTEN DRIVEN FROM A PHONE, and until 18 September 2026 nothing
+       here ever looked at one. Three faults were on screen at once and each was
+       reported as "mobile is broken" rather than as anything findable:
+
+         every rail scrolled UP AND DOWN as well as sideways, because setting
+         overflow-x alone leaves the other axis computing to auto, and it only
+         showed when a product name wrapped to a third line
+
+         a rail heading and its note shared one line, so "You might also like"
+         against "From the other shelves in your visit" left the heading at two
+         words a line with the note crushed beside it
+
+         a price and its struck through was-price shared a line that did not
+         fit, so the browser broke both mid amount, currency on one line and
+         digits on the next, which reads as a rendering fault
+
+       All three are layout, so all three are invisible to every other check in
+       this file. They are asserted at a real phone width, on the page that
+       carries the most rails. */
+    const phone = await browser.newPage({ viewport: { width: 390, height: 844 },
+        deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    await phone.goto(BASE + 'product.html?id=' + encodeURIComponent(firstId),
+        { waitUntil: 'domcontentloaded' });
+    await phone.waitForTimeout(2500);
+    const small = await phone.evaluate(() => {
+        const rails = [...document.querySelectorAll('.rail')].filter((r) => r.clientHeight > 0);
+        const heads = [...document.querySelectorAll('.rec-block .section-head')];
+        return {
+            rails: rails.length,
+            /* THE COMPUTED STYLE, NOT A MEASUREMENT, and the difference is the
+               whole value of this assertion. A rail with overflow-y auto only
+               grows a scrollbar when its content happens to be a pixel taller,
+               which depends on whether a product name wrapped, so measuring
+               scrollHeight reported clean on the broken build and would have
+               kept reporting clean until a prospect saw it. The defect is the
+               declaration itself, so that is what is read. */
+            scrollY: [...new Set(rails.map((r) => getComputedStyle(r).overflowY))],
+            /* Outcome rather than implementation: the heading and its note must
+               not share a line, however that is achieved. Measured as the note
+               starting at or below the title's bottom edge. */
+            sharedLine: heads.filter((h) => {
+                const title = h.querySelector('h2');
+                const note = h.querySelector('.count');
+                if (!title || !note) return false;
+                return note.getBoundingClientRect().top < title.getBoundingClientRect().bottom - 2;
+            }).length,
+            titleHeights: heads.map((h) => Math.round(h.querySelector('h2').getBoundingClientRect().height)),
+            brokenPrices: [...document.querySelectorAll('.rail .card-price .now, .rail .card-price .was')]
+                .filter((el) => el.getBoundingClientRect().height > 26).length,
+            sideways: document.documentElement.scrollWidth > window.innerWidth
+        };
+    });
+    ok('the phone has rails to judge', small.rails > 0, small);
+    ok('no rail is declared scrollable up and down, only sideways',
+        small.scrollY.every((v) => v === 'hidden' || v === 'clip'), small.scrollY);
+    ok('no rail heading shares a line with its note', small.sharedLine === 0, small);
+    /* A FORWARD GUARD, and it is worth saying which kind it is. The price break
+       appeared only once the card was narrowed, so this did not catch the
+       original fault and is not claimed to: it holds the narrower card to the
+       rule that made narrowing safe. */
+    ok('no price is broken in the middle of the amount', small.brokenPrices === 0, small);
+    ok('and the page still does not scroll sideways', small.sideways === false, small);
+    await phone.close();
+
     /* ------------------------------------------------------------------- 12 */
     console.log('\n12. No console errors on either page');
     ok('home is clean', home.errors.length === 0, home.errors.slice(0, 3));

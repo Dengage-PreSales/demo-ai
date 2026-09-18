@@ -1,4 +1,18 @@
-/* Dengage eComm Demo. Generated file. Sources and notes live in the factory. */
+/* ============================================================================
+   The storefront stylesheet.
+
+   EVERY BRAND DECISION IS IN THE :root BLOCK BELOW AND NOWHERE ELSE.
+
+   Handoff 4 and 11. The block is written by the generator from the theme object
+   in demo.config.json. If a colour, a font family or a corner radius appears
+   anywhere after that block, the theming silently stops working for that rule
+   and the guard fails template-purity. There is no second place to look.
+
+   The guard checks this by extracting the :root block and refusing any hex,
+   rgb(), rgba(), hsl() or hsla() literal below it. Shadows and translucent
+   overlays therefore use a token too, not rgba() inline.
+   ========================================================================== */
+
 :root {
     --primary:     #125cfa;
     --on-primary:  #ffffff;
@@ -12,6 +26,8 @@
     --display-font: Sora, Inter, ui-sans-serif, system-ui, sans-serif;
     --body-font:    Inter, ui-sans-serif, system-ui, sans-serif;
 
+    /* Derived from the theme rather than hard coded, so a shadow or an overlay
+       still tracks the brand and still passes template-purity. */
     --shadow-sm:   0 1px 3px color-mix(in srgb, var(--ink) 10%, transparent);
     --shadow-md:   0 6px 20px color-mix(in srgb, var(--ink) 12%, transparent);
     --shadow-lg:   0 18px 44px color-mix(in srgb, var(--ink) 20%, transparent);
@@ -19,14 +35,26 @@
     --tint:        color-mix(in srgb, var(--primary) 8%, transparent);
     --tint-strong: color-mix(in srgb, var(--primary) 16%, transparent);
 
+    /* Status, deliberately NOT themed. The generator overwrites the brand tokens
+       above and leaves these two alone: a validation error reads as an error on
+       every demo, and a prospect whose brand colour happens to be red still needs
+       a red that means "this is wrong". */
+    /* Overwritten by js/slots.js the moment a Dengage top banner is pinned. Declared
+       here so every rule that reads it resolves even if that module never runs. */
     --dn-banner-height: 0px;
 
     --error:       #dc2626;
     --ok:          #0f7b45;
-
+    /* Same reasoning, for the ?debug=1 readout's "composed but not delivered"
+       state. Amber means the same thing on every demo. */
     --warn:        #92400e;
     --warn-tint:   #fffbeb;
 
+    /* Measured by js/slots.js and republished here, so the inline slot below a
+       fixed header clears it. The fallback matters: the header changes height
+       on scroll and again when a Dengage top banner is pinned, so a constant
+       is wrong twice over, and if the module never runs this keeps the slot
+       visible rather than hidden behind the header. Handoff 5.2. */
     --dn-header-clearance: 64px;
 }
 
@@ -56,6 +84,13 @@ img { max-width: 100%; display: block; }
     clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
 }
 
+/* ---- header --------------------------------------------------------------- */
+
+/* THE HEADER SITS BELOW A DENGAGE TOP BANNER RATHER THAN UNDER IT. js/slots.js
+   measures any banner pinned to the top of the viewport and publishes its height, so
+   the two stop competing for the same pixels. With no banner the variable is 0px and
+   this is the same rule it always was. The transition below is what makes the banner
+   arriving look deliberate rather than like a jump. */
 .site-header {
     position: fixed; top: var(--dn-banner-height, 0px); left: 0; right: 0; z-index: 40;
     background: var(--surface); border-bottom: 1px solid var(--line);
@@ -88,6 +123,11 @@ img { max-width: 100%; display: block; }
 .icon-btn:hover { background: var(--tint); }
 .icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.7; }
 
+/* Only ever visible below the breakpoint: on a wide screen the nav is in the
+   header and there is nothing for this to open. It must sit AFTER .icon-btn,
+   which the button also carries and which sets display: grid. Same specificity,
+   so the later rule wins, and putting this earlier left the hamburger showing on
+   desktop. */
 .nav-toggle { display: none; }
 .icon-btn .badge {
     position: absolute; top: 3px; right: 2px; min-width: 17px; height: 17px;
@@ -97,12 +137,20 @@ img { max-width: 100%; display: block; }
 }
 .icon-btn .badge[hidden] { display: none; }
 
+/* The header is out of flow, so main reserves its height, and the banner's height
+   on top of it. Without the second term the hero slides under a pinned banner. */
 main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 
+/* ---- inline slots --------------------------------------------------------- */
+
+/* The five targets a Dengage inline campaign injects into. They are empty until
+   a campaign renders, and must collapse rather than leave a gap. Handoff 5.2. */
 [id^="dn_inline_target_"] { display: block; }
 [id^="dn_inline_target_"]:empty { display: none; }
 
 #dn_inline_target_below_header { margin-top: var(--dn-header-clearance); }
+
+/* ---- hero ---------------------------------------------------------------- */
 
 .hero {
     background: var(--surface); border-bottom: 1px solid var(--line);
@@ -126,12 +174,32 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .btn-block { display: block; width: 100%; text-align: center; }
 .btn:disabled { opacity: .5; cursor: default; filter: none; }
 
+/* ---- rails and grid ------------------------------------------------------ */
+
 .section { padding: 44px 0; }
 .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; gap: 16px; }
 .section-head h2 { font-size: 20px; }
 .section-head .count { color: var(--muted); font-size: 13px; }
 
-.rail { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+/* overflow-y IS SET EXPLICITLY, AND THAT IS THE WHOLE POINT OF THIS RULE.
+   Setting overflow-x alone does not leave the other axis alone: the spec says a
+   computed overflow of visible on one axis becomes auto when the other is not
+   visible, so `overflow-x: auto` silently made every rail scroll UP AND DOWN as
+   well. It only shows when the content is a pixel taller than the box, which
+   depends on whether a product name wraps to a third line, so it appeared on a
+   phone and not on a laptop and looked like a different bug each time. Reported
+   from a phone on 18 September 2026.
+
+   THE PADDING IS WHAT MAKES hidden SAFE. A card lifts a 6px by 20px shadow on
+   hover, which hidden would cut off, so the rail carries enough room for it and
+   takes the same amount back in negative margin. The net spacing above and below
+   is exactly what it was, and factory/checks/recommend.js measures both. */
+.rail {
+    display: flex; gap: 14px;
+    overflow-x: auto; overflow-y: hidden;
+    padding: 16px 0 26px; margin: -16px 0 -20px;
+    scroll-snap-type: x mandatory;
+}
 .rail > * { flex: 0 0 232px; scroll-snap-align: start; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(228px, 1fr)); gap: 16px; }
@@ -144,6 +212,8 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .chip:hover { border-color: var(--primary); }
 .chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
 
+/* ---- product card -------------------------------------------------------- */
+
 .card {
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column;
@@ -151,6 +221,16 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 }
 .card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
 
+/* A RATIO BOX RATHER THAN aspect-ratio, and the difference showed up on a real
+   machine. aspect-ratio on a child of a column flex container loses to the
+   image's intrinsic height in some Chrome builds: a portrait lookbook shot
+   inflated its card half again as tall as its neighbours, which reads as a
+   broken grid, while every up to date engine rendered the same markup
+   perfectly. Real photography arrives in every shape (Shopify feeds mix square
+   packshots with portrait lookbooks), so the media box cannot take any size
+   cue from its content at all. Zero height plus percentage padding is computed
+   from the WIDTH by definition, on every engine back to the beginning, and the
+   absolutely positioned child cannot push on it. */
 .card-media { position: relative; height: 0; padding-bottom: 75%; background: var(--page); }
 .card-media img,
 .card-media .art { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -176,8 +256,13 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .card-stock { font-size: 12px; color: var(--accent); font-weight: 600; }
 .card-stock.out { color: var(--muted); font-weight: 500; }
 
-.pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 40px 0; align-items: start; }
+/* ---- product detail ------------------------------------------------------ */
 
+.pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 40px 0; align-items: start; }
+/* The same ratio box as .card-media, for the same reason: the detail page's
+   hero is the biggest image on the site, so a portrait photograph inflating it
+   is the most visible version of the bug. Square, because the artwork draws
+   square and a mixed catalogue reads calmest when the hero frame never moves. */
 .pdp-media { position: relative; height: 0; padding-bottom: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .pdp-media img,
 .pdp-media .art { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -194,6 +279,8 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .pdp .attrs dd { margin: 0; font-weight: 500; }
 .pdp .actions { display: flex; gap: 9px; }
 .pdp .actions .btn { flex: 1; }
+
+/* ---- drawers and modals -------------------------------------------------- */
 
 .scrim {
     position: fixed; inset: 0; background: var(--scrim); z-index: 50;
@@ -219,6 +306,11 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .empty { color: var(--muted); font-size: 14px; padding: 24px 0; text-align: center; }
 .empty-hint { color: var(--muted); font-size: 12.5px; text-align: center; margin-top: -14px; }
 
+/* ---- app inbox ----------------------------------------------------------- */
+
+/* The head carries a refresh control as well as a title and a close, so the
+   two controls are pushed together rather than spread apart by the
+   space-between the other drawers rely on. */
 #inbox .drawer-head #inbox-refresh { margin-left: auto; margin-right: 4px; }
 
 .link-btn {
@@ -242,6 +334,10 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 }
 .inbox-item:last-child { border-bottom: 0; }
 
+/* A READ MESSAGE IS QUIETER, AND THAT IS THE WHOLE UNREAD TREATMENT ALONGSIDE
+   THE DOT. There used to be a left rail on every unread item, which merged into
+   one continuous line down consecutive unread messages: three of them read as a
+   single block and the header count disagreed with what was on screen. */
 .inbox-item.read h3 { font-weight: 500; color: var(--muted); }
 .inbox-item.read .inbox-media img { opacity: .7; }
 
@@ -251,6 +347,8 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     position: relative; top: -1px;
 }
 
+/* The column is reserved for the whole list or for none of it, set by
+   js/inbox.js. Reserving it per message left a ragged left edge down the drawer. */
 .inbox-media { flex-shrink: 0; display: none; }
 .drawer-body.with-media .inbox-media { display: block; }
 .inbox-media img {
@@ -266,12 +364,17 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .inbox-text p { font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
 .inbox-actions {
     display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 10px;
-
+    /* Keeps the last control off the drawer's edge. With two panel buttons and a
+       dismiss the row fitted the content box EXACTLY, so nothing overflowed and
+       nothing wrapped, and "Dismiss" sat flush against the padding looking cut
+       off. A few pixels of slack make it wrap one control earlier instead. */
     padding-right: 6px;
 }
-
+/* Pushed to the far end of the row so it sits in the same place whether or not
+   the message carried buttons, and never squeezed by them. */
 .inbox-actions .dismiss { margin-left: auto; flex-shrink: 0; }
-
+/* The inbox's own buttons are a little tighter than the storefront's, because
+   three of them plus a timestamp share a 292 pixel column. */
 .inbox-actions .btn-small { padding: 7px 12px; }
 
 .line { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
@@ -279,7 +382,11 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .line-info { flex: 1; min-width: 0; }
 .line-name { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
 .line-meta { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-
+/* The x on a cart or saved line. Replaced an underlined "Remove" link, which
+   competed with the product name for attention on every single row. A 28px
+   square is the smallest comfortable pointer target that still reads as
+   secondary. margin-left auto pins it to the right edge so it sits in the same
+   place on every row whatever the name length. */
 .line-x {
     margin-left: auto; align-self: center; flex-shrink: 0;
     width: 28px; height: 28px; border: 0; border-radius: 7px;
@@ -289,6 +396,10 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .line-x:hover { background: var(--page); color: var(--ink); }
 .line-x:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 
+/* Quick reference, in the launcher. A uuid is wider than the drawer, so the
+   value truncates with the full string on the title attribute and on the
+   clipboard. Truncating rather than wrapping keeps every row one line high, so
+   five rows stay scannable. */
 #ref-grid { display: flex; flex-direction: column; gap: 6px; }
 .ref-row {
     display: flex; align-items: center; gap: 10px;
@@ -333,12 +444,19 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 
 .search-results { margin-top: 16px; }
 
+/* ---- account -------------------------------------------------------------- */
+
+/* The contact key field shows its fixed prefix as text and only accepts the
+   remainder. A key outside the ddemo-<slug>- namespace is unpurgeable, so the
+   field is built so it cannot be typed rather than validated after the fact. */
 .affix {
     display: flex; align-items: center; overflow: hidden;
     border: 1px solid var(--line); border-radius: 8px; background: var(--surface);
 }
 .affix:focus-within { outline: 2px solid var(--primary); outline-offset: -1px; border-color: var(--primary); }
-
+/* Reads as a prefix, not as a filled in value. Without the tint and the rule the
+   fixed text and the placeholder run together as one string and nobody can tell
+   which part they are meant to type. */
 .affix .fixed {
     padding: 9px 9px 9px 11px; font-size: 13.5px; color: var(--muted);
     white-space: nowrap; user-select: none;
@@ -364,7 +482,11 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 }
 .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
+/* Identified, so the header icon says so at a glance rather than only inside
+   the modal. A tint, not a badge: there is no count to show. */
 #account-btn[data-identified="true"] { background: var(--tint); color: var(--primary); }
+
+/* ---- launcher ------------------------------------------------------------ */
 
 .panel-toggle {
     position: fixed; right: 18px; bottom: 18px; z-index: 45;
@@ -386,6 +508,9 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .scenario .name { display: block; font-weight: 600; font-size: 13px; }
 .scenario .slug { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; word-break: break-all; }
 
+/* Spans the grid so a group heading stays a heading rather than becoming a
+   narrow first column. Twenty two buttons need the grouping to be legible at a
+   glance, because the operator is reading this while talking. */
 .launcher-group {
     grid-column: 1 / -1; margin: 14px 0 0; font-size: 11px; font-weight: 700;
     letter-spacing: .08em; text-transform: uppercase; color: var(--muted);
@@ -398,6 +523,12 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     border-radius: 10px; padding: 1px 7px;
 }
 
+/* The two the launcher cannot fire. They carry the gesture instead of a trigger
+   name, and they are dashed and unfilled so nobody presses one expecting a
+   widget. Listing them is still right: the factory builds both. */
+/* An action card calls the SDK rather than firing a campaign, so it reads as a
+   control rather than as a trigger name. Solid and tinted, not dashed: dashed
+   means "this one cannot be fired from here", and this one very much can. */
 .scenario.action { border-color: var(--primary); background: var(--tint); }
 .scenario.action .name { color: var(--primary); }
 .scenario.action .slug { word-break: normal; }
@@ -406,10 +537,22 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .scenario.gesture:hover { border-color: var(--line); }
 .scenario.gesture .slug { word-break: normal; }
 
+/* An inline slot that is not in this document. Still pressable, because pressing
+   it is how the operator finds out where it lives. */
 .scenario.elsewhere { background: var(--page); }
 .scenario.elsewhere .name { color: var(--muted); }
 .scenario.elsewhere .slug { word-break: normal; }
 
+/* THIS ONE DECLARATION DECIDES HOW EVERY PRODUCT TILE READS. js/artwork.js draws
+   its motifs entirely in currentColor, so whatever this resolves to is the colour
+   of the whole catalogue.
+
+   --ink rather than --primary, deliberately. Fifteen silhouettes in the accent
+   colour compete with the buttons and read as a grid of icons; in ink they read as
+   product imagery and leave the accent to mean "act on this". Ink is themed per
+   prospect by js/boot.js like every other token, so a warm palette still produces
+   warm artwork. It was inheriting this value by default before the rule existed,
+   which worked but left the most visible decision on the page unstated. */
 .art { color: var(--ink); }
 
 .note { font-size: 12.5px; color: var(--muted); margin-top: 14px; }
@@ -422,14 +565,28 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     max-height: 190px; overflow: auto; margin-top: 12px; white-space: pre-wrap; word-break: break-word;
 }
 
+/* ---- footer -------------------------------------------------------------- */
+
 .site-footer { background: var(--surface); border-top: 1px solid var(--line); padding: 34px 0; margin-top: 40px; }
 .site-footer p { color: var(--muted); font-size: 12.5px; margin: 0; max-width: 56em; }
+
+/* ---- responsive ---------------------------------------------------------- */
 
 @media (max-width: 860px) {
     .pdp { grid-template-columns: 1fr; gap: 24px; }
     .hero h1 { font-size: 29px; }
     .launcher-grid { grid-template-columns: 1fr; }
 
+    /* THE CATEGORY NAV COLLAPSES, IT DOES NOT DISAPPEAR. This block used to be
+       just `.site-nav { display: none }`, with nothing put in its place, so on a
+       phone the categories were unreachable and a thirty product store read as a
+       single page. It drops below the header instead, opened by .nav-toggle.
+
+       THE HEADER WAS ALSO CRAMPED HERE, and the cause was the same line. On a wide
+       screen .site-nav carries flex: 1 and is what holds the logo and the five
+       actions apart. Hiding it removed the spacer, so the two collided. The nav is
+       out of flow when open, so the gap is restored with margin-left rather than by
+       relying on it. */
     .nav-toggle { display: grid; }
 
     .header-inner { gap: 10px; height: 58px; }
@@ -447,10 +604,38 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
         border-bottom: 1px solid var(--line); box-shadow: var(--shadow-md);
     }
     .site-header.nav-open .site-nav { display: flex; }
-
+    /* A comfortable tap target, and full width so the whole row is pressable. */
     .site-nav a { padding: 12px; font-size: 15px; }
+
+    /* A RAIL HEADING AND ITS NOTE STACK RATHER THAN COMPETE. Side by side they
+       share one line, and a recommendation rail is the case where both are long:
+       "You might also like" against "From the other shelves in your visit" left
+       the heading at two words a line with the note crushed beside it, which is
+       what a prospect sees on a phone. The storefront's own headings have no note
+       so they never showed it. */
+    .section-head { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .section-head h2 { font-size: 18px; }
+    .section-head .count { font-size: 12.5px; }
+
+    /* A CARD THAT LEAVES THE NEXT ONE VISIBLE. 232px on a 353px rail shows one
+       and a half cards, which reads as a cut off card rather than as a row that
+       scrolls. Narrower shows two with the edge of a third, so the gesture is
+       obvious without a scrollbar to announce it. */
+    .rail > * { flex: 0 0 176px; }
+
+    /* A PRICE AND ITS STRUCK THROUGH WAS-PRICE STOP SHARING A LINE, because on a
+       narrow card they do not fit and the browser breaks them mid amount: the
+       currency on one line and the digits on the next, on both prices, which
+       reads as a rendering fault rather than as a reduction. Each keeps its own
+       line and neither can break inside itself. */
+    .rail .card-price { flex-wrap: wrap; gap: 0 8px; }
+    .rail .card-price .now,
+    .rail .card-price .was { white-space: nowrap; }
+    .rail .card-price .was { font-size: 12.5px; }
 }
 
+/* A small phone. The eComm Demo subtext stays whatever the width, non-negotiable
+   3, so the room comes from the icons instead. */
 @media (max-width: 400px) {
     .header-inner { gap: 6px; }
     .icon-btn { width: 33px; height: 33px; }
@@ -458,6 +643,15 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     .logo-word { font-size: 14px; }
 }
 
+/* ---------------------------------------------------------------------------
+   THE EVENT READOUT, js/debug.js. Only ever in the DOM when ?debug=1 asked for
+   it, so none of this is reachable on a normal demo.
+
+   Fixed bottom left, because the launcher opens on the right and the two must
+   not overlap: the whole point is watching events arrive AS you press launcher
+   cards. High z-index to clear a Dengage popup, which is what you are usually
+   testing when you want this open.
+   --------------------------------------------------------------------------- */
 #dps-debug {
     position: fixed; bottom: 12px; left: 12px; z-index: 2147483000;
     width: 340px; max-height: 46vh; display: flex; flex-direction: column;
@@ -492,9 +686,14 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 }
 .dps-debug-time { font-size: 10.5px; color: var(--muted); flex-shrink: 0; font-variant-numeric: tabular-nums; }
 .dps-debug-table { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
-
+/* An event composed but not sent, which is what a page with no application
+   configured does, and a request that got no answer, which is what a content
+   blocker does. Amber rather than red: the first is an expected local state. */
 #dps-debug-list li.not-sent { background: var(--warn-tint); }
 
+/* A REQUEST, as against an event this page composed. Marked so the two are
+   distinguishable at a glance while staying in one time-ordered list: reading an
+   event next to the request that carried it is the whole point. */
 #dps-debug-list li.dps-net { border-left: 3px solid var(--primary); }
 #dps-debug-list li.dps-net.not-sent { border-left-color: var(--warn); }
 .dps-debug-warn { font-size: 10.5px; color: var(--warn); margin-top: 3px; }
@@ -508,13 +707,16 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     font-size: 10.5px; color: var(--muted);
 }
 
+/* Quick reference sits collapsed at the top of the launcher. One line shut, so it
+   does not push the scenario cards down, and no scroll needed to find it. */
 .ref-details { margin: 14px 0 4px; border: 1px solid var(--line); border-radius: 8px; }
 .ref-details > summary {
     cursor: pointer; padding: 9px 11px; font-size: 12.5px; font-weight: 600;
     color: var(--ink); list-style: none;
 }
 .ref-details > summary::-webkit-details-marker { display: none; }
-
+/* A caret drawn from text, so there is no icon file and it flips on open with no
+   JavaScript listening for the toggle. */
 .ref-details > summary::before { content: '\25B8'; color: var(--muted); margin-right: 7px; display: inline-block; }
 .ref-details[open] > summary::before { transform: rotate(90deg); }
 .ref-details > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; border-radius: 8px; }
