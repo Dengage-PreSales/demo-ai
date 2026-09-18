@@ -744,29 +744,41 @@ async function main() {
             console.error('Run this afterwards:  node factory/messages/build-messages.mjs --slug ' + slug);
         }
 
-        /* THE MOTIF PASS AND THE FEED, in that order, because the feed reads what
-           the motif pass writes.
+        /* THE MOTIF PASS, THE PUSH BANNERS AND THE FEED, in that order, because
+           the feed reads what the motif pass writes.
 
            The motif pass runs a browser, which is the only way to ask the real
            classifier in template/js/artwork.js rather than reimplementing it. It
            annotates this demo's products.json with the motif each product draws, so
            the feed can point Dengage at the same silhouette the page renders.
 
-           Neither is allowed to fail the build. A demo with no feed row is still a
-           demo: the storefront works, every widget fires, and only the Dengage
-           rendered recommendation surfaces are affected. Losing a working demo over
-           a catalogue file that can be rebuilt with one command afterwards would be
-           the wrong trade. Both say so loudly instead. */
+           THE PUSH BANNERS WERE MISSING FROM HERE UNTIL 18 SEPTEMBER 2026, and
+           the gap was not visible from the build. A push notification carrying a
+           product needs that product's photograph at 1200x600, because the push
+           editor crops anything else, and make-push-images.mjs is what writes
+           them. Nothing ran it for a new demo, so the factory produced a demo
+           whose every product had no banner, the guard's push-banner check went
+           red on the next push, and the person reading it had no reason to
+           connect a red build to a demo that looked finished. Running it here
+           costs one pass over images that are already on disk.
+
+           None of the three is allowed to fail the build. A demo with no feed row
+           is still a demo: the storefront works, every widget fires, and only the
+           Dengage rendered recommendation surfaces are affected. Losing a working
+           demo over files that can be rebuilt with one command afterwards would be
+           the wrong trade. They say so loudly instead. */
         try {
             execFileSync('node', [join(ROOT, 'factory', 'make-motif-images.mjs'), '--slug', slug],
+                { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
+            execFileSync('node', [join(ROOT, 'factory', 'make-push-images.mjs'), '--slug', slug],
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
             execFileSync('node', [join(ROOT, 'factory', 'build-feed.mjs')],
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
         } catch (err) {
-            console.error('\nThe demo is built, but the product feed was not updated: ' +
-                err.message);
+            console.error('\nThe demo is built, but its banners or the product feed were not' +
+                ' updated: ' + err.message);
             console.error('Run this afterwards:  node factory/make-motif-images.mjs && ' +
-                'node factory/build-feed.mjs\n');
+                'node factory/make-push-images.mjs && node factory/build-feed.mjs\n');
         }
     } catch (err) {
         /* A half written demo folder is worse than none: it would publish, and it
