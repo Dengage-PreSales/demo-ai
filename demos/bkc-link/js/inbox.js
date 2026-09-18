@@ -126,6 +126,12 @@
                 .replace(/"/g, '&quot;');
     }
 
+    function dateLocale() {
+        var config = window.DEMO_CONFIG || {};
+        var locale = config.locale || {};
+        return locale.language || locale.numberLocale || undefined;
+    }
+
     function stamp(when) {
         if (!when) return '';
         var mins = Math.round((Date.now() - when.getTime()) / 60000);
@@ -133,7 +139,7 @@
         if (mins < 60) return t('inboxMinutes', { n: mins });
         if (mins < 60 * 24) return t('inboxHours', { n: Math.round(mins / 60) });
         try {
-            return when.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+            return when.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
         } catch (err) {
             return t('inboxHours', { n: Math.round(mins / 60) });
         }

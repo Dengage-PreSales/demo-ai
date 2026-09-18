@@ -180,11 +180,33 @@
                 .replace(/"/g, '&quot;');
     }
 
-    /* Short, and never a numeric date. toLocaleDateString gives "8/4/2026", which
+    /* THE MONTH IS NAMED IN THE STOREFRONT'S LANGUAGE, NOT THE BROWSER'S, and
+       that distinction was found on 18 September 2026 by building a Portuguese
+       demo and reading its inbox: every relative row said "agora", "42 min",
+       "5 h", and the row below them said "Sep 9". toLocaleDateString with an
+       undefined locale asks the BROWSER, and a call is driven from a laptop set
+       to English whatever language the storefront speaks, so the one row that
+       carries a month was the one row in the wrong language.
+
+       THE LANGUAGE, NOT numberLocale, and the two are genuinely different here.
+       numberLocale is the market whose grouping a price follows, so an Indian
+       store reads en-IN while its storefront speaks Portuguese. A month name
+       belongs to the words on the page rather than to the currency, so it
+       follows locale.language and falls back to the market tag only when no
+       language is recorded, which is what a demo built before the language field
+       existed looks like.
+
+       Short, and never a numeric date. toLocaleDateString gives "8/4/2026", which
        is the fourth of August to half the world and the eighth of April to the
        other half: an ambiguous date in a list where every other row is a relative
        time reads as a glitch. Day and short month is unambiguous in any locale and
        fits the column. */
+    function dateLocale() {
+        var config = window.DEMO_CONFIG || {};
+        var locale = config.locale || {};
+        return locale.language || locale.numberLocale || undefined;
+    }
+
     function stamp(when) {
         if (!when) return '';
         var mins = Math.round((Date.now() - when.getTime()) / 60000);
@@ -192,7 +214,7 @@
         if (mins < 60) return t('inboxMinutes', { n: mins });
         if (mins < 60 * 24) return t('inboxHours', { n: Math.round(mins / 60) });
         try {
-            return when.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+            return when.toLocaleDateString(dateLocale(), { day: 'numeric', month: 'short' });
         } catch (err) {
             return t('inboxHours', { n: Math.round(mins / 60) });
         }

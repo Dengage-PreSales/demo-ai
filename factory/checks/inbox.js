@@ -424,8 +424,41 @@ function installFake(arg) {
     ok('four timestamps render', stamps.length === 4, stamps);
     ok('none of them is a slash separated date',
       stamps.every((s) => !/\d+\/\d+/.test(s)), stamps);
-    ok('the recent one is relative', /now|min/i.test(stamps[0]), stamps);
-    ok('and the old one names a month', /[A-Za-z]{3}/.test(stamps[3]), stamps);
+    /* READ OUT OF THE DEMO'S OWN COPY, NOT WRITTEN IN ENGLISH HERE. This asserted
+       /now|min/ and failed on the first Portuguese demo, whose inbox correctly
+       read "agora". A storefront that speaks three languages cannot be checked
+       against one of them, and a check that only passes in English would fail
+       every build in the other two. So the expected words come from the copy file
+       the demo is actually serving. */
+    const words = await page.evaluate(() => {
+        const copy = window.DEMO_COPY || {};
+        const strip = (value) => String(value || '').replace(/\{[a-z]+\}/g, '').trim();
+        return { now: strip(copy.inboxJustNow), minutes: strip(copy.inboxMinutes) };
+    });
+    ok('the demo published the words for its own relative times',
+        Boolean(words.now && words.minutes), words);
+    ok('the recent one is relative, in this demo\'s language',
+        stamps[0].indexOf(words.now) !== -1 || stamps[0].indexOf(words.minutes) !== -1,
+        { stamps, words });
+    ok('and the old one names a month', /[A-Za-z\u00c0-\u024f\u0400-\u04ff]{3}/.test(stamps[3]), stamps);
+
+    /* AND THE MONTH IS IN THE SAME LANGUAGE AS THE ROWS ABOVE IT. The defect this
+       catches was visible and nothing failed: toLocaleDateString with an
+       undefined locale asks the browser, so a Portuguese storefront driven from
+       an English laptop printed "Sep 9" under three rows of Portuguese. Asserted
+       by formatting the same instant in the demo's language and requiring the
+       page to agree. */
+    const monthCheck = await page.evaluate(() => {
+        const locale = ((window.DEMO_CONFIG || {}).locale) || {};
+        const tag = locale.language || locale.numberLocale || undefined;
+        const when = new Date(Date.now() - 9 * 24 * 3600 * 1000);
+        return {
+            tag: tag || 'browser default',
+            expected: when.toLocaleDateString(tag, { day: 'numeric', month: 'short' })
+        };
+    });
+    ok('the month is named in the demo\'s own language, not the browser\'s',
+        stamps[3] === monthCheck.expected, { rendered: stamps[3], ...monthCheck });
     await page.close();
   }
 

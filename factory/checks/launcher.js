@@ -210,8 +210,22 @@ function creativesOnDisk() {
   ok('every strategy renders a card, ' + strategies + ' in total',
     await page.locator('#rec-grid [data-reco]').count() === strategies && strategies > 0,
     { strategies });
-  ok('under their own heading',
-    await page.locator('h2:has-text("Recommendations")').count() === 1);
+  /* THE HEADING IS READ FROM THE DEMO'S OWN COPY. This matched the English word
+     "Recommendations" and failed on the first Portuguese demo, whose heading
+     correctly read "Recomendacoes". The storefront speaks three languages, so a
+     check written against one of them fails two thirds of the builds. What is
+     being asserted is that the section has exactly one heading and that it is
+     the translated string rather than a raw copy key, and both of those are
+     language independent questions. */
+  const recoHeading = await page.evaluate(() => {
+    const want = (window.DEMO_COPY || {}).recoTitle || 'Recommendations';
+    const found = Array.from(document.querySelectorAll('h2'))
+      .map((el) => (el.textContent || '').trim())
+      .filter((text) => text === want);
+    return { want: want, count: found.length };
+  });
+  ok('under their own heading, in this demo\'s language',
+    recoHeading.count === 1 && !/^reco[A-Z]/.test(recoHeading.want), recoHeading);
   const offered =
     await page.locator('#launcher-grid [data-scenario], #launcher-grid [data-gesture], #launcher-grid [data-action]').count();
   ok('every campaign is offered and nothing else, ' + listed.length + ' in total',
