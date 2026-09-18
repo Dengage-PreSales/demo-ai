@@ -635,6 +635,12 @@ async function openPage(browser, path) {
        carries the most rails. */
     const phone = await browser.newPage({ viewport: { width: 390, height: 844 },
         deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+    /* THE SAME REFUSAL openPage MAKES, and here it decides an assertion rather
+       than merely tidying the log. The campaign fired below is drawn by
+       js/standby.js precisely because the engine does not answer, so an SDK that
+       loaded would draw the panel's own version instead and the measurement
+       would be of whichever arrived first. */
+    await phone.route(/(pcdn|push)\.dengage\.com/, (route) => route.abort());
     await phone.goto(BASE + 'product.html?id=' + encodeURIComponent(firstId),
         { waitUntil: 'domcontentloaded' });
     await phone.waitForTimeout(2500);
@@ -676,6 +682,53 @@ async function openPage(browser, path) {
        rule that made narrowing safe. */
     ok('no price is broken in the middle of the amount', small.brokenPrices === 0, small);
     ok('and the page still does not scroll sideways', small.sideways === false, small);
+
+    /* THE ONE CAMPAIGN THAT COULD TAKE THE WHOLE PAGE WITH IT. The below price
+       slot is the only inline target that sits inside a CSS grid, and a grid
+       item does not shrink below its own content unless it is told to, so the
+       creative's row of fixed width tiles widened the column, the column
+       widened the grid, and the browser widened the LAYOUT VIEWPORT to fit.
+       Every element on the page then rendered at that wider width: the
+       storefront looked zoomed out with its title and its buttons cut off, from
+       one campaign firing. Reported from a phone on 18 September 2026.
+
+       innerWidth IS THE ASSERTION, and that is the part worth keeping. A page
+       grown wider than the phone does not have to scroll, because the browser
+       rescales to fit instead, so the sideways check above was perfectly clean
+       on the broken build and so was every other assertion in this file. The
+       viewport width changing at all is the defect.
+
+       Fired through Standby.render rather than the launcher card, because the
+       launcher's own path is asserted in factory/checks/launcher.js and an open
+       panel across a phone sized page is furniture in the way of a
+       measurement. */
+    const grid = await phone.evaluate(async () => {
+        const width = () => ({ innerW: window.innerWidth,
+            docW: document.documentElement.scrollWidth });
+        const before = width();
+        const drew = await new Promise((done) => {
+            if (!window.Standby) return done('no standby module');
+            window.Standby.render('inline-pdp-below-price',
+                { target: 'dn_inline_target_pdp_below_price' },
+                (rendered, why) => done(rendered === true ? true : (why || 'refused')));
+        });
+        await new Promise((done) => setTimeout(done, 400));
+        return {
+            drew, before, after: width(),
+            inSlot: !!document.querySelector('#dn_inline_target_pdp_below_price .dn-inline-html'),
+            /* Printed rather than asserted: the next time this fails, the column
+               that refused to shrink is named in the output instead of being
+               worked out again from a screenshot. */
+            columns: [...document.querySelectorAll('.pdp > *')]
+                .map((el) => Math.round(el.getBoundingClientRect().width))
+        };
+    });
+    ok('the below price campaign renders into its slot on a phone',
+        grid.drew === true && grid.inSlot, grid);
+    ok('and firing it does not widen the layout viewport',
+        grid.after.innerW === grid.before.innerW, grid);
+    ok('and the product page still fits the phone it is on',
+        grid.after.docW <= grid.after.innerW, grid);
     await phone.close();
 
     /* ------------------------------------------------------------------- 12 */

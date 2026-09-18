@@ -2,7 +2,7 @@
   #dnil-foot .head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; }
   #dnil-foot h2 { font-family:var(--display-font); font-size:15px; font-weight:700; color:var(--ink); margin:0; letter-spacing:-.02em; }
   #dnil-foot .head .n { font-size:11.5px; color:var(--muted); }
-  #dnil-foot .row { display:flex; gap:10px; overflow-x:auto; padding-bottom:4px; }
+  #dnil-foot .row { display:flex; gap:10px; overflow-x:auto; overflow-y:hidden; padding-bottom:4px; }
   #dnil-foot a.item { display:block; flex:0 0 110px; text-decoration:none; }
   #dnil-foot .shot { display:block; width:110px; height:110px; border-radius:8px; overflow:hidden; background:var(--surface); border:1px solid var(--line); transition:border-color .15s; }
   #dnil-foot a.item:hover .shot { border-color:var(--primary); }

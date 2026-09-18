@@ -363,6 +363,117 @@ function creativeFiles(dir, prefix) {
     ok('the standby copy is on screen within a second, ' + speed + 'ms',
         speed > 0 && speed < 1000, speed);
 
+    console.log('\n6c. A tall creative on a short screen grows no scrollbar of its own');
+    /* WHAT A PROSPECT ACTUALLY SAW was a strip of scrollbar down the side of a
+       popup, which is the one piece of furniture a Dengage popup never has, so
+       it reads as the product being broken rather than as a tall creative on a
+       short phone. Reported from a phone on 18 September 2026.
+
+       A creative taller than the screen has to go somewhere, and there are only
+       two places. Capping the frame at the viewport and letting it scroll inside
+       is what produced the bar. Letting the SCRIM scroll instead is what a real
+       popup does: the frame is exactly as tall as the creative and never
+       scrolls, and the dark backdrop carries it.
+
+       BOTH HALVES ARE ASSERTED, because either alone can be satisfied by the
+       broken build. A frame that does not scroll but is clipped at the viewport
+       hides the bottom of the creative with no way to reach it, and a scrim that
+       scrolls while the frame does too gives two scrollbars instead of one.
+
+       AND THE DECLARATION IS READ, NOT ONLY THE OUTCOME, for the reason the rail
+       check in the smoke test gives: a frame declared scrollable only shows a
+       bar when its content happens to be taller, which depends on the creative,
+       so an outcome alone would report clean until the day it did not. */
+    const SHORT = { width: 390, height: 568 };
+    await page.setViewportSize(SHORT);
+    const short = {};
+    for (const slug of ['survey', 'spin-to-win', 'nps-popup']) {
+        short[slug] = await page.evaluate(async (name) => {
+            window.Standby.close();
+            window.Standby.arm(name, null);
+            await new Promise((done) => setTimeout(done, 1800));
+            const host = document.querySelector('.dps-standby-host');
+            const wrap = host && host.querySelector('.dps-standby-wrap');
+            const frame = host && host.querySelector('iframe');
+            const doc = frame && frame.contentDocument;
+            if (!host || !wrap || !frame || !doc) return { drew: false };
+            const inner = doc.documentElement;
+            return {
+                drew: true,
+                viewportH: window.innerHeight,
+                frameH: Math.round(frame.getBoundingClientRect().height),
+                /* THE CREATIVE'S OWN HEIGHT, read from inside the frame rather
+                   than from the frame itself, and the distinction is what keeps
+                   the assertions below independent of the fault. A capped frame
+                   fits the screen by construction, so measuring the frame would
+                   have reported every creative as short enough and quietly
+                   excused the very build this section exists to refuse. */
+                contentH: Math.round(Math.max(inner.scrollHeight,
+                    doc.body ? doc.body.scrollHeight : 0)),
+                /* What the backdrop has to find room for: the creative plus the
+                   breathing space the scrim keeps around it. */
+                needsScroll: Math.round(Math.max(inner.scrollHeight,
+                    doc.body ? doc.body.scrollHeight : 0)) +
+                    parseFloat(getComputedStyle(host).paddingTop) +
+                    parseFloat(getComputedStyle(host).paddingBottom) > window.innerHeight + 1,
+                /* THE INLINE DECLARATION, NOT THE COMPUTED VALUE, and this is
+                   the one place in these checks where that is the honest read.
+                   overflow does not apply to a replaced element, so Chromium
+                   reports "clip" for an iframe whatever was declared: the
+                   computed value was identical on the build that scrolled and
+                   the build that does not, so reading it would have asserted
+                   nothing at all. js/standby.js sets this property itself, so
+                   it is exactly the declaration worth holding. */
+                frameOverflow: frame.style.overflow,
+                computedOverflow: getComputedStyle(frame).overflow,
+                /* The frame's own document is the honest place to read whether
+                   there is anything to scroll to inside it. */
+                frameScrolls: inner.scrollHeight > inner.clientHeight + 1,
+                scrimScrolls: host.scrollHeight > host.clientHeight + 1,
+                /* The top of a creative is what a visitor reads first, so it is
+                   never the part that goes off screen. */
+                topVisible: Math.round(wrap.getBoundingClientRect().top),
+                /* And the whole of it is reachable: the scrim scrolled to its
+                   end has to show the creative's last pixel. */
+                bottomReachable: (function () {
+                    host.scrollTop = host.scrollHeight;
+                    const room = Math.ceil(wrap.getBoundingClientRect().bottom);
+                    host.scrollTop = 0;
+                    return room <= window.innerHeight + 1;
+                }()),
+                sideways: document.documentElement.scrollWidth > window.innerWidth
+            };
+        }, slug);
+    }
+    /* BOTH BRANCHES HAVE TO BE EXERCISED or the section proves half of what it
+       claims: a creative taller than this screen, so the scrolling case is real,
+       and one that fits, so "scrolls only when it has to" is not satisfied by a
+       module that always scrolls. */
+    const tall = Object.keys(short).filter((k) => short[k].needsScroll);
+    const fits = Object.keys(short).filter((k) => short[k].drew && !short[k].needsScroll);
+    ok('a creative taller than this screen is among them, or this proves nothing',
+        tall.length > 0, short);
+    ok('and one that fits it, so the quiet case is exercised too',
+        fits.length > 0, short);
+    for (const slug of Object.keys(short)) {
+        const m = short[slug];
+        ok(slug + ': the standby copy drew on a ' + SHORT.height + 'px screen', m.drew, m);
+        if (!m.drew) continue;
+        ok(slug + ': the frame is not declared scrollable',
+            m.frameOverflow === 'hidden' || m.frameOverflow === 'clip', m);
+        ok(slug + ': and nothing scrolls inside it', m.frameScrolls === false, m);
+        ok(slug + ': the top of the creative is on screen', m.topVisible >= 0, m);
+        ok(slug + ': and its bottom can be reached', m.bottomReachable, m);
+        ok(slug + ': the storefront behind it does not scroll sideways', m.sideways === false, m);
+        /* The scrim is where the scrolling went, so for a creative that does not
+           fit it has to have somewhere to go, and for one that does it must not
+           invent any. */
+        ok(slug + ': the backdrop scrolls only when it has to',
+            m.scrimScrolls === m.needsScroll, m);
+    }
+    await page.evaluate(() => window.Standby.close());
+    await page.setViewportSize({ width: 1280, height: 900 });
+
     console.log('\n7. A slug with no committed creative is refused, not guessed');
     const refusedSlug = await page.evaluate(async () => {
         const answers = [];

@@ -190,9 +190,24 @@
     var BARS = { 'sticky-bar': 'top', 'image-bar': 'bottom' };
 
     var LABEL_CSS =
+        /* THE SCRIM SCROLLS, NOT THE FRAME, and on a phone that is the whole
+           difference between a popup and a widget with a scrollbar down its
+           side. A tall creative on a short screen has to go somewhere: capping
+           the frame and letting it scroll inside put a visible bar against the
+           creative, which is the one piece of furniture a Dengage popup never
+           has. Reported from a phone on 18 September 2026.
+
+           margin:auto on the wrapper is what makes one rule cover both cases.
+           Shorter than the screen, it centres; taller, the auto margins
+           collapse and the scrim scrolls it, which is how a real popup behaves.
+           The bar itself is hidden because nothing about this frame should be
+           noticed, and overscroll-behavior keeps a swipe inside it from
+           scrolling the storefront underneath. */
         '#' + '%ID%' + '{position:fixed;inset:0;z-index:2147482700;display:flex;' +
             'align-items:center;justify-content:center;padding:24px;' +
-            'background:var(--scrim);}' +
+            'background:var(--scrim);overflow-y:auto;overscroll-behavior:contain;' +
+            'scrollbar-width:none;}' +
+        '#%ID%::-webkit-scrollbar{width:0;height:0;}' +
         /* A BAR IS PINNED AND SHORT, NOT A FULL VIEWPORT OVERLAY, and that is what
            makes js/slots.js push the storefront header down for it. That module
            finds a pinned banner BY SHAPE rather than by selector: fixed,
@@ -215,7 +230,7 @@
            A bar creative is full width with its own background, so the same
            rule suits it. */
         '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
-            'background:transparent;overflow:hidden;pointer-events:auto;}' +
+            'background:transparent;overflow:visible;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
         /* THE CLOSE CONTROL SITS OUTSIDE THE CREATIVE, where the engine puts its
@@ -230,7 +245,7 @@
         '#%ID%.dps-at-top .dps-standby-shut,#%ID%.dps-at-bottom .dps-standby-shut' +
             '{display:none;}' +
         '#%ID% .dps-standby-wrap{position:relative;width:min(900px,100%);' +
-            'max-height:calc(100vh - 48px);display:flex;}' +
+            'margin:auto 0;display:flex;flex:0 0 auto;}' +
         '#%ID%.dps-at-top .dps-standby-wrap,#%ID%.dps-at-bottom .dps-standby-wrap' +
             '{width:100%;max-width:none;}' +
         /* Height is MEASURED, not guessed: see fitFrame. The value here is only
@@ -272,7 +287,24 @@
           'getGameWinner:function(cb){if(typeof cb==="function"){cb(null);}' +
             'out("prize");}' +
         '};' +
-        '})();<\/script>';
+        '})();<\/script>' +
+        /* THE MARGIN A BROWSER PUTS ROUND EVERY DOCUMENT, WHICH THIS CREATIVE
+           NEVER ASKED FOR. In the panel the engine renders the creative inside
+           a container of its own, so the creative's root element owns its whole
+           box and none of them declares body{margin:0}: there is no body of
+           theirs to declare it on. Here the creative IS the document, so the
+           user agent's default 8px appears round the outside of it, which is
+           invisible on a centred card and a visible gap of storefront above and
+           below a full width bar.
+
+           IT ALSO MADE THE HEIGHT AMBIGUOUS, which is how it was found. A bar
+           creative reports its own height to js/slots.js so the storefront's
+           header can clear it, and this module reports the host's height for the
+           same reason. The margin made those two numbers differ by 8px, the
+           storefront's header cleared the smaller one, and the logo sat under
+           the bar again. Removing the margin makes both numbers the creative's
+           own height, which is the one number either of them meant. */
+        '<style>html,body{margin:0;padding:0;}<\/style>';
 
     /* ------------------------------------------------------------------ */
     /* Rendering                                                           */
@@ -284,9 +316,12 @@
        srcdoc frame inherits this page's origin, so its document is readable and
        its own height can simply be asked for.
 
-       Bounded by the viewport, because a long creative must scroll inside the
-       frame rather than run off the screen, and re-measured on resize since a
-       phone rotating changes both numbers. */
+       NOT BOUNDED BY THE VIEWPORT, and this paragraph used to say the opposite.
+       A creative taller than the screen was capped here and left to scroll
+       inside the frame, which put a scrollbar down the side of a popup on a
+       phone. The scrim scrolls now, so the frame is exactly as tall as its
+       creative however tall that is. Re-measured on resize either way, since a
+       phone rotating changes the number. */
     /* MEASURED FROM THE CREATIVE'S OWN ELEMENTS, NOT FROM THE DOCUMENT, and that
        distinction is the difference between this working and not. documentElement
        inside an iframe stretches to fill the frame, so its scrollHeight can never
@@ -315,10 +350,33 @@
             if (!doc || !doc.documentElement) return;
             var wanted = contentHeight(doc);
             if (!wanted) return;
-            var room = window.innerHeight - (placement ? 60 : 140);
+            /* THE FULL CONTENT HEIGHT, NEVER CAPPED. Capping it to the viewport
+               is what produced the scrollbar inside the frame: the scrim scrolls
+               instead now, so the frame only ever has to be exactly as tall as
+               the creative. */
             frame.style.minHeight = '0';
-            frame.style.height = Math.max(48, Math.min(wanted, room)) + 'px';
-            frame.style.overflow = wanted > room ? 'auto' : 'hidden';
+            frame.style.height = Math.max(48, wanted) + 'px';
+            frame.style.overflow = 'hidden';
+            /* AND THEN ASK THE DOCUMENT WHETHER IT AGREED, because contentHeight
+               measures the children's boxes and a trailing margin is not inside
+               one. subscription-popup's form carries margin:40px 0, so the frame
+               came out exactly 40px short: nothing was cut off on screen, but the
+               document inside had 40px to scroll and grew the scrollbar this
+               whole design exists to avoid. Found by the assertion in
+               factory/checks/standby.js rather than on screen, which is the only
+               reason it is not still there.
+
+               documentElement.scrollHeight is the number that includes the
+               margin, and it is read HERE rather than instead of contentHeight
+               because it stretches to whatever the frame already is: asked
+               first it would only ever report the height we had just guessed.
+               Asked second it is the correction, and once the frame is tall
+               enough the two agree and the loop stops on its own. */
+            for (var pass = 0; pass < 3; pass++) {
+                var real = doc.documentElement.scrollHeight;
+                if (real <= frame.clientHeight + 1) break;
+                frame.style.height = real + 'px';
+            }
             if (typeof after === 'function') after();
         }
         frame.addEventListener('load', function () {
