@@ -522,6 +522,14 @@ jobs:
             sleep 0.5
           done
           node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"
+          # AND THE ONE THING THE SMOKE TEST CANNOT SEE. It drives the demo with
+          # the SDK hosts reachable, so it only ever exercises the path where
+          # Dengage answers. factory/checks/standby.js drives the other path, with
+          # both hosts refused, which is the only way to find out whether this
+          # demo goes dark on a call or draws its own labelled copy. Same server,
+          # same demo, about ten seconds.
+          TEMPLATE_URL="http://localhost:8101/demos/$SLUG/" \
+            node factory/checks/standby.js
 
       # KEEP THE EVIDENCE WHEN A BUILD FAILS, because until 11 August 2026 it was
       # thrown away and that cost two full diagnostic rounds in a row.

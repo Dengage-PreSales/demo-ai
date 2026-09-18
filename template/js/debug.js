@@ -57,6 +57,7 @@
        read each other's preference. Non-negotiable 6. */
     function storeKey() { return 'dps:' + slug() + ':debug'; }
     function eventName() { return 'dps:' + slug() + ':event'; }
+    function noteName() { return 'dps:' + slug() + ':standby'; }
 
     function wanted() {
         var value = null;
@@ -310,10 +311,38 @@
         '</li>';
     }
 
+    /* A STANDBY ROW IS NOT AN EVENT AND IS NOT A REQUEST, so it renders as
+       neither. js/standby.js draws a committed creative itself when the engine
+       does not answer, and the question this readout exists to answer becomes
+       "which of the two is on screen". Without a row here a standby copy and a
+       live campaign look identical in the log, which is exactly the confusion
+       the visible label on the widget is there to prevent. */
+    function renderNote(row) {
+        var said = row.how === 'dengage'
+            ? 'Dengage answered. The widget on screen is the engine\'s own'
+            : row.how === 'standby'
+                ? 'Dengage did not answer. This demo drew its own committed copy'
+                : row.how === 'click'
+                    ? 'a click inside a standby copy'
+                    : 'Dengage did not answer and nothing was drawn';
+        return '<li class="dps-note' + (row.how === 'dengage' ? '' : ' not-sent') + '">' +
+            '<div class="dps-debug-top">' +
+              '<code>standby ' + esc(row.scenario) + '</code>' +
+              '<span class="dps-debug-time">' + esc(clock(row.at)) + '</span>' +
+            '</div>' +
+            (row.how === 'dengage'
+                ? '<div class="dps-debug-table">' + esc(said) + '</div>'
+                : '<div class="dps-debug-warn">' + esc(said) + '</div>') +
+            (row.note ? '<pre>' + esc(row.note) + '</pre>' : '') +
+        '</li>';
+    }
+
     function render() {
         if (!list) return;
         list.innerHTML = rows.map(function (row) {
-            return row.kind === 'net' ? renderNet(row) : renderEvent(row);
+            if (row.kind === 'net') return renderNet(row);
+            if (row.kind === 'note') return renderNote(row);
+            return renderEvent(row);
         }).join('');
         if (countEl) countEl.textContent = String(rows.length);
     }
@@ -327,6 +356,17 @@
             /* `accepted`, because that is all the emitter can know. See the note on
                announceSent in js/dengageEvents.js. */
             accepted: !!detail.accepted,
+            at: detail.at || Date.now()
+        });
+    });
+
+    window.addEventListener(noteName(), function (event) {
+        var detail = event.detail || {};
+        add({
+            kind: 'note',
+            scenario: detail.scenario || '',
+            how: detail.how || '',
+            note: detail.note || '',
             at: detail.at || Date.now()
         });
     });

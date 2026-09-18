@@ -42,9 +42,22 @@ A demo is **done** when all twelve of these are true:
    the creatives on disk in both directions and is the only place worth reading a
    count from. At the time of writing it reports 25 cards: 19 creatives held in
    this repository, 4 campaigns authored in the panel, and 2 cards that are not
-   campaigns at all. Product Box, Smart Search, Typeform and the five
-   recommendation strategies are parked, Salil's call, 6 August: see
-   `factory/panel/README.md`
+   campaigns at all. Product Box, Smart Search and Typeform are parked, Salil's
+   call, 6 August: see `factory/panel/README.md`. The recommendation strategies
+   were restored on 6 August and `js/recommend.js` is the only place their number
+   lives
+5a. **A widget that Dengage cannot draw is drawn by the demo, and says so.**
+   Added 18 September 2026. Dengage renders every on-site widget and that is the
+   demonstration; `template/js/standby.js` does nothing while the engine is
+   answering. When it does not answer, because a campaign was deactivated, a
+   frequency cap was reached or the prospect's network blocks the CDN, the
+   storefront draws the same committed creative itself behind a visible line
+   naming it as the demo's own copy, and lists it in `?debug=1`. **The label is
+   the part that is not negotiable**, because a demo that quietly drew its own
+   widget would let a call claim Dengage rendered something it did not. It emits
+   no event and counts no click: §1b is untouched and `js/dengageEvents.js` is
+   still the only module that reaches the SDK. The module's own header carries
+   the reasoning and `factory/checks/standby.js` holds it to all of the above
 6. All five inline content slots are present and targetable from the panel
 7. Web push works from the shared service worker at the **origin root**, which
    lives in the `dengage-presales.github.io` repository, not this one
@@ -243,6 +256,7 @@ report what you found and what you would remove. Then stop and ask.
 | handoff §5.3 | **before copying any module out of `seed/`.** The most consequential section in the document |
 | handoff §12 | before "fixing" anything that looks oddly indirect. Ten traps, every one already paid for |
 | handoff §14 | what is blocked on Salil, and what is settled and must not be reopened |
+| `template/js/standby.js` | before changing what happens when a widget does not appear. Its header is the whole design, including why an overlay is sandboxed and an inline slot is not, and which parts of the engine's `Dn` object it deliberately does not stand in for |
 | `factory/panel/content/_dynamic/README.md` | **before writing any Dynamic Content asset, for any channel.** Its "Writing the next scenario" section is the reusable half: six steps, of which a new scenario changes two, and eight facts about the template engine that were each found by a failed send rather than by reading. None of it is in Dengage's documentation, so it exists nowhere else |
 
 ---

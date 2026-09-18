@@ -523,6 +523,18 @@
                         ? 'Inline content renders into its slot in the page rather than over it.'
                         : 'If nothing appears, no campaign has that trigger name.'));
 
+                if (window.Standby) {
+                    window.Standby.arm(fired, spec, function (drawn, why) {
+                        log(drawn
+                            ? 'Dengage did not answer, so this demo drew its own ' +
+                              'committed copy of the ' + fired + ' creative. The panel ' +
+                              'on screen says the same thing, because a standby copy ' +
+                              'must never be mistaken for the engine.'
+                            : 'Dengage did not answer and no standby copy was drawn: ' +
+                              why + '.');
+                    });
+                }
+
                 if (window.Storefront) window.Storefront.closeOverlays();
                 return;
             }

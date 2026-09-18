@@ -11,6 +11,7 @@
 
     function storeKey() { return 'dps:' + slug() + ':debug'; }
     function eventName() { return 'dps:' + slug() + ':event'; }
+    function noteName() { return 'dps:' + slug() + ':standby'; }
 
     function wanted() {
         var value = null;
@@ -237,10 +238,32 @@
         '</li>';
     }
 
+    function renderNote(row) {
+        var said = row.how === 'dengage'
+            ? 'Dengage answered. The widget on screen is the engine\'s own'
+            : row.how === 'standby'
+                ? 'Dengage did not answer. This demo drew its own committed copy'
+                : row.how === 'click'
+                    ? 'a click inside a standby copy'
+                    : 'Dengage did not answer and nothing was drawn';
+        return '<li class="dps-note' + (row.how === 'dengage' ? '' : ' not-sent') + '">' +
+            '<div class="dps-debug-top">' +
+              '<code>standby ' + esc(row.scenario) + '</code>' +
+              '<span class="dps-debug-time">' + esc(clock(row.at)) + '</span>' +
+            '</div>' +
+            (row.how === 'dengage'
+                ? '<div class="dps-debug-table">' + esc(said) + '</div>'
+                : '<div class="dps-debug-warn">' + esc(said) + '</div>') +
+            (row.note ? '<pre>' + esc(row.note) + '</pre>' : '') +
+        '</li>';
+    }
+
     function render() {
         if (!list) return;
         list.innerHTML = rows.map(function (row) {
-            return row.kind === 'net' ? renderNet(row) : renderEvent(row);
+            if (row.kind === 'net') return renderNet(row);
+            if (row.kind === 'note') return renderNote(row);
+            return renderEvent(row);
         }).join('');
         if (countEl) countEl.textContent = String(rows.length);
     }
@@ -253,6 +276,17 @@
             payload: detail.payload,
 
             accepted: !!detail.accepted,
+            at: detail.at || Date.now()
+        });
+    });
+
+    window.addEventListener(noteName(), function (event) {
+        var detail = event.detail || {};
+        add({
+            kind: 'note',
+            scenario: detail.scenario || '',
+            how: detail.how || '',
+            note: detail.note || '',
             at: detail.at || Date.now()
         });
     });

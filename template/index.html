@@ -192,8 +192,8 @@
 
     <!-- Recommendations render here, on demand from the launcher. Hidden until a
          strategy has been chosen, because an empty rail on a page nobody asked for
-         is worse than no rail. js/recommend.js owns the five strategies and all of
-         them read this demo's own catalogue, so they are always the prospect's
+         is worse than no rail. js/recommend.js owns the strategies and every one
+         of them reads this demo's own catalogue, so they are always the prospect's
          vertical. Handoff 2.2c. -->
     <!-- DENGAGE'S OWN RECOMMENDATION ENGINE RENDERS HERE, and it is deliberately its
      own slot rather than a share of #recommendations below. That section is hidden
@@ -343,12 +343,12 @@
         <div class="launcher-grid" id="launcher-grid"></div>
 
 
-        <!-- These five are computed by js/recommend.js from this demo's own
+        <!-- Every one of these is computed by js/recommend.js from this demo's own
              catalogue, so they are always the prospect's vertical and need no panel
              setup. Restored 6 August 2026. Dengage's own engine stays parked, and
              js/panels.js says why the two are separate decisions. -->
         <h2 style="font-size:14px;margin:22px 0 6px" data-copy="recoTitle">Recommendations</h2>
-        <p class="note" data-copy="recoBody">Five strategies, all computed from this demo's own catalogue.</p>
+        <p class="note" data-copy="recoBody">Every strategy is computed from this demo's own catalogue.</p>
         <div class="launcher-grid" id="rec-grid"></div>
 
         <h2 style="font-size:14px;margin:22px 0 6px" data-copy="eventsTitle">Event panel</h2>
@@ -381,6 +381,9 @@
 <script src="js/panels.js"></script>
 <script src="js/slots.js"></script>
 <script src="js/inbox.js"></script>
+<!-- Draws a creative itself only when Dengage does not answer, and says so on
+     screen when it does. Silent on a normal call. -->
+<script src="js/standby.js"></script>
 <!-- The event readout. Renders nothing unless ?debug=1 is on the URL. -->
 <script src="js/debug.js"></script>
 <script src="js/recommend.js"></script>

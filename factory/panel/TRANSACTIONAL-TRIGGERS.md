@@ -270,9 +270,31 @@ demo carries real stock counts, back in stock becomes a ninth trigger with no ne
 
 ## 5. The exact content, with every parameter in place
 
-Paste these into the panel as they stand. Each push needs **Transactional content** ticked,
-each email is a transactional template, and the tags are already written the way the relay
-sends them.
+**What the panel actually needs, corrected on 18 September 2026 after the first pair of
+content ids was tested.** Section 6.1 has the measurement: the call can supply the subject
+and the whole HTML body, so a content created in the panel and left completely empty works.
+The only thing the panel has to carry is **Transactional content, ticked**, and its own id.
+
+So there are two ways to run each message and they can be mixed per trigger:
+
+| | Where the copy lives | What the panel needs |
+|---|---|---|
+| **The call supplies it** | in this repository, next to the relay, under review | an empty content with the flag ticked |
+| **The panel supplies it** | in the content, editable by anyone on the team | the body pasted in, plus a subject, plus a From identity |
+
+The second way is better for anything a non-developer should be able to change mid quarter.
+The first is better for everything else, and it means fourteen more contents is fourteen
+clicks rather than fourteen paste-and-check rounds.
+
+**One panel step has no alternative: the From identity.** It is not a request field, so a
+send against an empty content arrives from the account default. Set it on the content to
+**Dengage Team, `dps.demo@e.dengage.com`**.
+
+### The content ids, as they are created
+
+| Trigger | Email content | Push content | State |
+|---|---|---|---|
+| 1. Exit intent, basket has items | `2c20bf23-7870-44ff-ac2d-17bffd0e1399` | `d8a320fd-133e-4fbc-b1b4-b4b126c2acfd` | email sent and read, push resolves and waits for a subscribed device. Both flagged transactional. From identity not set yet |
 
 **No tag below carries any logic**, because a tag the engine cannot resolve prints its own
 source code into the delivered message. Every greeting, every default and every sentence
@@ -738,18 +760,115 @@ account has it enabled is worth a question to support before we build either ver
 
 ---
 
-## 6. What was verified, and the one trap
+## 6. The exact request, what was verified, and the traps
 
-Verified against the live account, twice, on 18 September 2026.
+### 6.1 The request bodies, field by field
+
+**Read out of the API rather than out of a manual.** Every field below was found by posting
+a deliberately wrong shape and reading which field the API named, which is the only
+description of this lane that exists: the published documentation does not carry it. A field
+the API silently ignores is recorded as ignored, because a parameter that looks accepted and
+does nothing is the expensive kind of wrong.
+
+```
+POST /rest/transactional/email
+
+{
+  "content": {
+    "contentId": "<the content's publicId>",
+    "subject":   "Your basket at Di Santinni is still here",
+    "html":      "<the whole body, with {%= $Current.key %} tags>"
+  },
+  "current": { "greeting": "Hello Ana", "basket_line": "2 items, R$ 441.98", ... },
+  "send":    { "to": "someone@example.com" }
+}
+```
+
+| Field | What it is |
+|---|---|
+| `content.contentId` | required. The content's `publicId`, and it must be flagged transactional |
+| `content.subject` | **supplied by the call, and it overrides the panel.** Without it the API refuses the send with `Subject cannot be empty` when the content has none |
+| `content.html` | **supplied by the call.** Without it, and with an empty content, the API refuses with `Html content must be filled` |
+| `current` | **top level, not inside `content`.** Put it under `content` and it is silently ignored, which is the worst of the three places it could go. `current` at the top level with a bad shape answers `Not a valid Current data`, which is how its position was found |
+| `send.to` | a single address as a **string**. An array answers with a deserialiser error naming `send.to`, and an empty `send` answers `Send can not be null` |
+
+**THE SUBJECT AND THE BODY CAN COME FROM HERE, AND THAT CHANGES THE PANEL WORK.** A content
+created in the panel and left completely empty still works, as long as **Transactional
+content is ticked**: the call supplies the subject and the whole HTML. So the templates in
+section 4 do not have to be pasted into the panel at all. They live in this repository, under
+review, with the relay that composes their parameters, and the panel holds one empty shell
+per trigger whose only job is to carry the transactional flag and its own id.
+
+Pasting them into the panel still works and is the right choice for anything a
+non-developer should be able to edit mid quarter. The two are not exclusive: a subject or a
+body on the call simply wins.
+
+**THE SENDER IS NOT A REQUEST FIELD.** `senderId`, `emailFromId`, `send.from` and
+`send.fromId` were each posted and each silently ignored, so the From address is whatever
+the content or the account default carries. A send against an empty content therefore
+arrives from the account default, which on this account reads `Dengage <hello@e.dengage.com>`
+rather than the demo identity. `GET /rest/email/froms` lists the account's identities and
+the demo one is **Dengage Team, `dps.demo@e.dengage.com`**. Setting it is a panel step on
+the content, once per content, and there is nothing this side can do about it.
+
+```
+POST /rest/transactional/push
+
+{
+  "contentId":  "<the content's id, FLAT, not nested under content>",
+  "contactKey": "DPS-1041",
+  "current":    { "store_name": "Di Santinni", ... }
+}
+```
+
+| Field | What it is |
+|---|---|
+| `contentId` | required, and **top level**. Nested under `content` it answers `ContentId can not be empty` |
+| `contactKey` | or `token` with `appId`. Neither answers `Either contactKey or token must be provided` |
+| `current` | top level, as for email |
+| `appId` | accepted and makes no difference when `contactKey` is given |
+
+### 6.2 What was verified
+
+Verified against the live account on 18 September 2026, over four rounds.
 
 | Step | Result |
 |---|---|
 | Login from the relay's address | accepted |
 | `GET /rest/email/froms` | answers, and the account holds a demo sender identity |
-| `POST /rest/transactional/email`, real send | **code 0**, with a per recipient tracking id. A real message, delivered |
+| `POST /rest/transactional/email`, real send | **code 0**, with a per recipient tracking id. A real message, delivered and read |
 | Personalisation by `current` parameters | carried on that send, printed by `$Current` tags in the body |
-| `POST /rest/transactional/push` | route reachable, authenticated and permitted: it answers by naming the field it wants |
-| Push content resolution | proven to be the only remaining gate. See the trap below |
+| Subject and body supplied by the call | **accepted**, against a content record that is completely empty |
+| `GET /rest/contents/email`, `GET /rest/contents/push` | both list the account's contents with their transactional flag, which is the only way to check the flag without a send |
+| `POST /rest/transactional/push` | content **resolves**: it answers `Token not found with given ContactKey`, which is the good answer. The template and the routing are correct |
+| A device token bound to a contact key | **not reachable from here.** See 6.4 |
+
+### 6.3 THE DUPLICATE SEND TRAP, AND IT IS OURS RATHER THAN DENGAGE'S
+
+A verification send arrived **four times**. Nothing retried and Dengage did nothing wrong:
+the send was written as
+
+```sql
+select (extensions.http(...)).* from token
+```
+
+and expanding a composite returning function with `.*` **in a select list calls it once per
+column of the composite**. `http_response` has four columns, so the POST was made four
+times, four sends were accepted, and four identical messages were delivered. Called in the
+FROM clause instead it runs exactly once per row:
+
+```sql
+select r.status, r.content from token t,
+  extensions.http((...)::extensions.http_request) r
+```
+
+The catalogue refresh function had always used the safe form, `select * into v_login from
+extensions.http(...)`, which is why this had never been seen before. **Anything that sends
+uses the FROM clause form**, and a send that is written the other way is a defect whose
+symptom is a number of duplicates equal to the number of columns being expanded, which is a
+very hard thing to guess at from an inbox.
+
+### 6.4 The one thing this page cannot verify from here
 
 **THE FIRST TRAP, AND IT REACHES THE INBOX.** An expression that refers to a key the call
 did not pass prints **its own source code into the delivered message**. Found by a real send
@@ -790,14 +909,25 @@ exists, is spelled correctly and is simply not flagged transactional is indistin
 from a missing one, and the error names neither cause. If a push send reports `content is
 null`, check the flag before checking anything else.
 
-**The one thing this page cannot verify from here.** A transactional push content does not
-exist in the account yet, so the final link, an accepted push carrying a real template, is
-proven only up to content resolution. Creating one closes it, and a first send answers in one
-of two ways, both of which are good news:
+**A device token bound to a contact key.** The push content now exists and is flagged, so
+content resolution is proven and what is left is one browser that has subscribed under a
+`DPS-` key. That cannot be produced from this container, and the reason is worth writing
+down because two rounds were spent on it:
 
-- `code 0`, accepted for delivery
-- `code 11`, token not found for that contact key, which means the template and the routing
-  are correct and no browser has subscribed under that key yet
+| Attempt | What happened |
+|---|---|
+| An ordinary automated browser context | Chromium refuses the Push API in incognito, and every ordinary automated context is incognito. The SDK throws inside its own subscribe path |
+| A persistent browser profile, which is not incognito | the Push API works and the browser really does subscribe: a genuine FCM endpoint is created. The SDK still throws before it registers that token against the contact key, so Dengage never learns of it |
+
+So the last link is closed by a person at a keyboard, in about twenty seconds, and the
+contact key is set by the URL rather than by signing in:
+
+```
+https://dengage-presales.github.io/demo-ai/demos/<slug>/?ck=DPS-777001
+```
+
+Open that, press **Dengage scenarios**, press **Web push**, allow the browser's prompt. The
+token is then bound to `DPS-777001` and a transactional push to that key answers `code 0`.
 
 **Where a sample or a test send goes.** `salil@dengage.com`, Salil's instruction on 18
 September 2026. Never an address this repository invented, and never a prospect's: a made up

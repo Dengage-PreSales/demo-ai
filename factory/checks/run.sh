@@ -201,6 +201,9 @@ for target in $TARGETS; do
     echo "=== $target scenario triggers, both ways ================="
     node "$ROOT/factory/checks/triggers.mjs" || status=1
     echo
+    echo "=== $target the standby copy, when Dengage does not answer ="
+    node "$ROOT/factory/checks/standby.js" || status=1
+    echo
 done
 export TEMPLATE_URL="http://localhost:$PORT_TEMPLATE/template/"
 

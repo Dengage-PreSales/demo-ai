@@ -882,6 +882,23 @@
                     (fired.indexOf('inline-') === 0
                         ? 'Inline content renders into its slot in the page rather than over it.'
                         : 'If nothing appears, no campaign has that trigger name.'));
+
+                /* ARMED AFTER THE PUSH, NEVER INSTEAD OF IT. js/standby.js gives
+                   the engine its own time to answer and draws the committed
+                   creative itself only if nothing arrives, labelled as the
+                   demo's own copy. On a call where Dengage is answering this
+                   does nothing at all and nothing about the demo changes. */
+                if (window.Standby) {
+                    window.Standby.arm(fired, spec, function (drawn, why) {
+                        log(drawn
+                            ? 'Dengage did not answer, so this demo drew its own ' +
+                              'committed copy of the ' + fired + ' creative. The panel ' +
+                              'on screen says the same thing, because a standby copy ' +
+                              'must never be mistaken for the engine.'
+                            : 'Dengage did not answer and no standby copy was drawn: ' +
+                              why + '.');
+                    });
+                }
                 /* Close this modal, or its scrim covers the widget that was just
                    fired. A widget that rendered underneath an overlay is
                    indistinguishable from one that never rendered, and the log
