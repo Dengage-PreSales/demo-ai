@@ -166,11 +166,42 @@ So a store scraped tomorrow in a different country, currency and palette sends t
 twelve messages, carrying its own products at its own prices under its own mark, with no
 template touched.
 
-**What does not adapt, stated plainly.** The copy is English. Every sentence in section 5 is
-fixed text, so a demo for a store whose customers read Portuguese sends English copy with
-Portuguese product names in it. Dengage supports a multi language content object on both
-endpoints, which is the clean way to solve it rather than a second set of twelve, and it is
-worth doing the first time a call needs it rather than guessing at translations now.
+### Language, which the demo now knows about itself
+
+**Every request names a language, and the field is mandatory**, added 18 September 2026 on
+Salil's direction. The form offers English, Portuguese and Russian, the build records the
+answer in `demo.config.json` as `locale.language`, and the storefront ships that language's
+translation of all of its own words. So a Brazilian store's demo is a Portuguese storefront
+carrying Portuguese product names, rather than an English storefront with Portuguese
+products in it.
+
+**The messages follow the same value, and still without a second set of twelve.** Both
+endpoints take multiple languages inside one content object, so each trigger stays one
+object:
+
+| | |
+|---|---|
+| A push content | `contentDetail.defaultLanguage` plus one entry per language in `contentDetail.contents`, each with its own title and message |
+| A transactional push send | `language`, which picks the entry. The relay passes `locale.language` from the demo the visitor was on |
+| An email template, or inline content | `multiLangContent`, with `defaultLanguage` and a `contents` array. **It cannot be combined with `content`**, so a body is one or the other |
+| An email send | `send.toLanguage` for the recipient |
+
+So the set stays fifteen push contents and eight email bodies, each holding three languages,
+and a demo picks its column at send time. A language the content does not carry falls back to
+`defaultLanguage`, which is why English is always present.
+
+**The number is not translated with the words**, and that is deliberate. `numberLocale`
+follows the currency rather than the language, because a Brazilian store priced in BRL writes
+`R$ 1.234,56` whether its demo is being shown in Portuguese or in English, and the figure on
+the page has to match the figure on the prospect's own site.
+
+**Adding a fourth language is a piece of work rather than a line.** It means a committed
+translation of every string in `template/copy.json`, 104 of them, and a fourth column in
+fifteen push contents and eight email bodies. `factory/copy.test.mjs` is what keeps the three
+honest: it refuses a build where a key is missing from a translation, where a translation
+invented or dropped a `{n}`, `{q}` or `{prefix}`, or where a file was copied and never
+translated at all. It was proven by breaking a translation three ways and watching it name
+each fault.
 
 ---
 

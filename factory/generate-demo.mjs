@@ -28,7 +28,7 @@
    ========================================================================== */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, rmSync, copyFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -59,7 +59,8 @@ function args(argv) {
 function usage(message) {
     console.error(message);
     console.error('\nusage: node factory/generate-demo.mjs --url <prospect url> [--slug s]' +
-                  ' [--csv file] [--currency USD] [--name "Store Name"] [--screenshot url]' +
+                  ' [--csv file] [--currency USD] [--language en|pt|ru]' +
+                  ' [--name "Store Name"] [--screenshot url]' +
                   ' [--no-generate] [--no-images] [--no-stock] [--json report.json]');
     process.exit(2);
 }
@@ -142,11 +143,35 @@ const SYMBOLS = {
    near miss but a different number to the one person whose opinion counts. */
 const NUMBER_LOCALE = { INR: 'en-IN', BRL: 'pt-BR' };
 
-function currencyBlock(code) {
+/* THE LANGUAGES THE STOREFRONT AND THE MESSAGES SPEAK. Added 18 September 2026,
+   Salil's direction: the request form asks for one and every page, and every
+   transactional message, uses it. The set is deliberately short. A language here
+   means a committed translation of all of copy.json and a column in the panel's
+   multi language content, so adding a fourth is a piece of work rather than a
+   line, and pretending otherwise would ship a half translated storefront.
+
+   THE NUMBER LOCALE STILL FOLLOWS THE CURRENCY RATHER THAN THE LANGUAGE, because
+   they answer different questions: a Brazilian store priced in BRL writes
+   R$ 1.234,56 whether its demo is shown in Portuguese or in English, and the
+   figure on the page has to match the figure on the prospect's own site. */
+export const LANGUAGES = { en: 'en', pt: 'pt', ru: 'ru' };
+
+export function languageOf(value) {
+    const want = String(value || '').trim().toLowerCase();
+    if (LANGUAGES[want]) return LANGUAGES[want];
+    /* The form sends a name rather than a code, and a colleague typing into
+       --language deserves the same latitude. */
+    if (/^eng/.test(want)) return 'en';
+    if (/^por|^pt|brasil|brazil/.test(want)) return 'pt';
+    if (/^rus|^ru/.test(want)) return 'ru';
+    return 'en';
+}
+
+function currencyBlock(code, language) {
     const upper = String(code || 'USD').toUpperCase();
     const known = /^[A-Z]{3}$/.test(upper) ? upper : 'USD';
     return {
-        language: 'en',
+        language: languageOf(language),
         currency: known,
         currencySymbol: SYMBOLS[known] || known,
         numberLocale: NUMBER_LOCALE[known] || 'en-US'
@@ -570,7 +595,23 @@ async function main() {
         config.createdAt = isoDate(0);
         config.expiresAt = isoDate(DEMO_DAYS);
         config.theme = extracted.theme;
-        config.locale = currencyBlock(chosenCurrency.code);
+        config.locale = currencyBlock(chosenCurrency.code, options.language);
+
+        /* THE STOREFRONT'S OWN WORDS FOLLOW THE SAME CHOICE. build-demo.sh copies
+           template/ wholesale, so every demo arrives holding all three copy files
+           and an English copy.json. The chosen one becomes copy.json and the
+           others are removed, which keeps a demo carrying exactly one language
+           rather than shipping two unused files and inviting a reader to wonder
+           which is live. */
+        const language = config.locale.language;
+        for (const code of Object.keys(LANGUAGES)) {
+            const variant = join(dest, 'copy.' + code + '.json');
+            if (!existsSync(variant)) continue;
+            if (code === language) copyFileSync(variant, join(dest, 'copy.json'));
+            rmSync(variant);
+        }
+        console.error('Language: ' + language +
+                      (language === 'en' ? '' : ', storefront copy translated'));
         config.categories = found.categories;
         config.productCount = found.products.length;
         /* THE DEMO ITSELF RECORDS WHERE ITS CATALOGUE CAME FROM. An issue comment is

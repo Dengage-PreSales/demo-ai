@@ -42,6 +42,9 @@ on:
       currency:
         description: Three letter currency code
         required: false
+      language:
+        description: Storefront language, English, Portuguese or Russian
+        required: false
       name:
         description: Store name for the browser tab
         required: false
@@ -223,6 +226,7 @@ jobs:
           IN_URL: ${{ github.event.inputs.url }}
           IN_SLUG: ${{ github.event.inputs.slug }}
           IN_CURRENCY: ${{ github.event.inputs.currency }}
+          IN_LANGUAGE: ${{ github.event.inputs.language }}
           IN_NAME: ${{ github.event.inputs.name }}
           # The store's name for the browser tab. The title is where a request
           # carries it with real capitalisation: a domain gives riopneus and a
@@ -352,6 +356,7 @@ jobs:
           node factory/scrape/images.test.mjs
           node factory/scrape/render.test.mjs
           node factory/scrape/screenshot.test.mjs
+          node factory/copy.test.mjs
           node factory/scrape/stock.test.mjs
           # The rendered theme channel, which is what makes a dark store produce a
           # dark demo. Its fixtures are served from 127.0.0.1, so this is quick and
@@ -412,6 +417,7 @@ jobs:
             ${{ steps.request.outputs.slug && format('--slug {0}', steps.request.outputs.slug) || '' }} \
             ${{ steps.request.outputs.screenshot_url && format('--screenshot {0}', steps.request.outputs.screenshot_url) || '' }} \
             ${{ steps.request.outputs.currency && format('--currency {0}', steps.request.outputs.currency) || '' }} \
+            ${{ steps.request.outputs.language && format('--language {0}', steps.request.outputs.language) || '' }} \
             ${{ steps.csv.outputs.path && format('--csv {0}', steps.csv.outputs.path) || '' }} \
             "${named[@]}" \
             --json /tmp/report.json || status=$?

@@ -81,6 +81,7 @@ jobs:
           node factory/scrape/images.test.mjs
           node factory/scrape/render.test.mjs
           node factory/scrape/screenshot.test.mjs
+          node factory/copy.test.mjs
 
       # One build per listed site, sequentially, with the same three gates a
       # real request passes: generate, guard, smoke. The loop keeps going after

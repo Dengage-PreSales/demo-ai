@@ -35,6 +35,21 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: >-
+        The language the demo storefront and its messages speak. Pick the one the
+        prospect's own customers read. Product names always stay exactly as the
+        store writes them, whichever language is chosen here.
+      options:
+        - English
+        - Portuguese
+        - Russian
+    validations:
+      required: true
+
   - type: input
     id: slug
     attributes:

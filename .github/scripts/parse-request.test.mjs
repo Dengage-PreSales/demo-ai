@@ -7,7 +7,7 @@
    the same applies here: this parser turns text a stranger wrote into command
    line arguments, so the cases that matter are the malformed ones.
    ========================================================================== */
-import { parse, fieldFromForm, readUrl, readSlug, readCurrency, readCsvUrl, readName,
+import { parse, readLanguage, fieldFromForm, readUrl, readSlug, readCurrency, readCsvUrl, readName,
          readImageUrl }
     from './parse-request.mjs';
 
@@ -239,6 +239,36 @@ is('an empty field is empty', readImageUrl(''), '');
         COMMENT: 'retry ![Image](https://github.com/user-attachments/assets/shot-2)' });
     is('a retry comment can supply it', viaComment.screenshot_url,
        'https://github.com/user-attachments/assets/shot-2');
+}
+
+/* -------------------------------------------------------------------------- */
+console.log('\nThe language, which the form makes mandatory');
+
+{
+    is('English is en', readLanguage('English'), 'en');
+    is('Portuguese is pt', readLanguage('Portuguese'), 'pt');
+    is('Russian is ru', readLanguage('Russian'), 'ru');
+    /* The dropdown sends a name, and a person overriding by hand sends a code. */
+    is('a code works too', readLanguage('pt'), 'pt');
+    is('and is case blind', readLanguage('  RUSSIAN '), 'ru');
+    /* An unanswered optional field arrives as this literal, and a manual run
+       sends nothing at all. Both mean "not stated" rather than a language. */
+    is('no response is not a language', readLanguage('_No response_'), '');
+    is('nor is empty', readLanguage(''), '');
+    is('nor is undefined', readLanguage(undefined), '');
+    /* Anything unrecognised is not guessed at. parse() turns this into English. */
+    is('an unknown name is refused rather than guessed', readLanguage('Klingon'), '');
+
+    /* AND THE WHOLE PARSE DEFAULTS RATHER THAN FAILING. A request filed before
+       the field existed, and every manual workflow run, carry no language. */
+    const body = '### Prospect website address\n\nhttps://www.example.com\n\n' +
+                 '### Language\n\nPortuguese\n';
+    is('the form value reaches the parse', parse({ BODY: body }).language, 'pt');
+    is('and an issue with no language field builds in English',
+       parse({ BODY: '### Prospect website address\n\nhttps://www.example.com\n' }).language,
+       'en');
+    /* A manual run overrides the form, the same way the currency does. */
+    is('a manual run wins', parse({ BODY: body, IN_LANGUAGE: 'Russian' }).language, 'ru');
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

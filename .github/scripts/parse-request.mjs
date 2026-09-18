@@ -17,6 +17,7 @@
      url        must parse as http or https, and nothing else
      slug       lowercase letters, digits and hyphens only
      currency   exactly three letters
+     language   en, pt or ru, from the form's dropdown, English when absent
      csv_url    must be a github attachment address
 
    A field that fails is dropped rather than reported, because a request with a
@@ -142,6 +143,26 @@ export function readImageUrl(text) {
 
 /* -------------------------------------------------------------------------- */
 
+/* THE LANGUAGE THE DEMO SPEAKS, from the form's dropdown. Added 18 September
+   2026, and the field is mandatory there, so a request filed through the form
+   always carries one. A manual workflow run and an older issue do not, which is
+   the only reason there is a default at all: English, stated here rather than
+   left to the generator to guess.
+
+   The form sends the name a colleague clicked rather than a code, so the name is
+   what this matches. Anything unrecognised reads as English rather than failing
+   the build: a demo in the wrong language is a bad demo, and no demo at all is a
+   colleague with nothing to show. */
+export function readLanguage(value) {
+    const want = String(value === undefined || value === null ? '' : value)
+        .trim().toLowerCase();
+    if (!want || want === '_no response_') return '';
+    if (/^eng|^en$/.test(want)) return 'en';
+    if (/^por|^pt$|brasil|brazil/.test(want)) return 'pt';
+    if (/^rus|^ru$/.test(want)) return 'ru';
+    return '';
+}
+
 export function parse(env) {
     const body = env.BODY || '';
     const comment = env.COMMENT || '';
@@ -156,6 +177,8 @@ export function parse(env) {
        asking for the store's name when the title already says it is one more box
        between a colleague and a demo. */
     const name = readName(env.IN_NAME) || readName(env.TITLE);
+    const language = readLanguage(env.IN_LANGUAGE) ||
+                     readLanguage(fieldFromForm(body, 'Language')) || 'en';
 
     /* The CSV only ever comes from a comment. Reading it from the issue body too
        would let the first submission skip tiers 1 and 2, and tier 3 is meant to
@@ -168,7 +191,8 @@ export function parse(env) {
     const screenshotUrl = readImageUrl(fieldFromForm(body, 'Product listing screenshot')) ||
                           readImageUrl(comment);
 
-    return { url, slug, currency, name, csv_url: csvUrl, screenshot_url: screenshotUrl };
+    return { url, slug, currency, name, language,
+             csv_url: csvUrl, screenshot_url: screenshotUrl };
 }
 
 /* Only runs as a script, so the test can import the functions above. */
