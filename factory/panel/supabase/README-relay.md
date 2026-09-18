@@ -62,3 +62,32 @@ no delivery threshold and no coupon scheme exist for these demos yet and a
 sentence naming either would be a number this factory made up. `stock_line` is
 empty unless the catalogue genuinely carries a stock count. CLAUDE.md
 non-negotiable 5.
+
+## Where the code lives, and what is not yet here
+
+The four functions and four tables are applied as Supabase migrations, which are
+themselves versioned on that side. **They are not mirrored into this repository
+yet, and that is a gap worth naming rather than leaving implied**: a reader with
+no database access can read the design above and not the code. Mirroring them
+here, with a check that the two agree, is the right next step.
+
+To read the live definitions:
+
+```sql
+select proname, prosrc
+  from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+ where n.nspname = 'public' and proname like 'dps_%'
+ order by proname;
+```
+
+Any change goes through a migration, never a hand edit, so the history stays
+readable.
+
+## Verified, and on what
+
+| | |
+|---|---|
+| Both channels, one call | `code 0` on email and push together, 18 September 2026 |
+| Recommendations, prices and basket maths | composed from `dps_product`, never from the caller |
+| A store the relay had never seen | `sharbatly-club`, built from a URL and composed correctly twenty minutes later with no setup: SAR, its own brand colour, its own flowers, real prices |
+| Units against lines | a basket holding two of one product says the product's name and nothing else. Conflating the two made it read "and 1 more item" with nothing else in the basket, which is the same double counting that once reached a push notification |
