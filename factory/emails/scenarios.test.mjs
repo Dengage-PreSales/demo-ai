@@ -590,7 +590,19 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
        the wrong one twice before Salil asked which I was actually running.
 
        IT SKIPS RATHER THAN FAILS when the package is absent, so the suite still runs on a
-       machine that has not installed it, and it says which happened. */
+       machine that has not installed it, and it says which happened.
+
+       AND IT SKIPS WHEN THE VALIDATOR'S OWN ENGINE CANNOT BE FETCHED, which is a
+       different failure and cost a real one. The installed package is a thin client: it
+       downloads validator_wasm.js from cdn.ampproject.org on getInstance(), at test time,
+       over the network. On 18 September 2026 that CDN answered 503 and this line threw an
+       unhandled rejection, which killed the whole file after 138 passing assertions and
+       took the demo build's self test with it, so a colleague's storefront would have
+       failed to build over an outage at a third party with no connection to their store.
+       That is the same class of fault as a third party's console error failing our smoke
+       test, which cost a day in August, and it gets the same answer: attribute it, report
+       it, and do not let somebody else's downtime judge our build. The AMP assertions are
+       the only ones that need the network, so everything else in this file still runs. */
     let validator = null;
     try {
         validator = (await import('amphtml-validator')).default;
@@ -598,8 +610,17 @@ const shown = (html) => (html.match(/>([^<>]*Product [a-z0-9]+[^<>]*)</g) || [])
         console.log('   skip  AMP: official validator not installed ' +
                     '(npm ci to run it)');
     }
+    let instance = null;
     if (validator) {
-        const instance = await validator.getInstance();
+        try {
+            instance = await validator.getInstance();
+        } catch (err) {
+            console.log('   skip  AMP: the validator engine could not be fetched from ' +
+                        'cdn.ampproject.org (' + err.message.split('\n')[0] + '). ' +
+                        'Every other assertion in this file still ran.');
+        }
+    }
+    if (instance) {
 
         /* THE AUTHORED FILE FIRST, AND THIS ASSERTION IS THE ONE I SHOULD HAVE WRITTEN
            FIRST. Salil, 10 August 2026, looking at sixteen errors in the AMP playground:
