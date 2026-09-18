@@ -51,16 +51,42 @@ import { get, getJson, getStream, robots, REASON } from './fetch.mjs';
 import { generatedCatalogue } from './fallback.mjs';
 import { readFileSync } from 'node:fs';
 
-/* Handoff 7.1. Not a performance limit: at roughly 5 to 7 demos a month with 90
-   day retention there are about 20 live at a time, and the cap is what keeps the
-   repository settling under 100MB rather than growing without limit. Raising it
-   is a joint decision rather than a tweak. */
-export const PRODUCT_CAP = 30;
+/* RAISED FROM 30 TO 60 ON 18 SEPTEMBER 2026, by Salil, and the paragraph this
+   replaced said raising it was a joint decision rather than a tweak. This is
+   that decision, so the reasoning on both sides is kept.
+
+   WHY IT WENT UP. Thirty products across three shelves does not carry a sales
+   conversation. A grid that ends after two rows, a category with four things in
+   it and a recommendation rail repeating the product already on screen all read
+   as a toy rather than as a store, and the whole point of theming a demo to the
+   prospect is that it should feel like theirs.
+
+   WHAT IT COSTS, stated rather than waved past, because the old number was a
+   repository size limit and that has not stopped being true. A committed product
+   image averages about 80KB, so a demo goes from roughly 2.5MB to roughly 5MB.
+   At 5 to 7 builds a month with 90 day retention, about 20 are live at a time,
+   so the working tree carries around 100MB of product imagery rather than 50MB,
+   and git keeps every deleted one in history for good. That is the trade, and it
+   is worth it for a demo that closes.
+
+   WHAT WOULD CHANGE IT AGAIN. If the history becomes a problem, the answer is
+   not a smaller catalogue: it is that the images stop being committed, which
+   non-negotiable 4 currently forbids for a good reason of its own. That is a
+   conversation about hosting rather than about this number. */
+export const PRODUCT_CAP = 60;
 
 /* The site header has no horizontal slack. A prospect with fourteen top level
    categories breaks the layout, so the largest few by product count become the
-   navigation and the rest are grouped. Handoff 7.1a. */
-export const CATEGORY_CAP = 5;
+   navigation and the rest are grouped. Handoff 7.1a.
+
+   RAISED FROM 5 TO 8 ON 18 SEPTEMBER 2026 with the product cap, for the same
+   reason: six real shelves is the difference between a catalogue a prospect
+   recognises and a sample of one. Eight rather than unlimited because the header
+   is still a single row, and the layout side of this was done rather than hoped
+   for: .site-nav tightens its spacing once it holds six or more and scrolls
+   sideways rather than clipping, so a category that exists is always reachable.
+   factory/checks/nav.mjs holds it to that at both widths. */
+export const CATEGORY_CAP = 8;
 
 /* FEWER THAN THIS IS NOT A STOREFRONT, so a tier that finds fewer has not really
    succeeded and the next one is tried.
@@ -204,6 +230,17 @@ function clean(text) {
        arrive with right to left text and are invisible in a diff. */
     out = out.replace(/[\u0000-\u001f\u007f\u200b-\u200f\u202a-\u202e\ufeff]/g, '');
     out = out.replace(/\s+/g, ' ').trim();
+    /* A SPACE BEFORE A COMMA IS THE STORE'S TYPO, AND IT TRAVELS. Stores write
+       "Chrysanthemums, Chic , pink, dyed" and that space reaches a product tile,
+       an email subject and an SMS body, where it reads as the message having
+       been assembled badly rather than as the store's own spelling. It also set
+       off the snippet suite's gap detector, which looks for whitespace against
+       punctuation because that is what an unresolved snippet leaves behind.
+
+       ONLY THE SPACE MOVES. The words, their order and their punctuation are
+       the store's and are untouched, so this stays inside non-negotiable 3: the
+       demo carries the prospect's real product names. */
+    out = out.replace(/\s+([,;:.!?])/g, '$1');
     return out.length > MAX_TEXT ? out.slice(0, MAX_TEXT).trim() : out;
 }
 
@@ -315,7 +352,16 @@ function httpsImage(value, baseUrl) {
 /* Tier 1: Shopify                                                            */
 
 /* Shopify serves this on the storefront domain with no key. limit is capped at
-   250 by the platform, and one page is far more than the 30 that ship. */
+   250 by the platform, and one page is far more than the 60 that ship.
+
+   THE WHOLE PAGE IS KEPT, AND IT USED TO STOP AT PRODUCT_CAP * 3. That cap
+   exists to bound work in the tiers that fetch one page per product; here the
+   response has already arrived, so discarding the rest of it saves nothing and
+   costs the category structure. It cost it on a real store: a grocer's feed
+   lists its flowers first, so the first 180 rows held 16 of its 32 fruit and one
+   of its nine bouquets, and shelves the store really has looked too small to
+   navigate. The mix a category decision is made from should be the mix the store
+   published, not the first two thirds of it. */
 async function shopify(origin) {
     const result = await getJson(origin + '/products.json?limit=250');
     if (!result.ok) return { ok: false, reason: result.reason, tier: 'shopify' };
@@ -365,9 +411,14 @@ async function shopify(origin) {
             /* The feed's first image is the one the store leads with. Shopify
                serves its CDN over https, so this normally survives as is; a
                protocol relative src resolves against the store's origin. */
-            imageUrl: httpsImage(item.images && item.images[0] && item.images[0].src, origin)
+            imageUrl: httpsImage(item.images && item.images[0] && item.images[0].src, origin),
+            /* THE HANDLE, WHICH IS ALSO THE LAST SEGMENT OF THE PRODUCT'S OWN
+               ADDRESS, so a collection page listing this product can be matched
+               to it. Carried under a key finish() strips, because it is
+               evidence for the category pass rather than something a demo
+               ships. See deepenCategories. */
+            shelfKey: item.handle || null
         });
-        if (products.length >= PRODUCT_CAP * 3) break;   /* room for category balancing */
     }
 
     if (!products.length) return { ok: false, reason: REASON.NOT_FOUND, tier: 'shopify' };
@@ -1325,7 +1376,7 @@ async function collectionCategories(origin) {
       itself will require, or it is skipped: a category assigned here only to
       be discarded by categorise is work dressed as progress.
 
-   Rounds stop at CATEGORY_CAP, because a sixth category cannot appear in the
+   Rounds stop at CATEGORY_CAP, because a category past it cannot appear in the
    header whatever happens here. */
 const MIN_COLLECTION_SUPPORT = 2;
 const UMBRELLA_COVERAGE = 0.6;
@@ -2012,7 +2063,26 @@ export function categorise(products) {
         counts.set(name, (counts.get(name) || 0) + 1);
     }
 
-    const minimum = minPerCategory(products.length);
+    /* THE FLOOR IS THE SHIPPED CATALOGUE'S, NOT THE RAW SAMPLE'S, and this is
+       the same correction assignFromCollections carries a few hundred lines
+       above for the same reason. It is applied here too as of 18 September 2026.
+
+       WHY IT MATTERS, with the store that showed it. This function runs twice:
+       once over everything a tier collected, to decide which categories exist so
+       the cap can balance across them, and once over the products that survived.
+       A grocer's feed came back with 180 products, so the floor was 18, and its
+       Fruit shelf held 16 of them. Sixteen is a perfectly good shelf in a
+       catalogue of sixty and the cap would have balanced it up to twenty, but it
+       missed a floor computed from a number of products that were never going to
+       ship, so Fruit, Herbs, Nuts and Dates were all folded into More and a
+       fruit retailer's demo had two categories and a tail.
+
+       THE SAMPLE'S SIZE IS ALSO AN ACCIDENT OF FEED ORDER, which is the other
+       half. A tier stops once it holds PRODUCT_CAP * 3, so the mix it judges is
+       the head of whatever order the store publishes in: this store lists its
+       flowers first, so the deeper the sample went the more lopsided it looked.
+       Judging by the shipped size removes that sensitivity as well. */
+    const minimum = minPerCategory(Math.min(products.length, PRODUCT_CAP));
     const ranked = [...counts.entries()]
         .filter(([, count]) => count >= minimum)
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -2231,12 +2301,21 @@ export async function catalogue(origin, csvText, options) {
         return result.products.length >= PRODUCT_FLOOR;
     };
 
+    /* THE WINNING TIER GETS ONE MORE QUESTION ASKED OF IT, and only if its own
+       answer about shelves was thin. See deepenCategories. A CSV is exempt: the
+       categories in it are a person's stated intent and nothing scraped
+       outranks that. */
+    const accept = async (winner) => {
+        await deepenCategories(origin, winner, attempts);
+        return finish(winner, attempts);
+    };
+
     if (csvText) {
         if (consider(fromCsv(csvText))) return finish(best, attempts);
     }
 
     for (const tier of [shopify, woocommerce, vtex, jsonld]) {
-        if (consider(await tier(origin))) return finish(best, attempts);
+        if (consider(await tier(origin))) return accept(best);
     }
 
     /* THE BROWSER TIER LIVES IN ANOTHER MODULE AND MAY NOT EXIST YET, so it is
@@ -2249,7 +2328,7 @@ export async function catalogue(origin, csvText, options) {
     let rendered = null;
     try { ({ rendered } = await import('./render.mjs')); } catch (err) { /* module absent */ }
     if (rendered && settings.render !== false) {
-        if (consider(await rendered(origin))) return finish(best, attempts);
+        if (consider(await rendered(origin))) return accept(best);
     }
 
     /* THE LAST RESORT, AND IT IS A DIFFERENT KIND OF ANSWER FROM THE THREE ABOVE.
@@ -2280,6 +2359,86 @@ export async function catalogue(origin, csvText, options) {
         thin: best ? best.products.length : 0,
         floor: PRODUCT_FLOOR
     };
+}
+
+/* HOW MANY SHELVES A DEMO WANTS BEFORE IT STOPS LOOKING FOR MORE. Not a cap,
+   which is CATEGORY_CAP: this is the point below which a store's own typing
+   field is treated as too thin to be its navigation, and the store's collection
+   pages are asked instead. Five, because four categories and a More group is
+   where a grid starts to look like a sample rather than a shop. */
+const CATEGORY_WANTED = 5;
+
+/* WHEN A STORE'S TYPING FIELD IS NOT ITS NAVIGATION, which is more often than
+   it looks. Added 18 September 2026 after a Saudi grocer whose header carries
+   seven shelves came out with three.
+
+   Its feed types every product: Flower, Vegetable, Fruit, Bouquet, Herb, Nuts,
+   Date. Those are Shopify's product_type, an internal field, and the shelves a
+   visitor sees are Fresh Fruits, Fresh Vegetables, Fresh Flowers, Herbs &
+   Spices, Nuts & Dried Fruits, Bundles and Deals: the store's COLLECTIONS. The
+   typing field could never produce them, whatever this file did with it, because
+   it does not contain them.
+
+   THE MACHINERY ALREADY EXISTED and is reused unchanged. collectionCategories
+   reads the store's own collection pages, and assignFromCollections picks a few
+   large buckets out of them, with the umbrella and minimum support rules that
+   were learned from earlier stores. All this adds is a reason to run them for a
+   tier that DID answer, where before they only rescued a tier that had not.
+
+   IT REPLACES RATHER THAN FILLS, AND ONLY ON ITS OWN TERMS. Three conditions,
+   and all three matter:
+
+     it must produce strictly MORE navigable shelves than the store's typing
+     did, so a store whose collections are noisier than its types keeps its types
+
+     it must vouch for most of the catalogue, because a structure covering a
+     third of the products leaves the rest in More and that is worse than a
+     coarser structure covering all of them
+
+     and it costs nothing when it is not needed, because it does not run at all
+     once the typing field has cleared CATEGORY_WANTED
+
+   What it never does is invent a name. Every shelf it produces is a collection
+   the store published, read from the store's own page. */
+async function deepenCategories(origin, result, attempts) {
+    const products = result.products || [];
+    if (!products.length) return;
+
+    /* The structure the tier's own field gives, judged exactly as the shipped
+       catalogue will be judged, on a copy so nothing is mutated yet. */
+    const trial = products.map((p) => ({ category: p.category }));
+    const own = categorise(trial).filter((name) => name !== TAIL);
+    if (own.length >= CATEGORY_WANTED) return;
+
+    const keyed = products.filter((p) => p.shelfKey);
+    if (keyed.length < products.length / 2) return;
+
+    const recovered = await collectionCategories(origin);
+    if (!recovered.collections.length) {
+        attempts.push({ tier: 'collections', ok: false, reason: REASON.NOT_FOUND });
+        return;
+    }
+
+    const byProduct = assignFromCollections(keyed.map((p) => p.shelfKey),
+        recovered.collections);
+    const proposed = keyed.map((p) => ({ category: byProduct.get(p.shelfKey) || '' }));
+    const theirs = categorise(proposed).filter((name) => name !== TAIL &&
+        name !== UNCATEGORISED);
+    const covered = proposed.filter((p) => p.category && p.category !== TAIL).length;
+
+    const richer = theirs.length > own.length;
+    const broad = covered >= Math.ceil(keyed.length * 0.7);
+    attempts.push({ tier: 'collections', ok: richer && broad,
+        detail: recovered.pagesRead + ' collection pages, ' + theirs.length +
+            ' shelves covering ' + covered + ' of ' + keyed.length +
+            ' products, against ' + own.length + ' from the feed\'s own typing',
+        found: covered });
+    if (!richer || !broad) return;
+
+    for (const product of keyed) {
+        const name = byProduct.get(product.shelfKey);
+        if (name) product.category = name;
+    }
 }
 
 function finish(result, attempts) {
@@ -2314,6 +2473,8 @@ function finish(result, attempts) {
        stated two ways, so they are made the same here. */
     for (const product of products) {
         if (product.imageUrl === undefined) product.imageUrl = null;
+        /* Evidence for deepenCategories, never part of a demo. */
+        delete product.shelfKey;
     }
 
     return {

@@ -247,6 +247,13 @@ echo
 echo "=== a top bar pushes the header down, it does not cover it ======"
 node "$ROOT/factory/checks/banner.mjs" || status=1
 
+# Against the template, and it fills the nav to the scrape's own category cap
+# itself rather than relying on the template having enough categories to be a
+# hard question. A clipped category is a shelf nobody on the call can reach.
+echo
+echo "=== every category in the header is reachable =================="
+node "$ROOT/factory/checks/nav.mjs" || status=1
+
 # The wishlist payload assertion here is the one that matters: a field missing
 # from one emitter is invisible in a diff, invisible on the page, and the shared
 # tables cannot say whose rows are whose.
