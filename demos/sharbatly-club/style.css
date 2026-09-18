@@ -70,11 +70,19 @@ img { max-width: 100%; display: block; }
 .logo-word { font-family: var(--display-font); font-weight: 700; font-size: 17px; color: var(--ink); letter-spacing: -0.02em; }
 .logo-sub { font-size: 11px; color: var(--muted); display: block; margin-top: -2px; font-weight: 500; }
 
-.site-nav { display: flex; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+.site-nav {
+    display: flex; gap: 4px; flex: 1; min-width: 0;
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none;
+}
+.site-nav::-webkit-scrollbar { width: 0; height: 0; }
 .site-nav a {
     color: var(--ink); font-size: 14px; font-weight: 500; padding: 7px 11px;
     border-radius: 7px; white-space: nowrap;
 }
+
+.site-nav:has(a:nth-child(6)) a { padding: 7px 8px; font-size: 13.5px; }
+.site-nav:has(a:nth-child(8)) a { padding: 7px 6px; font-size: 13px; }
 .site-nav a:hover { background: var(--tint); text-decoration: none; }
 .site-nav a[aria-current="true"] { background: var(--tint-strong); color: var(--primary); }
 
@@ -182,6 +190,8 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 .card-stock.out { color: var(--muted); font-weight: 500; }
 
 .pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 40px 0; align-items: start; }
+
+.pdp > * { min-width: 0; }
 
 .pdp-media { position: relative; height: 0; padding-bottom: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
 .pdp-media img,
@@ -447,13 +457,17 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     .site-nav {
         display: none;
         position: absolute; left: 0; right: 0; top: 100%;
-        flex-direction: column; gap: 2px; overflow: visible;
+        flex-direction: column; gap: 2px;
+
+        overflow-x: visible; overflow-y: visible;
         padding: 8px; background: var(--surface);
         border-bottom: 1px solid var(--line); box-shadow: var(--shadow-md);
     }
     .site-header.nav-open .site-nav { display: flex; }
 
-    .site-nav a { padding: 12px; font-size: 15px; }
+    .site-nav a,
+    .site-nav:has(a:nth-child(6)) a,
+    .site-nav:has(a:nth-child(8)) a { padding: 12px; font-size: 15px; }
 
     .section-head { flex-direction: column; align-items: flex-start; gap: 4px; }
     .section-head h2 { font-size: 18px; }

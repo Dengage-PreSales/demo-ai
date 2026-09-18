@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-18T12:21:38.377Z",
+  "generated": "2026-09-18T14:27:22.210Z",
   "demos": [
     {
       "slug": "bkc-link",
@@ -44,7 +44,7 @@
     },
     {
       "slug": "sharbatly-club",
-      "products": 30,
+      "products": 60,
       "expiresAt": "2026-12-17",
       "displayName": "Dengage eComm Demo",
       "storeName": "Sharbatly Club",
@@ -53,11 +53,13 @@
       "language": "en",
       "currency": "SAR",
       "currencySymbol": "SAR",
-      "brandPrimary": "#1a73e8",
-      "brandOnPrimary": "#ffffff",
+      "brandPrimary": "#55c63f",
+      "brandOnPrimary": "#000000",
       "categories": [
         "Flower",
+        "Fruit",
         "Vegetable",
+        "Bouquet",
         "More"
       ]
     },

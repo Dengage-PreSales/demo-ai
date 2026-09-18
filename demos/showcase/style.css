@@ -105,11 +105,34 @@ img { max-width: 100%; display: block; }
 .logo-word { font-family: var(--display-font); font-weight: 700; font-size: 17px; color: var(--ink); letter-spacing: -0.02em; }
 .logo-sub { font-size: 11px; color: var(--muted); display: block; margin-top: -2px; font-weight: 500; }
 
-.site-nav { display: flex; gap: 4px; flex: 1; min-width: 0; overflow: hidden; }
+/* THE NAV HOLDS AS MANY CATEGORIES AS THE STORE HAS, up to the cap in
+   factory/scrape/catalogue.mjs, and this used to be overflow: hidden. With five
+   that never showed. With eight it clips, and a clipped category is not merely
+   ugly: it is a shelf the store really has that nobody on the call can reach,
+   and nothing on screen says it is there.
+
+   overflow-y IS DECLARED EXPLICITLY, which looks redundant and is not. Setting
+   overflow-x alone makes the other axis compute to auto rather than staying
+   visible, so a sideways scroller silently scrolls up and down too. That exact
+   omission put a vertical scrollbar on every product rail in this file. */
+.site-nav {
+    display: flex; gap: 4px; flex: 1; min-width: 0;
+    overflow-x: auto; overflow-y: hidden;
+    scrollbar-width: none;
+}
+.site-nav::-webkit-scrollbar { width: 0; height: 0; }
 .site-nav a {
     color: var(--ink); font-size: 14px; font-weight: 500; padding: 7px 11px;
     border-radius: 7px; white-space: nowrap;
 }
+
+/* AND IT TIGHTENS BEFORE IT SCROLLS. Six or more categories is where a 1280px
+   header runs out of room, and a header that scrolls is worse than one that is a
+   little tighter: on a call nobody thinks to drag a navigation bar. :has counts
+   the children so the storefront needs no class from the generator, which keeps
+   the category count in one place rather than two. */
+.site-nav:has(a:nth-child(6)) a { padding: 7px 8px; font-size: 13.5px; }
+.site-nav:has(a:nth-child(8)) a { padding: 7px 6px; font-size: 13px; }
 .site-nav a:hover { background: var(--tint); text-decoration: none; }
 .site-nav a[aria-current="true"] { background: var(--tint-strong); color: var(--primary); }
 
@@ -259,6 +282,21 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 /* ---- product detail ------------------------------------------------------ */
 
 .pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; padding: 40px 0; align-items: start; }
+
+/* min-width: 0 IS WHAT LETS A PHONE STAY A PHONE, and without it one inline
+   campaign takes the whole page with it. A grid item's min-width defaults to
+   auto, which means it refuses to shrink below its content's min-content width.
+   The below price inline slot lives in this column, and the creative that goes
+   in it is a row of fixed width product tiles: about 420px of them. The column
+   would not go narrower, the grid grew past the phone, and the browser widened
+   the layout viewport to fit, so EVERY element on the page rendered at the wider
+   width and the storefront looked zoomed out with its title and buttons cut off.
+
+   Reported from a phone on 18 September 2026. The creative was innocent: its
+   row already carries overflow-x, which cannot do anything while the column it
+   sits in will not shrink. The storefront's own rails never showed it because
+   they sit in a plain block, where overflow works as written. */
+.pdp > * { min-width: 0; }
 /* The same ratio box as .card-media, for the same reason: the detail page's
    hero is the biggest image on the site, so a portrait photograph inflating it
    is the most visible version of the bug. Square, because the artwork draws
@@ -599,13 +637,22 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     .site-nav {
         display: none;
         position: absolute; left: 0; right: 0; top: 100%;
-        flex-direction: column; gap: 2px; overflow: visible;
+        flex-direction: column; gap: 2px;
+        /* A COLUMN, SO NEITHER AXIS SCROLLS. The wide layout scrolls sideways
+           when it has more categories than fit one row; here they are stacked
+           and every one is already reachable, so the scroller is switched off
+           rather than inherited. */
+        overflow-x: visible; overflow-y: visible;
         padding: 8px; background: var(--surface);
         border-bottom: 1px solid var(--line); box-shadow: var(--shadow-md);
     }
     .site-header.nav-open .site-nav { display: flex; }
-    /* A comfortable tap target, and full width so the whole row is pressable. */
-    .site-nav a { padding: 12px; font-size: 15px; }
+    /* A comfortable tap target, and full width so the whole row is pressable.
+       This also undoes the tightening the wide layout applies to a long nav,
+       which exists to fit one row and has no business shrinking a stacked list. */
+    .site-nav a,
+    .site-nav:has(a:nth-child(6)) a,
+    .site-nav:has(a:nth-child(8)) a { padding: 12px; font-size: 15px; }
 
     /* A RAIL HEADING AND ITS NOTE STACK RATHER THAN COMPETE. Side by side they
        share one line, and a recommendation rail is the case where both are long:

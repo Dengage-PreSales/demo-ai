@@ -57,9 +57,12 @@
     var BARS = { 'sticky-bar': 'top', 'image-bar': 'bottom' };
 
     var LABEL_CSS =
+
         '#' + '%ID%' + '{position:fixed;inset:0;z-index:2147482700;display:flex;' +
             'align-items:center;justify-content:center;padding:24px;' +
-            'background:var(--scrim);}' +
+            'background:var(--scrim);overflow-y:auto;overscroll-behavior:contain;' +
+            'scrollbar-width:none;}' +
+        '#%ID%::-webkit-scrollbar{width:0;height:0;}' +
 
         '#%ID%.dps-at-top,#%ID%.dps-at-bottom{inset:auto;left:0;right:0;' +
             'background:transparent;padding:0;display:block;}' +
@@ -67,7 +70,7 @@
         '#%ID%.dps-at-bottom{bottom:0;}' +
 
         '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
-            'background:transparent;overflow:hidden;pointer-events:auto;}' +
+            'background:transparent;overflow:visible;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
 
@@ -78,7 +81,7 @@
         '#%ID%.dps-at-top .dps-standby-shut,#%ID%.dps-at-bottom .dps-standby-shut' +
             '{display:none;}' +
         '#%ID% .dps-standby-wrap{position:relative;width:min(900px,100%);' +
-            'max-height:calc(100vh - 48px);display:flex;}' +
+            'margin:auto 0;display:flex;flex:0 0 auto;}' +
         '#%ID%.dps-at-top .dps-standby-wrap,#%ID%.dps-at-bottom .dps-standby-wrap' +
             '{width:100%;max-width:none;}' +
 
@@ -106,7 +109,9 @@
           'getGameWinner:function(cb){if(typeof cb==="function"){cb(null);}' +
             'out("prize");}' +
         '};' +
-        '})();<\/script>';
+        '})();<\/script>' +
+
+        '<style>html,body{margin:0;padding:0;}<\/style>';
 
     function contentHeight(doc) {
         var tallest = 0;
@@ -127,10 +132,16 @@
             if (!doc || !doc.documentElement) return;
             var wanted = contentHeight(doc);
             if (!wanted) return;
-            var room = window.innerHeight - (placement ? 60 : 140);
+
             frame.style.minHeight = '0';
-            frame.style.height = Math.max(48, Math.min(wanted, room)) + 'px';
-            frame.style.overflow = wanted > room ? 'auto' : 'hidden';
+            frame.style.height = Math.max(48, wanted) + 'px';
+            frame.style.overflow = 'hidden';
+
+            for (var pass = 0; pass < 3; pass++) {
+                var real = doc.documentElement.scrollHeight;
+                if (real <= frame.clientHeight + 1) break;
+                frame.style.height = real + 'px';
+            }
             if (typeof after === 'function') after();
         }
         frame.addEventListener('load', function () {

@@ -5,17 +5,17 @@
   "createdAt": "2026-09-18",
   "expiresAt": "2026-12-17",
   "theme": {
-    "primary": "#1a73e8",
-    "onPrimary": "#ffffff",
+    "primary": "#55c63f",
+    "onPrimary": "#000000",
     "accent": "#ff4b00",
-    "ink": "#5f6368",
-    "muted": "#9c9ea1",
-    "surface": "#ffffff",
+    "ink": "#222222",
+    "muted": "#737373",
+    "surface": "#f7f7f7",
     "page": "#ffffff",
-    "line": "#ececed",
+    "line": "#dddddd",
     "radius": "5px",
-    "displayFont": "DM Sans",
-    "bodyFont": "DM Sans"
+    "displayFont": "Poppins",
+    "bodyFont": "Poppins"
   },
   "locale": {
     "language": "en",
@@ -30,10 +30,12 @@
   },
   "categories": [
     "Flower",
+    "Fruit",
     "Vegetable",
+    "Bouquet",
     "More"
   ],
   "storeName": "Sharbatly Club",
-  "productCount": 30,
+  "productCount": 60,
   "catalogueSource": "store"
 }
