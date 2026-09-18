@@ -20,14 +20,31 @@
 
    THREE RULES IT DOES NOT BEND.
 
-   1. DENGAGE FIRST. The trigger is pushed exactly as before and the engine is
-      given WAIT milliseconds to answer. If it answers, this stands down and
-      draws nothing, so the engine's own creative is the one on screen.
+   1. DENGAGE FIRST, AND DENGAGE WINS EVEN AFTER THE FACT. The trigger is pushed
+      exactly as before. The engine gets GRACE milliseconds, which is short enough
+      that nobody sees a pause, because its decision is local: the manifest and
+      the message list are already in the browser from page load, so a campaign
+      that exists renders in tens of milliseconds rather than after a round trip.
 
-   2. IT SAYS WHAT IT IS. Every standby render carries a visible line naming
-      itself, and it is also listed in ?debug=1. A demo that quietly drew its
-      own widget would let a call claim Dengage rendered something it did not,
-      and that is worse than a blank screen.
+      GRACE ALONE WOULD NOT BE ENOUGH, so it is not the whole rule. A slow frame,
+      a busy page or a campaign with its own delay can arrive after the standby
+      copy is already up, and two widgets on screen at once is worse than either
+      failure this module exists for. So the page keeps watching for YIELD_FOR
+      milliseconds afterwards, and the moment anything the engine drew appears,
+      the standby copy is taken off the screen. The engine is always the one left
+      standing.
+
+   2. NOTHING ON SCREEN SAYS IT IS A STANDBY COPY, and the record lives in the
+      readout instead. This carried a visible grey strip reading "Standby copy"
+      until 18 September 2026, on the reasoning that a demo must never let a call
+      claim Dengage rendered something it did not. Salil's direction, and it is
+      the better answer: a prospect is watching a storefront, and a strip of
+      internal plumbing across the top of a creative is the one thing that makes
+      the demonstration feel like a rehearsal. The honesty requirement is real and
+      it is met where it belongs, at ?debug=1 and in the launcher's own log, which
+      are the two places anyone asking "did Dengage draw that" would look. Both
+      still name every standby render, and factory/checks/standby.js asserts both
+      halves: nothing on screen, everything in the readout.
 
    3. IT CLAIMS NO EVENT IT CANNOT SEND. Nothing here emits anything, so the
       guard's event-single-source rule is untouched and js/dengageEvents.js is
@@ -59,6 +76,17 @@
    than anything invented here would be. See the notes in
    factory/creatives/survey.html and subscription-popup.html.
 
+   WHY IT CANNOT SIMPLY ASK WHETHER A CAMPAIGN EXISTS, which would be the
+   obvious design and was tried first. The SDK loads a campaign manifest whose
+   filename is published on window.dn_onsite_filename, and it does list every
+   live trigger name, so reading it would let this module know in advance and
+   never draw at all when a campaign is live. It cannot be read: the CDN serves
+   it without an Access-Control-Allow-Origin header, so a fetch from the page is
+   blocked by the browser, measured on 18 September 2026. Loading it as a script
+   would work and is refused, because the file calls the SDK's own callback and
+   running it a second time is not this module's business. Watching what actually
+   appears needs no permission from anybody and cannot go stale.
+
    COVERAGE IS DERIVED, NOT COUNTED. CREATIVES below maps a launcher slug to the
    committed file that stands in for it, and a slug with no entry gets no standby
    copy rather than a guess. factory/checks/standby.js holds the map against the
@@ -68,11 +96,23 @@
 (function (window, document) {
     'use strict';
 
-    /* How long the engine gets. Long enough for a manifest fetch and a
-       getMessages round trip on a conference centre network, short enough that
-       nobody on a call has started apologising. */
-    var WAIT = 2600;
-    var POLL = 150;
+    /* HOW LONG THE ENGINE GETS BEFORE ANYTHING IS DRAWN. This was 2600ms, on a
+       guess that the engine needed time for a manifest fetch and a getMessages
+       round trip. It does not: both happen at PAGE LOAD, and the decision when a
+       trigger fires is local. 2600ms was therefore a dead pause on every single
+       fire, felt on a call as the demo hesitating.
+
+       350ms is under the threshold where a person reads a pause as a delay
+       rather than as the widget simply appearing, and it is many times longer
+       than a local match needs. It is not load bearing either way, because
+       anything the engine draws later still displaces the standby copy. */
+    var GRACE = 350;
+
+    /* And how long it keeps watching afterwards. Long enough to cover a campaign
+       that carries its own delay setting, short enough that a widget the visitor
+       dismissed minutes ago cannot be replaced under them. */
+    var YIELD_FOR = 8000;
+    var POLL = 100;
 
     /* Slug to committed creative, relative to factory/creatives/. Everything
        here is shared across every demo, exactly as the campaigns are, so a
@@ -139,7 +179,7 @@
     }
 
     /* ------------------------------------------------------------------ */
-    /* The label, which is not optional. Rule 2 above.                     */
+    /* The frame, which looks like the engine's own and says nothing        */
 
     /* PLACEMENT, BECAUSE A BAR IS NOT A POPUP. The engine pins a top or bottom
        bar to the edge of the viewport and centres a popup, so a standby copy that
@@ -166,31 +206,33 @@
             'background:transparent;padding:0;display:block;}' +
         '#%ID%.dps-at-top{top:0;}' +
         '#%ID%.dps-at-bottom{bottom:0;}' +
-        '#%ID% .dps-standby-frame{width:min(900px,100%);max-height:calc(100vh - 48px);' +
-            'display:flex;flex-direction:column;background:var(--surface);' +
-            'border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow:hidden;' +
-            'pointer-events:auto;}' +
+        '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
+            'background:var(--surface);border-radius:var(--radius);' +
+            'box-shadow:var(--shadow-lg);overflow:hidden;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
-        '#%ID% .dps-standby-note{display:flex;align-items:center;gap:10px;' +
-            'padding:9px 14px;border-bottom:1px solid var(--line);' +
-            'background:var(--tint);color:var(--muted);font-size:12px;line-height:1.4;}' +
-        '#%ID%.dps-at-bottom .dps-standby-note{order:2;border-bottom:0;' +
-            'border-top:1px solid var(--line);}' +
-        '#%ID% .dps-standby-note b{color:var(--ink);font-weight:600;}' +
-        '#%ID% .dps-standby-close{margin-left:auto;border:0;background:transparent;' +
-            'color:var(--muted);font:inherit;font-size:20px;line-height:1;' +
-            'cursor:pointer;padding:0 4px;}' +
+        /* THE CLOSE CONTROL SITS OUTSIDE THE CREATIVE, where the engine puts its
+           own: several creatives have no dismiss of their own and relied on the
+           label strip's button, so removing the strip without this would have
+           left a popup a prospect could not shut. Deliberately plain, because
+           anything else on this frame is a thing to notice. */
+        '#%ID% .dps-standby-shut{position:absolute;top:-30px;right:0;border:0;' +
+            'background:transparent;color:var(--surface);font:inherit;' +
+            'font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;' +
+            'opacity:.85;pointer-events:auto;}' +
+        '#%ID%.dps-at-top .dps-standby-shut,#%ID%.dps-at-bottom .dps-standby-shut' +
+            '{display:none;}' +
+        '#%ID% .dps-standby-wrap{position:relative;width:min(900px,100%);' +
+            'max-height:calc(100vh - 48px);display:flex;}' +
+        '#%ID%.dps-at-top .dps-standby-wrap,#%ID%.dps-at-bottom .dps-standby-wrap' +
+            '{width:100%;max-width:none;}' +
         /* Height is MEASURED, not guessed: see fitFrame. The value here is only
            what is shown for the moment before the frame has loaded, and a
            min-height rather than a height so a creative is never clipped if the
            measurement cannot be taken at all. */
         '#%ID% iframe{border:0;width:100%;min-height:160px;display:block;' +
             'background:var(--surface);}' +
-        '.dps-standby-inline-note{display:block;padding:6px 20px;font-size:11.5px;' +
-            'color:var(--muted);background:var(--tint);' +
-            'border-bottom:1px solid var(--line);}' +
-        '.dps-standby-inline-note b{color:var(--ink);font-weight:600;}';
+        '';
 
     function styleOnce(id, css) {
         if (document.getElementById(id)) return;
@@ -198,17 +240,6 @@
         tag.id = id;
         tag.textContent = css;
         document.head.appendChild(tag);
-    }
-
-    function noteText(name) {
-        var copy = window.Storefront && window.Storefront.t
-            ? window.Storefront.t('standbyNote')
-            : '';
-        var line = copy && copy !== 'standbyNote'
-            ? copy
-            : 'Drawn by this demo, not by Dengage. The engine did not answer, ' +
-              'so the storefront rendered its own committed copy of this creative.';
-        return '<span><b>Standby copy</b> ' + line + '</span>';
     }
 
     /* ------------------------------------------------------------------ */
@@ -316,12 +347,36 @@
         catch (err) { /* a fallback is never allowed to break a demo */ }
     }
 
-    function close() {
+    /* The watch a press set up, so a later press or an explicit close can end it.
+       Declared here rather than beside arm() because close() is above and calls
+       it: a function declaration hoists, a var assignment does not. */
+    var watching = null;
+
+    function stopWatching() {
+        if (!watching) return;
+        if (watching.timer) window.clearTimeout(watching.timer);
+        if (watching.observer) watching.observer.disconnect();
+        watching = null;
+    }
+
+    /* REMOVING THE ELEMENT AND ENDING THE WATCH ARE TWO DIFFERENT THINGS, and
+       conflating them cost a round. Drawing replaces any copy already on screen,
+       so it removes the element, and for a moment close() did both: the module
+       cancelled its own watch the instant it drew, and could then never notice
+       the engine arriving late. Dismissing is the opposite case and must end the
+       watch, or a render already in flight lands afterwards and the widget the
+       visitor just shut comes back by itself. */
+    function removeHost() {
         var host = document.getElementById(hostId());
         if (!host) return;
         var pinned = host.className.indexOf('dps-at-') !== -1;
         if (host.parentNode) host.parentNode.removeChild(host);
         if (pinned) reportBarHeight(null);
+    }
+
+    function close() {
+        stopWatching();
+        removeHost();
     }
 
     function announce(name, how, detail) {
@@ -337,7 +392,7 @@
        fetched, and sandboxed the way the engine sandboxes it. */
     function renderOverlay(name, html) {
         styleOnce('dps-standby-css', LABEL_CSS.split('%ID%').join(hostId()));
-        close();
+        removeHost();
         var placement = BARS[name] || '';
         var host = document.createElement('div');
         host.id = hostId();
@@ -348,16 +403,16 @@
         host.className = 'dps-standby-host' +
             (placement ? ' dps-at-' + placement : '');
         host.innerHTML =
-            '<div class="dps-standby-frame" role="dialog" aria-modal="true">' +
-              '<div class="dps-standby-note">' + noteText(name) +
-                '<button type="button" class="dps-standby-close" ' +
-                  'aria-label="Close">&times;</button>' +
+            '<div class="dps-standby-wrap">' +
+              '<button type="button" class="dps-standby-shut" ' +
+                'aria-label="Close">&times;</button>' +
+              '<div class="dps-standby-frame" role="dialog" aria-modal="true">' +
+                '<iframe title=""></iframe>' +
               '</div>' +
-              '<iframe title="Standby creative"></iframe>' +
             '</div>';
         host.addEventListener('click', function (event) {
             if (event.target === host ||
-                (event.target.className || '') === 'dps-standby-close') close();
+                (event.target.className || '') === 'dps-standby-shut') close();
         });
         document.body.appendChild(host);
         var frame = host.querySelector('iframe');
@@ -395,9 +450,7 @@
             document.head.appendChild(tag);
         }
 
-        slot.innerHTML =
-            '<span class="dps-standby-inline-note"><b>Standby copy</b> ' +
-            'drawn by this demo, not by Dengage.</span>';
+        slot.innerHTML = '';
         slot.appendChild(body);
 
         if (script && script.textContent) {
@@ -416,15 +469,60 @@
 
     /* ------------------------------------------------------------------ */
 
-    function render(name, spec, done) {
+    /* FETCHED BEFORE IT IS NEEDED, because a network round trip at the moment of
+       drawing is a pause the visitor sees, and it is the one part of the delay
+       that no grace period can hide. js/panels.js calls warm() when the launcher
+       opens, which is several seconds before any card is pressed, and again on
+       the press itself for anything that missed it.
+
+       A promise per creative rather than the text, so two calls in flight never
+       become two requests, and a failed one is dropped rather than cached so the
+       next attempt can retry. */
+    var warmed = {};
+
+    function fetchCreative(name) {
         var file = CREATIVES[name];
-        if (!file) { if (done) done(false, 'no committed creative stands in for this one'); return; }
-        window.fetch(creativeBase() + file, { credentials: 'omit' })
-            .then(function (response) {
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                return response.text();
-            })
+        if (!file) return null;
+        if (!warmed[name]) {
+            warmed[name] = window.fetch(creativeBase() + file, { credentials: 'omit' })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.text();
+                })
+                .catch(function (err) {
+                    delete warmed[name];
+                    throw err;
+                });
+        }
+        return warmed[name];
+    }
+
+    function warm(names) {
+        var list = names && names.length ? names : Object.keys(CREATIVES);
+        for (var i = 0; i < list.length; i++) fetchCreative(list[i]);
+    }
+
+    /* THE GUARD IS CHECKED IMMEDIATELY BEFORE DRAWING, not before fetching, and
+       that is the whole point of it. Deciding to draw and actually drawing are
+       separated by a promise, and in that gap the visitor can dismiss the widget
+       or the operator can reopen the launcher. Closing used to leave the pending
+       render untouched, so a standby copy that had been shut reappeared a
+       fraction of a second later, over whatever had been opened in its place.
+       Found on 18 September 2026 by the launcher check, which closes and reopens
+       faster than any person would and is therefore the only thing that was ever
+       going to see it. */
+    function render(name, spec, done, guard) {
+        var pending = fetchCreative(name);
+        if (!pending) {
+            if (done) done(false, 'no committed creative stands in for this one');
+            return;
+        }
+        pending
             .then(function (html) {
+                if (typeof guard === 'function' && !guard()) {
+                    if (done) done(false, 'it was dismissed before it could be drawn');
+                    return;
+                }
                 var drawn = spec && spec.target
                     ? renderInline(name, spec.target, html)
                     : renderOverlay(name, html);
@@ -436,31 +534,178 @@
     }
 
     /* ARMED AFTER THE TRIGGER, NEVER INSTEAD OF IT. js/panels.js pushes the data
-       layer event first and calls this straight afterwards. */
+       layer event first and calls this straight afterwards.
+
+       Three phases, and the third is what makes the first two safe:
+
+         watch     GRACE milliseconds. If the engine renders, stand down and draw
+                   nothing at all, which is the normal case on a healthy account
+         draw      the committed creative, from the copy warm() already fetched,
+                   so there is no request between deciding and appearing
+         yield     keep watching for YIELD_FOR. Anything the engine draws after
+                   the fact takes the screen and the standby copy is removed
+
+       Re-armable. Pressing the same card twice cancels the first watch rather
+       than running two, which otherwise raced each other to draw. */
     function arm(name, spec, report) {
         if (!CREATIVES[name]) return;
-        var before = overlayCount();
-        var target = spec && spec.target;
-        var waited = 0;
+        warm([name]);
+        stopWatching();
 
-        function look() {
-            var answered = target ? slotFilled(target) : overlayCount() > before;
-            if (answered) {
-                announce(name, 'dengage', '');
+        var target = spec && spec.target;
+        var before = overlayCount();
+        var drewOurs = false;
+        var started = Date.now();
+        var mine = { timer: null, observer: null };
+        watching = mine;
+
+        function engineAnswered() {
+            if (target) {
+                /* Our own render fills the same slot, so once we have drawn, the
+                   question becomes whether anything ELSE was added to it. */
+                if (!drewOurs) return slotFilled(target);
+                var slot = document.getElementById(target);
+                return !!slot && !!slot.querySelector(':scope > :not(.dn-inline-html)');
+            }
+            /* Our overlay contains exactly one iframe of its own, so it is
+               counted out rather than mistaken for the engine answering. */
+            return overlayCount() > before + (drewOurs ? 1 : 0);
+        }
+
+        function tick() {
+            if (watching !== mine) return;
+
+            if (engineAnswered()) {
+                if (drewOurs) {
+                    /* DENGAGE WINS, EVEN LATE. Taking ours off the screen the
+                       moment the engine draws is the whole reason the grace
+                       period is allowed to be short. */
+                    removeHost();
+                    announce(name, 'dengage', 'the engine answered after the ' +
+                        'standby copy was drawn, so the standby copy was removed');
+                } else {
+                    announce(name, 'dengage', '');
+                }
+                stopWatching();
                 return;
             }
-            waited += POLL;
-            if (waited < WAIT) { window.setTimeout(look, POLL); return; }
-            render(name, spec, function (drawn, why) {
-                announce(name, drawn ? 'standby' : 'nothing', why);
-                if (typeof report === 'function') report(drawn, why);
-            });
+
+            var age = Date.now() - started;
+            if (!drewOurs && age >= GRACE) {
+                drewOurs = true;
+                render(name, spec, function (drawn, why) {
+                    if (!drawn) drewOurs = false;
+                    announce(name, drawn ? 'standby' : 'nothing', why);
+                    if (typeof report === 'function') report(drawn, why);
+                }, function () { return watching === mine; });
+            }
+            if (age >= YIELD_FOR) { stopWatching(); return; }
+            mine.timer = window.setTimeout(tick, POLL);
         }
-        window.setTimeout(look, POLL);
+
+        /* An observer as well as the poll, so a render between two ticks is seen
+           at once rather than up to POLL later. The poll stays because an inline
+           slot can be filled by a script rather than by a node insertion. */
+        if (window.MutationObserver) {
+            mine.observer = new window.MutationObserver(function () { tick(); });
+            mine.observer.observe(document.body, { childList: true, subtree: true });
+        }
+        mine.timer = window.setTimeout(tick, POLL);
     }
 
-    window.Standby = { arm: arm, render: render, close: close,
-                       CREATIVES: CREATIVES, WAIT: WAIT };
+    /* ------------------------------------------------------------------ */
+    /* The two gestures, which no launcher card can stand in for           */
+
+    /* EXIT INTENT AND SCROLL DEPTH ARE NOT PRESSED, THEY ARE PERFORMED, so the
+       launcher deliberately refuses to fake them and nothing was arming a
+       standby copy for either. With their campaigns deactivated they were the
+       two scenarios that stayed dark, which is exactly what this module exists
+       to prevent.
+
+       The thresholds are the engine's own, read out of the SDK bundle rather
+       than guessed: its exit intent handler is a mouseleave listener whose body
+       is `e.clientY < -20 && fire()`, and the scroll campaign is configured at
+       70 percent. Matching them means the standby copy appears on the same
+       gesture the campaign would have answered, not on a different one. */
+    var EXIT_ABOVE = -20;
+    var SCROLL_AT = 0.7;
+
+    /* NOT WHILE SOMETHING OF OURS IS ALREADY OPEN, and this is a product rule
+       rather than a defensive one. A gesture is performed while the visitor is
+       doing something else: scrolling a page with the cart drawer open, or
+       reaching for the launcher. A widget that lands on top of an open drawer,
+       the scenarios panel or another widget covers the thing the person was
+       using and cannot be dismissed without losing their place.
+
+       Found by the launcher check on 18 September 2026: clicking through the
+       cards scrolled the page past the threshold, a standby copy was drawn over
+       the panel, and every later click hit the overlay instead of the button. On
+       a call the same sequence is an operator being interrupted mid sentence.
+
+       The launcher already closes itself before firing a card for exactly this
+       reason, so this is the same rule applied to the two scenarios that are not
+       fired from a button. */
+    function busy() {
+        try {
+            if (document.querySelector('.dps-standby-host')) return true;
+            return !!document.querySelector(
+                '#dengage-panel.open, .drawer.open, .modal.open');
+        } catch (err) { return false; }
+    }
+
+    function armGesture(name) {
+        if (!CREATIVES[name] || busy()) return;
+        arm(name, null);
+    }
+
+    /* A SCROLL THE VISITOR MADE, NOT A SCROLL THE PAGE MADE. scrollIntoView is
+       used all over this storefront, by the recommendation rails, the inline
+       slots and the launcher, and every one of those moves the scroll position
+       without anybody having read anything. Watching the scroll position alone
+       therefore fires "you read this far" when the page simply jumped, which is
+       both wrong and, on 18 September 2026, the thing that put a widget on top
+       of the open launcher panel and made every later click land on it.
+
+       A wheel or a touch move is the visitor. Neither is produced by
+       scrollIntoView, by an anchor jump or by a click's own scroll, so requiring
+       one is the honest definition of scroll depth rather than a workaround. */
+    var lastRealScroll = 0;
+    function noteRealScroll() { lastRealScroll = Date.now(); }
+    var SCROLL_IS_RECENT = 2000;
+
+    function watchGestures() {
+        window.addEventListener('wheel', noteRealScroll, { passive: true });
+        window.addEventListener('touchmove', noteRealScroll, { passive: true });
+
+        var firedExit = false;
+        document.documentElement.addEventListener('mouseleave', function (event) {
+            if (firedExit || event.clientY >= EXIT_ABOVE || busy()) return;
+            firedExit = true;
+            armGesture('exit-intent');
+        });
+
+        var firedScroll = false;
+        window.addEventListener('scroll', function () {
+            if (firedScroll) return;
+            var doc = document.documentElement;
+            var room = doc.scrollHeight - window.innerHeight;
+            if (room <= 0) return;
+            if ((window.pageYOffset || doc.scrollTop) / room < SCROLL_AT) return;
+            if (Date.now() - lastRealScroll > SCROLL_IS_RECENT) return;
+            /* Latched only on a gesture that actually arms, so a scroll made
+               while a drawer was open does not use up the one chance the visitor
+               had to see it. */
+            if (busy()) return;
+            firedScroll = true;
+            armGesture('scroll-depth');
+        }, { passive: true });
+    }
+
+    if (document.body) watchGestures();
+    else document.addEventListener('DOMContentLoaded', watchGestures);
+
+    window.Standby = { arm: arm, render: render, close: close, warm: warm,
+                       CREATIVES: CREATIVES, GRACE: GRACE, YIELD_FOR: YIELD_FOR };
 
     /* The frame talks back here, because it is a separate realm and this page is
        the only one allowed to reach the event module. */

@@ -16,9 +16,11 @@
       engine's answer is simulated by putting an iframe in the page, and by
       filling an inline slot, which are the two shapes js/standby.js looks for.
 
-   2. IT SAYS WHAT IT IS. Every standby render has to carry a visible line naming
-      itself. A demo that quietly drew its own widget would let a call claim
-      Dengage rendered something it did not, which is worse than a blank screen.
+   2. NOTHING ON SCREEN SAYS IT IS A STANDBY COPY, AND THE READOUT SAYS SO
+      LOUDLY. Both halves are asserted, because they used to be the other way
+      round and the reasons for each are equally real: a prospect must not see
+      internal plumbing across a creative, and nobody must be able to claim
+      Dengage rendered something it did not. The record moved, it did not go.
 
    3. AN OVERLAY IS SANDBOXED AND AN INLINE SLOT IS NOT. The engine sandboxes
       popups in an iframe and lifts an inline creative's style into
@@ -27,7 +29,13 @@
       break the storefront, which is a much bigger failure than the one the
       fallback was added to prevent.
 
-   4. EVERY SLUG IT CLAIMS HAS A FILE, AND EVERY FILE IS CLAIMED. Held in BOTH
+   4. IT YIELDS TO THE ENGINE, EVEN LATE. The grace period before drawing is
+      short on purpose, so a campaign that answers after the standby copy is
+      already up is an ordinary case rather than a freak one. Two widgets at
+      once is worse than either failure this module exists for, so the engine
+      arriving late is driven here and the standby copy has to disappear.
+
+   5. EVERY SLUG IT CLAIMS HAS A FILE, AND EVERY FILE IS CLAIMED. Held in BOTH
       directions, for the reason CLAUDE.md gives about counts: a map that names a
       creative which was since renamed loses that fallback silently, and a
       creative nobody maps gets no fallback at all. Neither shows up on a page.
@@ -187,19 +195,21 @@ function creativeFiles(dir, prefix) {
     ok('and that is recorded too',
         inline.seen.some((d) => d && d.how === 'dengage'), inline.seen);
 
-    console.log('\n4. It draws the committed copy when nothing answers, and labels it');
+    console.log('\n4. It draws the committed copy when nothing answers, and says nothing');
     const drawn = await page.evaluate(async (note) => {
         const seen = [];
         window.addEventListener(note, (e) => seen.push(e.detail));
         window.Standby.close();
         window.Standby.arm('image-popup', null);
-        await new Promise((done) => setTimeout(done, 4200));
+        await new Promise((done) => setTimeout(done, 2000));
         const host = document.querySelector('.dps-standby-host');
         return {
             seen,
             present: !!host,
             id: host ? host.id : '',
-            label: host ? (host.textContent || '').trim().slice(0, 60) : '',
+            /* Everything the visitor can read on our own chrome, which after the
+               label was removed should be the close control and nothing else. */
+            label: host ? (host.textContent || '').trim() : '',
             /* THE PART THAT MATTERS MOST: it has to be in a frame of its own. */
             frames: host ? host.querySelectorAll('iframe').length : 0,
             inlineLeak: document.querySelectorAll('style[data-dps-standby]').length
@@ -208,7 +218,14 @@ function creativeFiles(dir, prefix) {
     ok('the standby copy is on screen', drawn.present, drawn);
     ok('its host id carries the slug', drawn.id === 'dps-standby-' + slug,
         { id: drawn.id, slug });
-    ok('it names itself on screen', /Standby copy/.test(drawn.label), drawn.label);
+    /* THE WORDS ARE GONE FROM THE SCREEN, and this is asserted against the exact
+       strings that used to be there rather than against a class name, because a
+       class can be renamed while the sentence stays. */
+    ok('nothing on our own chrome names it as a standby copy',
+        !/standby|did not answer|not by Dengage/i.test(drawn.label),
+        drawn.label.slice(0, 80));
+    ok('and the readout still records it, which is where the record belongs',
+        drawn.seen.some((d) => d && d.how === 'standby'), drawn.seen);
     ok('and it is sandboxed in an iframe, not inlined',
         drawn.frames === 1, drawn.frames);
     ok('so no overlay stylesheet was lifted into the page',
@@ -240,10 +257,10 @@ function creativeFiles(dir, prefix) {
         const slot = document.getElementById('dn_inline_target_in_grid');
         slot.innerHTML = '';
         window.Standby.arm('inline-in-grid', { target: 'dn_inline_target_in_grid' });
-        await new Promise((done) => setTimeout(done, 4200));
+        await new Promise((done) => setTimeout(done, 2000));
         return {
             html: slot.innerHTML.slice(0, 200),
-            labelled: /dps-standby-inline-note/.test(slot.innerHTML),
+            labelled: /dps-standby-inline-note|standby copy/i.test(slot.innerHTML),
             styles: document.querySelectorAll('style[data-dps-standby]').length,
             /* The engine inserts .dn-inline-html itself, so the standby copy has
                to have inserted the same element rather than the whole file. */
@@ -251,23 +268,24 @@ function creativeFiles(dir, prefix) {
         };
     });
     ok('the slot holds the creative\'s own root element', inlineDrawn.body, inlineDrawn.html);
-    ok('it names itself in the slot', inlineDrawn.labelled, inlineDrawn.html);
+    ok('and nothing in the slot names it as a standby copy',
+        !inlineDrawn.labelled, inlineDrawn.html);
     ok('and its style went to document.head, which is what the engine does',
         inlineDrawn.styles === 1, inlineDrawn.styles);
 
-    console.log('\n6. A pinned standby bar pushes the header down, label included');
+    console.log('\n6. A pinned standby bar pushes the header down');
     /* THE BUG THIS CATCHES SHIPPED TWICE IN ONE HOUR, in two different ways, and
        both times the storefront's logo and navigation were half covered on
        screen. js/slots.js moves the header for a pinned banner, and it prefers a
        height the bar reports about itself over anything it can measure. The bar
        creative sends that report itself, because it is the same file a live
-       campaign pastes, and it knows nothing about the standby label strip above
-       it. So the header cleared the bar and stayed behind the label until
-       js/standby.js started reporting the host's real height after it. */
+       campaign pastes, and it reports only its own height. The host can be
+       taller than the creative, so js/standby.js reports the host's real height
+       afterwards and the last word wins. */
     const bar = await page.evaluate(async () => {
         window.Standby.close();
         window.Standby.arm('sticky-bar', null);
-        await new Promise((done) => setTimeout(done, 4600));
+        await new Promise((done) => setTimeout(done, 2400));
         const host = document.querySelector('.dps-standby-host');
         const header = document.querySelector('.site-header');
         return {
@@ -284,7 +302,7 @@ function creativeFiles(dir, prefix) {
     ok('a bar creative is pinned rather than centred', bar.pinned, bar);
     ok('and it is the shape a pinned banner has, short and full width',
         bar.height > 0 && bar.height <= 200 && bar.width >= bar.viewport * 0.9, bar);
-    ok('the header starts below the whole standby bar, not behind its label',
+    ok('the header starts below the whole standby bar',
         bar.headerTop >= bar.hostBottom - 1, bar);
 
     /* And it gives the pixels back. A bar that stayed reported after it was
@@ -303,6 +321,47 @@ function creativeFiles(dir, prefix) {
         released.headerTop <= 1, released);
     ok('and the reported banner height goes back to zero',
         /^0px$/.test(released.banner), released);
+
+    console.log('\n6a. The engine arriving late takes the screen back');
+    /* THE ASSERTION THAT MAKES A SHORT GRACE PERIOD SAFE. Drawing quickly is only
+       acceptable if a campaign that answers afterwards still wins, and on a call
+       the failure this prevents is two widgets on screen at once, which reads as
+       the product being broken rather than as a fallback working. */
+    const late = await page.evaluate(async () => {
+        window.Standby.close();
+        window.Standby.arm('image-popup', null);
+        await new Promise((done) => setTimeout(done, 1600));
+        const drewOurs = !!document.querySelector('.dps-standby-host');
+        /* The engine answering, as far as this module can tell: an iframe that
+           is not ours appears in the page. */
+        const engine = document.createElement('iframe');
+        engine.id = 'pretend-engine';
+        engine.setAttribute('srcdoc', '<p>the engine, late</p>');
+        document.body.appendChild(engine);
+        await new Promise((done) => setTimeout(done, 900));
+        const stillOurs = !!document.querySelector('.dps-standby-host');
+        engine.remove();
+        return { drewOurs, stillOurs };
+    });
+    ok('the standby copy was up before the engine answered', late.drewOurs, late);
+    ok('and it is gone the moment the engine draws', late.stillOurs === false, late);
+
+    console.log('\n6b. It is quick enough not to read as a pause');
+    const speed = await page.evaluate(async () => {
+        window.Standby.close();
+        const started = Date.now();
+        window.Standby.arm('image-popup', null);
+        for (let i = 0; i < 60; i++) {
+            if (document.querySelector('.dps-standby-host')) return Date.now() - started;
+            await new Promise((done) => setTimeout(done, 25));
+        }
+        return -1;
+    });
+    /* The creative is already fetched by the time this runs, which is the point
+       of warm(): the only thing left between the press and the pixels is the
+       grace period itself. A second is the outer edge of what reads as instant. */
+    ok('the standby copy is on screen within a second, ' + speed + 'ms',
+        speed > 0 && speed < 1000, speed);
 
     console.log('\n7. A slug with no committed creative is refused, not guessed');
     const refusedSlug = await page.evaluate(async () => {

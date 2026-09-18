@@ -308,6 +308,17 @@
        was a presentation judgement rather than a technical one: these never
        depended on the product catalogue inside Dengage, which is what the engine,
        Product Box and Smart Search are waiting on. */
+    /* The creatives js/standby.js may need are fetched when the panel opens, which
+       is several seconds before any card is pressed. Without it the first standby
+       render pays for a network round trip at the exact moment it is trying not
+       to be noticed. Harmless when every campaign is live: the files are small,
+       same origin, cached, and nothing is drawn. */
+    function warmStandby() {
+        if (window.Standby && window.Standby.warm) {
+            try { window.Standby.warm(); } catch (err) { /* never break the panel */ }
+        }
+    }
+
     function renderRecommendations() {
         var host = $('#rec-grid');
         if (!host || !window.Recommend) return;
@@ -778,6 +789,17 @@
         wireReset();
         renderReference();
         wireReference();
+
+        /* pointerdown rather than click, so the fetch starts while the button is
+           still going down. On a launcher card that is a hundred milliseconds of
+           head start for free, and on the toggle it is the whole time the panel
+           takes to open. */
+        document.addEventListener('pointerdown', function (event) {
+            var el = event.target.closest
+                ? event.target.closest('.panel-toggle, #launcher-grid')
+                : null;
+            if (el) warmStandby();
+        }, { passive: true });
 
         document.addEventListener('click', function (event) {
             /* Handled before the fire path, and deliberately never reaching

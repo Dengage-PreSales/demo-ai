@@ -111,6 +111,18 @@ function creativesOnDisk() {
      it the click lands on the hero behind the closed modal and Playwright waits
      thirty seconds for a button it can see but cannot reach. */
   const openPanel = async () => {
+    /* A STANDBY COPY IS COVERING THE PANEL BY NOW, and that is correct rather
+       than a fault. This check refuses the SDK hosts, so Dengage can never
+       answer, so every card pressed above has quite properly produced the
+       demo's own copy of that creative: a modal, over the launcher, exactly as
+       the engine's own popup would be. An operator dismisses it before pressing
+       the next card; this file presses them in a burst and never would, so from
+       section 5 onward every click landed on the overlay and Playwright waited
+       thirty seconds for a button it could see and could not reach.
+
+       Dismissing it here rather than in the module, because the module is doing
+       the right thing. */
+    await page.evaluate(() => { if (window.Standby) window.Standby.close(); });
     if (await page.locator('#dengage-panel.open').count() === 0) {
       await page.click('.panel-toggle button');
       await page.waitForSelector('#dengage-panel.open');

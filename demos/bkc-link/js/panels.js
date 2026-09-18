@@ -73,6 +73,12 @@
 
     var ALLOWED = EVENTS.map(function (e) { return e.id; });
 
+    function warmStandby() {
+        if (window.Standby && window.Standby.warm) {
+            try { window.Standby.warm(); } catch (err) {  }
+        }
+    }
+
     function renderRecommendations() {
         var host = $('#rec-grid');
         if (!host || !window.Recommend) return;
@@ -437,6 +443,13 @@
         wireReset();
         renderReference();
         wireReference();
+
+        document.addEventListener('pointerdown', function (event) {
+            var el = event.target.closest
+                ? event.target.closest('.panel-toggle, #launcher-grid')
+                : null;
+            if (el) warmStandby();
+        }, { passive: true });
 
         document.addEventListener('click', function (event) {
 

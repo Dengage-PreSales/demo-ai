@@ -46,18 +46,27 @@ A demo is **done** when all twelve of these are true:
    call, 6 August: see `factory/panel/README.md`. The recommendation strategies
    were restored on 6 August and `js/recommend.js` is the only place their number
    lives
-5a. **A widget that Dengage cannot draw is drawn by the demo, and says so.**
-   Added 18 September 2026. Dengage renders every on-site widget and that is the
-   demonstration; `template/js/standby.js` does nothing while the engine is
-   answering. When it does not answer, because a campaign was deactivated, a
-   frequency cap was reached or the prospect's network blocks the CDN, the
-   storefront draws the same committed creative itself behind a visible line
-   naming it as the demo's own copy, and lists it in `?debug=1`. **The label is
-   the part that is not negotiable**, because a demo that quietly drew its own
-   widget would let a call claim Dengage rendered something it did not. It emits
-   no event and counts no click: §1b is untouched and `js/dengageEvents.js` is
-   still the only module that reaches the SDK. The module's own header carries
-   the reasoning and `factory/checks/standby.js` holds it to all of the above
+5a. **A widget that Dengage cannot draw is drawn by the demo, and nothing on
+   screen feels different.** Added 18 September 2026. Dengage renders every
+   on-site widget and that is the demonstration; `template/js/standby.js` does
+   nothing while the engine is answering. When it does not answer, because a
+   campaign was deactivated, a frequency cap was reached or the prospect's
+   network blocks the CDN, the storefront draws the same committed creative
+   itself. Three rules, and the third is what makes the first two safe:
+   **it is silent on screen**, because a prospect is watching a storefront and a
+   strip of internal plumbing across a creative is what makes a demonstration
+   feel like a rehearsal; **it is quick**, a grace period of a few hundred
+   milliseconds rather than a pause anyone reads as hesitation; and **Dengage
+   always wins, even late**, so a campaign that answers after the standby copy is
+   already up takes the screen and the standby copy is removed. **Revised the
+   same day**: this first required a visible label, on the reasoning that a call
+   must never claim Dengage rendered something it did not. That requirement is
+   real and it is met in `?debug=1` and the launcher's own log, which is where
+   anyone asking the question would look, rather than in front of the prospect.
+   It emits no event and counts no click: §1b is untouched and
+   `js/dengageEvents.js` is still the only module that reaches the SDK. The
+   module's own header carries the reasoning and `factory/checks/standby.js`
+   holds it to all of the above, in both directions
 6. All five inline content slots are present and targetable from the panel
 7. Web push works from the shared service worker at the **origin root**, which
    lives in the `dengage-presales.github.io` repository, not this one

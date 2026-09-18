@@ -99,7 +99,6 @@
   "inlineElsewhere": "This slot is on another page. Open it and fire from there.",
   "recoTitle": "Recommendations",
   "recoBody": "Every strategy is computed from this demo's own catalogue, so they are always the right vertical.",
-  "standbyNote": "The engine did not answer, so the storefront rendered its own committed copy of this creative.",
   "eventsTitle": "Event panel",
   "eventsBody": "Send a storefront event and watch it land in Dengage.",
   "eventsSend": "Send event",

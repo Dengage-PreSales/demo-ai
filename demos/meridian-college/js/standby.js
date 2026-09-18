@@ -2,8 +2,10 @@
 (function (window, document) {
     'use strict';
 
-    var WAIT = 2600;
-    var POLL = 150;
+    var GRACE = 350;
+
+    var YIELD_FOR = 8000;
+    var POLL = 100;
 
     var CREATIVES = {
         'subscription-popup':        'subscription-popup.html',
@@ -63,28 +65,26 @@
             'background:transparent;padding:0;display:block;}' +
         '#%ID%.dps-at-top{top:0;}' +
         '#%ID%.dps-at-bottom{bottom:0;}' +
-        '#%ID% .dps-standby-frame{width:min(900px,100%);max-height:calc(100vh - 48px);' +
-            'display:flex;flex-direction:column;background:var(--surface);' +
-            'border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow:hidden;' +
-            'pointer-events:auto;}' +
+        '#%ID% .dps-standby-frame{width:100%;display:flex;flex-direction:column;' +
+            'background:var(--surface);border-radius:var(--radius);' +
+            'box-shadow:var(--shadow-lg);overflow:hidden;pointer-events:auto;}' +
         '#%ID%.dps-at-top .dps-standby-frame,#%ID%.dps-at-bottom .dps-standby-frame' +
             '{width:100%;max-width:none;border-radius:0;}' +
-        '#%ID% .dps-standby-note{display:flex;align-items:center;gap:10px;' +
-            'padding:9px 14px;border-bottom:1px solid var(--line);' +
-            'background:var(--tint);color:var(--muted);font-size:12px;line-height:1.4;}' +
-        '#%ID%.dps-at-bottom .dps-standby-note{order:2;border-bottom:0;' +
-            'border-top:1px solid var(--line);}' +
-        '#%ID% .dps-standby-note b{color:var(--ink);font-weight:600;}' +
-        '#%ID% .dps-standby-close{margin-left:auto;border:0;background:transparent;' +
-            'color:var(--muted);font:inherit;font-size:20px;line-height:1;' +
-            'cursor:pointer;padding:0 4px;}' +
+
+        '#%ID% .dps-standby-shut{position:absolute;top:-30px;right:0;border:0;' +
+            'background:transparent;color:var(--surface);font:inherit;' +
+            'font-size:22px;line-height:1;cursor:pointer;padding:2px 6px;' +
+            'opacity:.85;pointer-events:auto;}' +
+        '#%ID%.dps-at-top .dps-standby-shut,#%ID%.dps-at-bottom .dps-standby-shut' +
+            '{display:none;}' +
+        '#%ID% .dps-standby-wrap{position:relative;width:min(900px,100%);' +
+            'max-height:calc(100vh - 48px);display:flex;}' +
+        '#%ID%.dps-at-top .dps-standby-wrap,#%ID%.dps-at-bottom .dps-standby-wrap' +
+            '{width:100%;max-width:none;}' +
 
         '#%ID% iframe{border:0;width:100%;min-height:160px;display:block;' +
             'background:var(--surface);}' +
-        '.dps-standby-inline-note{display:block;padding:6px 20px;font-size:11.5px;' +
-            'color:var(--muted);background:var(--tint);' +
-            'border-bottom:1px solid var(--line);}' +
-        '.dps-standby-inline-note b{color:var(--ink);font-weight:600;}';
+        '';
 
     function styleOnce(id, css) {
         if (document.getElementById(id)) return;
@@ -92,17 +92,6 @@
         tag.id = id;
         tag.textContent = css;
         document.head.appendChild(tag);
-    }
-
-    function noteText(name) {
-        var copy = window.Storefront && window.Storefront.t
-            ? window.Storefront.t('standbyNote')
-            : '';
-        var line = copy && copy !== 'standbyNote'
-            ? copy
-            : 'Drawn by this demo, not by Dengage. The engine did not answer, ' +
-              'so the storefront rendered its own committed copy of this creative.';
-        return '<span><b>Standby copy</b> ' + line + '</span>';
     }
 
     var SHIM =
@@ -162,12 +151,26 @@
         catch (err) {  }
     }
 
-    function close() {
+    var watching = null;
+
+    function stopWatching() {
+        if (!watching) return;
+        if (watching.timer) window.clearTimeout(watching.timer);
+        if (watching.observer) watching.observer.disconnect();
+        watching = null;
+    }
+
+    function removeHost() {
         var host = document.getElementById(hostId());
         if (!host) return;
         var pinned = host.className.indexOf('dps-at-') !== -1;
         if (host.parentNode) host.parentNode.removeChild(host);
         if (pinned) reportBarHeight(null);
+    }
+
+    function close() {
+        stopWatching();
+        removeHost();
     }
 
     function announce(name, how, detail) {
@@ -180,7 +183,7 @@
 
     function renderOverlay(name, html) {
         styleOnce('dps-standby-css', LABEL_CSS.split('%ID%').join(hostId()));
-        close();
+        removeHost();
         var placement = BARS[name] || '';
         var host = document.createElement('div');
         host.id = hostId();
@@ -188,16 +191,16 @@
         host.className = 'dps-standby-host' +
             (placement ? ' dps-at-' + placement : '');
         host.innerHTML =
-            '<div class="dps-standby-frame" role="dialog" aria-modal="true">' +
-              '<div class="dps-standby-note">' + noteText(name) +
-                '<button type="button" class="dps-standby-close" ' +
-                  'aria-label="Close">&times;</button>' +
+            '<div class="dps-standby-wrap">' +
+              '<button type="button" class="dps-standby-shut" ' +
+                'aria-label="Close">&times;</button>' +
+              '<div class="dps-standby-frame" role="dialog" aria-modal="true">' +
+                '<iframe title=""></iframe>' +
               '</div>' +
-              '<iframe title="Standby creative"></iframe>' +
             '</div>';
         host.addEventListener('click', function (event) {
             if (event.target === host ||
-                (event.target.className || '') === 'dps-standby-close') close();
+                (event.target.className || '') === 'dps-standby-shut') close();
         });
         document.body.appendChild(host);
         var frame = host.querySelector('iframe');
@@ -229,9 +232,7 @@
             document.head.appendChild(tag);
         }
 
-        slot.innerHTML =
-            '<span class="dps-standby-inline-note"><b>Standby copy</b> ' +
-            'drawn by this demo, not by Dengage.</span>';
+        slot.innerHTML = '';
         slot.appendChild(body);
 
         if (script && script.textContent) {
@@ -245,15 +246,42 @@
         return true;
     }
 
-    function render(name, spec, done) {
+    var warmed = {};
+
+    function fetchCreative(name) {
         var file = CREATIVES[name];
-        if (!file) { if (done) done(false, 'no committed creative stands in for this one'); return; }
-        window.fetch(creativeBase() + file, { credentials: 'omit' })
-            .then(function (response) {
-                if (!response.ok) throw new Error('HTTP ' + response.status);
-                return response.text();
-            })
+        if (!file) return null;
+        if (!warmed[name]) {
+            warmed[name] = window.fetch(creativeBase() + file, { credentials: 'omit' })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    return response.text();
+                })
+                .catch(function (err) {
+                    delete warmed[name];
+                    throw err;
+                });
+        }
+        return warmed[name];
+    }
+
+    function warm(names) {
+        var list = names && names.length ? names : Object.keys(CREATIVES);
+        for (var i = 0; i < list.length; i++) fetchCreative(list[i]);
+    }
+
+    function render(name, spec, done, guard) {
+        var pending = fetchCreative(name);
+        if (!pending) {
+            if (done) done(false, 'no committed creative stands in for this one');
+            return;
+        }
+        pending
             .then(function (html) {
+                if (typeof guard === 'function' && !guard()) {
+                    if (done) done(false, 'it was dismissed before it could be drawn');
+                    return;
+                }
                 var drawn = spec && spec.target
                     ? renderInline(name, spec.target, html)
                     : renderOverlay(name, html);
@@ -266,28 +294,114 @@
 
     function arm(name, spec, report) {
         if (!CREATIVES[name]) return;
-        var before = overlayCount();
-        var target = spec && spec.target;
-        var waited = 0;
+        warm([name]);
+        stopWatching();
 
-        function look() {
-            var answered = target ? slotFilled(target) : overlayCount() > before;
-            if (answered) {
-                announce(name, 'dengage', '');
+        var target = spec && spec.target;
+        var before = overlayCount();
+        var drewOurs = false;
+        var started = Date.now();
+        var mine = { timer: null, observer: null };
+        watching = mine;
+
+        function engineAnswered() {
+            if (target) {
+
+                if (!drewOurs) return slotFilled(target);
+                var slot = document.getElementById(target);
+                return !!slot && !!slot.querySelector(':scope > :not(.dn-inline-html)');
+            }
+
+            return overlayCount() > before + (drewOurs ? 1 : 0);
+        }
+
+        function tick() {
+            if (watching !== mine) return;
+
+            if (engineAnswered()) {
+                if (drewOurs) {
+
+                    removeHost();
+                    announce(name, 'dengage', 'the engine answered after the ' +
+                        'standby copy was drawn, so the standby copy was removed');
+                } else {
+                    announce(name, 'dengage', '');
+                }
+                stopWatching();
                 return;
             }
-            waited += POLL;
-            if (waited < WAIT) { window.setTimeout(look, POLL); return; }
-            render(name, spec, function (drawn, why) {
-                announce(name, drawn ? 'standby' : 'nothing', why);
-                if (typeof report === 'function') report(drawn, why);
-            });
+
+            var age = Date.now() - started;
+            if (!drewOurs && age >= GRACE) {
+                drewOurs = true;
+                render(name, spec, function (drawn, why) {
+                    if (!drawn) drewOurs = false;
+                    announce(name, drawn ? 'standby' : 'nothing', why);
+                    if (typeof report === 'function') report(drawn, why);
+                }, function () { return watching === mine; });
+            }
+            if (age >= YIELD_FOR) { stopWatching(); return; }
+            mine.timer = window.setTimeout(tick, POLL);
         }
-        window.setTimeout(look, POLL);
+
+        if (window.MutationObserver) {
+            mine.observer = new window.MutationObserver(function () { tick(); });
+            mine.observer.observe(document.body, { childList: true, subtree: true });
+        }
+        mine.timer = window.setTimeout(tick, POLL);
     }
 
-    window.Standby = { arm: arm, render: render, close: close,
-                       CREATIVES: CREATIVES, WAIT: WAIT };
+    var EXIT_ABOVE = -20;
+    var SCROLL_AT = 0.7;
+
+    function busy() {
+        try {
+            if (document.querySelector('.dps-standby-host')) return true;
+            return !!document.querySelector(
+                '#dengage-panel.open, .drawer.open, .modal.open');
+        } catch (err) { return false; }
+    }
+
+    function armGesture(name) {
+        if (!CREATIVES[name] || busy()) return;
+        arm(name, null);
+    }
+
+    var lastRealScroll = 0;
+    function noteRealScroll() { lastRealScroll = Date.now(); }
+    var SCROLL_IS_RECENT = 2000;
+
+    function watchGestures() {
+        window.addEventListener('wheel', noteRealScroll, { passive: true });
+        window.addEventListener('touchmove', noteRealScroll, { passive: true });
+
+        var firedExit = false;
+        document.documentElement.addEventListener('mouseleave', function (event) {
+            if (firedExit || event.clientY >= EXIT_ABOVE || busy()) return;
+            firedExit = true;
+            armGesture('exit-intent');
+        });
+
+        var firedScroll = false;
+        window.addEventListener('scroll', function () {
+            if (firedScroll) return;
+            var doc = document.documentElement;
+            var room = doc.scrollHeight - window.innerHeight;
+            if (room <= 0) return;
+            if ((window.pageYOffset || doc.scrollTop) / room < SCROLL_AT) return;
+            if (Date.now() - lastRealScroll > SCROLL_IS_RECENT) return;
+
+            if (busy()) return;
+            firedScroll = true;
+            armGesture('scroll-depth');
+        }, { passive: true });
+    }
+
+    if (document.body) watchGestures();
+    else document.addEventListener('DOMContentLoaded', watchGestures);
+
+    window.Standby = { arm: arm, render: render, close: close, warm: warm,
+                       CREATIVES: CREATIVES, GRACE: GRACE, YIELD_FOR: YIELD_FOR };
 
     window.addEventListener('message', function (event) {
         var data = event.data;
