@@ -120,6 +120,10 @@ omitting it, so a template never meets a missing key.
 | `basket_line` | `3 items, R$ 898.97` | yes, already composed |
 | `basket_summary` | `Barbie Dourada and 1 more item`, or the product alone when it is the only one | yes, already composed |
 | `basket_url` | the demo's cart, opened | yes |
+| `free_shipping_line` | `You are R$ 30.02 from free delivery`, or `Your order qualifies for free delivery` | yes, already composed |
+| `stock_line` | `Only 3 left`. **Empty whenever the catalogue does not genuinely track stock** | yes |
+| `coupon_code` | `DPS10`, and empty when no incentive applies | yes |
+| `coupon_line` | `10 percent off with code DPS10` | yes, already composed |
 | `search_term` | `sandalia dourada` | yes |
 | `order_id` | `DPS-10041` | yes |
 | `order_total` | `898.97` | yes |
@@ -172,8 +176,10 @@ worth doing the first time a call needs it rather than guessing at translations 
 
 ## 4. The use cases
 
-Eight triggers, ordered by how well each one demonstrates the platform on a call. Each names
-the channel, when it fires, and why it earns a message. The copy is in section 5.
+**Fifteen triggers in two groups.** The first eight are the moments a demo has to be able to
+show. The next seven are the ones that move revenue, and they are the reason this page exists
+rather than a lifecycle checklist. Each names its channel, when it fires and what it needs.
+The copy is in section 5.
 
 | | Trigger | Channel | Fires when |
 |---|---|---|---|
@@ -185,6 +191,39 @@ the channel, when it fires, and why it earns a message. The copy is in section 5
 | 6 | **Wishlist save** | push | a product is saved, and the saved set is not empty |
 | 7 | **Search returned nothing** | push | a search resolved zero products |
 | 8 | **Deep product interest** | push | one product held on screen past the dwell window with no add to cart |
+
+**Those eight are the moments. These seven are the conversion levers**, added 18 September
+2026 after Salil's point that account created and order placed are hygiene rather than
+revenue. In a real deployment every one of these is a marketing journey with waits and
+frequency caps. We fire them transactionally so a prospect sees the moment land on a call,
+and the pre-sales person should say so out loud: **in production this is a journey with a one
+hour wait, and we are firing it instantly so you can watch it arrive.** That sentence is the
+difference between a demonstration and a misrepresentation.
+
+| | Trigger | Channel | Fires when | Needs |
+|---|---|---|---|---|
+| 9 | **Free delivery gap** | push + email | the basket is below the demo's delivery threshold | a threshold in `demo.config.json`, shown in the storefront's own cart |
+| 10 | **Something you wanted is on sale** | push + email | a viewed or saved product genuinely carries a reduced price | a real `discountedPrice`. Ten of Di Santinni's thirty have one |
+| 11 | **Only a few left** | push | a carted or viewed product's real stock count is low | a real `stockCount`. Twelve of the showcase's fifteen have one |
+| 12 | **Category browse abandonment** | push + email | three or more products viewed in one category with nothing carted | nothing |
+| 13 | **Complete the look** | push | a product is added to the cart | nothing |
+| 14 | **A friendlier price** | push | a premium product viewed twice, not carted, with a cheaper sibling on the same shelf | nothing |
+| 15 | **Exit intent with an incentive** | push + email | exit intent on a basket above a value the store cares about | **a decision from you.** See the note under 15 |
+
+**Why these convert and the first eight mostly confirm.** Nine raises basket value, which is
+the only lever here that grows an order rather than rescuing it. Ten and eleven are the two
+highest performing messages in retail because both are true facts about the thing the person
+already wanted, rather than a reminder that they wanted it. Twelve reads intent at the shelf
+rather than the item, which is where a shopper who has not decided yet actually is. Thirteen
+catches the one moment engagement is already at its peak. Fourteen answers the commonest
+silent objection, price, without discounting anything.
+
+**What is deliberately refused, and it is the fashionable half of this list.** No "twelve
+people bought this today", no "three others are viewing this now", no countdown timer, and no
+stock number the scrape did not produce. Every one of those is a number nobody measured, they
+are the first thing a sharp prospect tests, and CLAUDE.md 3.5 forbids them. Scarcity in this
+set is only ever a real count from a real catalogue, which is why trigger eleven simply does
+not fire for a store whose stock we could not read.
 
 **Why some of these are push only.** An email for every gesture is how a demo account gets
 its sending reputation ruined and how a prospect concludes the platform is noisy. Push is
@@ -528,6 +567,143 @@ Message  {%= $Current.product_name %} at {%= $Current.price_line %}. Yours in tw
 Image    {%= $Current.product_image %}
 Target   {%= $Current.product_url %}
 ```
+
+### 9. Free delivery gap
+
+**Push**
+
+```
+Title    Almost there
+Message  {%= $Current.free_shipping_line %}. Add one more thing and delivery is on us.
+Image    {%= $Current.product_image %}
+Target   {%= $Current.basket_url %}
+```
+
+**Email**: the frame below, with `Your basket, and one step to free delivery` as the subject,
+`{%= $Current.free_shipping_line %}` as the hero line under the heading, and the three
+recommendations introduced as **Add one of these** rather than You might also like. The rail
+is doing real work in this message rather than decorating it, because the recipient needs a
+reason to add and these are the products the relay ranked for them.
+
+**This one needs a threshold, and the storefront has to agree with it.** A delivery threshold
+is the store's own policy rather than a scraped fact, so it is set once per demo in
+`demo.config.json` and the storefront's cart prints the same sentence from the same number.
+An email promising free delivery over a figure the cart does not recognise is the single most
+embarrassing failure available on a call.
+
+### 10. Something you wanted is on sale
+
+**Push**
+
+```
+Title    Now {%= $Current.price_line %}
+Message  {%= $Current.product_name %}, the one you were looking at, has come down.
+Image    {%= $Current.product_image %}
+Target   {%= $Current.product_url %}
+```
+
+**Email**: subject `{%= $Current.product_name %} is on sale`, hero line
+`The one you saved has come down to {%= $Current.price_line %}.`
+
+**It says on sale, never price dropped.** The catalogue holds a real reduced price beside a
+real full price, which is a fact. It holds no history, so nothing here knows the price changed
+after the visit, and claiming it did would be inventing the interesting part. `price_line`
+already carries both figures in the shape a shopper expects.
+
+### 11. Only a few left
+
+**Push**
+
+```
+Title    {%= $Current.stock_line %}
+Message  {%= $Current.product_name %} at {%= $Current.price_line %}, still in your basket.
+Image    {%= $Current.product_image %}
+Target   {%= $Current.basket_url %}
+```
+
+**This trigger does not fire at all unless the count is real.** `stock_line` is empty for
+every store whose stock the scrape could not read, and an empty title is not a message, so
+the relay refuses to send rather than reaching for a number. For a demo on a catalogue with
+real counts it is the strongest message in this document.
+
+### 12. Category browse abandonment
+
+**Push**
+
+```
+Title    Still looking at {%= $Current.product_category %}?
+Message  {%= $Current.reco_1_name %} from {%= $Current.currency %} {%= $Current.reco_1_price %}, and two more picked for you.
+Image    {%= $Current.reco_1_image %}
+Target   {%= $Current.reco_1_url %}
+```
+
+**Email**: subject `Still looking at {%= $Current.product_category %}?`, hero line
+`You have been through a few. Here are the three worth a second look.`, and the rail
+introduced as **Picked from {%= $Current.product_category %}**.
+
+**Why the shelf beats the item.** A visitor who looked at one product may have been passing.
+A visitor who looked at three in one category is shopping and has not decided, which is the
+one moment a suggestion is genuinely useful rather than a reminder.
+
+### 13. Complete the look
+
+**Push**
+
+```
+Title    Goes with that
+Message  {%= $Current.reco_1_name %} at {%= $Current.currency %} {%= $Current.reco_1_price %}, chosen for what you just added.
+Image    {%= $Current.reco_1_image %}
+Target   {%= $Current.reco_1_url %}
+```
+
+Fires at the add to cart, which is the peak of engagement in any session, and the relay fills
+the rail from the categories the basket does **not** already cover, so it suggests an addition
+rather than a duplicate of what was just chosen.
+
+### 14. A friendlier price
+
+**Push**
+
+```
+Title    A friendlier price
+Message  {%= $Current.reco_1_name %} at {%= $Current.currency %} {%= $Current.reco_1_price %}, on the same shelf as the one you were viewing.
+Image    {%= $Current.reco_1_image %}
+Target   {%= $Current.reco_1_url %}
+```
+
+The mirror image of Step up, and the one that answers the objection nobody types. The relay
+puts the cheaper sibling in the first recommendation slot, so no new parameter is needed, and
+it fires only when a genuinely cheaper product exists on the same shelf.
+
+### 15. Exit intent with an incentive
+
+**Push**
+
+```
+Title    Before you go
+Message  {%= $Current.coupon_line %}, on the {%= $Current.basket_line %} in your basket.
+Image    {%= $Current.product_image %}
+Target   {%= $Current.basket_url %}
+```
+
+**Email**: subject `{%= $Current.coupon_line %}`, hero line
+`{%= $Current.greeting %}, here is {%= $Current.coupon_line %} on everything in your basket.`
+with the code shown large above the Go to cart button.
+
+**THIS ONE NEEDS A DECISION FROM YOU, and it is the strongest message here.** An incentive at
+exit is the highest converting message in this whole document, and it is also the only one
+that promises something the storefront must honour. A code in an email that the checkout does
+not recognise is worse than no email, so there are two honest ways to ship it and they are
+yours to choose:
+
+| | |
+|---|---|
+| **The storefront honours the code** | I build the demo checkout to accept a code from that demo's config and take the amount off. The prospect gets the email, pastes the code, and watches the total drop on screen. It is a real end to end story and the best thing on this list |
+| **The code is shown and not used** | no storefront work, and a message that reads exactly right, but a code nobody should type. Fine for a screenshot, weak on a live call |
+
+Dengage also has its own coupon management, which issues a unique code per recipient rather
+than one shared code, and that is the right answer for a real deployment. Whether this
+account has it enabled is worth a question to support before we build either version.
 
 ---
 
