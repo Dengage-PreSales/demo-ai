@@ -15,7 +15,7 @@
    ========================================================================== */
 import { fromCsv, categorise, capProducts, collectProducts, dropSentinelPrices,
          wooFromApi, woocommerce, extractProductsFromHtml, catalogue,
-         shelfName } from './catalogue.mjs';
+         shelfName, preferCollections } from './catalogue.mjs';
 import { acceptHeader } from './fetch.mjs';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
@@ -1908,6 +1908,47 @@ console.log('\nPlatform plumbing is not a shelf name');
        shelfName('General Store'), 'General Store');
     is('empty stays empty', shelfName(''), '');
     is('and so does nothing at all', shelfName(undefined), '');
+}
+
+/* -------------------------------------------------------------------------- */
+/* When a store's collections beat its own typing field                        */
+
+{
+    /* THE RULE THIS REPLACED SHIPPED A BAD DEMO, so the store that exposed it is
+       the first case here. A leather goods store leaves product_type empty on
+       232 of its 250 products: its own typing yields two shelves holding 18
+       products, and its collections yield eight shelves holding 170. The old
+       rule demanded 70 percent coverage outright, 170 missed 175 by five, and
+       the demo shipped with 43 of its 60 products in a group called More.
+
+       The rule is a COMPARISON now, so the second case is the store that has to
+       keep its typing: a grocer whose own field places 235 of 250 across four
+       shelves, against collections that manage three shelves and 38. */
+    ok('a store with no typing takes its collections',
+       preferCollections({ ownShelves: 2, ownPlaced: 18,
+                           theirShelves: 8, theirPlaced: 170, total: 250 }) === true);
+    ok('a store whose typing is better keeps it',
+       preferCollections({ ownShelves: 4, ownPlaced: 235,
+                           theirShelves: 3, theirPlaced: 38, total: 250 }) === false);
+
+    /* More shelves is not on its own a reason: a structure that names more
+       groups while placing fewer products leaves the rest in the tail. */
+    ok('more shelves covering less of the catalogue is refused',
+       preferCollections({ ownShelves: 3, ownPlaced: 200,
+                           theirShelves: 6, theirPlaced: 120, total: 250 }) === false);
+
+    /* And the floor, whose only job is to refuse something too sparse to be a
+       better demo whatever it beat. */
+    ok('a structure too sparse to navigate is refused even when it wins',
+       preferCollections({ ownShelves: 1, ownPlaced: 5,
+                           theirShelves: 4, theirPlaced: 40, total: 250 }) === false);
+
+    /* THE EXACT CASE THE OLD THRESHOLD GOT WRONG, kept as a regression test: a
+       coverage between the old 70 percent bar and what the typing field managed
+       is precisely where the two rules disagree. */
+    ok('coverage just under the old 70 percent bar is still adopted',
+       preferCollections({ ownShelves: 2, ownPlaced: 18,
+                           theirShelves: 8, theirPlaced: 174, total: 250 }) === true);
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');

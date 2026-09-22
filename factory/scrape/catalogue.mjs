@@ -2400,6 +2400,26 @@ const CATEGORY_WANTED = 5;
 
    What it never does is invent a name. Every shelf it produces is a collection
    the store published, read from the store's own page. */
+/* The judgement above, on its own, so it can be tested without a network.
+   Every argument is a count:
+
+     ownShelves / ownPlaced      what the feed's own typing field produces
+     theirShelves / theirPlaced  what the store's collections produce
+     total                       products being judged
+
+   Exported for factory/scrape/scrape.test.mjs, which drives it with the two
+   real stores that set the rule and with the threshold it replaced. */
+export function preferCollections(counts) {
+    const richer = counts.theirShelves > counts.ownShelves;
+    const broader = counts.theirPlaced > counts.ownPlaced;
+    /* A floor, and its only job is to refuse a structure so sparse that it
+       would be a worse demo whatever it beat. It is deliberately far below the
+       70 percent this used to demand outright, because that bar threw away a
+       structure covering 68 percent in favour of one covering 7. */
+    const worthwhile = counts.theirPlaced >= Math.ceil(counts.total * 0.3);
+    return richer && broader && worthwhile;
+}
+
 async function deepenCategories(origin, result, attempts) {
     const products = result.products || [];
     if (!products.length) return;
@@ -2426,14 +2446,41 @@ async function deepenCategories(origin, result, attempts) {
         name !== UNCATEGORISED);
     const covered = proposed.filter((p) => p.category && p.category !== TAIL).length;
 
-    const richer = theirs.length > own.length;
-    const broad = covered >= Math.ceil(keyed.length * 0.7);
-    attempts.push({ tier: 'collections', ok: richer && broad,
+    /* THE COMPARISON IS AGAINST WHAT IT REPLACES, NOT AGAINST A FIXED BAR, and
+       the first version of this got that wrong in a way that cost a real demo.
+
+       It required the collections to cover 70 percent of the catalogue outright.
+       A leather goods store leaves product_type empty on 232 of its 250
+       products, so the feed's own typing produced two shelves holding 18
+       products between them and everything else fell into More. Its collections
+       produced EIGHT shelves covering 170. That is better by every measure
+       anyone would use, and it was refused for missing an absolute threshold by
+       five products, so the demo shipped with 43 of its 60 products in a group
+       called More.
+
+       A rule that prefers 7 percent coverage over 68 percent is not cautious,
+       it is wrong. What the caution was for is real though: a store whose
+       collections are noisier than its own typing should keep its typing. That
+       is a comparison between the two, so it is written as one. The collections
+       have to win on BOTH counts, more shelves and more of the catalogue
+       actually placed on one, and a floor stays only to refuse a structure so
+       sparse that it would be a worse demo whatever it beat. */
+    const ownPlaced = trial.filter((p) => p.category &&
+        p.category !== TAIL && p.category !== UNCATEGORISED).length;
+
+    const ok = preferCollections({
+        ownShelves: own.length, ownPlaced,
+        theirShelves: theirs.length, theirPlaced: covered,
+        total: keyed.length
+    });
+
+    attempts.push({ tier: 'collections', ok,
         detail: recovered.pagesRead + ' collection pages, ' + theirs.length +
             ' shelves covering ' + covered + ' of ' + keyed.length +
-            ' products, against ' + own.length + ' from the feed\'s own typing',
+            ' products, against ' + own.length + ' shelves covering ' +
+            ownPlaced + ' from the feed\'s own typing',
         found: covered });
-    if (!richer || !broad) return;
+    if (!ok) return;
 
     for (const product of keyed) {
         const name = byProduct.get(product.shelfKey);
