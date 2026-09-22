@@ -601,15 +601,72 @@ jobs:
           # the file if one ever appears again.
           git status --short
           git checkout -- .
-          # main moves while a build runs, so rebase rather than fail. A demo
-          # folder is a new path, so there is nothing for a rebase to conflict
-          # with.
+          # main moves while a build runs, so rebase rather than fail.
+          #
+          # "A DEMO FOLDER IS A NEW PATH, SO THERE IS NOTHING TO CONFLICT WITH"
+          # is what this comment used to say, and it was false in the one way
+          # that matters. The demo folder is indeed new. feed/ is not: every
+          # build regenerates the whole of it, so two builds that overlap each
+          # rewrite feed/demos.json from scratch and the second one to arrive
+          # conflicts on it. That happened on 22 September 2026, when two
+          # colleagues' requests ran at once: one landed, the other rebased onto
+          # it, hit CONFLICT in feed/demos.json, and was lost after being built
+          # and verified. The concurrency group above is per ISSUE, so it never
+          # covered two different requests, and an ordinary push to main by
+          # anybody has the same effect.
+          #
+          # A CONFLICT ALSO LEFT THE RETRY LOOP UNABLE TO RECOVER, which is why
+          # all four attempts failed in eight seconds. A failed rebase stops
+          # half applied, and every later "git pull --rebase" then refuses with
+          # "Pulling is not possible because you have unmerged files". The loop
+          # looked like resilience and could only ever repeat the same refusal.
+          #
+          # So a conflict is now resolved rather than retried, and only for the
+          # files where resolving it is exact. feed/ is DERIVED: every row in it
+          # comes from demos/*/products.json and demos/*/demo.config.json. At
+          # this point in a rebase the working tree already holds both demos, so
+          # rebuilding the feed from what is on disk is not a merge heuristic,
+          # it is the correct answer, and it is the same answer whichever build
+          # got there first. A conflict anywhere else is not guessed at: the
+          # rebase is abandoned and the attempt is retried against a main that
+          # has moved on.
           PUSHED=0
           for attempt in 1 2 3 4; do
             if git pull --rebase origin main && git push origin HEAD:main; then
               PUSHED=1
               break
             fi
+
+            if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+              conflicted="$(git diff --name-only --diff-filter=U || true)"
+              echo "Rebase conflicted on:"
+              printf '  %s\n' $conflicted
+              only_feed=1
+              [ -n "$conflicted" ] || only_feed=0
+              for f in $conflicted; do
+                case "$f" in
+                  feed/*) ;;
+                  *) only_feed=0 ;;
+                esac
+              done
+
+              if [ "$only_feed" = 1 ]; then
+                echo "Every conflict is in the generated feed, so it is rebuilt from"
+                echo "the demos now on disk rather than merged."
+                node factory/build-feed.mjs
+                git add feed
+                if GIT_EDITOR=true git rebase --continue \
+                   && git push origin HEAD:main; then
+                  PUSHED=1
+                  break
+                fi
+              fi
+
+              # Anything still half applied is abandoned, so the next attempt
+              # starts from a clean tree rather than repeating the refusal.
+              git rebase --abort 2>/dev/null || true
+            fi
+
             echo "Retrying push ($attempt)"
             sleep $((attempt * 4))
           done
