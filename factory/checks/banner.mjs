@@ -32,6 +32,7 @@
    the bottom of the bar, which is the thing a person on a sales call can see.
    ========================================================================== */
 import { chromium } from 'playwright';
+import { launchOptions } from '../browser.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -47,9 +48,7 @@ const check = (label, ok, detail) => {
     if (!ok) failures++;
 };
 
-const browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium'
-});
+const browser = await chromium.launch(launchOptions());
 
 /* The real creative, so the height it reports is the height it really renders rather
    than a number this file made up. */

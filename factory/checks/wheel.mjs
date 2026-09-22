@@ -32,6 +32,7 @@
    than quietly measuring a fallback and reporting a pass it has not earned.
    ========================================================================== */
 import { chromium } from 'playwright';
+import { launchOptions } from '../browser.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -136,9 +137,7 @@ pass('inlined ' + fonts.count + ' subset font file(s), ' +
      Math.round(fonts.css.length / 1024) + 'kB, for ' + FAMILIES.length + ' families');
 
 /* ---- the measurement ------------------------------------------------------ */
-const browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium'
-});
+const browser = await chromium.launch(launchOptions());
 const page = await browser.newPage({ viewport: { width: 900, height: 1200 } });
 /* Served over http rather than through setContent, so the document has a real origin
    and the font machinery behaves the way it does on a live demo. */

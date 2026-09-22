@@ -25,6 +25,7 @@
    worse than not showing it at all.
    ========================================================================== */
 import { chromium } from 'playwright';
+import { launchOptions } from '../browser.mjs';
 import { spawn } from 'node:child_process';
 
 const PORT = 8194;
@@ -38,13 +39,13 @@ if (!process.env.TEMPLATE_URL) {
 }
 const url = process.env.TEMPLATE_URL || `http://localhost:${PORT}/template/`;
 
-const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium',
+const browser = await chromium.launch(launchOptions({
     /* The SDK hosts resolve to nowhere INSIDE THIS BROWSER, so what these
        checks record is always the page's own stub, on every machine. The
        comment used to claim the CDN was unreachable from the sandbox, which
        was true here and false on any machine with internet, where the real
        SDK loaded mid-check and raced the recorder. Enforced, not assumed. */
-    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] });
+    args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND'] }));
 const page = await browser.newPage();
 
 const errors = [];

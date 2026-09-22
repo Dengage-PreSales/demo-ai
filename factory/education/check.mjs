@@ -33,7 +33,11 @@ import { join } from 'node:path';
 const run = promisify(execFile);
 const BASE = process.env.DEMO_URL || 'http://localhost:8101/demos/meridian-college/';
 const SHOTS = process.env.SHOT_DIR || '';
-const CHROME = process.env.CHROME_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+/* CHROME_PATH still wins, for a machine with an unusual layout, and everything
+   else is factory/browser.mjs's job. Naming a versioned sandbox path as the
+   default made this file runnable in one place only, which is the fault the
+   guard's browser-path check exists to refuse. */
+const CHROME = process.env.CHROME_PATH || '';
 const DENGAGE_HOST = /(^|\.)dengage\.com$/;
 
 let pass = 0;
@@ -82,7 +86,9 @@ const PAGES = [
     { file: 'post.html?id=round-2-closing-soon', type: 'other', renders: ['post', 'news'] }
 ];
 
-const browser = await chromium.launch({ executablePath: CHROME, args: ['--no-sandbox'] });
+const { launchOptions } = await import('../browser.mjs');
+const browser = await chromium.launch(launchOptions(
+    Object.assign({ args: ['--no-sandbox'] }, CHROME ? { executablePath: CHROME } : {})));
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
 
 let sdkRefusals = 0;

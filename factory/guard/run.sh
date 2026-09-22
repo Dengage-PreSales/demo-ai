@@ -37,7 +37,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current published-paths"
+CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current published-paths browser-path"
 
 if [ "$LIST_ONLY" -eq 1 ]; then
     for id in $CHECK_IDS; do echo "$id"; done
@@ -762,6 +762,71 @@ EOF
         detail "or ship the file inside the demo so nothing has to climb out"
     else
         pass published-paths "every path a shipped page climbs to is staged: $(printf '%s' "$staged" | tr '\n' ' ')"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# browser-path
+#
+# NO SCRIPT NAMES A BROWSER THAT ONLY EXISTS ON ONE MACHINE, and this check is
+# here because that exact fault has now shipped twice and the second time it
+# stopped the factory for four days.
+#
+# /opt/pw-browsers/chromium is pre-installed in the sandbox this repository is
+# usually developed in. It does not exist on a GitHub runner, where the build
+# workflow installs Playwright's own browser instead. A script that names the
+# sandbox path outright therefore passes every time it is run by hand and fails
+# every time it runs in CI, which is the worst possible way round: the person
+# who wrote it cannot reproduce the failure.
+#
+# The first time was render.mjs on 8 August 2026. The second was
+# factory/checks/standby.js on 18 September 2026, which the build workflow runs
+# against every new demo, so from that day every demo request failed at the last
+# step. The store had been read, the products downloaded, the demo built and the
+# smoke test passed 70 of 70, and all of it was discarded by one string.
+#
+# factory/browser.mjs is the one place allowed to name it, because resolving it
+# is that file's whole job: it prefers an explicitly named browser, falls back to
+# the sandbox path only when it is really there, and otherwise leaves Playwright
+# to find its own. Every other script asks it.
+BROWSER_SCRIPTS="$(find_files js mjs)"
+
+if [ -z "$BROWSER_SCRIPTS" ]; then
+    skip browser-path "no scripts in scope"
+else
+    # A literal sandbox path, anywhere except the resolver itself. Lines that
+    # test for the path with existsSync are the guarded form and are the point,
+    # so they are not matched.
+    # READ FROM $ROOT, NOT FROM WHEREVER THIS WAS INVOKED, which is why
+    # grep_list above does the same. The first version of this loop grepped the
+    # paths as given, so pointing --root at the known-bad fixture read the real
+    # repository's files instead of the fixture's and reported the fixture
+    # clean. Caught by the guard's own test suite rather than by a person.
+    offenders=""
+    while IFS= read -r file; do
+        [ -n "$file" ] || continue
+        # The resolver itself, which is the one file whose job is to name it.
+        case "$file" in
+            factory/browser.mjs|*/factory/browser.mjs) continue ;;
+        esac
+        hits="$( cd "$ROOT" && grep -n '/opt/pw-browsers' "$file" 2>/dev/null \
+            | grep -v 'existsSync' | grep -v 'PLAYWRIGHT_BROWSERS_PATH' || true )"
+        if [ -n "$hits" ]; then
+            offenders="${offenders}${file}"$'\n'"$(printf '%s' "$hits" | sed 's/^/    /')"$'\n'
+        fi
+    done <<EOF
+$BROWSER_SCRIPTS
+EOF
+
+    if [ -n "$offenders" ]; then
+        fail browser-path "a script names the sandbox browser outright, so it cannot run in CI"
+        printf '%s' "$offenders" | show
+        detail "ask factory/browser.mjs instead:"
+        detail "  ESM:  import { launchOptions } from '../browser.mjs'"
+        detail "  CJS:  const { launchOptions } = await import('../browser.mjs')"
+        detail "then:  chromium.launch(launchOptions({ args: [...] }))"
+    else
+        pass browser-path "no script names the sandbox browser; all of them ask factory/browser.mjs"
     fi
 fi
 

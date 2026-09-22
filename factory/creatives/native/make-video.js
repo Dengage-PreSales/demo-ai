@@ -238,19 +238,18 @@ ${cards}
 `;
 }
 
-function launchOptions() {
-    const named = process.env.PW_CHROMIUM;
-    if (named && fs.existsSync(named)) return { executablePath: named };
-    if (fs.existsSync('/opt/pw-browsers/chromium')) {
-        return { executablePath: '/opt/pw-browsers/chromium' };
-    }
-    return {};
+/* factory/browser.mjs owns this, and is the only file allowed to name a
+   browser path. Imported rather than copied, because four copies of this
+   resolution had already drifted apart by September 2026 and one of them
+   stopped the factory. The guard's browser-path check holds the rule. */
+async function launchOptions() {
+    return (await import('../../browser.mjs')).launchOptions();
 }
 
 (async () => {
     fs.mkdirSync(OUT, { recursive: true });
 
-    const browser = await chromium.launch(launchOptions());
+    const browser = await chromium.launch(await launchOptions());
     /* The video is the size of the viewport, so the two are set to the same thing
        rather than left to be scaled: recording at one size and displaying at
        another is where soft text comes from. */

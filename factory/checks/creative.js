@@ -167,8 +167,8 @@ async function main() {
   }
 
 
-  browser = await chromium.launch({
-    executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium' });
+  const { launchOptions } = await import('../browser.mjs');
+  browser = await chromium.launch(launchOptions());
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));

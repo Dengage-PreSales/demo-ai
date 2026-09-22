@@ -82,8 +82,8 @@ function creativeFiles(dir, prefix) {
 }
 
 (async () => {
-    const browser = await chromium.launch({
-        executablePath: '/opt/pw-browsers/chromium',
+    const { launchOptions } = await import('../browser.mjs');
+    const browser = await chromium.launch(launchOptions({
         /* THE SDK HOSTS RESOLVE TO NOWHERE INSIDE THIS BROWSER, and here that is
            not merely noise reduction: this whole file is about what happens when
            the engine does not answer, so the engine must not be able to. The
@@ -91,7 +91,7 @@ function creativeFiles(dir, prefix) {
            CLAUDE.md 4 states after a comment claiming exactly this turned out to
            be false and failed good builds for a day. */
         args: ['--host-resolver-rules=MAP pcdn.dengage.com ~NOTFOUND, MAP push.dengage.com ~NOTFOUND']
-    });
+    }));
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
     const page = await ctx.newPage();
 
