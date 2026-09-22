@@ -1,0 +1,784 @@
+{
+  "products": [
+    {
+      "id": "C28656016",
+      "name": "Chinelo Rasteiro Preto Monograma",
+      "category": "Chinelos",
+      "price": 199.9,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28656016.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28291013",
+      "name": "Chinelo de Dedo Listras Azul Turmalina",
+      "category": "Chinelos",
+      "price": 130,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28291013.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28658014",
+      "name": "Chinelo Rasteiro Dourado Monograma",
+      "category": "Chinelos",
+      "price": 199.9,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28658014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28719014",
+      "name": "Chinelo Rasteiro Caramelo",
+      "category": "Chinelos",
+      "price": 199.9,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28719014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28653019",
+      "name": "Chinelo Rasteiro Nude Seda",
+      "category": "Chinelos",
+      "price": 199.9,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28653019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28030014",
+      "name": "Clog Infantil Rosa",
+      "category": "Chinelos",
+      "price": 250,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28030014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29022012",
+      "name": "Chinelo de Dedo Verde Verbena",
+      "category": "Chinelos",
+      "price": 100,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29022012.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29003017",
+      "name": "Sapatilha Couro Tressê Preta",
+      "category": "Sapatilhas",
+      "price": 790,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29003017.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28348010",
+      "name": "Sapatilha Couro Vazada Rosa Peônia",
+      "category": "Sapatilhas",
+      "price": 550,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28348010.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29004016",
+      "name": "Sapatilha Couro Tressê Marrom Mogno",
+      "category": "Sapatilhas",
+      "price": 790,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29004016.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28713010",
+      "name": "Sapatilha Catherine Ballerina Couro Vermelha Papoula",
+      "category": "Sapatilhas",
+      "price": 450,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28713010.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28639019",
+      "name": "Sapatilha Bico Redondo Couro Metalizada Prateada",
+      "category": "Sapatilhas",
+      "price": 390,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28639019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28050018",
+      "name": "Sapatilha Infantil Couro Mocha Rose Catherine",
+      "category": "Sapatilhas",
+      "price": 370,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28050018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C27030017",
+      "name": "Sapatilha Bico Redondo Couro Rose Mocha",
+      "category": "Sapatilhas",
+      "price": 390,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c27030017.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28766012",
+      "name": "Scarpin Salto Médio Couro Preto",
+      "category": "Scarpins",
+      "price": 650,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28766012.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29315019",
+      "name": "Scarpin Salto Alto Couro Camomila e Preto",
+      "category": "Scarpins",
+      "price": 690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29315019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29398012",
+      "name": "Scarpin Slingback Couro Mármore",
+      "category": "Scarpins",
+      "price": 490,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29398012.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29396014",
+      "name": "Scarpin Slingback Couro Preto",
+      "category": "Scarpins",
+      "price": 490,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29396014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29397013",
+      "name": "Scarpin Slingback Couro Azul Cielo",
+      "category": "Scarpins",
+      "price": 490,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29397013.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29323018",
+      "name": "Scarpin Salto Alto Anabela Couro Mármore",
+      "category": "Scarpins",
+      "price": 590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29323018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29322019",
+      "name": "Scarpin Salto Alto Anabela Couro Azul Cielo",
+      "category": "Scarpins",
+      "price": 590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29322019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C26346018",
+      "name": "Bolsa Monograma Bege Shopper",
+      "category": "Shopper",
+      "price": 690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c26346018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C25707018",
+      "name": "Bolsa Média Monograma Bege Shopper",
+      "category": "Shopper",
+      "price": 550,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c25707018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C16224018",
+      "name": "Bolsa Donata Shopper Média Monograma Caramelo",
+      "category": "Shopper",
+      "price": 550,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c16224018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28170011",
+      "name": "Bolsa Shopper Grande Couro Preta",
+      "category": "Shopper",
+      "price": 1290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28170011.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28900014",
+      "name": "Bolsa Shopper Couro Bege Savana Detalhe Corrente",
+      "category": "Shopper",
+      "price": 1590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28900014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28533016",
+      "name": "Bolsa Shopper Couro Suede Preta",
+      "category": "Shopper",
+      "price": 1590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28533016.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28534015",
+      "name": "Bolsa Shopper Couro Suede Marrom Mogno",
+      "category": "Shopper",
+      "price": 1590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28534015.jpg",
+      "motif": null
+    },
+    {
+      "id": "C26350011",
+      "name": "Bolsa Monograma Shoulder Caramelo",
+      "category": "Shoulder Bag",
+      "price": 690,
+      "discountedPrice": 300,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c26350011.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C16227015",
+      "name": "Bolsa Pequena Monograma Shoulder Bag Caramelo",
+      "category": "Shoulder Bag",
+      "price": 390,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c16227015.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C28498014",
+      "name": "Bolsa Tiracolo Couro Coral Shoulder Bag",
+      "category": "Shoulder Bag",
+      "price": 790,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28498014.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C27542017",
+      "name": "Bolsa Tiracolo Couro Matelassê Preta Alça Grafite",
+      "category": "Shoulder Bag",
+      "price": 990,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c27542017.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C28168016",
+      "name": "Bolsa Shoulder Pequena Couro Caramelo",
+      "category": "Shoulder Bag",
+      "price": 890,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28168016.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C28483012",
+      "name": "Bolsa Tiracolo Couro Marrom",
+      "category": "Shoulder Bag",
+      "price": 990,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28483012.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C28526016",
+      "name": "Bolsa Shoulder Tela Couro Amarelo Camomila",
+      "category": "Shoulder Bag",
+      "price": 1690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28526016.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "C28711012",
+      "name": "Cinto Couro Marrom Fivela Dourada",
+      "category": "Cintos",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28711012.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28710013",
+      "name": "Cinto Couro Preto Fivela Dourada",
+      "category": "Cintos",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28710013.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28821018",
+      "name": "Cinto Couro Branco Fivela Dourada",
+      "category": "Cintos",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28821018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C20389011",
+      "name": "Cinto Couro Nude e Preto Feminino",
+      "category": "Cintos",
+      "price": 350,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c20389011.jpg",
+      "motif": null
+    },
+    {
+      "id": "C27625019",
+      "name": "Cinto Couro Marrom Feminino Fivela Redonda",
+      "category": "Cintos",
+      "price": 350,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c27625019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C27618019",
+      "name": "Cinto Monograma Preto Feminino",
+      "category": "Cintos",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c27618019.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28808017",
+      "name": "Sandália Salto Bloco Couro Preta",
+      "category": "Sandálias",
+      "price": 590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28808017.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28250016",
+      "name": "Sandália Salto Bloco Caramelo",
+      "category": "Sandálias",
+      "price": 390,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28250016.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29366013",
+      "name": "Sandália Salto Alto Couro Trançada Dourada",
+      "category": "Sandálias",
+      "price": 690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29366013.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29365014",
+      "name": "Sandália Salto Alto Couro Trançada Preta",
+      "category": "Sandálias",
+      "price": 690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29365014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29352010",
+      "name": "Sandália Salto Alto Couro Nobuck Preta e Camomila",
+      "category": "Sandálias",
+      "price": 650,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29352010.jpg",
+      "motif": null
+    },
+    {
+      "id": "C29351011",
+      "name": "Sandália Salto Alto Couro Caramelo",
+      "category": "Sandálias",
+      "price": 650,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c29351011.jpg",
+      "motif": null
+    },
+    {
+      "id": "KIT-MULE-BOLSA-TOTE",
+      "name": "Kit Mule Bolsa Tote",
+      "category": "Sem Categoria",
+      "price": 1840,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-mule-bolsa-tote.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "KIT-BOLSA-SHOULDER-BAG-TENIS-SNEAKERS",
+      "name": "Kit Bolsa Shoulder Bag Tênis Sneakers",
+      "category": "Sem Categoria",
+      "price": 2590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-bolsa-shoulder-bag-tenis-sneakers.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "KIT-SAPATILHA-BOLSA-SHOULDER-BAG",
+      "name": "Kit Sapatilha Bolsa Shoulder Bag",
+      "category": "Sem Categoria",
+      "price": 1640,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-sapatilha-bolsa-shoulder-bag.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "KIT-MULE-BOLSA-SHOULDER-BAG",
+      "name": "Kit Mule Bolsa Shoulder Bag",
+      "category": "Sem Categoria",
+      "price": 2340,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-mule-bolsa-shoulder-bag.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "KIT-LOAFER-BOLSA-SHOULDER-BAG",
+      "name": "Kit Loafer Bolsa Shoulder Bag",
+      "category": "Sem Categoria",
+      "price": 1540,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-loafer-bolsa-shoulder-bag.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "KIT-BOLSA-BAGUETE-SANDALIA-RASTEIRA",
+      "name": "Kit Bolsa Baguete Sandália Rasteira",
+      "category": "Sem Categoria",
+      "price": 1200,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "KIT CAPODARTE"
+      },
+      "image": "images/kit-bolsa-baguete-sandalia-rasteira.jpg",
+      "motif": null
+    },
+    {
+      "id": "C25947014",
+      "name": "Mala Maternidade Camel Monograma + Trocador",
+      "category": "More",
+      "price": 990,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c25947014.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28649016",
+      "name": "Sandália Rasteira Marinho Azzurro",
+      "category": "More",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28649016.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28278012",
+      "name": "Loafer Mocassim Couro Rose Mocha",
+      "category": "More",
+      "price": 690,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28278012.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "C28737010",
+      "name": "Mule Salto Médio Couro Caramelo",
+      "category": "More",
+      "price": 590,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28737010.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28651011",
+      "name": "Sandália Rasteira Monograma Dourada",
+      "category": "More",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28651011.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28647018",
+      "name": "Sandália Rasteira Nude Seda",
+      "category": "More",
+      "price": 290,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28647018.jpg",
+      "motif": null
+    },
+    {
+      "id": "C28319018",
+      "name": "Mule Plataforma Cortiça Marrom Mogno",
+      "category": "More",
+      "price": 490,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Brand": "CAPODARTE"
+      },
+      "image": "images/c28319018.jpg",
+      "motif": null
+    }
+  ]
+}
