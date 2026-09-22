@@ -1,0 +1,946 @@
+{
+  "products": [
+    {
+      "id": "CBL1014",
+      "name": "Good Leather Sleek Chelsea Boots",
+      "category": "Chelsea",
+      "price": 5518.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbl1014.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1043",
+      "name": "Good Leather Grand Chelsea",
+      "category": "Chelsea",
+      "price": 6598.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbl1043.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBR1034",
+      "name": "Good Leather Florence Ankle Boot",
+      "category": "Chelsea",
+      "price": 8400,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbr1034.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CTN1034",
+      "name": "Good Leather Royal Step Chelsea",
+      "category": "Chelsea",
+      "price": 10798.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/ctn1034.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBR1013",
+      "name": "Good Leather Apex Chelsea Boots",
+      "category": "Chelsea",
+      "price": 10800,
+      "discountedPrice": 2758.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbr1013.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CST-1042",
+      "name": "Good Leather Elite Chelsea",
+      "category": "Chelsea",
+      "price": 8398.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Suede Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cst-1042.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1020",
+      "name": "Good Leather Maverick Chelsea Boot Black",
+      "category": "Chelsea",
+      "price": 6598.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbl1020.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1026",
+      "name": "Good Leather Varo Chelsea",
+      "category": "Chelsea",
+      "price": 5998.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbl1026.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CST-1004",
+      "name": "Good Leather Prestige Chelsea",
+      "category": "Chelsea",
+      "price": 4798.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cst-1004.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1033",
+      "name": "Good Leather Artisan Chelsea Boot Black",
+      "category": "Chelsea",
+      "price": 7198.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/cbl1033.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "B-508",
+      "name": "Rugged Trail Boots",
+      "category": "Boot",
+      "price": 6718.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/b-508.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "B512-BR",
+      "name": "Good Leather Hampton Boots",
+      "category": "Boot",
+      "price": 5518.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Darkbrown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/b512-br.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "BBL501",
+      "name": "Titan Genuine Leather Buckle Boots",
+      "category": "Boot",
+      "price": 5518.8,
+      "discountedPrice": 3478.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/bbl501.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1032",
+      "name": "Good Leather Noble Chelsea Boots",
+      "category": "Boot",
+      "price": 10800,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1032.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "BBL502",
+      "name": "Good Leather Noren Boots",
+      "category": "Boot",
+      "price": 10798.8,
+      "discountedPrice": 3118.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/bbl502.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "BSBU505",
+      "name": "Combat Suede Leather Boots",
+      "category": "Boot",
+      "price": 5878.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Navy",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Suede Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/bsbu505.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "BBL503",
+      "name": "Viaterra Leather Boots",
+      "category": "Boot",
+      "price": 7198.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Real Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/bbl503.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "F-116",
+      "name": "Horizon Formal Shoes",
+      "category": "More",
+      "price": 6598.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/f-116.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "V1505-BL",
+      "name": "Modern Comfort Loafers",
+      "category": "More",
+      "price": 6598.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/v1505-bl.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "V1524-BL",
+      "name": "Double Monk Formal Shoes",
+      "category": "More",
+      "price": 4918.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/v1524-bl.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "LST2005-TN",
+      "name": "Classic Buckle Loafers",
+      "category": "More",
+      "price": 5518.8,
+      "discountedPrice": 2278.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Suede Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/lst2005-tn.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "LST2003-TN",
+      "name": "Classic Brown Loafers",
+      "category": "More",
+      "price": 5518.8,
+      "discountedPrice": 2278.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Suede Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/lst2003-tn.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "GL5006",
+      "name": "Ranger Leather Jacket",
+      "category": "More",
+      "price": 10798.8,
+      "discountedPrice": 6358.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "XS",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/gl5006.jpg",
+      "motif": "jacket"
+    },
+    {
+      "id": "VBL1521",
+      "name": "Royal Crest Belly Shoes",
+      "category": "More",
+      "price": 4198.8,
+      "discountedPrice": 2398.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/vbl1521.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "VBL1516",
+      "name": "Good Leather Prime Slip-On",
+      "category": "More",
+      "price": 5518.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/vbl1516.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "HUDSON-LEATHER-JACKET",
+      "name": "Hudson Leather Jacket",
+      "category": "More",
+      "price": 9118.8,
+      "discountedPrice": 5998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Size": "XS",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/hudson-leather-jacket.jpg",
+      "motif": "jacket"
+    },
+    {
+      "id": "GL5014",
+      "name": "Carter Suede Leather Jacket",
+      "category": "More",
+      "price": 9118.8,
+      "discountedPrice": 5998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "XS",
+        "Material": "Suede",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/gl5014.jpg",
+      "motif": "jacket"
+    },
+    {
+      "id": "FBL113",
+      "name": "Marlowe Formal Shoes",
+      "category": "More",
+      "price": 5518.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/fbl113.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "FTN113",
+      "name": "Milan Leather Derbies",
+      "category": "More",
+      "price": 4918.8,
+      "discountedPrice": 2878.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/ftn113.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "CBL1034",
+      "name": "Regent Genuine Leather Zip Boots",
+      "category": "More",
+      "price": 9478.8,
+      "discountedPrice": 4078.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1034.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "FBL106",
+      "name": "Regal Genuine Leather Derby Shoes",
+      "category": "More",
+      "price": 5878.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather"
+      },
+      "image": "images/fbl106.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "GL5016",
+      "name": "Oxford Classic Leather Jacket",
+      "category": "More",
+      "price": 9118.8,
+      "discountedPrice": 5518.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Size": "XS",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/gl5016.jpg",
+      "motif": "jacket"
+    },
+    {
+      "id": "GL5010",
+      "name": "Malan Leather Jacket",
+      "category": "More",
+      "price": 8398.8,
+      "discountedPrice": 5998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "brown",
+        "Size": "XS",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/gl5010.jpg",
+      "motif": "jacket"
+    },
+    {
+      "id": "MADE-TO-MEASURE",
+      "name": "Customization-Made To Measure",
+      "category": "More",
+      "price": 1200,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Customization": "made to measure",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/made-to-measure.jpg",
+      "motif": null
+    },
+    {
+      "id": "VELMORA-LADIES-HANDBAG",
+      "name": "Velmora Ladies HandBag",
+      "category": "More",
+      "price": 12718.8,
+      "discountedPrice": 5398.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/velmora-ladies-handbag.jpg",
+      "motif": null
+    },
+    {
+      "id": "LUNAVERA-LADIES-PURSE-BLACK",
+      "name": "Lunavera Ladies Purse Black",
+      "category": "More",
+      "price": 11998.8,
+      "discountedPrice": 5278.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/lunavera-ladies-purse-black.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "CBL1027",
+      "name": "Good Leather Blackstone Chelsea Boots",
+      "category": "More",
+      "price": 11998.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1027.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "ARLISSE-EATHER-LADIES-HANDBAGS-BLACK",
+      "name": "Arlisse eather Ladies Handbags Black",
+      "category": "More",
+      "price": 9598.8,
+      "discountedPrice": 5398.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/arlisse-eather-ladies-handbags-black.jpg",
+      "motif": null
+    },
+    {
+      "id": "GL48",
+      "name": "Good Leather Rano Ladies Purse",
+      "category": "More",
+      "price": 11998.8,
+      "discountedPrice": 5400,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/gl48.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "CBL1007A",
+      "name": "Good Leather Vintage Chelsea",
+      "category": "More",
+      "price": 10800,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1007a.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1007",
+      "name": "Good Leather Sovereign Chelsea",
+      "category": "More",
+      "price": 10800,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1007.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "FSTBL107",
+      "name": "Good Leather Soren Suede",
+      "category": "More",
+      "price": 10800,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/fstbl107.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "LSTBR2003",
+      "name": "Good Leather Voler Suede Brown",
+      "category": "More",
+      "price": 4798.8,
+      "discountedPrice": 2398.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Suede Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/lstbr2003.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "GOOD-LEATHER-MONARCH-CHELSEA-BLACK",
+      "name": "Good Leather Monarch Chelsea Black",
+      "category": "More",
+      "price": 2998.8,
+      "discountedPrice": null,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/good-leather-monarch-chelsea-black.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "C1019",
+      "name": "Good Leather Edge Chelsea",
+      "category": "More",
+      "price": 10800,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/c1019.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "C1029",
+      "name": "Good Leather Avenue Chelsea",
+      "category": "More",
+      "price": 7198.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Footwear material": "Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/c1029.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1036",
+      "name": "Good Leather Urban Chelsea",
+      "category": "More",
+      "price": 10798.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1036.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CBL1009",
+      "name": "Good Leather Crown Chelsea",
+      "category": "More",
+      "price": 10318.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/cbl1009.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "CCR1003",
+      "name": "Textured Leather Chelsea Boots",
+      "category": "More",
+      "price": 4558.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/ccr1003.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "RAVEN-SUEDE-LEATHER-CHELSEA-BOOTS",
+      "name": "Raven Suede Leather Chelsea Boots",
+      "category": "More",
+      "price": 4558.8,
+      "discountedPrice": 3598.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Suede Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/raven-suede-leather-chelsea-boots.jpg",
+      "motif": "boot"
+    },
+    {
+      "id": "FBR108",
+      "name": "Classic Leather Oxford Shoes",
+      "category": "More",
+      "price": 4798.8,
+      "discountedPrice": 2998.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/fbr108.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "F112-BR",
+      "name": "Brogue Leather Shoes",
+      "category": "More",
+      "price": 5638.8,
+      "discountedPrice": 2878.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Shoe size": "IND -6(UK-40)",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/f112-br.jpg",
+      "motif": "shoe"
+    },
+    {
+      "id": "ELEGANT-LEATHER-HANDBAG-WITH-CHAIN-HANDLES",
+      "name": "Elegant Leather Handbag with Chain Handles",
+      "category": "More",
+      "price": 5950.8,
+      "discountedPrice": 4618.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Style": "Leather HandBag",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/elegant-leather-handbag-with-chain-handles.jpg",
+      "motif": null
+    },
+    {
+      "id": "DUAL-TONE-ELEGANCE-LEATHER-PURSE",
+      "name": "Dual-Tone Elegance Leather Purse",
+      "category": "More",
+      "price": 5998.8,
+      "discountedPrice": 4798.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Tan Brown",
+        "Style": "Leather Purse",
+        "Material": "Real Leatehr",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/dual-tone-elegance-leather-purse.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "EMERALD-LUXE-CROCO-PRINT-LEATHER-PURSE",
+      "name": "Emerald Luxe Leather Sling Bag",
+      "category": "More",
+      "price": 5878.8,
+      "discountedPrice": 3478.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Style": "Leather Purse",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/emerald-luxe-croco-print-leather-purse.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "HAUTE-LEATHER-LADIES-HANDBAG",
+      "name": "Haute Leather Ladies HandBag",
+      "category": "More",
+      "price": 5758.8,
+      "discountedPrice": 4198.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Green",
+        "Style": "Leather HandBag",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/haute-leather-ladies-handbag.jpg",
+      "motif": null
+    },
+    {
+      "id": "ELEANOR-BOX-LEATHER-PURSE",
+      "name": "Eleanor Box Leather Purse",
+      "category": "More",
+      "price": 5878.8,
+      "discountedPrice": 4378.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Style": "Leather Purse",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/eleanor-box-leather-purse.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "CROC-SATCHEL-LEATHER-LADIES-HANDBAG",
+      "name": "Croc Satchel Leather Ladies Handbag",
+      "category": "More",
+      "price": 6958.8,
+      "discountedPrice": 4558.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Brown",
+        "Style": "Laptop Leather Handbag",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/croc-satchel-leather-ladies-handbag.jpg",
+      "motif": "bag"
+    },
+    {
+      "id": "LUXELLE-LEATHER-LADIES-HANDBAG",
+      "name": "Luxelle Leather Ladies Handbag",
+      "category": "More",
+      "price": 7198.8,
+      "discountedPrice": 4378.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Black",
+        "Style": "Laptop Leather HandBag",
+        "Material": "Real leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/luxelle-leather-ladies-handbag.jpg",
+      "motif": "laptop"
+    },
+    {
+      "id": "BAGARI-LEATHER-HANDBAG",
+      "name": "Bagari Leather Ladies Handbag",
+      "category": "More",
+      "price": 5998.8,
+      "discountedPrice": 4438.8,
+      "stockCount": null,
+      "attributes": {
+        "Color": "Darkgreen",
+        "Style": "Leather HandBag",
+        "Material": "Real Leather",
+        "Brand": "Good Leather Garments"
+      },
+      "image": "images/bagari-leather-handbag.jpg",
+      "motif": null
+    }
+  ]
+}
