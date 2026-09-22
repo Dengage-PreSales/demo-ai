@@ -515,7 +515,10 @@ async function vtex(origin) {
                 stockCount: sellable.length ? null : 0,
                 attributes: clean(item.brand) ? { Brand: clean(item.brand) } : {},
                 image: null,
-                imageUrl: httpsImage(shot && shot.imageUrl, origin)
+                imageUrl: httpsImage(shot && shot.imageUrl, origin),
+                /* The last segment of this product's own address, which is what
+                   a category page links to. See deepenCategories. */
+                shelfKey: clean(item.linkText) || null
             });
         }
         if (products.length >= PRODUCT_CAP * 3) break;
@@ -1250,6 +1253,17 @@ function pathCategory(pageUrl) {
    the report rather than silence. */
 const COLLECTION_PATH = /\/(collections?|categor(?:y|ies))\/[^/?#]+\/?$/i;
 const GENERIC_COLLECTION = new Set(['all', 'all-products', 'frontpage', 'shop-all']);
+
+/* WHEN THE MARKUP PASS IS TOO THIN TO NAVIGATE BY, and a browser is asked
+   instead. Counted in products of OURS that those pages actually accounted for,
+   not in links found: a server rendered grid places dozens of them from a single
+   page, and a JavaScript rendered one places none however much markup it has. */
+const RENDER_COLLECTIONS_BELOW = 20;
+
+/* And how many pages that second pass is allowed. Each one is a real browser
+   navigation, so this is the difference between a minute and twenty. Enough to
+   fill CATEGORY_CAP shelves several times over. */
+const RENDER_COLLECTION_PAGES = 18;
 const COLLECTION_FANOUT = 60;   /* collection pages to read, sitemap order */
 const COLLECTION_TARGET = 400;  /* collection addresses worth collecting */
 
@@ -1321,7 +1335,7 @@ function productLinksIn(html, pageUrl) {
 /* Reads the collection pages and answers: which collections list which of the
    page slugs this build actually read. Choosing between them happens in the
    caller, where the sampled products are known. */
-async function collectionCategories(origin) {
+async function collectionCategories(origin, sampleKeys) {
     const urls = await sitemapCollectionUrls(origin);
     if (!urls.length) return { collections: [], pagesRead: 0 };
 
@@ -1356,7 +1370,53 @@ async function collectionCategories(origin) {
     }
     await Promise.all(Array.from({ length: PAGE_CONCURRENCY }, worker));
 
-    return { collections: [...collections.values()], pagesRead };
+    /* AND IF THE MARKUP HELD ALMOST NOTHING, ASK A BROWSER. A store that
+       renders its category grid in JavaScript serves a page that reads fine and
+       lists no products, so the walk above comes back with a handful of members
+       or none and the demo ends up with no navigation at all. Two of the ten
+       stores in factory/soak.json are exactly that: one collection page is 67KB
+       and holds a single product link pointing at another host, another is
+       108KB and holds none.
+
+       Bounded on purpose. It runs only when the markup pass failed to find
+       enough to navigate by, over a short list rather than every collection,
+       and in one browser. A store whose pages are readable never reaches it. */
+    let rendered = 0;
+    /* HOW MANY OF OUR OWN PRODUCTS THESE PAGES ACCOUNTED FOR, which is the only
+       number worth deciding on. Counting members outright was the first version
+       and it was useless: a clothing retailer's 59 JavaScript rendered pages
+       each carry one link to a gift card on its checkout host, so the pass
+       looked productive, cleared the threshold and the browser was never asked,
+       while not one of those links was a product this build had read. */
+    const sample = new Set(sampleKeys || []);
+    const matched = new Set();
+    for (const c of collections.values()) {
+        for (const key of c.members) if (sample.has(key)) matched.add(key);
+    }
+    const useful = sample.size ? matched.size : 0;
+    if (useful < Math.min(RENDER_COLLECTIONS_BELOW, sample.size) && urls.length) {
+        try {
+            const { renderedCollections } = await import('./render.mjs');
+            const shortlist = urls
+                .filter((url) => {
+                    const slug = lastSegment(url);
+                    return slug && !GENERIC_COLLECTION.has(slug);
+                })
+                .slice(0, RENDER_COLLECTION_PAGES);
+            for (const page of await renderedCollections(origin, shortlist)) {
+                const slug = lastSegment(page.url);
+                if (!slug) continue;
+                rendered++;
+                const keys = new Set(page.links.map((link) => lastSegment(link)).filter(Boolean));
+                if (!keys.size) continue;
+                const existing = collections.get(slug);
+                if (existing) for (const key of keys) existing.members.add(key);
+                else collections.set(slug, { name: clean(slug.replace(/[-_]+/g, ' ')), members: keys });
+            }
+        } catch (err) { /* no browser here: the markup answer stands */ }
+    }
+
+    return { collections: [...collections.values()], pagesRead, rendered };
 }
 
 /* Assigns a category to every sampled product a collection can vouch for, by
@@ -1687,7 +1747,14 @@ async function jsonld(origin) {
             for (const product of extracted.products) {
                 names.add(product.name.toLowerCase());
                 found.push(product);
-                pageKey.set(product, lastSegment(page.url || url));
+                /* THE SAME KEY, CARRIED ON THE PRODUCT. pageKey is a WeakMap
+                   local to this tier, so deepenCategories, which runs later and
+                   over whichever tier won, could not see it: it looked for
+                   shelfKey, only the Shopify tier set one, and the category
+                   recovery therefore never ran for a store read any other way.
+                   Two stores came out with no navigation partly because of it. */
+                product.shelfKey = lastSegment(page.url || url);
+                pageKey.set(product, product.shelfKey);
             }
         }
     }
@@ -1709,9 +1776,9 @@ async function jsonld(origin) {
                  ', og ' + contributed.og;
     const uncategorised = found.filter((product) => !product.category).length;
     if (uncategorised >= Math.ceil(found.length / 2)) {
-        const recovered = await collectionCategories(origin);
         const keys = found.filter((p) => !p.category)
             .map((p) => pageKey.get(p)).filter(Boolean);
+        const recovered = await collectionCategories(origin, keys);
         const byProduct = assignFromCollections(keys, recovered.collections);
         let filled = 0;
         for (const product of found) {
@@ -2477,7 +2544,7 @@ async function deepenCategories(origin, result, attempts) {
     const keyed = products.filter((p) => p.shelfKey);
     if (keyed.length < products.length / 2) return;
 
-    const recovered = await collectionCategories(origin);
+    const recovered = await collectionCategories(origin, keyed.map((p) => p.shelfKey));
     if (!recovered.collections.length) {
         attempts.push({ tier: 'collections', ok: false, reason: REASON.NOT_FOUND });
         return;
@@ -2488,7 +2555,8 @@ async function deepenCategories(origin, result, attempts) {
     const proposed = keyed.map((p) => ({ category: byProduct.get(p.shelfKey) || '' }));
     const theirs = categorise(proposed).filter((name) => name !== TAIL &&
         name !== UNCATEGORISED);
-    const covered = proposed.filter((p) => p.category && p.category !== TAIL).length;
+    const covered = proposed.filter((p) => p.category && p.category !== TAIL &&
+        p.category !== UNCATEGORISED).length;
 
     /* THE COMPARISON IS AGAINST WHAT IT REPLACES, NOT AGAINST A FIXED BAR, and
        the first version of this got that wrong in a way that cost a real demo.
@@ -2519,7 +2587,9 @@ async function deepenCategories(origin, result, attempts) {
     });
 
     attempts.push({ tier: 'collections', ok,
-        detail: recovered.pagesRead + ' collection pages, ' + theirs.length +
+        detail: recovered.pagesRead + ' collection pages' +
+            (recovered.rendered ? ' (' + recovered.rendered + ' read in a browser)' : '') +
+            ', ' + theirs.length +
             ' shelves covering ' + covered + ' of ' + keyed.length +
             ' products, against ' + own.length + ' shelves covering ' +
             ownPlaced + ' from the feed\'s own typing',

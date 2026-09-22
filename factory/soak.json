@@ -19,7 +19,8 @@
     "mercadolivre are here because they are hard, not despite it: the answer",
     "for a store behind a bot wall is a clean refusal and a request for a CSV,",
     "and that path deserves testing as much as the happy one.",
-    "EXPECT IS TODAY, NOT THE TARGET. Each block is what that store actually gave on 22 September 2026, so a drop is a regression in this repository. Two stores have no expect block because they currently produce a demo with no navigable shelves at all, and recording that as acceptable would be writing a fault down as a standard. Their notes say so instead."
+    "EXPECT IS TODAY, NOT THE TARGET. Each block is what that store actually gave on 22 September 2026, so a drop is a regression in this repository. Two stores have no expect block because they currently produce a demo with no navigable shelves at all, and recording that as acceptable would be writing a fault down as a standard. Their notes say so instead.",
+    "THE THEME IS WATCHED, NOT JUDGED, and the reason is in the numbers: the same store gave two different primaries on two runs an hour apart. That is worth knowing and is not yet worth failing a night over, so the soak reports the colour and the typeface it read and holds nobody to them."
   ],
   "stores": [
     {
@@ -73,7 +74,7 @@
     },
     {
       "url": "https://thegivingmovement.com/",
-      "note": "NO SHELVES TODAY. Its collection pages are read and match no product"
+      "note": "NO SHELVES. Its category grids are rendered in the browser, so the markup walk finds nothing; the browser pass now runs over them and still matches none of the products this build read, so the two are keyed differently. Unsolved on 22 September 2026."
     },
     {
       "url": "https://www.vperfumes.com/ae-en",
@@ -86,7 +87,7 @@
     },
     {
       "url": "https://arabianoud.com/",
-      "note": "NO SHELVES TODAY. Its sitemap lists no collection pages at all"
+      "note": "NO SHELVES. Its sitemap index lists Arabic sitemaps only and its category pages live outside /collections/, so the walk has nothing to read. Unsolved on 22 September 2026."
     },
     {
       "url": "https://www.mercadolivre.com.br/",

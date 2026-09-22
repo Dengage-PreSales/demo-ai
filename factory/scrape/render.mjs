@@ -259,3 +259,69 @@ export async function rendered(origin, options) {
         try { await browser.close(); } catch (err) { /* already gone */ }
     }
 }
+
+/* -------------------------------------------------------------------------- */
+
+/* WHICH PRODUCTS A CATEGORY PAGE SHOWS, ASKED OF A BROWSER.
+
+   The category walk in catalogue.mjs reads collection pages as HTML and takes
+   the product links out of them, which works on any store that renders its grid
+   on the server. Two stores in factory/soak.json render theirs in the browser
+   instead, and on those the walk reads a perfectly good page and finds nothing:
+
+     a clothing retailer's collection page is 67KB and holds ONE product link,
+     which points at a different host entirely
+     a perfume house's category page is 108KB and holds none at all
+
+   Both came out with every product in one group and no navigation, which is not
+   a demo anybody would screen share. Nothing was broken and nothing errored: the
+   evidence simply is not in the markup, exactly as it was not for the catalogue
+   itself before this tier existed.
+
+   SO THIS IS THAT TIER'S ANSWER APPLIED TO CATEGORIES. It is deliberately not
+   the whole walk: it is a bounded second pass that catalogue.mjs runs only when
+   reading the HTML produced too little to navigate by, over a short list of
+   pages rather than all of them, in one browser. A store whose pages are already
+   readable never reaches it and pays nothing.
+
+   It degrades like everything else here. No browser, no page, no links: the
+   caller keeps whatever the HTML pass gave it. */
+export async function renderedCollections(origin, urls, options) {
+    const settings = options || {};
+    const out = [];
+    let base;
+    try { base = new URL(origin); } catch (err) { return out; }
+    if (!urls || !urls.length) return out;
+
+    let browser;
+    try {
+        const { chromium } = await import('playwright');
+        browser = await chromium.launch(launchOptionsForScrape({ headless: true }));
+    } catch (err) {
+        return out;
+    }
+
+    try {
+        const context = await browser.newContext({ userAgent: UA });
+        if (settings.prepareContext) await settings.prepareContext(context);
+        /* The grid is what is being read, so images stay aborted and everything
+           else is allowed: a lazy grid that needs its own script must get it. */
+        await context.route('**/*', (route) =>
+            route.request().resourceType() === 'image' ? route.abort() : route.fallback());
+        const page = await context.newPage();
+        const windowMs = settings.settleMs === undefined ? 9000 : settings.settleMs;
+
+        for (const url of urls) {
+            const failed = await settle(page, url, windowMs);
+            if (failed) continue;
+            const links = await productLinks(page, base.origin);
+            if (links.length) out.push({ url, links });
+        }
+    } catch (err) {
+        console.error('[render] collections: ' +
+            String((err && err.message) || err).split('\n')[0]);
+    } finally {
+        try { await browser.close(); } catch (err) { /* already gone */ }
+    }
+    return out;
+}
