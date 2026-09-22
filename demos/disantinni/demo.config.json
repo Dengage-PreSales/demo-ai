@@ -37,5 +37,9 @@
   ],
   "productCount": 30,
   "catalogueSource": "store",
-  "brandLogo": "images/brand-logo.png"
+  "brandLogo": "images/brand-logo.png",
+  "relay": {
+    "url": "https://raextqlludkagdntyzwn.supabase.co",
+    "key": "sb_publishable_HcLAWb6E5Gn_d5vVTjPB_Q_zkjklifK"
+  }
 }

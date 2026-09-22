@@ -57,6 +57,12 @@
        read each other's preference. Non-negotiable 6. */
     function storeKey() { return 'dps:' + slug() + ':debug'; }
     function eventName() { return 'dps:' + slug() + ':event'; }
+    /* The relay's own line, kept beside the standby module's for the same
+       reason: a message the page ASKED for is not a Dengage event and must
+       never be listed as one, but somebody watching a demo still needs to know
+       whether the ask went out. */
+    function relayName() { return 'dps:' + slug() + ':relay'; }
+
     function noteName() { return 'dps:' + slug() + ':standby'; }
 
     function wanted() {
@@ -367,6 +373,22 @@
             scenario: detail.scenario || '',
             how: detail.how || '',
             note: detail.note || '',
+            at: detail.at || Date.now()
+        });
+    });
+
+    /* A RELAY SEND IS RECORDED, AND IS NEVER SHOWN AS AN EVENT. It is not one:
+       nothing here reaches the SDK and no Dengage table receives a row for it.
+       It appears as a note, beside the standby module's, so that the question
+       "did the demo ask for that email" has an answer in the same place as
+       every other question about what this page did. */
+    window.addEventListener(relayName(), function (event) {
+        var detail = event.detail || {};
+        add({
+            kind: 'note',
+            scenario: detail.intent || '',
+            how: 'relay',
+            note: detail.outcome || '',
             at: detail.at || Date.now()
         });
     });

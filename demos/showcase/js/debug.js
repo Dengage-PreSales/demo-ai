@@ -11,6 +11,9 @@
 
     function storeKey() { return 'dps:' + slug() + ':debug'; }
     function eventName() { return 'dps:' + slug() + ':event'; }
+
+    function relayName() { return 'dps:' + slug() + ':relay'; }
+
     function noteName() { return 'dps:' + slug() + ':standby'; }
 
     function wanted() {
@@ -287,6 +290,17 @@
             scenario: detail.scenario || '',
             how: detail.how || '',
             note: detail.note || '',
+            at: detail.at || Date.now()
+        });
+    });
+
+    window.addEventListener(relayName(), function (event) {
+        var detail = event.detail || {};
+        add({
+            kind: 'note',
+            scenario: detail.intent || '',
+            how: 'relay',
+            note: detail.outcome || '',
             at: detail.at || Date.now()
         });
     });

@@ -254,6 +254,13 @@ echo
 echo "=== every category in the header is reachable =================="
 node "$ROOT/factory/checks/nav.mjs" || status=1
 
+# Against the template, which carries no relay block, so this asserts the inert
+# path: the module loads, says it cannot send, and sends nothing. The configured
+# path is asserted per demo through factory/checks/verify-demo.sh.
+echo
+echo "=== the transactional relay sends nothing it should not ========"
+node "$ROOT/factory/checks/relay.js" || status=1
+
 # The wishlist payload assertion here is the one that matters: a field missing
 # from one emitter is invisible in a diff, invisible on the page, and the shared
 # tables cannot say whose rows are whose.

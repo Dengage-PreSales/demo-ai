@@ -74,10 +74,10 @@ mkdir -p "$ROOT/demos"
 cp -r "$ROOT/template" "$DEST"
 mkdir -p "$DEST/images"
 
-python3 - "$DEST" "$SLUG" "$NAME" "$ACCOUNT" "$APP" "$TITLE" "$STORE" <<'PY'
+python3 - "$DEST" "$SLUG" "$NAME" "$ACCOUNT" "$APP" "$TITLE" "$STORE" "$CONF" <<'PY'
 import io, json, sys, datetime
 
-dest, slug, name, account, app, title, store = sys.argv[1:8]
+dest, slug, name, account, app, title, store, conf = sys.argv[1:9]
 dest = dest.rstrip('/') + '/'
 
 for page in ('index.html', 'product.html'):
@@ -120,6 +120,14 @@ config['createdAt'] = datetime.date.today().isoformat()
 config['expiresAt'] = (datetime.date.today() + datetime.timedelta(days=90)).isoformat()
 config['dengage']['accountId'] = account
 config['dengage']['appGuid'] = app
+
+# THE RELAY, SO A NEW DEMO CAN SEND THE MOMENT IT IS BUILT. js/relay.js is inert
+# without this block, which is exactly why the template carries none: the
+# template holds no identity of any kind, on purpose, and the guard's app-guid
+# check refuses one there. A demo is the only place either identity belongs.
+relay = json.load(io.open(conf, encoding='utf-8')).get('relay') or {}
+if relay.get('url') and relay.get('key'):
+    config['relay'] = {'url': relay['url'], 'key': relay['key']}
 json.dump(config, io.open(dest + 'demo.config.json', 'w', encoding='utf-8'), indent=2)
 PY
 

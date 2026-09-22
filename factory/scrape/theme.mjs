@@ -612,6 +612,10 @@ function resolveOnPrimary(primary, ink) {
 
 /* Returns a theme block, and a `found` record of what was genuinely extracted
    rather than defaulted, so the workflow can say so on the issue. */
+/* The reasons worth a second attempt: all of them mean "not this time" rather
+   than "not this store". renderedTheme's other answers are settled. */
+const RETRY_RENDERED = new Set(['render-failed', 'nothing-painted', 'navigation']);
+
 export async function theme(origin, defaults, options) {
     const settings = options || {};
     const base = { ...defaults };
@@ -750,7 +754,28 @@ export async function theme(origin, defaults, options) {
                the machine running the build rather than about the store, and
                nobody would guess it from a palette that merely looks off. The
                caller prints it. See reachFailureNote in factory/browser.mjs. */
+            /* ASKED TWICE BEFORE GIVING UP, because the difference between an
+               answer and no answer is the difference between a demo in the
+               prospect's colours and a demo in the standard palette, and the
+               usual reason for no answer is a page that took a moment too long.
+
+               A store measured three times in a row gives the same theme three
+               times: the extraction is deterministic. What was not deterministic
+               was whether this channel answered at all, and a silent fallback
+               to a materially different look is the worst shape that can take.
+               Two stores were seen giving their own brand colour on one run and
+               the standard blue an hour later, with nothing in either build
+               saying which had happened.
+
+               Only a timeout is retried. A certificate refusal, an address that
+               does not resolve and a page that is not the store are all settled
+               answers, and asking again would just cost twelve seconds. */
             rendered = await renderedTheme(origin, { settleMs: settings.settleMs });
+            if (rendered && !rendered.ok && RETRY_RENDERED.has(rendered.reason)) {
+                const second = await renderedTheme(origin, { settleMs: settings.settleMs });
+                if (second && second.ok) second.retried = true;
+                rendered = second && second.ok ? second : rendered;
+            }
         } catch (err) { /* module absent or unusable: the text answer stands */ }
     }
 

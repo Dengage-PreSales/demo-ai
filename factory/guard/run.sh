@@ -279,7 +279,14 @@ fi
 # factory/panel/content/<slug>/emails/*.amp.html, never in a storefront page. That
 # path is outside the published site but still inside this check's scope, which walks
 # the whole repository rather than just what Pages serves.
-ALLOWED_HOSTS='pcdn\.dengage\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|dengage-presales\.github\.io|github\.com|cdn\.ampproject\.org|localhost(:[0-9]+)?|127\.0\.0\.1(:[0-9]+)?'
+# raextqlludkagdntyzwn.supabase.co is the transactional relay, added 22
+# September 2026, and it belongs on this list for the same reason pcdn is on
+# it: an API a demo CALLS is not an asset a demo DEPENDS ON to render. The rule
+# here is about a prospect's CDN changing between the build and the call and
+# taking the storefront's pictures with it. If the relay is unreachable a
+# message is not sent and nothing on screen changes, which js/relay.js is
+# written to guarantee and factory/checks/relay.js asserts.
+ALLOWED_HOSTS='pcdn\.dengage\.com|fonts\.googleapis\.com|fonts\.gstatic\.com|dengage-presales\.github\.io|github\.com|cdn\.ampproject\.org|raextqlludkagdntyzwn\.supabase\.co|localhost(:[0-9]+)?|127\.0\.0\.1(:[0-9]+)?'
 urls="$(grep_list 'https?://[a-zA-Z0-9.:-]+' "$BROWSER_FILES" -o)"
 urls="$(printf '%s\n' "$urls" | grep -v '^$' | grep -vE "https?://(www\.)?w3\.org")"
 if [ -z "$BROWSER_FILES" ]; then
@@ -290,7 +297,7 @@ else
     bad="$(printf '%s\n' "$urls" | grep -vE "https?://($ALLOWED_HOSTS)")"
     if [ -n "$bad" ]; then
         fail off-origin-assets "reference to a host that is not allowed"
-        detail "allowed: pcdn.dengage.com, fonts.googleapis.com, fonts.gstatic.com, dengage-presales.github.io, cdn.ampproject.org"
+        detail "allowed: pcdn.dengage.com, the transactional relay, fonts.googleapis.com, fonts.gstatic.com, dengage-presales.github.io, cdn.ampproject.org"
         printf '%s\n' "$bad" | show
     else
         pass off-origin-assets "all absolute URLs are on allowed hosts"

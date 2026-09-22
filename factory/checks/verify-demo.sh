@@ -86,5 +86,10 @@ TEMPLATE_URL="$BASE" run "the standby copy" node factory/checks/standby.js
 # nine categories and show six, and nothing else here would notice.
 run "the navigation"            node factory/checks/nav.mjs --url "$BASE"
 
+# The one module in a storefront that can cause a real email and a real push to
+# reach a real person. It is checked against a stub with the endpoint refused at
+# the network layer, so no check can ever deliver a message.
+run "the transactional relay"   node factory/checks/relay.js --url "$BASE"
+
 echo
 echo "demos/$SLUG passed every check."

@@ -538,6 +538,18 @@ async function main() {
        salesperson, and reachFailureNote is where it lives. */
     const themeNotes = [];
     const reach = extracted.rendered;
+    /* SAY WHICH CHANNEL DECIDED THE LOOK, every time, not only when something
+       broke. A demo themed from what the browser painted and a demo themed from
+       the standard palette look completely different and used to report
+       identically, so the same store could come out two ways on two days with
+       nothing naming the difference. */
+    console.error('Theme: decided by ' + (extracted.found.primarySource || 'the standard palette') +
+        ', browser channel ' + (extracted.rendered
+            ? (extracted.rendered.ok
+                ? ('answered' + (extracted.rendered.retried ? ' on the second attempt' : ''))
+                : 'refused (' + extracted.rendered.reason + ')')
+            : 'not run'));
+
     if (reach && reach.ok === false && reach.reason !== 'render-unavailable') {
         const { reachFailureNote } = await import('./browser.mjs');
         console.error('Theme: the browser could not read this store (' + reach.reason + ').');

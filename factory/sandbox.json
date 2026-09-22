@@ -1,7 +1,6 @@
 {
   "accountId": "28",
   "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
-
   "snippets": {
     "abandonedCart": "5178aafe-5bec-4326-b3ed-890aff1ec867",
     "abandonedCartTotal": "50d50fcf-3e9a-4a4f-9143-fb17b1049e91",
@@ -10,7 +9,6 @@
     "abandonedCartImage": "bf6f868d-e4c6-4358-9c39-50730cbfa2ad",
     "abandonedCartUrl": "6ced3ab3-9187-4802-a52b-9ec5c69dfeec"
   },
-
   "_comment": [
     "The Dengage web application every demo talks to. Handoff 2.1.",
     "",
@@ -55,5 +53,28 @@
     "The Dataspace API is reached with an API user's key and password, exchanged",
     "for a short lived token at login. Both are passed through the environment.",
     "See factory/phase0/create-tables.mjs."
-  ]
+  ],
+  "relay": {
+    "url": "https://raextqlludkagdntyzwn.supabase.co",
+    "key": "sb_publishable_HcLAWb6E5Gn_d5vVTjPB_Q_zkjklifK",
+    "_why": [
+      "THE TRANSACTIONAL RELAY, AS A PAGE CALLS IT. js/relay.js names a moment and",
+      "the database decides everything else: which template, which address, which",
+      "products, which prices, and whether the moment may send at all.",
+      "",
+      "THIS KEY IS MEANT TO BE PUBLISHED, which is worth stating plainly in a",
+      "public repository. It is Supabase's publishable key, the kind designed to",
+      "ship inside client side code and visible to every visitor of any site built",
+      "on Supabase. It is not the service key, it can be rotated on its own without",
+      "touching anything else, and it grants nothing by itself.",
+      "",
+      "WHAT ACTUALLY PROTECTS THE ENDPOINT is the function behind it, and it was",
+      "designed for exactly this: it refuses an email address from the caller, a",
+      "content id from the caller and a price from the caller, it will not name a",
+      "demo or an intent it does not already know, it never returns the address it",
+      "sent to, and it rate limits per contact. A page can say that a visitor",
+      "reached a moment. It cannot say who to write to or what anything costs.",
+      "factory/panel/supabase/README-relay.md is the whole design."
+    ]
+  }
 }
