@@ -193,6 +193,11 @@ export function reachFailureNote(reason) {
         return 'The browser could not reach this store at all. Check the address,'
             + ' then try again.';
     }
+    if (reason === 'render-threw') {
+        return 'The browser stopped with an error while reading this store, so its'
+            + ' colours were taken from the page source instead. The demo is live'
+            + ' and it works. Running the request again is usually enough.';
+    }
     return 'The browser did not end up on this store\'s own pages, so nothing read'
         + ' from them would have been the store.';
 }

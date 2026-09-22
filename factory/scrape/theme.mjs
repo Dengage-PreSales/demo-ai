@@ -616,13 +616,83 @@ function resolveOnPrimary(primary, ink) {
    than "not this store". renderedTheme's other answers are settled. */
 const RETRY_RENDERED = new Set(['render-failed', 'nothing-painted', 'navigation']);
 
+/* Ask the browser what the store looks like, and always give an answer back.
+
+   A REFUSAL IS KEPT RATHER THAN DISCARDED, and it used to be thrown away the
+   moment it was not ok. The text answer standing alone is still right, but the
+   REASON it had to is the most useful sentence in the whole scrape when it is
+   "certificate": that one is about the machine running the build rather than
+   about the store, and nobody would guess it from a palette that merely looks
+   off. The caller prints it. See reachFailureNote in factory/browser.mjs.
+
+   ASKED TWICE BEFORE GIVING UP, because the difference between an answer and no
+   answer is the difference between a demo in the prospect's colours and a demo
+   in the standard palette, and the usual reason for no answer is a page that
+   took a moment too long.
+
+   A store measured three times in a row gives the same theme three times: the
+   extraction is deterministic. What was not deterministic was whether this
+   channel answered at all, and a silent fallback to a materially different look
+   is the worst shape that can take. Two stores were seen giving their own brand
+   colour on one run and the standard blue an hour later, with nothing in either
+   build saying which had happened.
+
+   Only a timeout is retried. A certificate refusal, an address that does not
+   resolve and a page that is not the store are all settled answers, and asking
+   again would just cost twelve seconds.
+
+   AND A THROW IS AN ANSWER TOO. This catch used to swallow, which meant a fault
+   in the channel itself came out as the standard palette with the build saying
+   the browser was never asked. Whatever went wrong is named instead, so the next
+   run reports it rather than hiding it in a colour nobody can trace. */
+async function askTheBrowser(origin, settings) {
+    if (settings.render === false) return null;
+    let answer = null;
+    try {
+        const { renderedTheme } = await import('./theme-rendered.mjs');
+        answer = await renderedTheme(origin, { settleMs: settings.settleMs });
+        if (answer && !answer.ok && RETRY_RENDERED.has(answer.reason)) {
+            const second = await renderedTheme(origin, { settleMs: settings.settleMs });
+            if (second && second.ok) second.retried = true;
+            answer = second && second.ok ? second : answer;
+        }
+    } catch (err) {
+        answer = { ok: false, reason: 'render-threw',
+                   error: String((err && err.message) || err) };
+    }
+    return answer;
+}
+
 export async function theme(origin, defaults, options) {
     const settings = options || {};
     const base = { ...defaults };
     const found = { primary: false, accent: false, fonts: false, radius: false };
 
+    /* THE BROWSER IS ASKED EVEN WHEN NOTHING ELSE COULD READ THE STORE, and it
+       used to be skipped in exactly that case.
+
+       This line returned here, before the rendered channel below had been given
+       a chance, whenever a plain fetch of the home page failed. So a store that
+       refuses a bare HTTP reader and renders perfectly well in a browser got the
+       standard palette every single time, and the build reported "browser
+       channel not run", which reads as a decision rather than as the strongest
+       channel being skipped because the weakest one went first.
+
+       uniworthshop.com is the store that showed it: sixty products read through
+       its Shopify endpoints, a demo built and every check passed, and a palette
+       that had nothing to do with the prospect. The browser channel outranks
+       every text signal precisely because a browser is right about what a store
+       looks like, so a store the text channels cannot reach is where it matters
+       most, not least. */
     const home = await get(origin + '/', 'text/html');
-    if (!home.ok) return { theme: base, found, reason: home.reason };
+    if (!home.ok) {
+        const only = await askTheBrowser(origin, settings);
+        if (only && only.ok) {
+            found.rendered = true;
+            applyRendered(base, found, only);
+        }
+        return { theme: base, found, reason: home.reason, colours: [], rendered: only };
+    }
 
     const colours = new Map();
     const fonts = [];
@@ -743,41 +813,7 @@ export async function theme(origin, defaults, options) {
        It is allowed to fail silently. No browser, a site that will not load, a
        page that paints nothing: the text answer above stands exactly as it did
        before this channel existed. */
-    let rendered = null;
-    if (settings.render !== false) {
-        try {
-            const { renderedTheme } = await import('./theme-rendered.mjs');
-            /* A REFUSAL IS KEPT RATHER THAN DISCARDED, and it used to be thrown
-               away the moment it was not ok. The text answer standing alone is
-               still right, but the REASON it had to is the most useful sentence
-               in the whole scrape when it is "certificate": that one is about
-               the machine running the build rather than about the store, and
-               nobody would guess it from a palette that merely looks off. The
-               caller prints it. See reachFailureNote in factory/browser.mjs. */
-            /* ASKED TWICE BEFORE GIVING UP, because the difference between an
-               answer and no answer is the difference between a demo in the
-               prospect's colours and a demo in the standard palette, and the
-               usual reason for no answer is a page that took a moment too long.
-
-               A store measured three times in a row gives the same theme three
-               times: the extraction is deterministic. What was not deterministic
-               was whether this channel answered at all, and a silent fallback
-               to a materially different look is the worst shape that can take.
-               Two stores were seen giving their own brand colour on one run and
-               the standard blue an hour later, with nothing in either build
-               saying which had happened.
-
-               Only a timeout is retried. A certificate refusal, an address that
-               does not resolve and a page that is not the store are all settled
-               answers, and asking again would just cost twelve seconds. */
-            rendered = await renderedTheme(origin, { settleMs: settings.settleMs });
-            if (rendered && !rendered.ok && RETRY_RENDERED.has(rendered.reason)) {
-                const second = await renderedTheme(origin, { settleMs: settings.settleMs });
-                if (second && second.ok) second.retried = true;
-                rendered = second && second.ok ? second : rendered;
-            }
-        } catch (err) { /* module absent or unusable: the text answer stands */ }
-    }
+    const rendered = await askTheBrowser(origin, settings);
 
     if (rendered && rendered.ok) {
         found.rendered = true;

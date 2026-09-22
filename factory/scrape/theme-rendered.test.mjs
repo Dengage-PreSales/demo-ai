@@ -416,5 +416,81 @@ if (!available.ok && available.reason === 'render-unavailable') {
        gone.ok === false && gone.reason === 'unreachable', gone);
 }
 
+/* -------------------------------------------------------------------------- */
+console.log('\n4. A store the text readers cannot reach is still read by the browser');
+
+/* THE ONE THAT SHIPPED. theme() fetched the home page as text first and returned
+   there if that failed, so the rendered channel, which outranks every text
+   signal and exists precisely for a store a plain reader cannot get, was skipped
+   in exactly the case it was built for. The build then reported "browser channel
+   not run", which reads as a decision.
+
+   uniworthshop.com in the drill of 22 September 2026: sixty products read
+   through its Shopify endpoints, every check passed, and a palette belonging to
+   nobody. A demo in the wrong colours is the defect a colleague actually sees.
+
+   The fixture is the real shape rather than a stand in: the server refuses a
+   plain reader and serves the painted page to a browser, which is what a store
+   with a bot rule in front of it does. */
+{
+    const painted = '<!DOCTYPE html><html><head><style>' +
+        'body{background:#ffffff;color:#101820;font-family:Rubik,sans-serif;}' +
+        '.btn{background:#8b1f41;color:#ffffff;padding:12px 20px;display:inline-block;}' +
+        '</style></head><body><a class="btn" href="/x">Add to basket</a></body></html>';
+
+    const chosen = port++;
+    let plainRefusals = 0;
+    const server = createServer((request, response) => {
+        /* sec-fetch-mode: a browser opening a page sends "navigate" and node's
+           fetch sends "cors". Nothing else in the request separates them. The
+           user agent cannot, because both identify themselves the same honest
+           way on purpose, and the presence of the header cannot either, because
+           node sends it too. Two earlier versions of this fixture tried each of
+           those, served the page to both readers, and passed every assertion
+           below without once creating the refusal it exists to create. */
+        const isBrowser = String(request.headers['sec-fetch-mode'] || '') === 'navigate';
+        if (!isBrowser) {
+            plainRefusals++;
+            response.writeHead(403); response.end('no');
+            return;
+        }
+        response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+        response.end(painted);
+    });
+    await new Promise((resolve) => server.listen(chosen, '127.0.0.1', resolve));
+    const origin = 'http://127.0.0.1:' + chosen;
+
+    const STANDARD = { primary: '#125cfa', accent: '#f5a524', ink: '#14181b',
+                       displayFont: 'Sora', bodyFont: 'Inter', radius: '10px' };
+    const out = await theme(origin, STANDARD, { settleMs: 1200 });
+
+    ok('the text reader was refused, so this is the case under test', plainRefusals > 0,
+       { plainRefusals });
+    ok('the browser was asked anyway', out.rendered !== null && out.rendered !== undefined,
+       out.rendered);
+    ok('and it answered', Boolean(out.rendered && out.rendered.ok), out.rendered);
+    ok('so the store\'s own colour reached the theme, not the standard palette',
+       out.found.rendered === true && out.theme.primary !== STANDARD.primary, out.theme);
+
+    await new Promise((resolve) => server.close(resolve));
+}
+
+/* AND A CHANNEL THAT THROWS SAYS SO. The catch around the rendered channel used
+   to swallow, so a fault in the channel itself came out as the standard palette
+   with the build reporting that the browser was never asked: the one shape that
+   cannot be traced back to anything. */
+{
+    const STANDARD = { primary: '#125cfa', accent: '#f5a524', ink: '#14181b',
+                       displayFont: 'Sora', bodyFont: 'Inter', radius: '10px' };
+    /* An origin the URL parser inside the channel cannot make sense of, which is
+       the cheapest way to reach the catch without breaking a real browser. */
+    const out = await theme('http://127.0.0.1:1', STANDARD, { settleMs: 800 });
+    ok('a store that cannot be read at all still reports a reason rather than nothing',
+       out.rendered !== null && out.rendered !== undefined && out.rendered.ok === false,
+       out.rendered);
+    ok('and the standard palette is what it falls back to',
+       out.theme.primary === STANDARD.primary, out.theme);
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);
