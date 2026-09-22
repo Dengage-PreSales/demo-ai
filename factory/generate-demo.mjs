@@ -772,13 +772,27 @@ async function main() {
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
             execFileSync('node', [join(ROOT, 'factory', 'make-push-images.mjs'), '--slug', slug],
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
+            /* AND THE EMAIL HERO, for the same reason and found the same way.
+               The abandoned cart email references images/email-hero.jpg in the
+               demo folder, and nothing in the generator drew it: the build
+               workflow ran make-hero.mjs as a separate step afterwards, so a
+               demo built any other way shipped with an email pointing at a file
+               that was not there. A leather goods demo reached main like that on
+               22 September 2026 and it was the shared verification script,
+               running the step for the first time outside the workflow, that
+               produced the missing file and gave it away. */
+            execFileSync('node', [join(ROOT, 'factory', 'emails', 'make-hero.mjs'), '--shared'],
+                { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
+            execFileSync('node', [join(ROOT, 'factory', 'emails', 'make-hero.mjs'), '--slug', slug],
+                { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
             execFileSync('node', [join(ROOT, 'factory', 'build-feed.mjs')],
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
         } catch (err) {
             console.error('\nThe demo is built, but its banners or the product feed were not' +
                 ' updated: ' + err.message);
             console.error('Run this afterwards:  node factory/make-motif-images.mjs && ' +
-                'node factory/make-push-images.mjs && node factory/build-feed.mjs\n');
+                'node factory/make-push-images.mjs && node factory/emails/make-hero.mjs ' +
+                '--slug <slug> && node factory/build-feed.mjs\n');
         }
     } catch (err) {
         /* A half written demo folder is worse than none: it would publish, and it

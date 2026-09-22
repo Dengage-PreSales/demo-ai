@@ -1,0 +1,15 @@
+name: Build demo
+
+# A demo workflow that runs its checks inline instead of through the shared
+# list, which is how the real one drifted from the nightly drill and left four
+# days of broken builds behind a green routine.
+
+on: { workflow_dispatch: {} }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: ./factory/guard/run.sh
+      - run: node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"
+      - run: node factory/checks/standby.js

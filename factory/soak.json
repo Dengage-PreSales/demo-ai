@@ -1,0 +1,96 @@
+{
+  "_comment": [
+    "THE STORES THE FACTORY IS HELD AGAINST, and every one of them is a real",
+    "request from the Issues tab rather than a site chosen because it works.",
+    "That is the whole point: a suite built from stores that already pass",
+    "proves nothing, and until 22 September 2026 every fault in this factory",
+    "was found by a colleague pasting a URL rather than by anything here.",
+    "",
+    "factory/soak.mjs reads this list, runs the READ HALF against each one and",
+    "reports what a demo built from it would contain. It makes no demo and",
+    "commits nothing.",
+    "",
+    "expect is what a good build looks like for that store, recorded the first",
+    "time it was seen. A store that drops below it has regressed, and the",
+    "report says so rather than leaving somebody to compare by eye. A store",
+    "with no expect block is being watched rather than judged.",
+    "",
+    "A STORE THAT CANNOT BE READ STAYS ON THIS LIST. vperfumes and",
+    "mercadolivre are here because they are hard, not despite it: the answer",
+    "for a store behind a bot wall is a clean refusal and a request for a CSV,",
+    "and that path deserves testing as much as the happy one.",
+    "EXPECT IS TODAY, NOT THE TARGET. Each block is what that store actually gave on 22 September 2026, so a drop is a regression in this repository. Two stores have no expect block because they currently produce a demo with no navigable shelves at all, and recording that as acceptable would be writing a fault down as a standard. Their notes say so instead."
+  ],
+  "stores": [
+    {
+      "url": "https://goodleathergarments.in/",
+      "note": "Shopify, product_type empty on 232 of 250",
+      "expect": {
+        "products": 60,
+        "shelves": 8,
+        "maxTailShare": 0.25
+      }
+    },
+    {
+      "url": "https://www.sharbatly.club/",
+      "note": "Shopify, typing beats its own collections",
+      "expect": {
+        "products": 60,
+        "shelves": 4,
+        "maxTailShare": 0.25
+      }
+    },
+    {
+      "url": "https://www.capodarte.com.br/",
+      "note": "VTEX, but reads through jsonld from some networks: the tier is not stable",
+      "expect": {
+        "products": 60,
+        "shelves": 4,
+        "maxTailShare": 0.3
+      }
+    },
+    {
+      "url": "https://www.disantinni.com.br/",
+      "note": "VTEX, serves runners a challenge page"
+    },
+    {
+      "url": "https://spykar.com/",
+      "note": "denim, ships Bootstrap CSS only",
+      "expect": {
+        "products": 60,
+        "shelves": 5,
+        "maxTailShare": 0.15
+      }
+    },
+    {
+      "url": "https://uniworthshop.com/",
+      "note": "Shopify, product_type empty; one shelf from its collections, most of the catalogue still in the tail",
+      "expect": {
+        "products": 60,
+        "shelves": 1,
+        "maxTailShare": 0.75
+      }
+    },
+    {
+      "url": "https://thegivingmovement.com/",
+      "note": "NO SHELVES TODAY. Its collection pages are read and match no product"
+    },
+    {
+      "url": "https://www.vperfumes.com/ae-en",
+      "note": "bot wall, bilingual",
+      "expect": {
+        "products": 60,
+        "shelves": 2,
+        "maxTailShare": 0.25
+      }
+    },
+    {
+      "url": "https://arabianoud.com/",
+      "note": "NO SHELVES TODAY. Its sitemap lists no collection pages at all"
+    },
+    {
+      "url": "https://www.mercadolivre.com.br/",
+      "note": "marketplace, not a single store"
+    }
+  ]
+}

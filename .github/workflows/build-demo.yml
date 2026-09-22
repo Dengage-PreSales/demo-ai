@@ -437,99 +437,28 @@ jobs:
           echo 'outcome=broken' >> "$GITHUB_OUTPUT"
           exit "$status"
 
-      # ----------------------------------------------------------------- guard
-      # The guardrails run against the tree WITH the new demo in it, which is the
-      # only moment they can catch a generated demo that broke one of them: an
-      # off-origin image, an image outside the expected paths, a stray dash.
-      - name: Guardrails
-        if: steps.generate.outputs.outcome == 'built'
-        run: ./factory/guard/run.sh
-
-      # THE REPORTING STEP IS TESTED HERE, BEFORE THE PUSH, AND THAT ORDER IS THE
-      # WHOLE POINT OF THE STEP.
+      # ------------------------------------------------------------- verify
+      # EVERY CHECK A BUILT DEMO MUST PASS, and the list is not here.
       #
-      # "Post the live address and close the issue" runs at the very end, and it is
-      # skipped both when generation fails and by its own condition on
-      # workflow_dispatch. A step that rarely runs is a step whose first real
-      # execution can be the first time anybody learns whether it works.
+      # It used to be: this workflow held the sequence inline and the nightly
+      # drill held its own copy. On 18 September 2026 the drill's copy was
+      # brought carefully in line with this one, and hours later a check was
+      # added here and not there. From then until 22 September every real
+      # request failed at that check while the drill reported success every
+      # night on the same commit. Two hand kept lists cannot be relied on to
+      # stay the same list, and the routine that exists to catch a broken
+      # factory was the thing that hid it.
       #
-      # Its position makes a throw there expensive. It runs after the storefront is
-      # built, verified, committed and published, so one undefined property turns
-      # the job red with the demo already live, leaves the issue open with no
-      # address in it, and the documented answer to an open issue is to comment
-      # retry, which builds a SECOND storefront.
-      #
-      # Running it here inverts that. The script is read out of this file and
-      # executed against the report the generator just wrote, with github and core
-      # stubbed so nothing is posted and no issue is closed. If it cannot compose
-      # the comment, the build stops before anything is pushed and the operator
-      # gets the ordinary failure notice rather than a duplicate demo.
-      - name: Check the report a colleague will be sent
-        if: steps.generate.outputs.outcome == 'built'
-        run: node factory/checks/report-step.mjs /tmp/report.json --show
-
-      # ------------------------------------------------------------ smoke test
-
-      # The generator tries this itself and does not fail the build if it cannot,
-      # because a demo with no feed row is still a working demo. Here, after
-      # Playwright exists, is where it reliably succeeds: the motif pass needs a
-      # browser to ask the real classifier rather than reimplement it.
-      - name: Product feed
-        if: steps.generate.outputs.outcome == 'built'
-        run: |
-          node factory/make-motif-images.mjs
-          node factory/build-feed.mjs
-
-      # THE PUSH BANNERS NEED THE SAME BROWSER. A rich web push shows its image in a
-      # wide band and the editor asks for 2:1, so a square product tile arrives
-      # letterboxed with the product at about a third of the height it could have. This
-      # writes a 2:1 crop of each photograph beside it, and the saved asset derives that
-      # address from the product's own image_link rather than reading a new column, so a
-      # missing file would be a 404 in a notification. Which is why it runs in every
-      # build rather than by hand.
-      - name: Push banners
+      # factory/checks/verify-demo.sh is the list now. This calls it, the drill
+      # calls it, and a person debugging a demo calls it, so a check added to it
+      # reaches all three at once. The guard's verify-one-list check refuses a
+      # workflow that runs a demo check on its own instead.
+      - name: Verify the demo
         if: steps.generate.outputs.outcome == 'built'
         run: |
           set -euo pipefail
           SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
-          node factory/make-push-images.mjs --slug "$SLUG"
-          node factory/push-images.test.mjs
-
-      # THE EMAIL HERO NEEDS THE SAME BROWSER, AND FOR THE SAME REASON. It is geometry
-      # in the demo's own brand colour, described in markup and drawn by Chromium, so it
-      # cannot run in the generate step before Playwright exists. The BeeFree template
-      # only references it when the file is on disk, so this runs before the template is
-      # rebuilt rather than after.
-      - name: Email hero and Email Builder template
-        if: steps.generate.outputs.outcome == 'built'
-        run: |
-          set -euo pipefail
-          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
-          node factory/emails/make-hero.mjs --shared
-          node factory/emails/make-hero.mjs --slug "$SLUG"
-          node factory/emails/build-beefree.mjs
-
-      - name: Smoke test the demo
-        if: steps.generate.outputs.outcome == 'built'
-        run: |
-          set -euo pipefail
-          SLUG=$(node -e "console.log(require('/tmp/report.json').slug)")
-          python3 -m http.server 8101 --directory . >/dev/null 2>&1 &
-          SERVER=$!
-          trap 'kill $SERVER 2>/dev/null || true' EXIT
-          for _ in $(seq 1 20); do
-            curl -sf -o /dev/null "http://localhost:8101/demos/$SLUG/index.html" && break
-            sleep 0.5
-          done
-          node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"
-          # AND THE ONE THING THE SMOKE TEST CANNOT SEE. It drives the demo with
-          # the SDK hosts reachable, so it only ever exercises the path where
-          # Dengage answers. factory/checks/standby.js drives the other path, with
-          # both hosts refused, which is the only way to find out whether this
-          # demo goes dark on a call or draws its own labelled copy. Same server,
-          # same demo, about ten seconds.
-          TEMPLATE_URL="http://localhost:8101/demos/$SLUG/" \
-            node factory/checks/standby.js
+          bash factory/checks/verify-demo.sh "$SLUG" /tmp/report.json
 
       # KEEP THE EVIDENCE WHEN A BUILD FAILS, because until 11 August 2026 it was
       # thrown away and that cost two full diagnostic rounds in a row.

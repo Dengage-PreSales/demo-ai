@@ -2040,6 +2040,25 @@ function minPerCategory(total) {
     return Math.max(2, Math.ceil(total / 10));
 }
 
+/* SOME NAVIGATION BEATS NONE, and this is the rule that decides it.
+
+   minPerCategory keeps a demo from shipping shelves of one or two products in a
+   grid of sixty, which is right whenever there is a better structure available.
+   It is the wrong answer when there is nothing else: a storefront whose header
+   has no categories at all, whose filters filter nothing and whose every product
+   sits in one flat group, is not a demo anybody would screen share.
+
+   A soak across ten real stores on 22 September 2026 found three of the eight
+   that read producing exactly that. Raising PRODUCT_CAP from 30 to 60 four days
+   earlier doubled this floor from 3 to 6 without anybody revisiting it, so
+   shelves that used to qualify stopped qualifying.
+
+   So the floor is tried, and if it would leave the store with NOTHING it is
+   relaxed to the smallest shelf worth navigating. Nothing is invented either
+   way: the names are the store's own, and a store with no category data at all
+   still ends up with one group, because there is nothing to relax to. */
+const ABSOLUTE_MIN_PER_CATEGORY = 3;
+
 const TAIL = 'More';
 const UNCATEGORISED = 'All products';
 
@@ -2082,7 +2101,15 @@ export function categorise(products) {
        the head of whatever order the store publishes in: this store lists its
        flowers first, so the deeper the sample went the more lopsided it looked.
        Judging by the shipped size removes that sensitivity as well. */
-    const minimum = minPerCategory(Math.min(products.length, PRODUCT_CAP));
+    let minimum = minPerCategory(Math.min(products.length, PRODUCT_CAP));
+    /* Tried at the preferred floor first, and relaxed only if that leaves the
+       store with no navigation at all. See ABSOLUTE_MIN_PER_CATEGORY. */
+    const qualifying = (floor) => [...counts.entries()]
+        .filter(([, count]) => count >= floor).length;
+    if (!qualifying(minimum) && minimum > ABSOLUTE_MIN_PER_CATEGORY &&
+        qualifying(ABSOLUTE_MIN_PER_CATEGORY)) {
+        minimum = ABSOLUTE_MIN_PER_CATEGORY;
+    }
     const ranked = [...counts.entries()]
         .filter(([, count]) => count >= minimum)
         .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -2415,8 +2442,18 @@ export function preferCollections(counts) {
     /* A floor, and its only job is to refuse a structure so sparse that it
        would be a worse demo whatever it beat. It is deliberately far below the
        70 percent this used to demand outright, because that bar threw away a
-       structure covering 68 percent in favour of one covering 7. */
-    const worthwhile = counts.theirPlaced >= Math.ceil(counts.total * 0.3);
+       structure covering 68 percent in favour of one covering 7.
+
+       IT DOES NOT APPLY WHEN THE ALTERNATIVE IS NOTHING AT ALL. A floor is for
+       choosing between two structures; where the store's own typing yields no
+       shelf whatsoever, there is nothing to choose and the question is whether
+       the demo has navigation or has none. A shirt retailer with 250 products
+       and an empty product_type was refused a shelf covering 17 of them and
+       shipped a storefront whose header had no categories, whose filters
+       filtered nothing, and whose every product sat in one flat group. One real
+       shelf named by the store beats that. */
+    const worthwhile = counts.ownShelves === 0 ||
+        counts.theirPlaced >= Math.ceil(counts.total * 0.3);
     return richer && broader && worthwhile;
 }
 
@@ -2427,7 +2464,14 @@ async function deepenCategories(origin, result, attempts) {
     /* The structure the tier's own field gives, judged exactly as the shipped
        catalogue will be judged, on a copy so nothing is mutated yet. */
     const trial = products.map((p) => ({ category: p.category }));
-    const own = categorise(trial).filter((name) => name !== TAIL);
+    /* BOTH SENTINELS COME OUT, and leaving one in was a real bug. categorise
+       answers with UNCATEGORISED when nothing was dense enough to navigate, so
+       counting that as a shelf told this function the store already had one. A
+       shirt retailer whose feed types nothing came out with own.length 1 and
+       ownPlaced 0, its collections were refused for not being "richer" than a
+       sentinel, and the demo shipped with every product in one flat group. */
+    const own = categorise(trial).filter((name) => name !== TAIL &&
+        name !== UNCATEGORISED);
     if (own.length >= CATEGORY_WANTED) return;
 
     const keyed = products.filter((p) => p.shelfKey);

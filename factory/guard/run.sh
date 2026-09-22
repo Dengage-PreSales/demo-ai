@@ -37,7 +37,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current published-paths browser-path"
+CHECK_IDS="core-repo-isolation event-single-source pageview-required off-origin-assets image-locations dashes app-guid template-purity seed-removed demo-js-current demo-copy-current published-paths browser-path verify-one-list"
 
 if [ "$LIST_ONLY" -eq 1 ]; then
     for id in $CHECK_IDS; do echo "$id"; done
@@ -762,6 +762,69 @@ EOF
         detail "or ship the file inside the demo so nothing has to climb out"
     else
         pass published-paths "every path a shipped page climbs to is staged: $(printf '%s' "$staged" | tr '\n' ' ')"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
+# verify-one-list
+#
+# THE CHECKS A BUILT DEMO MUST PASS ARE WRITTEN DOWN ONCE, and this refuses a
+# second copy of them.
+#
+# The real build workflow and the nightly drill each used to hold their own
+# sequence. On 18 September 2026 the drill's was brought carefully in line with
+# the build's, and hours later a check was added to the build and not to the
+# drill. From then until 22 September every real demo request failed at that
+# check, and the drill reported success every night on the same commit: the
+# routine whose whole purpose is to find a broken factory before a colleague
+# does was the thing hiding it.
+#
+# Nothing detected the drift because there was nothing that could. Two lists in
+# two files are two things to remember. So factory/checks/verify-demo.sh is the
+# list, both workflows call it, and this check refuses a workflow that runs a
+# demo check on its own instead.
+#
+# WHAT IS ALLOWED TO RUN CHECKS DIRECTLY. guard.yml, whose job is the guard and
+# the offline test suites rather than a built demo, and any line that is calling
+# verify-demo.sh itself.
+VERIFY_SCRIPT="factory/checks/verify-demo.sh"
+DEMO_WORKFLOWS="$( cd "$ROOT" 2>/dev/null && ls .github/workflows/build-demo.yml \
+    .github/workflows/drill.yml 2>/dev/null || true )"
+
+if [ ! -f "$ROOT/$VERIFY_SCRIPT" ]; then
+    skip verify-one-list "no $VERIFY_SCRIPT in this tree"
+elif [ -z "$DEMO_WORKFLOWS" ]; then
+    skip verify-one-list "no demo workflows in this tree"
+else
+    stray=""
+    while IFS= read -r wf; do
+        [ -n "$wf" ] || continue
+        # A check invocation that is not the shared script. Comment lines are
+        # skipped, because both workflows discuss these files at length.
+        # THE CHECKS, NOT THE GENERATORS. A check decides whether a demo
+        # ships, so a second copy of one is the drift this exists to stop. The
+        # generators it runs, the feed, the banners, the artwork, appear
+        # legitimately elsewhere: the push loop rebuilds the feed to resolve a
+        # rebase conflict, which is not a verification step and must not be
+        # dragged into this rule. A generator missing from the shared list is
+        # caught by the check that reads its output instead.
+        hits="$( cd "$ROOT" && grep -nE \
+            '^[^#]*(node +factory/checks/[a-z-]+\.(js|mjs)|\./factory/guard/run\.sh|node +factory/push-images\.test\.mjs)' \
+            "$wf" 2>/dev/null | grep -v 'verify-demo\.sh' || true )"
+        if [ -n "$hits" ]; then
+            stray="${stray}${wf}"$'\n'"$(printf '%s' "$hits" | sed 's/^/    /')"$'\n'
+        fi
+    done <<EOF
+$DEMO_WORKFLOWS
+EOF
+
+    if [ -n "$stray" ]; then
+        fail verify-one-list "a demo workflow runs a check itself instead of the shared list"
+        printf '%s' "$stray" | show
+        detail "add the check to $VERIFY_SCRIPT instead, where the build, the"
+        detail "drill and a person debugging a demo all pick it up at once"
+    else
+        pass verify-one-list "the build and the drill both verify through $VERIFY_SCRIPT"
     fi
 fi
 

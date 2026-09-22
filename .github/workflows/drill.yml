@@ -144,53 +144,16 @@ jobs:
             fi
 
             # 2. The guard, which protects the core assets and every standing rule.
-            if ! ./factory/guard/run.sh; then
-              echo "DRILL FAILED at the guard: $URL (demos/$SLUG)"
+            # THE SAME LIST THE REAL REQUEST RUNS, and it is deliberately not
+            # written out here. This loop used to carry its own copy of the
+            # sequence, which drifted from the build's within a day and left the
+            # drill green through four days of a completely broken factory: see
+            # the header of factory/checks/verify-demo.sh. The script serves the
+            # demo itself, so the loop no longer starts a server of its own.
+            if ! bash factory/checks/verify-demo.sh "$SLUG" "$REPORT"; then
+              echo "DRILL FAILED verifying the demo: $URL (demos/$SLUG)"
               FAILED=1; keep; tidy; continue
             fi
-
-            # 3. The report a colleague is sent. It asserts every warning reaches
-            #    the comment and every file the comment names exists, which is how a
-            #    build that promised a missing file was caught in August.
-            if ! node factory/checks/report-step.mjs "$REPORT" --show; then
-              echo "DRILL FAILED at the report check: $URL"
-              FAILED=1; keep; tidy; continue
-            fi
-
-            # 4. The product feed, so a feed that no longer matches the tree fails
-            #    here rather than during a prospect's call.
-            if ! (node factory/make-motif-images.mjs && node factory/build-feed.mjs); then
-              echo "DRILL FAILED at the product feed: $URL"
-              FAILED=1; keep; tidy; continue
-            fi
-
-            # 5. The push banners and their own test. THE VPERFUMES STEP.
-            if ! (node factory/make-push-images.mjs --slug "$SLUG" &&
-                  node factory/push-images.test.mjs); then
-              echo "DRILL FAILED at the push banners: $URL"
-              FAILED=1; keep; tidy; continue
-            fi
-
-            # 6. The email artwork and the Email Builder template.
-            if ! (node factory/emails/make-hero.mjs --shared &&
-                  node factory/emails/make-hero.mjs --slug "$SLUG" &&
-                  node factory/emails/build-beefree.mjs); then
-              echo "DRILL FAILED at the email artwork: $URL"
-              FAILED=1; keep; tidy; continue
-            fi
-
-            # 7. The smoke test, in a browser, against the built demo.
-            python3 -m http.server 8101 --directory . >/dev/null 2>&1 &
-            SERVER=$!
-            for _ in $(seq 1 20); do
-              curl -sf -o /dev/null "http://localhost:8101/demos/$SLUG/index.html" && break
-              sleep 0.5
-            done
-            if ! node factory/checks/smoke.mjs --url "http://localhost:8101/demos/$SLUG/"; then
-              echo "DRILL FAILED at the smoke test: $URL (demos/$SLUG)"
-              FAILED=1; keep
-            fi
-            kill $SERVER 2>/dev/null || true
 
             # Discarded on success and on failure alike. The workspace dies with the
             # runner, and nothing here ever reaches a git push. The feed and the
@@ -201,6 +164,43 @@ jobs:
           $(grep -vE '^\s*(#|$)' factory/checks/drill-sites.txt)
           EOF
           exit $FAILED
+
+      # ------------------------------------------------------------- soak
+      # THE READ HALF, ACROSS EVERY STORE THIS FACTORY HAS BEEN ASKED FOR.
+      #
+      # The drill above builds two addresses end to end, which proves the
+      # pipeline works. It cannot say whether the READER still reads, because
+      # two stores are two platforms and the faults that reach a colleague come
+      # from the tenth store rather than the second.
+      #
+      # factory/soak.mjs reads every address in factory/soak.json, which is the
+      # real Issues tab rather than a set chosen because it passes, and reports
+      # what a demo built from each would contain: products, navigable shelves,
+      # how much of the catalogue fell into the tail group, the theme and the
+      # currency. It builds nothing and commits nothing.
+      #
+      # IT DOES NOT FAIL THE NIGHT ON ITS OWN. A prospect's site can change,
+      # go down or start refusing datacenter addresses between one night and
+      # the next, and a routine that opens an issue for that trains everybody
+      # to ignore it. It fails only when a store drops below what that same
+      # store gave before, which is recorded beside it in soak.json, and that
+      # is a change in this repository rather than in theirs.
+      - name: Read every store the factory has been asked for
+        id: soak
+        continue-on-error: true
+        run: node factory/soak.mjs --jobs 3 --json /tmp/soak.json
+
+      - name: Say what the soak found
+        if: always()
+        run: |
+          if [ -f /tmp/soak.json ]; then
+            node -e "
+              const r = require('/tmp/soak.json').rows;
+              const bad = r.filter((x) => x.verdict === 'REGRESSED' || x.verdict === 'error');
+              console.log(r.length + ' store(s) read, ' + bad.length + ' below what they gave before.');
+              for (const x of bad) console.log('  ' + x.url + ': ' + (x.notes || []).join(', '));
+            "
+          fi
 
       - name: Keep the evidence
         if: failure()
@@ -214,6 +214,13 @@ jobs:
       # The one thing a failed drill is allowed to say out loud. A fresh issue
       # per failing night, labelled drill, so it lands in the same inbox the
       # run-failed emails already reach and nobody has to watch the Actions tab.
+      - name: A soak regression fails the night too
+        if: steps.soak.outcome == 'failure'
+        run: |
+          echo "A store this factory used to read properly no longer does."
+          echo "factory/soak.json records what each one gave when it was added."
+          exit 1
+
       - name: Open an issue about the failure
         if: failure()
         uses: actions/github-script@v7
