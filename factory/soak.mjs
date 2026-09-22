@@ -58,10 +58,24 @@ for (let i = 2; i < process.argv.length; i++) {
    finding, so the timeout is reported rather than thrown. */
 const PER_STORE_MS = Number(args.timeout || 600000);
 
+/* A FEW STORES A NIGHT RATHER THAN ALL OF THEM, rotating, so the whole list is
+   covered every few days and no single run is a burst of traffic at anybody.
+   The offset comes from the date, so consecutive nights take different stores
+   without anything having to be remembered between runs. --all overrides it for
+   a person who wants the whole picture now. */
+const SLICE = 3;
+
 function stores() {
     if (args.url && args.url !== true) return [{ url: String(args.url) }];
-    const list = JSON.parse(readFileSync(join(HERE, 'soak.json'), 'utf8'));
-    return list.stores;
+    const list = JSON.parse(readFileSync(join(HERE, 'soak.json'), 'utf8')).stores;
+    if (args.all || args.url === true) return list;
+    const size = Math.max(1, Number(args.slice || SLICE));
+    if (size >= list.length) return list;
+    const day = Math.floor(Date.now() / 86400000);
+    const start = (day * size) % list.length;
+    const picked = [];
+    for (let i = 0; i < size; i++) picked.push(list[(start + i) % list.length]);
+    return picked;
 }
 
 const withTimeout = (promise, ms, onTimeout) => Promise.race([
@@ -128,9 +142,33 @@ async function readStore(entry) {
 
 /* What a good demo looks like for this store, from the list. Only a store that
    has an expect block is judged; the rest are watched. */
+/* A REFUSAL NEVER FAILS THE NIGHT, and this is the most important rule in the
+   file because the first version had it wrong and the mistake was expensive.
+
+   From inside a run, a store that genuinely refuses automated readers and a
+   store that has simply had enough of this address look exactly alike: both
+   answer with too few products. The soak cannot tell them apart, so it must not
+   claim to.
+
+   IT WAS THE SOAK'S OWN DOING. The first nightly run reported four Shopify
+   stores as regressed, and the same job had already BUILT two of them minutes
+   earlier from the same runner, sixty products each, every check green. Reading
+   ten stores, each with a collection walk, spends whatever budget those stores
+   allow one address, and the soak then reported the damage it had caused as a
+   fault in this repository.
+
+   SO ONLY A STORE THAT READS AND READS WORSE FAILS THE NIGHT. That cannot be
+   caused by a throttle: a throttled store answers with less or with nothing, and
+   is reported as watch. A store that hands over its whole catalogue and then
+   yields fewer navigable shelves than it did before is this repository's code
+   and nothing else. */
 function judge(row) {
     if (!row.expect) return { verdict: row.state === 'error' ? 'error' : 'watch', notes: [] };
-    if (row.state !== 'read') return { verdict: 'REGRESSED', notes: ['no longer reads: ' + (row.reason || row.error)] };
+    if (row.state !== 'read') {
+        return { verdict: 'watch',
+                 notes: ['did not read today: ' + (row.reason || row.error) +
+                         '. A refusal is not judged, see judge()'] };
+    }
     const notes = [];
     if (row.products < row.expect.products) notes.push('products ' + row.products + ' < ' + row.expect.products);
     if (row.shelves < row.expect.shelves) notes.push('shelves ' + row.shelves + ' < ' + row.expect.shelves);

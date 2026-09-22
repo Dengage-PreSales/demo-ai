@@ -165,43 +165,6 @@ jobs:
           EOF
           exit $FAILED
 
-      # ------------------------------------------------------------- soak
-      # THE READ HALF, ACROSS EVERY STORE THIS FACTORY HAS BEEN ASKED FOR.
-      #
-      # The drill above builds two addresses end to end, which proves the
-      # pipeline works. It cannot say whether the READER still reads, because
-      # two stores are two platforms and the faults that reach a colleague come
-      # from the tenth store rather than the second.
-      #
-      # factory/soak.mjs reads every address in factory/soak.json, which is the
-      # real Issues tab rather than a set chosen because it passes, and reports
-      # what a demo built from each would contain: products, navigable shelves,
-      # how much of the catalogue fell into the tail group, the theme and the
-      # currency. It builds nothing and commits nothing.
-      #
-      # IT DOES NOT FAIL THE NIGHT ON ITS OWN. A prospect's site can change,
-      # go down or start refusing datacenter addresses between one night and
-      # the next, and a routine that opens an issue for that trains everybody
-      # to ignore it. It fails only when a store drops below what that same
-      # store gave before, which is recorded beside it in soak.json, and that
-      # is a change in this repository rather than in theirs.
-      - name: Read every store the factory has been asked for
-        id: soak
-        continue-on-error: true
-        run: node factory/soak.mjs --json /tmp/soak.json
-
-      - name: Say what the soak found
-        if: always()
-        run: |
-          if [ -f /tmp/soak.json ]; then
-            node -e "
-              const r = require('/tmp/soak.json').rows;
-              const bad = r.filter((x) => x.verdict === 'REGRESSED' || x.verdict === 'error');
-              console.log(r.length + ' store(s) read, ' + bad.length + ' below what they gave before.');
-              for (const x of bad) console.log('  ' + x.url + ': ' + (x.notes || []).join(', '));
-            "
-          fi
-
       - name: Keep the evidence
         if: failure()
         continue-on-error: true
@@ -214,13 +177,6 @@ jobs:
       # The one thing a failed drill is allowed to say out loud. A fresh issue
       # per failing night, labelled drill, so it lands in the same inbox the
       # run-failed emails already reach and nobody has to watch the Actions tab.
-      - name: A soak regression fails the night too
-        if: steps.soak.outcome == 'failure'
-        run: |
-          echo "A store this factory used to read properly no longer does."
-          echo "factory/soak.json records what each one gave when it was added."
-          exit 1
-
       - name: Open an issue about the failure
         if: failure()
         uses: actions/github-script@v7
