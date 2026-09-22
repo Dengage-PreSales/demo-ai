@@ -346,11 +346,25 @@ const WHY = {
         'This store\'s catalogue file is larger than we can read in one pass.'
 };
 
+/* NOBODY IS ASKED FOR A SPREADSHEET, and this used to be the first thing said
+   to anybody whose store did not read. Salil's instruction, 22 September 2026:
+   no colleague is going to build a product list by hand, so a factory that ends
+   by asking for one has not finished, it has handed the work back.
+
+   It is not needed either. factory/scrape/fallback.mjs invents a whole
+   catalogue for a store that refuses every reader, generateIfUnreadable is on
+   for every real request, and that catalogue announces itself as invented in
+   three load bearing places, non-negotiable 5. So the floor is a working demo
+   rather than a request for help.
+
+   The CSV reader itself stays, and stays documented, because a colleague who
+   WANTS to supply real products for a blocked store should be able to. It is an
+   offer now rather than an instruction, and nothing waits on it. */
 const NEXT_STEP =
-    'Attach a CSV of 20 to 30 products to the issue and comment "retry". ' +
-    'One row per product, with a heading row containing at least a name column ' +
-    'and a price column. A category column and a sale price column are used if ' +
-    'they are there.';
+    'Nothing is needed from you. The factory picks this up from here. ' +
+    'If you happen to have the real product list to hand, attaching a CSV and ' +
+    'commenting "retry" will use it instead, with a name column and a price ' +
+    'column at minimum, but the demo does not wait for one.';
 
 /* Said to somebody who has already done what was asked. The tone matters here more
    than anywhere else in this file: they attached a file, it was refused, and being
@@ -401,9 +415,10 @@ function catalogueFailure(found) {
         return {
             reason: 'thin',
             message: 'We read this store but could only find ' + found.thin +
-                ' product' + (found.thin === 1 ? '' : 's') + '. A demo needs at least ' +
-                found.floor + ' to look like a real storefront, so this one would show ' +
-                'an almost empty grid on the call.',
+                ' product' + (found.thin === 1 ? '' : 's') + ', which is too few to ' +
+                'fill a storefront, so the demo was built on a stand-in catalogue ' +
+                'instead. Everything else is the store\'s own: its colours, its ' +
+                'typography and its categories.',
             nextStep: NEXT_STEP
         };
     }
@@ -824,6 +839,28 @@ async function main() {
        segmentation, three of the things a call is booked to show. A build that
        loses one of those is still worth publishing, and it is not worth
        discovering live. These are warnings rather than failures on purpose. */
+    /* ASK FOR A SCREENSHOT ONLY WHEN ONE WOULD CHANGE SOMETHING, which is the
+       other half of making it a fallback rather than a gate. The build no longer
+       stops for one, so the request has to be made afterwards and has to be
+       honest about what it is worth: a demo already carrying the store's own
+       palette gains nothing from a screenshot, and asking anyway is how a step
+       that nobody needs becomes a step everybody does.
+
+       The two cases where it genuinely helps are the two where the store did not
+       give its look up: the palette fell back to the standard one, or the
+       catalogue had to be invented, which means the store refused every reader
+       and probably refused the theme reader too. */
+    const themedFromStore = found.tier !== 'generated' && extracted.found.primary;
+    if (!options.screenshot && !themedFromStore) {
+        screenshotNotes.push(
+            'This demo is using the standard palette rather than the store\'s own, '
+            + 'because the store did not give its colours up to an automated reader. '
+            + 'It is live and it works. If you want it to look like the prospect, '
+            + 'open their product listing page, screenshot it, paste the image into '
+            + 'a comment here with the word retry, and the demo is rebuilt around '
+            + 'the colours in that picture.');
+    }
+
     const warnings = buildWarnings(found, images).concat(themeNotes, screenshotNotes);
     for (const warning of warnings) console.error('WORTH KNOWING: ' + warning);
 

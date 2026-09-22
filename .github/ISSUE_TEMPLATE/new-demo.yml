@@ -25,15 +25,17 @@ body:
   - type: textarea
     id: screenshot
     attributes:
-      label: Product listing screenshot
+      label: Product listing screenshot (optional)
       description: >-
-        Open the store's product listing page in your browser, take a
-        screenshot, click into this box and paste it. That is the whole step:
-        the image uploads itself. It is how the demo gets the store's real
-        look when the store hides itself from automated readers.
+        Leave this empty and the demo still gets built. It is worth pasting one
+        only if you already have the store open: when a store hides itself from
+        automated readers, a screenshot of its listing page is what gives the
+        demo the store's real colours and typography. If the build needs one it
+        will say so on this issue afterwards, and you can paste it then and
+        comment retry.
       placeholder: Paste the screenshot here with Ctrl+V or Cmd+V.
     validations:
-      required: true
+      required: false
 
   - type: dropdown
     id: language

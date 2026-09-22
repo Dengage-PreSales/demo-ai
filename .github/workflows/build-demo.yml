@@ -283,19 +283,23 @@ jobs:
       # ------------------------------------------------------------------ CSV
       # Only fetched when a comment carried one. Tier 3 stays an exception path:
       # nobody is asked for a CSV until the first two tiers have failed.
-      # THE SCREENSHOT IS MANDATORY, and the refusal is a report rather than a
-      # bare exit so the failure path posts the reason in the operator's own
-      # channel with the next step spelt out. Manual dispatches and the drill
-      # are exempt: both are engineering surfaces.
-      - name: A screenshot is required before anything is read
-        if: github.event_name != 'workflow_dispatch' && steps.request.outputs.screenshot_url == ''
-        run: |
-          cat > /tmp/report.json <<'JSON'
-          {"ok": false, "stage": "screenshot",
-           "message": "This build needs one more thing: a screenshot of the store's product listing page. Open the store in your browser, screenshot the listing, and paste the image straight into the issue's screenshot box, or into a comment together with the word retry. It is how the demo gets the store's real look even when the store hides itself from automated readers.",
-           "nextStep": "Paste the screenshot, then comment **retry**."}
-          JSON
-          exit 1
+      # THE SCREENSHOT IS A FALLBACK, NOT A GATE, changed 22 September 2026 on
+      # Salil's instruction, and this is the single change that makes a request
+      # finish without anybody touching it.
+      #
+      # It used to be mandatory: this step refused before the store was read at
+      # all, so every demo needed a person to open the store, screenshot the
+      # listing and paste it in. That is defensible only if the alternative is a
+      # wrong demo, and it was, when the theme reader could be fooled by a bot
+      # wall's challenge page. It cannot be any more: theme-rendered.mjs refuses
+      # a page the browser wrote itself, says which kind of failure it was, and
+      # the generator prints the reason.
+      #
+      # So the store is read first. When the theme comes back as the standard
+      # palette, or the catalogue had to be invented, the comment ASKS for a
+      # screenshot and says what it would improve, and the demo is published
+      # either way. A screenshot supplied later still wins, through retry, and
+      # still overrides a scraped palette exactly as it did before.
 
       - name: Fetch an attached CSV, if there is one
         id: csv
@@ -929,89 +933,25 @@ jobs:
               state: 'closed', state_reason: 'completed'
             })
 
-      # ---------------------------------------------------------------- email
-      # EMAIL IS BEST EFFORT AND CANNOT FAIL A BUILD. always() so it reports whatever
-      # happened, continue-on-error so a mail server having a bad afternoon never
-      # turns a delivered demo into a red workflow, and an early exit when no SMTP
-      # secret is configured so the repository works without one.
+      # ------------------------------------------------------- the only channel
+      # THE ISSUE COMMENT IS THE NOTIFICATION, and there is no second one.
       #
-      # curl rather than a third party action, on purpose: it is already on the runner
-      # and it is one less thing that can change under us.
+      # This used to also send mail over SMTP, which needed five repository
+      # secrets that were never set, so every build printed "No SMTP_HOST
+      # secret, so no email was sent" and the step existed to do nothing. A
+      # notification path that has never once delivered is not belt and braces,
+      # it is a thing to maintain and a thing to misread in a log.
       #
-      # NOTE THAT THIS IS THE SECOND NOTIFICATION, not the only one. GitHub already
-      # emails the issue author on every comment this workflow posts, with no secret
-      # and nothing to configure. If the pre-sales mailbox is the address on that
-      # GitHub account, it is already being told, and this step is belt and braces.
-      - name: Email the outcome to pre-sales
-        if: always() && github.event_name != 'workflow_dispatch'
-        continue-on-error: true
-        env:
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          MAIL_FROM: ${{ secrets.SMTP_FROM }}
-          MAIL_TO: presales.int@dengage.com
-          OUTCOME: ${{ steps.generate.outputs.outcome }}
-          JOB_STATUS: ${{ job.status }}
-          REQUEST_URL: ${{ steps.request.outputs.url }}
-          ISSUE_URL: ${{ github.event.issue.html_url }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
-        run: |
-          if [ -z "${SMTP_HOST:-}" ]; then
-            echo "No SMTP_HOST secret, so no email was sent. The issue comment is the"
-            echo "notification. Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and"
-            echo "SMTP_FROM as repository secrets to turn this on."
-            exit 0
-          fi
-
-          case "${OUTCOME:-}" in
-            built)      subject="Demo ready: $ISSUE_TITLE" ;;
-            unreadable) subject="Demo needs a CSV: $ISSUE_TITLE" ;;
-            *)          subject="Demo build needs attention: $ISSUE_TITLE" ;;
-          esac
-
-          live=""
-          if [ "${OUTCOME:-}" = "built" ] && [ -f /tmp/report.json ]; then
-            live="$(node -e "try{console.log(require('/tmp/report.json').liveUrl||'')}catch(e){}")"
-          fi
-
-          {
-            printf 'From: %s\n' "${MAIL_FROM:-$SMTP_USER}"
-            printf 'To: %s\n' "$MAIL_TO"
-            printf 'Subject: %s\n' "$subject"
-            printf 'Content-Type: text/plain; charset=utf-8\n'
-            printf '\n'
-            printf 'Prospect address: %s\n' "$REQUEST_URL"
-            [ -n "$live" ] && printf 'Demo address: %s\n' "$live"
-            printf 'Request: %s\n' "$ISSUE_URL"
-            printf '\n'
-            case "${OUTCOME:-}" in
-              built)      printf 'The demo is built and verified. Open the demo address above.\n' ;;
-              unreadable) printf 'This store would not let an automated reader see its catalogue.\n'
-                          printf 'Attach a CSV of 20 to 30 products to the request above and\n'
-                          printf 'comment retry. The request has the detail.\n' ;;
-              *)          printf 'The build did not finish. The request above explains what\n'
-                          printf 'happened and stays open.\n' ;;
-            esac
-            printf '\nJob status: %s\n' "${JOB_STATUS:-unknown}"
-          } > /tmp/mail.txt
-
-          curl --silent --show-error --ssl-reqd --max-time 60 \
-            --url "smtps://${SMTP_HOST}:${SMTP_PORT:-465}" \
-            --user "${SMTP_USER}:${SMTP_PASS}" \
-            --mail-from "${MAIL_FROM:-$SMTP_USER}" \
-            --mail-rcpt "$MAIL_TO" \
-            --upload-file /tmp/mail.txt \
-            && echo "Emailed $MAIL_TO" \
-            || echo "The email did not send. This does not affect the demo."
-
-      # Left OPEN on failure, deliberately: the issue is where the retry happens.
+      # GitHub already emails the issue author on every comment this workflow
+      # posts, with no secret and nothing to configure, so removing it costs
+      # nobody a message. What it does cost is the ability to tell someone who
+      # is NOT on the issue, and that is a deliberate trade: the request is the
+      # record, and anybody who needs to know watches the request.
       #
-      # Fires on a real fault OR on a catalogue that could not be read. The second is
-      # a green run now, so failure() alone would no longer reach it, and the operator
-      # would be left with a started message and nothing after it. Same prose either
-      # way, because the operator's next step is the same: attach a CSV and retry.
+      # So the comment has to carry everything. The steps above post the live
+      # address on success and the stage that failed with its next step on
+      # failure, and neither depends on anything outside this repository.
+
       - name: Explain the outcome and leave the issue open
         if: >-
           github.event_name != 'workflow_dispatch' &&

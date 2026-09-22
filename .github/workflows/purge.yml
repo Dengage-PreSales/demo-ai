@@ -1,0 +1,121 @@
+name: Purge
+
+# RETIRING A DEMO WHEN ITS NINETY DAYS ARE UP, which CLAUDE.md 0.11 has always
+# required and nothing has ever done. Every demo wrote an expiresAt, the product
+# feed correctly stopped naming expired demos, and the storefronts stayed live at
+# their addresses indefinitely: missing from the feed, present on the web, which
+# is the worst of both answers.
+#
+# WHAT IT DELETES: folders, and nothing else. A demo's rows in Dengage stay
+# where they are, by Salil's instruction of 4 August 2026 and under CLAUDE.md 1a.
+# The six standard ecommerce tables are shared with five live demo sites and two
+# mobile apps, they carry no column identifying a demo, and a scheduled job
+# issuing deletes against them on a join it worked out itself is the most
+# dangerous thing this repository could contain. A folder is in git: the deletion
+# is one commit and undoing it is one revert.
+#
+# A DEMO WITH NO expiresAt IS EXEMPT, which is how showcase survives: it is the
+# reference build every check runs against, so retiring it would take the suite
+# with it.
+
+on:
+  schedule:
+    # 03:30 UTC, after the drill has had the runner and long before the soak.
+    - cron: '30 3 * * *'
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Retire one demo now, by name, whatever its date says'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  # Never two purges, and never a purge racing its own commit.
+  group: purge
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    name: Retire what is due
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: What is due
+        id: due
+        run: |
+          set -euo pipefail
+          node factory/purge.mjs ${{ inputs.slug && format('--slug {0}', inputs.slug) || '' }} \
+            --json /tmp/purge.json
+          echo "count=$(node -e "
+            const r = require('/tmp/purge.json');
+            const due = r.rows.filter((x) => x.state === 'due');
+            console.log('${{ inputs.slug }}' ? 1 : due.length);
+          ")" >> "$GITHUB_OUTPUT"
+
+      - name: Retire them, and tell the feed
+        id: retire
+        run: |
+          set -euo pipefail
+          node factory/purge.mjs ${{ inputs.slug && format('--slug {0}', inputs.slug) || '' }} \
+            --remove --json /tmp/purge.json
+          removed="$(node -e "
+            console.log(require('/tmp/purge.json').removed.map((r) => r.slug).join(' '));
+          ")"
+          if [ -z "$removed" ]; then
+            echo "Nothing was due."
+            echo "removed=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The feed names demos, so it is rebuilt before anything is committed.
+          node factory/build-feed.mjs
+          echo "removed=$removed" >> "$GITHUB_OUTPUT"
+
+      - name: Commit the retirement
+        if: steps.retire.outputs.removed != ''
+        run: |
+          set -euo pipefail
+          git config user.name  "dengage-demo-factory[bot]"
+          git config user.email "rfp@dengage.com"
+          git add -A
+          git commit -m "Retire ${{ steps.retire.outputs.removed }}" \
+                     -m "Ninety days up. The folders are deleted and the product feed no longer names them." \
+                     -m "The demo's rows in Dengage are untouched, by design: CLAUDE.md 1a."
+          for attempt in 1 2 3 4; do
+            if git pull --rebase origin main && git push origin HEAD:main; then exit 0; fi
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 4))
+          done
+          echo "The retirement was made and the push failed four times."
+          exit 1
+
+      - name: Ask Pages to publish without them
+        if: steps.retire.outputs.removed != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // A push made with the automatic token starts no further workflow,
+            // so Pages has to be asked, exactly as the build workflow asks it.
+            await github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: 'pages.yml', ref: 'main'
+            })
+
+      - name: Say what was retired
+        if: always()
+        run: |
+          [ -f /tmp/purge.json ] || exit 0
+          node -e "
+            const r = require('/tmp/purge.json');
+            const live = r.rows.filter((x) => x.state === 'live').length;
+            const exempt = r.rows.filter((x) => x.state === 'exempt').length;
+            console.log('Retired: ' + (r.removed.map((x) => x.slug).join(', ') || 'nothing'));
+            console.log(live + ' still live, ' + exempt + ' exempt.');
+          "

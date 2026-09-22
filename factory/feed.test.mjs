@@ -168,11 +168,21 @@ console.log('\n5. Expiry keeps the catalogue honest');
         });
     })());
 
-    /* Far future: everything is live. Far past: nothing is. */
+    /* Far future: only the demos that never expire are left.
+       A DEMO WITH NO expiresAt IS EXEMPT, which is how showcase survives its own
+       retirement: it is the reference build every check runs against, so
+       factory/purge.mjs never retires it and the feed never drops it. This used
+       to assert that NOTHING survived, which was true only while every demo
+       carried a date. The rule being tested is that a date past is dropped and a
+       demo without one is not, so both halves are asserted. */
     const future = collect('2099-12-31');
-    is('nothing survives a date past every expiry', future.rows.length, 0);
-    ok('and the demos are reported as skipped rather than silently dropped',
+    const exempt = future.demos.map((d) => d.slug);
+    ok('every demo with a date is dropped once it is past',
        future.skipped.length > 0, future.skipped);
+    ok('and a demo with no expiry survives, which is what exempt means',
+       exempt.length > 0 && future.demos.every((d) => !d.expiresAt), future.demos);
+    ok('so the rows that remain belong only to those',
+       future.rows.every((r) => exempt.includes(r.demo_slug)), exempt);
 }
 
 /* -------------------------------------------------------------------------- */

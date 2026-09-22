@@ -4,7 +4,7 @@
   "storeName": "",
   "sourceUrl": "",
   "createdAt": "2026-08-04",
-  "expiresAt": "2026-11-02",
+  "expiresAt": null,
   "theme": {
     "primary": "#125cfa",
     "onPrimary": "#ffffff",
@@ -33,5 +33,6 @@
     "Fashion",
     "Electronics",
     "Home"
-  ]
+  ],
+  "_expiryNote": "No expiry on purpose. showcase is the reference build every check in factory/checks runs against, so retiring it would take the suite with it. factory/purge.mjs treats a demo with no expiresAt as exempt, which keeps the exemption a property of this demo rather than a list kept somewhere else."
 }
