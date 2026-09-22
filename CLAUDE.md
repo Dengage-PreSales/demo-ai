@@ -371,6 +371,22 @@ assertion. The browser checks now refuse the SDK hosts at launch and assert the
 refusal. When writing or reading a claim like "X cannot happen here", either
 make the code enforce X, or treat the sentence as a bug.
 
+**Two commands, and every workflow runs the same two.**
+
+```bash
+bash factory/checks/verify-repo.sh          # what the repository must pass
+bash factory/checks/verify-demo.sh <slug>   # what a built demo must pass
+```
+
+A check belongs in one of those files and nowhere else. Every workflow calls
+them, a person calls them, and the guard's `verify-one-list` check refuses a
+workflow that runs a check itself. This is not a preference. The lists were
+written out inside the workflows, they drifted twice in four days, and both
+times the routine whose job is to find a broken factory reported success on the
+commit the real build was failing on. A check added to one of these two files
+reaches CI and a person at the same moment; a check added anywhere else reaches
+one of them.
+
 The smoke test in handoff §9 is the acceptance check for a generated demo:
 about thirty seconds, twelve assertions. A generated demo is disposable and
 does not earn a full regression suite. Items 5, 9 and 10 protect the core
