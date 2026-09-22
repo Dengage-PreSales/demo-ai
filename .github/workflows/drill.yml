@@ -188,7 +188,7 @@ jobs:
       - name: Read every store the factory has been asked for
         id: soak
         continue-on-error: true
-        run: node factory/soak.mjs --jobs 3 --json /tmp/soak.json
+        run: node factory/soak.mjs --json /tmp/soak.json
 
       - name: Say what the soak found
         if: always()

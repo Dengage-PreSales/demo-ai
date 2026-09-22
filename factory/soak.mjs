@@ -143,7 +143,16 @@ function judge(row) {
 
 async function main() {
     const list = stores();
-    const jobs = Math.max(1, Number(args.jobs || 2));
+    /* ONE STORE AT A TIME BY DEFAULT, and the first run taught this.
+       Reading three at once, each with its own collection crawl, puts a burst
+       of requests on several stores from a single address. Four Shopify stores
+       that give up sixty products from a laptop came back with none, six and
+       seven from a GitHub runner: not a block, which would have refused the
+       first request, but a throttle part way through a crawl.
+
+       A nightly job has all the time in the world and no reason to look like a
+       scraper, so the concurrency is gone. --jobs is still there for a hurry. */
+    const jobs = Math.max(1, Number(args.jobs || 1));
     console.log('\nReading ' + list.length + ' store(s), ' + jobs + ' at a time.\n');
 
     const rows = [];

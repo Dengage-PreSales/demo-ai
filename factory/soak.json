@@ -20,7 +20,8 @@
     "for a store behind a bot wall is a clean refusal and a request for a CSV,",
     "and that path deserves testing as much as the happy one.",
     "EXPECT IS TODAY, NOT THE TARGET. Each block is what that store actually gave on 22 September 2026, so a drop is a regression in this repository. Two stores have no expect block because they currently produce a demo with no navigable shelves at all, and recording that as acceptable would be writing a fault down as a standard. Their notes say so instead.",
-    "THE THEME IS WATCHED, NOT JUDGED, and the reason is in the numbers: the same store gave two different primaries on two runs an hour apart. That is worth knowing and is not yet worth failing a night over, so the soak reports the colour and the typeface it read and holds nobody to them."
+    "THE THEME IS WATCHED, NOT JUDGED, and the reason is in the numbers: the same store gave two different primaries on two runs an hour apart. That is worth knowing and is not yet worth failing a night over, so the soak reports the colour and the typeface it read and holds nobody to them.",
+    "A BASELINE IS ONLY WORTH WHAT THE MACHINE THAT RUNS IT CAN READ. factory/checks/drill-sites.txt has said since August that an address earns its place by reading from a GitHub runner rather than from a developer machine, because the two answers genuinely differ, and the first baselines here were recorded from a container instead. The first nightly run refused four Shopify stores that read perfectly from that container. Any expect block below is therefore provisional until a run from the runner confirms it, and a store that cannot be read from there belongs in the watch list with no expect block rather than failing every night."
   ],
   "stores": [
     {
