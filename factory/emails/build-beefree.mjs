@@ -176,7 +176,11 @@ export function buildBeefree(snippets) {
         }
     });
 
-    const out = join(ROOT, 'factory', 'panel', 'content', '_shared');
+    /* PANEL_CONTENT_OUT lets a check build into a temporary directory and
+       compare, so the committed preview can be proved current without the
+       check writing over the tree it is judging. */
+    const out = process.env.PANEL_CONTENT_OUT ||
+        join(ROOT, 'factory', 'panel', 'content', '_shared');
     mkdirSync(out, { recursive: true });
     const file = join(out, 'beefree-abandoned-cart.json');
     writeFileSync(file, JSON.stringify(template, null, 2) + '\n');

@@ -47,7 +47,11 @@ import { ampScenario } from './amp-scenario.mjs';
 export const AMP_SCENARIO = 'browse';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const OUT = join(ROOT, 'factory', 'panel', 'content', '_shared');
+/* PANEL_CONTENT_OUT lets a check build into a temporary directory and compare,
+   so the committed previews can be proved current without the check writing
+   over the tree it is judging. */
+const OUT = process.env.PANEL_CONTENT_OUT ||
+    join(ROOT, 'factory', 'panel', 'content', '_shared');
 
 export function scenarioHtml(scenario, palette) {
     const block = resolveBlock({

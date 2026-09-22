@@ -75,13 +75,14 @@ jobs:
           npx playwright install --with-deps chromium
           node -e "require.resolve('playwright'); require.resolve('amphtml-validator')"
 
-      - name: Image and render pipeline self test
+      # THE SAME LIST THE BUILD RUNS, which it was not. This step held four of
+      # the build's twelve suites, so the drill could report a healthy factory
+      # on a commit the build would refuse, which is the exact shape of the
+      # failure this routine exists to catch. factory/checks/verify-repo.sh is
+      # the list for both.
+      - name: The repository proves itself
         if: steps.sites.outputs.empty == 'false'
-        run: |
-          node factory/scrape/images.test.mjs
-          node factory/scrape/render.test.mjs
-          node factory/scrape/screenshot.test.mjs
-          node factory/copy.test.mjs
+        run: bash factory/checks/verify-repo.sh
 
       # One build per listed site, sequentially, with the same three gates a
       # real request passes: generate, guard, smoke. The loop keeps going after

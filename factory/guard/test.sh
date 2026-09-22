@@ -206,6 +206,79 @@ OUT="$("$GUARD" --root "$TMP/tplguid" 2>&1)"
 assert_check FAIL app-guid "$OUT" "an identifier in template/ is refused even when it is the sandbox one"
 
 echo
+echo "3a. Every workflow verifies through the shared list"
+echo
+
+# THE DRIFT THIS CHECK EXISTS TO STOP, one throwaway tree per shape it takes.
+#
+# It has now happened twice. On 18 September a demo check was added to
+# build-demo.yml and not to drill.yml, so the drill reported success every
+# night while every real request failed at that step. On 22 September a
+# repository test was added to guard.yml and to nothing a person could run, so
+# the same gap reopened one directory away.
+#
+# Group 1 proves the check fires at all, and that is worth having: it is what
+# caught this check being dead. What it cannot prove is the two things that
+# decide whether the rule is worth anything. First, that it fires on each
+# spelling a check invocation really has in these files, because the rule is a
+# pattern and a pattern only covers what it was written for. Second, that it
+# stays quiet on a workflow that is correct, because a rule that rejected
+# everything would pass group 1 and be useless.
+one_list_tree() {
+    local dir="$1" wf="$2" step="$3"
+    rm -rf "$dir"
+    mkdir -p "$dir/factory/checks" "$dir/.github/workflows"
+    printf '%s\n' '#!/usr/bin/env bash' > "$dir/factory/checks/verify-demo.sh"
+    {
+        printf 'name: check\njobs:\n  run:\n    steps:\n'
+        printf '      - run: %s\n' "$step"
+    } > "$dir/.github/workflows/$wf"
+}
+
+n=0
+while IFS='|' read -r wf step label; do
+    [ -n "$wf" ] || continue
+    n=$((n + 1))
+    one_list_tree "$TMP/onelist$n" "$wf" "$step"
+    OUT="$("$GUARD" --root "$TMP/onelist$n" 2>&1)"
+    assert_check FAIL verify-one-list "$OUT" "$label"
+done <<'EOF'
+build-demo.yml|node factory/checks/smoke.mjs --url http://localhost:8101/|a demo check run by the build workflow is refused
+drill.yml|node factory/checks/standby.js|a demo check run by the nightly drill is refused
+guard.yml|node factory/panel/links.test.mjs|the exact test that went red on 22 September is refused
+guard.yml|node .github/scripts/parse-request.test.mjs|a workflow script test run outside the list is refused
+guard.yml|./factory/guard/test.sh|the guard's own suite run outside the list is refused
+guard.yml|./factory/checks/publish.sh --check|a shell check run outside the list is refused
+EOF
+
+# THE OTHER DIRECTION. Both spellings of a call to the shared script, because
+# the rule is written as a pattern and an exclusion, and an exclusion that did
+# not cover one of them would turn every correct workflow red.
+one_list_tree "$TMP/onelistok" "build-demo.yml" 'bash factory/checks/verify-demo.sh "$SLUG" /tmp/report.json'
+OUT="$("$GUARD" --root "$TMP/onelistok" 2>&1)"
+assert_check PASS verify-one-list "$OUT" "a workflow calling verify-demo.sh is accepted"
+
+one_list_tree "$TMP/onelistok2" "guard.yml" './factory/checks/verify-repo.sh'
+OUT="$("$GUARD" --root "$TMP/onelistok2" 2>&1)"
+assert_check PASS verify-one-list "$OUT" "a workflow calling verify-repo.sh is accepted"
+
+# A check named in a COMMENT is discussion, not a second list. Both workflows
+# explain at length which script they call and why, so a rule that read
+# comments would make that explanation impossible to write.
+one_list_tree "$TMP/onelistcomment" "guard.yml" 'bash factory/checks/verify-repo.sh'
+printf '      # it used to run node factory/panel/links.test.mjs here\n' \
+    >> "$TMP/onelistcomment/.github/workflows/guard.yml"
+OUT="$("$GUARD" --root "$TMP/onelistcomment" 2>&1)"
+assert_check PASS verify-one-list "$OUT" "a check named in a comment is not a second list"
+
+# THE GENERATORS ARE NOT CHECKS. The push loop rebuilds the feed to resolve a
+# rebase conflict, which is not a verification step, and dragging it into this
+# rule would make the fix for one outage illegal because of another.
+one_list_tree "$TMP/onelistgen" "build-demo.yml" 'node factory/build-feed.mjs'
+OUT="$("$GUARD" --root "$TMP/onelistgen" 2>&1)"
+assert_check PASS verify-one-list "$OUT" "rebuilding the feed is not a check"
+
+echo
 echo "4. The guard passes on a correct tree"
 echo
 

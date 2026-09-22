@@ -46,144 +46,28 @@ jobs:
       # Runs before the guard itself. If the checks have stopped working, the
       # result of running them over the repository means nothing, so there is
       # no point reading it.
-      - name: Guard test suite
-        run: ./factory/guard/test.sh
-
-      # Deliberately not the runner's default locale. The dash check matches
-      # raw UTF-8 bytes so that it behaves identically everywhere, and running
-      # CI under a non-UTF-8 locale is what would surface a regression back to
-      # a code point pattern, which reports every file clean without one.
-      - name: Guard test suite, non-UTF-8 locale
-        run: ./factory/guard/test.sh
-        env:
-          LC_ALL: C
-          LANG: C
-
-      - name: Guardrails
-        run: ./factory/guard/run.sh
-
-      # The generator's own judgement, tested without a network. Every case in
-      # here is one the code got wrong first: a null stock count coerced to zero,
-      # a category list with More in it twice, a font stack whose monospace
-      # fallback made it a mono font. None of them needs a prospect's site to be
-      # reachable, so none of them is allowed to be skipped when one is not.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      # THE PINNED PACKAGES, from the committed lockfile. The AMP validator is what
-      # this job actually consumes, for the one AMP for Email sample: an AMP email is
-      # either valid or the mailbox provider refuses to render it, and no amount of
-      # reading the markup establishes which. npm ci rather than a bare install of
-      # that one package, because --no-save installs prune whatever they did not
-      # name, which is the bug class that took a build down on 11 August 2026.
-      # Playwright rides along as a package only: the env var stops its postinstall
-      # fetching a browser this job never opens.
-      - name: Install pinned packages
-        # TOLERANT ON PURPOSE. The AMP test skips its one assertion and states that
-        # it did when the package is absent, so an unreachable registry must not fail
-        # a job whose other checks need no network at all.
-        continue-on-error: true
+      # ------------------------------------------------------------- verify
+      # EVERY CHECK THAT JUDGES THIS REPOSITORY, and the list is not here.
+      #
+      # It used to be: fourteen commands written out in this file and nowhere
+      # else, so the most a person could run locally was factory/guard/run.sh
+      # and "the guard passes" meant one of the fourteen. On 22 September a
+      # change passed everything anybody could reasonably run and went red here,
+      # on factory/panel/links.test.mjs, which no local command ran.
+      #
+      # factory/checks/verify-repo.sh is the list now. This calls it and a
+      # person calls it, so a check added to it reaches both at once, and the
+      # guard's verify-one-list check refuses a workflow that runs these itself.
+      # THE BROWSER TOO, because three of the suites in the list below render
+      # fixtures served from 127.0.0.1. That is what proves a dark store
+      # produces a dark demo, and it is the half of the list that used to be
+      # skipped here and run only in the build workflow.
+      - name: Install pinned packages and the browser
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: npm ci
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
 
-      - name: Generator decisions
-        run: node factory/scrape/scrape.test.mjs
-
-      # The intake parser turns text a stranger wrote into command line
-      # arguments, so its refusals matter more than its successes.
-      - name: Issue request parser
-        run: node .github/scripts/parse-request.test.mjs
-
-      # The feed is the one artefact here that a system OUTSIDE this repository
-      # reads. A storefront defect shows on the page; a feed defect shows only as a
-      # recommendation that quietly makes no sense.
-      - name: Product feed
-        run: node factory/feed.test.mjs
-
-      # And the committed feed has to match the demos in the tree. A demo added or
-      # removed without rebuilding it leaves Dengage recommending something that is
-      # not there, or missing something that is.
-      - name: Product feed is up to date
-        run: node factory/build-feed.mjs --check
-
-      # THE PUSH BANNERS ARE THE SAME CLASS OF PROBLEM AS THE FEED: something outside
-      # this repository asks for them by an address nothing here resolves. The web push
-      # asset derives the banner's URL from the product's photograph, so a photograph
-      # committed without one is a broken image in a notification, and the only place it
-      # shows is on a phone.
-      - name: Push banners exist and match their photographs
-        run: node factory/push-images.test.mjs
-
-      # THE SCENARIO EMAILS, and this belongs here as much as in the build. It runs each
-      # one against a synthetic event log, and it also asserts the committed file matches
-      # what the generator produces now: a stale one means the panel gets last week's
-      # email while the generator looks correct.
-      - name: Scenario emails resolve, and the committed files are current
-        run: node factory/emails/scenarios.test.mjs
-
-      # THE BASKET REPLAY RUNS INSIDE DENGAGE, where nothing here can reach it. No
-      # console, no breakpoint, and a mistake renders as an email that looks correct
-      # and is wrong: a removed product shown as still in the basket, or a fourth item
-      # silently missing. The resolution block is ordinary JavaScript apart from
-      # $from, so this lifts it out of the asset on disk, stubs $from and runs it
-      # against a synthetic event log. No credential, no network, under a second.
-      - name: Abandoned cart resolves a real basket
-        run: node factory/panel/content/_dynamic/cart.test.mjs
-
-      # THE SHORT FORM ASSETS SMS AND PUSH CONSUME, and the seven messages composed
-      # from them. Same reasoning as the line above and one addition: these run in a
-      # channel with no markup, so there is nothing to look at afterwards. A push
-      # carrying the wrong demo's product is indistinguishable from a correct one
-      # unless somebody taps it. This also holds the two hand written cart assets to
-      # the shared source, so a correction to the resolution block cannot improve
-      # eleven assets and quietly leave those two behind.
-      - name: Short form assets resolve, and the committed files are current
-        run: node factory/snippets.test.mjs
-
-      # A BEEFREE IMPORT FAILS SILENTLY IN PART. A module whose type name is wrong is
-      # dropped, a row whose columns do not sum to twelve reflows, and a duplicate uuid
-      # makes the builder edit two blocks at once, none of it with an error message.
-      # The result is a template that looks nearly right on a call, so the structure is
-      # asserted here along with the mark, the currency line and the contrast pairs.
-      - name: BeeFree template imports and stays themed
-        run: node factory/emails/beefree.test.mjs
-
-      # EVERY BUTTON IN EVERY CHANNEL POINTED AT A 404 UNTIL 9 AUGUST 2026. Ten emails,
-      # the AMP variant and all five short form channels linked to cart.html,
-      # checkout.html, wishlist.html and account.html. A demo is index.html and
-      # product.html; those four are overlays. Nothing could catch it: the links are
-      # absolute strings, so no build step resolves them, and a preview is read to check
-      # a layout rather than clicked. This resolves every one of them back to a path on
-      # disk, which is exactly what a 404 on Pages is.
-      - name: Every link in the panel content exists
-        run: node factory/panel/links.test.mjs
-
-      # FOURTEEN POPUP CREATIVES SHARE ONE THEME BOOTSTRAP, and survey.html is where
-      # it is written. Copying forty lines by hand into fourteen files produces
-      # fourteen slightly different copies, and the one that matters is always the one
-      # nobody re-read. Same reasoning as the inline creatives, which are generated
-      # from one source for exactly this reason.
-      - name: Theme bootstrap is identical in every creative
-        run: python3 factory/creatives/sync-bootstrap.py --check
-
-      # The sample push builder. It is never run by CI and never run by the build,
-      # but the one thing it must always do is name a single application, and that
-      # is also the one mistake with no visible symptom: an applicationIds array
-      # that lost an entry sends to devices in a shared account and looks entirely
-      # normal from this side. So the assertion runs here rather than only on the
-      # machine of whoever last edited it. Handoff 2.5b.
-      #
-      # It sends nothing and needs no credential, which is what makes it safe to
-      # run on every change.
-      - name: Sample push names one application
-        run: node factory/panel/send-instant-push.mjs --self-test
-
-      # The build workflow will not call a demo live until the published address
-      # answers, and the whole value of that is in the case where it does not.
-      # A wait that always reports success is the same as no wait, and it reads
-      # identically in a green run log, so it is tested here rather than trusted.
-      # No browser and no credential, seven seconds.
-      - name: Publication wait reports what it measured
-        run: ./factory/checks/publish.sh
+      - name: Verify the repository
+        run: bash factory/checks/verify-repo.sh

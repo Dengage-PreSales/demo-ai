@@ -351,50 +351,24 @@ jobs:
           node -e "require.resolve('playwright'); require.resolve('amphtml-validator')" \
             && echo "both packages resolve"
 
-      # THE PIPELINE PROVES ITSELF BEFORE IT TOUCHES THE PROSPECT'S SITE. These
-      # suites are fixture based and quick, and a regression in either one means
-      # demos quietly shipping without photographs or without the render tier,
-      # which is exactly the class of silent degradation this build must refuse.
-      - name: Image and render pipeline self test
-        run: |
-          node factory/scrape/images.test.mjs
-          node factory/scrape/render.test.mjs
-          node factory/scrape/screenshot.test.mjs
-          node factory/copy.test.mjs
-          node factory/scrape/stock.test.mjs
-          # The rendered theme channel, which is what makes a dark store produce a
-          # dark demo. Its fixtures are served from 127.0.0.1, so this is quick and
-          # does not touch the network. It belongs in this step rather than with the
-          # unit suite because it needs the browser installed above.
-          node factory/scrape/theme-rendered.test.mjs
-          # The email set: contrast on a hostile theme, live queries in the panel
-          # files, no tags left in a preview, and the AMP variant against the
-          # official amp4email validator when it is installed.
-          # THE SCHEMA CHECK RUNS FIRST OF THE CONTENT SUITES, because everything
-          # after it assumes the column names are real. It needs no credentials and
-          # no network: it compares the code against factory/phase0/SCHEMA.md, which
-          # was read off the live account, so it can run on a runner that the
-          # Dengage IP allowlist would refuse.
-          node factory/phase0/schema.test.mjs
-          # And the saved Dynamic Content that every demo's email calls, executed
-          # against a synthetic event log rather than read.
-          node factory/panel/content/_dynamic/cart.test.mjs
-          node factory/emails/beefree.test.mjs
-          # The seven Code Editor scenario emails, EXECUTED rather than read. Each one
-          # carries its own query, so it is a program: the set this replaced was never run
-          # and asked an event table for a column it has never had.
-          node factory/emails/scenarios.test.mjs
-          # THE SHORT FORM DYNAMIC CONTENT, which is what SMS and web push consume, and
-          # the seven messages composed from it. Neither channel can hold a query, so
-          # every personal value in them comes from a saved asset, and an asset that
-          # resolves the wrong demo's product is a notification naming another
-          # prospect's catalogue on a call. Executed against synthetic logs, including
-          # the case where two demos share a product id.
-          node factory/snippets.test.mjs
-          # The short form pack: the length checker in both directions, SMS counted
-          # the way Dengage charges it, WhatsApp's submission rules, and the on-site
-          # copy staying generic because those creatives are shared by every demo.
-          node factory/messages/messages.test.mjs
+      # THE REPOSITORY PROVES ITSELF BEFORE IT TOUCHES THE PROSPECT'S SITE, and
+      # the list of what that means is not here.
+      #
+      # It used to be twelve commands written out in this file. Eight of them
+      # were in no other list, so a change could break the storefront's words or
+      # the render tier, pass the Guard workflow, and fail every real request
+      # here. That is the 18 September outage with the two files swapped round:
+      # a routine reporting success on the same commit that the real thing
+      # failed on.
+      #
+      # factory/checks/verify-repo.sh is the list. The Guard workflow calls it,
+      # this calls it, a person calls it, and the guard's verify-one-list check
+      # refuses a workflow that runs any of them itself. A regression in the
+      # scrape pipeline means demos shipping without photographs or without the
+      # render tier, which is the silent degradation this build must refuse, so
+      # it is worth the couple of minutes before a twenty minute job.
+      - name: The repository proves itself
+        run: bash factory/checks/verify-repo.sh
 
       - name: Generate the demo
         id: generate

@@ -794,14 +794,18 @@ fi
 # WHAT IS ALLOWED TO RUN CHECKS DIRECTLY. guard.yml, whose job is the guard and
 # the offline test suites rather than a built demo, and any line that is calling
 # verify-demo.sh itself.
+# TWO LISTS, TWO SCRIPTS, AND THE SAME RULE OVER BOTH. verify-demo.sh holds what
+# a built demo must pass; verify-repo.sh holds what the repository must pass.
+# Each drifted from its workflow once, four days apart, in exactly the same way,
+# so the rule covers every workflow that verifies anything.
 VERIFY_SCRIPT="factory/checks/verify-demo.sh"
 DEMO_WORKFLOWS="$( cd "$ROOT" 2>/dev/null && ls .github/workflows/build-demo.yml \
-    .github/workflows/drill.yml 2>/dev/null || true )"
+    .github/workflows/drill.yml .github/workflows/guard.yml 2>/dev/null || true )"
 
 if [ ! -f "$ROOT/$VERIFY_SCRIPT" ]; then
     skip verify-one-list "no $VERIFY_SCRIPT in this tree"
 elif [ -z "$DEMO_WORKFLOWS" ]; then
-    skip verify-one-list "no demo workflows in this tree"
+    skip verify-one-list "no workflows in this tree"
 else
     stray=""
     while IFS= read -r wf; do
@@ -816,8 +820,8 @@ else
         # dragged into this rule. A generator missing from the shared list is
         # caught by the check that reads its output instead.
         hits="$( cd "$ROOT" && grep -nE \
-            '^[^#]*(node +factory/checks/[a-z-]+\.(js|mjs)|\./factory/guard/run\.sh|node +factory/push-images\.test\.mjs)' \
-            "$wf" 2>/dev/null | grep -v 'verify-demo\.sh' || true )"
+            '^[^#]*(node +factory/checks/[a-z-]+\.(js|mjs)|\./factory/guard/(run|test)\.sh|node +factory/[a-z/._-]*\.test\.mjs|node +\.github/scripts/[a-z.-]+\.test\.mjs|\./factory/checks/[a-z-]+\.sh)' \
+            "$wf" 2>/dev/null | grep -vE 'verify-(demo|repo)\.sh' || true )"
         if [ -n "$hits" ]; then
             stray="${stray}${wf}"$'\n'"$(printf '%s' "$hits" | sed 's/^/    /')"$'\n'
         fi
@@ -826,12 +830,12 @@ $DEMO_WORKFLOWS
 EOF
 
     if [ -n "$stray" ]; then
-        fail verify-one-list "a demo workflow runs a check itself instead of the shared list"
+        fail verify-one-list "a workflow runs a check itself instead of a shared list"
         printf '%s' "$stray" | show
         detail "add the check to $VERIFY_SCRIPT instead, where the build, the"
         detail "drill and a person debugging a demo all pick it up at once"
     else
-        pass verify-one-list "the build and the drill both verify through $VERIFY_SCRIPT"
+        pass verify-one-list "every workflow verifies through verify-demo.sh or verify-repo.sh"
     fi
 fi
 

@@ -32,6 +32,7 @@
    gets a date ninety days out. Nothing here invents a date for a demo that has
    none, so exemption is a property of the demo rather than a list kept in here.
    ========================================================================== */
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -90,6 +91,44 @@ export function due(when) {
     return out;
 }
 
+/* EVERYTHING THAT NAMES A DEMO IS REBUILT BEFORE THE RETIREMENT IS COMMITTED.
+
+   Deleting the folder is only half of retiring a demo. The product feed names
+   demos, and the shared panel content SAMPLES one: the BeeFree preview and the
+   seven scenario previews all show real products, from whichever live demo the
+   generator picks. Retire that demo and those files point at photographs that
+   are gone.
+
+   That is not hypothetical. On 22 September 2026 five demos were retired by
+   hand, the shared BeeFree preview kept pointing at one of them, and CI went red
+   on factory/panel/links.test.mjs after the merge.
+
+   So the generators run here, inside the one command that does the retiring,
+   rather than in a workflow step that a person retiring a demo locally would
+   never run. factory/checks/generated-current.mjs is the assertion that this
+   list is complete. */
+const GENERATORS = [
+    'factory/build-feed.mjs',
+    'factory/emails/build-scenarios.mjs',
+    'factory/emails/build-beefree.mjs'
+];
+
+function regenerate() {
+    console.log('\nRebuilding what names a demo:');
+    for (const generator of GENERATORS) {
+        try {
+            execFileSync('node', [join(ROOT, generator)], { cwd: ROOT, stdio: 'pipe' });
+            console.log('  rebuilt ' + generator);
+        } catch (err) {
+            console.error('  FAILED  ' + generator + ': ' + String(err.message).split('\n')[0]);
+            console.error('\nThe folders are gone and something that names a demo did not');
+            console.error('rebuild. Do not commit this tree until it does.');
+            process.exit(1);
+        }
+    }
+    console.log('');
+}
+
 function main() {
     const named = args.slug && args.slug !== true ? String(args.slug) : '';
     const rows = due(today);
@@ -127,7 +166,7 @@ function main() {
             for (const path of row.paths) rmSync(join(ROOT, path), { recursive: true, force: true });
             console.log('  retired ' + row.slug);
         }
-        console.log('\nRun factory/build-feed.mjs next, so the feed stops naming them.\n');
+        regenerate();
     }
 
     if (args.json && args.json !== true) {
