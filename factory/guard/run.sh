@@ -798,9 +798,12 @@ fi
 # a built demo must pass; verify-repo.sh holds what the repository must pass.
 # Each drifted from its workflow once, four days apart, in exactly the same way,
 # so the rule covers every workflow that verifies anything.
+# EVERY WORKFLOW, not a list of the ones that had drifted so far. The list was
+# build-demo.yml and drill.yml, then guard.yml was added the day guard.yml
+# drifted, which is a rule that only ever covers yesterday's outage. A workflow
+# is in scope because it is a workflow.
 VERIFY_SCRIPT="factory/checks/verify-demo.sh"
-DEMO_WORKFLOWS="$( cd "$ROOT" 2>/dev/null && ls .github/workflows/build-demo.yml \
-    .github/workflows/drill.yml .github/workflows/guard.yml 2>/dev/null || true )"
+DEMO_WORKFLOWS="$( cd "$ROOT" 2>/dev/null && ls .github/workflows/*.yml 2>/dev/null || true )"
 
 if [ ! -f "$ROOT/$VERIFY_SCRIPT" ]; then
     skip verify-one-list "no $VERIFY_SCRIPT in this tree"

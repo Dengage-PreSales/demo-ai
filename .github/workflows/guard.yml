@@ -58,6 +58,15 @@ jobs:
       # factory/checks/verify-repo.sh is the list now. This calls it and a
       # person calls it, so a check added to it reaches both at once, and the
       # guard's verify-one-list check refuses a workflow that runs these itself.
+      # THE SAME NODE THE OTHER FOUR WORKFLOWS PIN. This workflow used to take
+      # whatever version the runner happened to ship, which was fine while it
+      # ran the guard and a handful of offline suites. It now runs the same list
+      # the build runs, and a list that passes on one version and fails on
+      # another is the two lists problem again with the lists identical.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       # THE BROWSER TOO, because three of the suites in the list below render
       # fixtures served from 127.0.0.1. That is what proves a dark store
       # produces a dark demo, and it is the half of the list that used to be

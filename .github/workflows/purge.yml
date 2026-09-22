@@ -74,9 +74,31 @@ jobs:
             echo "removed=" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # The feed names demos, so it is rebuilt before anything is committed.
-          node factory/build-feed.mjs
+          # factory/purge.mjs has already rebuilt the product feed and the shared
+          # panel content, because a person retiring a demo by hand needs that to
+          # happen too and would not know to run three generators afterwards.
           echo "removed=$removed" >> "$GITHUB_OUTPUT"
+
+      # NOTHING BROKEN IS COMMITTED TO main BY A JOB NOBODY IS WATCHING, which
+      # is the difference between a purge that runs unattended and one that has
+      # to be checked in the morning. Retiring a demo deletes folders and
+      # rebuilds everything that names one, and a tree where that went wrong
+      # would block every build that followed it.
+      #
+      # Only when something was actually retired. Most nights nothing is due and
+      # this job does nothing at all, so the install and the minute it costs are
+      # paid a handful of times a year.
+      - name: Install pinned packages and the browser
+        if: steps.retire.outputs.removed != ''
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: The repository proves itself
+        if: steps.retire.outputs.removed != ''
+        run: bash factory/checks/verify-repo.sh
 
       - name: Commit the retirement
         if: steps.retire.outputs.removed != ''

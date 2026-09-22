@@ -249,8 +249,14 @@ guard.yml|node factory/panel/links.test.mjs|the exact test that went red on 22 S
 guard.yml|node .github/scripts/parse-request.test.mjs|a workflow script test run outside the list is refused
 guard.yml|./factory/guard/test.sh|the guard's own suite run outside the list is refused
 guard.yml|./factory/checks/publish.sh --check|a shell check run outside the list is refused
+refresh-images.yml|./factory/guard/run.sh|a workflow that was never on a hand kept list is still in scope
 EOF
 
+# A WORKFLOW NOBODY THOUGHT OF. The scope used to be three file names written
+# into the check, and the third was added on the day the third one drifted, which
+# is a rule that only ever covers yesterday. Every .yml in the folder is in scope
+# now, and the row above proves it with a name that was never on that list.
+#
 # THE OTHER DIRECTION. Both spellings of a call to the shared script, because
 # the rule is written as a pattern and an exclusion, and an exclusion that did
 # not cover one of them would turn every correct workflow red.

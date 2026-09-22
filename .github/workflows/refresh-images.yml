@@ -54,8 +54,14 @@ jobs:
           set -euo pipefail
           node factory/refresh-images.mjs --slug "$SLUG" | tee /tmp/refresh.json
 
-      - name: Guardrails
-        run: ./factory/guard/run.sh
+      # THE WHOLE LIST, not the guardrails alone. This step used to run
+      # factory/guard/run.sh by itself, which judges the tree for the rules in
+      # CLAUDE.md and knows nothing about whether the product feed still matches
+      # the images that just changed. factory/checks/verify-repo.sh includes the
+      # guardrails and everything else, the browser is already installed above,
+      # and it takes about a minute.
+      - name: The repository proves itself
+        run: bash factory/checks/verify-repo.sh
 
       - name: Commit what changed
         env:

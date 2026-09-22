@@ -13,7 +13,7 @@
    are left is usually UNKNOWN. Confusing the two writes a zero, and a zero
    announces every product out of stock.
    ========================================================================== */
-import { rowsFor, toCsv, toJson, COLUMNS, collect, assertUnclaimed } from './build-feed.mjs';
+import { rowsFor, toCsv, toJson, COLUMNS, collect, assertUnclaimed, isLive } from './build-feed.mjs';
 import { generatedCatalogue } from './scrape/fallback.mjs';
 
 let pass = 0;
@@ -175,10 +175,24 @@ console.log('\n5. Expiry keeps the catalogue honest');
        to assert that NOTHING survived, which was true only while every demo
        carried a date. The rule being tested is that a date past is dropped and a
        demo without one is not, so both halves are asserted. */
+    /* THE RULE ON ITS OWN, so it is proved whatever is on disk. This used to be
+       asserted only through the tree, as "at least one demo was skipped", and
+       that is true right up until the last dated demo retires. On that night the
+       tree is correct, the test fails, and the purge's own verification refuses
+       to commit the retirement: the demo stays live past its ninety days because
+       a test about expiry could not find anything that had expired. */
+    ok('a date in the past is not live', !isLive({ expiresAt: '2026-08-05' }, '2026-08-06'));
+    ok('the last day is still live',      isLive({ expiresAt: '2026-08-06' }, '2026-08-06'));
+    ok('a date ahead is live',            isLive({ expiresAt: '2026-12-15' }, '2026-08-06'));
+    ok('and no date is live for good',    isLive({}, '2099-12-31'));
+
+    /* And the tree obeys it, phrased so that it holds with no dated demos left
+       as well as with a dozen. */
     const future = collect('2099-12-31');
     const exempt = future.demos.map((d) => d.slug);
+    const dated = live.demos.filter((d) => d.expiresAt).map((d) => d.slug);
     ok('every demo with a date is dropped once it is past',
-       future.skipped.length > 0, future.skipped);
+       dated.every((slug) => future.skipped.some((x) => x.slug === slug)), dated);
     ok('and a demo with no expiry survives, which is what exempt means',
        exempt.length > 0 && future.demos.every((d) => !d.expiresAt), future.demos);
     ok('so the rows that remain belong only to those',

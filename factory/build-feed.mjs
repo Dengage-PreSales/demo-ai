@@ -91,7 +91,11 @@ function products(payload) {
    demo that has been taken down is a broken link on a live call. Handoff 10 keeps
    folder deletion separate and parked, so the feed does its own filtering rather
    than assuming the folder is gone. */
-function isLive(config, today) {
+/* Exported so the rule can be proved on its own, rather than only through
+   whichever demos happen to be on disk. The tree runs out of dated demos every
+   time the last one retires, and a test that needs one then fails on a tree
+   where nothing is wrong. */
+export function isLive(config, today) {
     if (!config.expiresAt) return true;
     return String(config.expiresAt) >= today;
 }
