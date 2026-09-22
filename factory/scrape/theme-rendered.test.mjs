@@ -492,5 +492,73 @@ console.log('\n4. A store the text readers cannot reach is still read by the bro
        out.theme.primary === STANDARD.primary, out.theme);
 }
 
+/* -------------------------------------------------------------------------- */
+console.log('\n5. A sale link is a marker, not a brand');
+
+/* uniworthshop.com, drill of 22 September 2026, and the stylesheet says it:
+
+       a[href="/collections/sale"] { color: red !important; }
+
+   Every colour that store declares about itself is black, white or grey. The
+   rendered reader found no qualifying button, took the sale link, and the demo
+   was built in #ff0000 from the storefront through to the email hero, for a
+   menswear brand that is black and white.
+
+   A demo in the wrong colour loudly is worse on a call than one in the standard
+   palette quietly, so a painted link now has to be corroborated by something the
+   store says about itself. The pair below is the whole rule: the same red, once
+   with nothing behind it and once declared by the store. */
+{
+    /* THE LINKS ARE GIVEN A REAL BOX, because the reader only samples elements
+       of at least MIN_BOX in both directions and a bare inline anchor is under
+       that in height. The first version of this fixture used bare anchors, so
+       the browser reported no link at all and the two assertions below passed
+       without a painted link ever existing to refuse. A real store's nav links
+       are padded, which is the shape being reproduced. */
+    const monochrome = (extra) => '<!DOCTYPE html><html><head><style>' +
+        'body{background:#ffffff;color:#202020;font-family:Rubik,sans-serif;}' +
+        'a{color:#ff0000;display:inline-block;padding:14px 18px;font-size:16px;}' +
+        (extra || '') +
+        '</style></head><body>' +
+        '<a href="/collections/sale">Sale</a>' +
+        '<a href="/collections/shirts">Shirts</a>' +
+        '<a href="/collections/trousers">Trousers</a>' +
+        '<p>Tailored shirts</p></body></html>';
+
+    const STANDARD = { primary: '#125cfa', accent: '#f5a524', ink: '#14181b',
+                       displayFont: 'Sora', bodyFont: 'Inter', radius: '10px' };
+
+    const plain = await serve({ '/': { body: monochrome() } });
+    const out = await theme(plain.origin, STANDARD, { settleMs: 1200 });
+    ok('an uncorroborated link colour is refused',
+       out.theme.primary !== '#ff0000', out.theme);
+    ok('and it is not recorded as the brand either',
+       out.found.primarySource !== 'painted link', out.found);
+    await plain.close();
+
+    /* THE OTHER DIRECTION, so the rule is a filter rather than a ban. The same
+       red, declared by the store as its own, is the brand. */
+    const declared = await serve({
+        '/': { body: monochrome(':root{--color-primary:#ff0000;}') }
+    });
+    const kept = await theme(declared.origin, STANDARD, { settleMs: 1200 });
+    ok('a link colour the store declares about itself is kept',
+       kept.theme.primary === '#ff0000', kept.theme);
+    await declared.close();
+
+    /* AND A BUTTON NEVER NEEDED CORROBORATING. A store paints its primary button
+       in its brand colour, which is the store answering directly, so this path
+       must not have been tightened along with the link. */
+    const button = await serve({ '/': { body:
+        '<!DOCTYPE html><html><head><style>' +
+        'body{background:#ffffff;color:#202020;font-family:Rubik,sans-serif;}' +
+        '.btn{background:#8b1f41;color:#ffffff;padding:12px 20px;display:inline-block;}' +
+        '</style></head><body><a class="btn" href="/x">Add to basket</a></body></html>' } });
+    const painted = await theme(button.origin, STANDARD, { settleMs: 1200 });
+    ok('an uncorroborated painted button is still the brand',
+       painted.theme.primary === '#8b1f41', painted.theme);
+    await button.close();
+}
+
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
 process.exit(fail ? 1 : 0);

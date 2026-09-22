@@ -689,7 +689,7 @@ export async function theme(origin, defaults, options) {
         const only = await askTheBrowser(origin, settings);
         if (only && only.ok) {
             found.rendered = true;
-            applyRendered(base, found, only);
+            applyRendered(base, found, only, []);
         }
         return { theme: base, found, reason: home.reason, colours: [], rendered: only };
     }
@@ -817,7 +817,16 @@ export async function theme(origin, defaults, options) {
 
     if (rendered && rendered.ok) {
         found.rendered = true;
-        applyRendered(base, found, rendered);
+        /* DECLARED TOKENS ONLY, never the counted ranking, and the difference is
+           the whole rule rather than a detail. The counted channel counts the
+           colours in the store's stylesheets, and the link colour the browser
+           reports came from one of those stylesheets, so a painted link always
+           appears in the counted set: checking against it corroborates every
+           link with itself and refuses nothing. A declared token is the store
+           naming its own brand, which is the independent statement this needs.
+           The first version of this check passed ranked, and the sale link
+           fixture sailed through it. */
+        applyRendered(base, found, rendered, said);
     }
 
     return { theme: base, found, colours: ranked.slice(0, 6), rendered };
@@ -845,7 +854,12 @@ export async function theme(origin, defaults, options) {
 const MIN_INK = 4.5;      /* body text on the ground it sits on */
 const MIN_LINE = 1.25;    /* a hairline only has to be visible, not legible */
 
-function applyRendered(base, found, seen) {
+/* evidence: the colours the store DECLARES about itself, a --color-primary token,
+   a theme-color meta, a manifest theme_color. Not the counted colours, which are
+   just its stylesheets read back and would corroborate a painted link with the
+   rule that painted it. Empty when the text channels could not read the store at
+   all, which is exactly when a weak signal deserves the least trust. */
+function applyRendered(base, found, seen, evidence = []) {
     /* The brand colour first, because the neutrals below are resolved against
        whatever it ends up being. A button the store actually paints outranks
        every text signal; a link colour is the weaker second source. */
@@ -861,11 +875,37 @@ function applyRendered(base, found, seen) {
        outcome: found.primary stays false, the demo keeps the standard palette, and
        the issue comment says the colours could not be read rather than implying
        the prospect's own were used. */
-    const painted = [seen.button, seen.link].find((hex) => {
+    /* A PAINTED LINK HAS TO BE CORROBORATED. A BUTTON DOES NOT.
+
+       A store paints its primary button in its brand colour, so a button is the
+       store answering the question directly. A link colour is not: shops paint
+       links to MARK things, and the thing most often marked is a sale.
+
+       uniworthshop.com in the drill of 22 September 2026 is the case, and its
+       stylesheet says it outright:
+
+           a[href="/collections/sale"] { color: red !important; }
+
+       Every colour that store declares about itself is black, white or grey. The
+       rendered reader found no qualifying button, took the sale link, and the
+       demo was built in #ff0000 from the storefront to the email hero, for a
+       menswear brand that is black and white. A demo in the wrong colour loudly
+       is worse on a call than one in the standard palette quietly, which is the
+       trade this whole module is written around.
+
+       So a painted link is accepted only where the store DECLARES that colour
+       about itself somewhere. Corroborated, it is the brand. Uncorroborated, it
+       is a marker, and the weaker channels keep the answer. */
+    const corroborated = (hex) => evidence.some((other) =>
+        String(other).toLowerCase() === String(hex).toLowerCase());
+    const usable = (hex) => {
         if (!hex) return false;
         const rgb = parseHex(hex);
-        return rgb && isFrameworkValue(hex) === false && (isBrandColour(rgb) || veryDark(rgb));
-    });
+        return Boolean(rgb) && isFrameworkValue(hex) === false &&
+            (isBrandColour(rgb) || veryDark(rgb));
+    };
+    const painted = usable(seen.button) ? seen.button
+        : (usable(seen.link) && corroborated(seen.link) ? seen.link : null);
     if (painted) {
         base.primary = painted;
         found.primary = true;
