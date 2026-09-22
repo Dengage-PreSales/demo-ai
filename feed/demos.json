@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-22T13:20:28.886Z",
+  "generated": "2026-09-22T13:23:42.971Z",
   "demos": [
     {
       "slug": "bkc-link",
@@ -72,17 +72,23 @@
       "products": 60,
       "expiresAt": "2026-12-21",
       "displayName": "Dengage eComm Demo",
-      "storeName": "leather garments",
+      "storeName": "Goodleathergarments In",
       "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/goodleathergarments-in/",
       "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/goodleathergarments-in/vendor/assets/dengage-logo.svg",
       "language": "en",
       "currency": "TRY",
       "currencySymbol": "₺",
-      "brandPrimary": "#202020",
+      "brandPrimary": "#e35353",
       "brandOnPrimary": "#ffffff",
       "categories": [
-        "Chelsea",
+        "All Bag",
+        "All Jacket",
+        "Bomber Jackets",
+        "Ladies Handbags",
+        "Vintage Leather Jackets",
         "Boot",
+        "Chelsea",
+        "Formal Shoes",
         "More"
       ]
     },

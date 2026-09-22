@@ -142,10 +142,26 @@
         var cats = window.Catalog.categories();
         var links = ['<a href="index.html"' + (!activeCategory ? ' aria-current="true"' : '') + '>' +
                      t('navAll') + '</a>'];
-        /* The header has no horizontal slack. A prospect with fourteen top level
-           categories would break the layout, so take what fits and let the rest
-           be reachable from the filter chips. Handoff 7.1a. */
-        cats.slice(0, 6).forEach(function (c) {
+        /* EVERY SHELF THE STORE HAS, and this used to take the first six.
+           The reasoning was that the header has no horizontal slack, which was
+           true when it was written: the nav was a fixed row that clipped, so
+           taking six was the only way to keep the layout intact, and the rest
+           were left to the filter chips.
+
+           Both halves of that have changed. The scrape keeps up to
+           CATEGORY_CAP shelves, raised to eight on 18 September 2026, and
+           .site-nav tightens its spacing once it holds six and scrolls sideways
+           past that rather than clipping. So the layout is handled where layout
+           belongs, and truncating here only hid shelves that the header can now
+           carry.
+
+           It hid real ones. A leather goods store came out with nine shelves
+           and the header showed six: Chelsea, Formal Shoes and the tail group
+           were in the catalogue, in the filters and in the config, and had no
+           link anywhere in the navigation. factory/checks/nav.mjs is what
+           caught it, and it holds every configured category to having a link
+           that a visitor can actually reach. */
+        cats.forEach(function (c) {
             links.push('<a href="index.html?category=' + encodeURIComponent(c) + '"' +
                 (activeCategory === c ? ' aria-current="true"' : '') + '>' +
                 window.Catalog.escapeText(c) + '</a>');

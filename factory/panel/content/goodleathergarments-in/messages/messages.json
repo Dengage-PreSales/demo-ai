@@ -250,11 +250,11 @@
           "checks": [
             {
               "field": "title",
-              "cost": 30,
+              "cost": 47,
               "max": 50,
               "source": "client",
               "over": false,
-              "resolvedTo": "Still looking at valueChelsea?"
+              "resolvedTo": "Still looking at valueVintage Leather Jacke...?"
             },
             {
               "field": "body",
@@ -640,11 +640,11 @@
             },
             {
               "field": "body",
-              "cost": 65,
+              "cost": 81,
               "max": 120,
               "source": "client",
               "over": false,
-              "resolvedTo": "New ranges in valueChelsea, and your saved items are still saved."
+              "resolvedTo": "New ranges in valueVintage Leather Jackets, and your saved items are still saved."
             }
           ]
         },

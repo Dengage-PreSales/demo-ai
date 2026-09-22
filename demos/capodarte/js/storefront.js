@@ -102,7 +102,7 @@
         var links = ['<a href="index.html"' + (!activeCategory ? ' aria-current="true"' : '') + '>' +
                      t('navAll') + '</a>'];
 
-        cats.slice(0, 6).forEach(function (c) {
+        cats.forEach(function (c) {
             links.push('<a href="index.html?category=' + encodeURIComponent(c) + '"' +
                 (activeCategory === c ? ' aria-current="true"' : '') + '>' +
                 window.Catalog.escapeText(c) + '</a>');

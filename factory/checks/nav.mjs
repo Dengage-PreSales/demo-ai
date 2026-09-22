@@ -207,6 +207,11 @@ async function reachByScrolling(page) {
         const mod = await import('../scrape/catalogue.mjs');
         return mod.CATEGORY_CAP;
     })();
+    /* THE CAP IS NOT THE WORST CASE, and using it here meant this section tested
+       two links fewer than a real build can produce. A demo's header carries
+       every shelf the scrape kept, plus the tail group that holds whatever did
+       not fit a shelf, plus the All products link the storefront adds itself. */
+    const WORST = CAP + 2;
     const LONG = ['Fresh Fruits', 'Fresh Vegetables', 'Fresh Flowers', 'Herbs & Spices',
         'Nuts & Dried Fruits', 'Gift Bundles', 'Weekly Deals', 'Juices & Smoothies',
         'Bakery & Pastry', 'Hampers'];
@@ -225,9 +230,9 @@ async function reachByScrolling(page) {
             nav.appendChild(link);
         }
         return new Function('return (' + measure + ')()')();
-    }, { names: LONG.slice(0, CAP), measure: measureNav.toString() });
-    console.log('   (' + CAP + ' categories, the scrape\'s own cap)');
-    ok('the nav holds all ' + CAP, stuffed.count === CAP, stuffed.count);
+    }, { names: LONG.slice(0, WORST), measure: measureNav.toString() });
+    console.log('   (' + WORST + ' links, the worst case a build can produce)');
+    ok('the nav holds all ' + WORST, stuffed.count === WORST, stuffed.count);
     const fullReach = await reachByScrolling(full);
     ok('and not one of them is clipped out of reach', fullReach.unreachable.length === 0,
         fullReach);
