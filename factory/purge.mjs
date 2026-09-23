@@ -57,7 +57,10 @@ const today = String(args.today || new Date().toISOString().slice(0, 10));
    The panel content is the half that is easy to forget: it lives outside
    demos/ because it is setup material rather than pages, and a demo retired
    without it leaves a message pack for a storefront that is gone. */
-function belongingsOf(slug) {
+/* Exported because a rebuild has to clear exactly the same set. A demo that owns
+   three folders and a routine that knows about one is how a retired demo leaves a
+   message pack behind, and a rebuilt one would leave the previous build's. */
+export function belongingsOf(slug) {
     return [
         join(DEMOS, slug),
         join(ROOT, 'factory', 'panel', 'content', slug),

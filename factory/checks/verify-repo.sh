@@ -68,6 +68,10 @@ run "the issue request parser"          node .github/scripts/parse-request.test.
 # here that cannot be run outside GitHub Actions, and both times they have
 # been wrong the symptom was a correct refusal delivered as silence.
 run "the front door"                    node .github/scripts/gate.test.mjs
+# Which demo a build writes over, and which it must not. A retry is a rebuild
+# and a second request is not, and the only thing separating them is the issue
+# number a demo records.
+run "which demo a build replaces"       node factory/slug.test.mjs
 
 # THE SCRAPE PIPELINE, which decides whether a demo has photographs, a theme and
 # a catalogue at all. A regression in any of these ships a demo that is quietly

@@ -35,6 +35,7 @@ import { dirname, join } from 'node:path';
 import { catalogue, PRODUCT_CAP } from './scrape/catalogue.mjs';
 import { downloadImages, stripImageUrls } from './scrape/images.mjs';
 import { theme, LOADABLE } from './scrape/theme.mjs';
+import { belongingsOf } from './purge.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEMO_DAYS = 90;
@@ -106,9 +107,41 @@ export function storeNameFromUrl(url) {
 
 /* Handoff 7.1: two demos requested for the same domain must not overwrite each
    other silently, which happens the moment a demo expires and is rebuilt for a
-   second call. The suffix is reported so the issue comment can say so. */
-function freeSlug(base) {
-    if (!existsSync(join(ROOT, 'demos', base))) return { slug: base, suffixed: false };
+   second call. The suffix is reported so the issue comment can say so.
+
+   A RETRY ON THE SAME REQUEST IS A REBUILD, NOT A SECOND REQUEST, added
+   23 September 2026. The rule above could not tell those apart, because nothing
+   recorded which request a demo came from, so the only key available was the
+   domain and every retry forked the demo.
+
+   Queima Diaria is why. It built with an invented department store catalogue and
+   the standard palette, both since fixed, and asking for it again would have left
+   the wrong demo live at queimadiaria and the right one at queimadiaria-2, with
+   the issue linking to the first. A colleague retries precisely because what they
+   got was not usable, and handing them a second address while the first stays up
+   is the least useful possible answer.
+
+   So a demo records the issue it was built for, and a build for that same issue
+   takes the slug back. A different issue still suffixes, which is the case
+   handoff 7.1 is about and it is untouched. A demo built before this existed
+   carries no issue number and is never reclaimed, so nothing already published
+   can be overwritten by surprise. */
+export function freeSlug(base, issue) {
+    const taken = join(ROOT, 'demos', base);
+    if (!existsSync(taken)) return { slug: base, suffixed: false };
+
+    if (issue) {
+        const config = join(taken, 'demo.config.json');
+        if (existsSync(config)) {
+            try {
+                const held = JSON.parse(readFileSync(config, 'utf8')).issue;
+                if (held && String(held) === String(issue)) {
+                    return { slug: base, suffixed: false, rebuilt: true };
+                }
+            } catch (err) { /* unreadable config: treat it as somebody else's */ }
+        }
+    }
+
     for (let n = 2; n < 50; n++) {
         const candidate = base + '-' + n;
         if (!existsSync(join(ROOT, 'demos', candidate))) return { slug: candidate, suffixed: true };
