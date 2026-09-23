@@ -558,6 +558,56 @@ export function verticalFor(text) {
     return best || GENERAL;
 }
 
+/* INVENTED PRICES IN THE CURRENCY THE DEMO IS SHOWN IN.
+
+   The bands above are written in a pound, euro or dollar sized unit, and until
+   23 September 2026 they were printed in whatever currency the demo carried.
+   FirstCry was built in rupees and its demo sold a three pack of baby bodysuits
+   for 7.90, about nine US cents. Nothing failed, because nothing can tell an
+   invented price from a real one, and a prospect would have noticed in a second.
+
+   THESE ARE ORDERS OF MAGNITUDE, NOT EXCHANGE RATES. The catalogue announces
+   itself as invented and a figure here is only ever asked to look like a price
+   in that currency, which is a matter of how many digits it has and how it
+   ends. A currency not listed keeps the band as written.
+
+   AND THE ENDING FOLLOWS THE CURRENCY. The .90 ending is a convention for a
+   currency counted in single units. A rupee or a yen price is written to the
+   nearest ten or hundred and ends in nine: 649 reads as a shop, 632.90 does not. */
+const PRICE_SCALE = {
+    INR: 80, PKR: 280, LKR: 300, BDT: 110, NPR: 130,
+    JPY: 150, KRW: 1300, IDR: 15000, VND: 24000, PHP: 55, THB: 35,
+    BRL: 5, MXN: 17, ARS: 900, CLP: 900, COP: 4000, PEN: 3.7,
+    TRY: 32, RUB: 90, UAH: 40, KZT: 450,
+    ZAR: 18, NGN: 1500, KES: 130, EGP: 48,
+    AED: 3.7, SAR: 3.75, QAR: 3.6, KWD: 0.3, BHD: 0.38, OMR: 0.38,
+    CNY: 7, HKD: 7.8, TWD: 32, SGD: 1.35, MYR: 4.7,
+    SEK: 10.5, NOK: 10.5, DKK: 6.9, PLN: 4, CZK: 23, HUF: 360,
+    CHF: 0.9, AUD: 1.5, NZD: 1.65, CAD: 1.35
+};
+
+export function priceIn(price, currency) {
+    if (price === null || price === undefined) return price;
+    const scale = PRICE_SCALE[String(currency || '').toUpperCase()];
+    if (!scale || scale === 1) return price;
+    const raw = price * scale;
+    if (raw >= 1000) return Math.max(9, Math.round(raw / 100) * 100 - 1);
+    if (raw >= 100) return Math.max(9, Math.round(raw / 10) * 10 - 1);
+    if (raw >= 10) return Math.round(raw) - 0.1;
+    return Math.round(raw * 10) / 10 - 0.01 > 0 ? Math.round(raw * 100) / 100 : raw;
+}
+
+/* Rescale an invented catalogue once its currency is known. Only ever applied to
+   a catalogue that announced itself as generated: a real product's price is the
+   store's, and converting it would be inventing a figure for a real product,
+   which CLAUDE.md 3.5 forbids everywhere. */
+export function priceCatalogueIn(products, currency) {
+    return products.map((product) => Object.assign({}, product, {
+        price: priceIn(product.price, currency),
+        discountedPrice: priceIn(product.discountedPrice, currency)
+    }));
+}
+
 /* Spread across the band rather than random, so the same store rebuilt tomorrow
    produces the same catalogue. A demo that changes its own prices between two
    builds looks like a fault, and Math.random in a generator is how that happens.

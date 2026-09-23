@@ -34,7 +34,7 @@
    CSV path applies.
    ========================================================================== */
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const ATTACHMENT_HOSTS = /^https:\/\/(?:github\.com\/user-attachments\/(?:assets|files)\/|(?:[a-z0-9-]+\.)?user-images\.githubusercontent\.com\/|objects\.githubusercontent\.com\/|private-user-images\.githubusercontent\.com\/)/i;
 
@@ -113,23 +113,162 @@ export function presentIn(palette, candidate) {
     });
 }
 
-export async function paletteFromImage(url) {
-    if (!ATTACHMENT_HOSTS.test(String(url || ''))) {
-        return { ok: false, reason: 'not-an-attachment-host' };
-    }
+/* WHICH COLOURS IN A SCREENSHOT ARE THE BRAND.
 
+   The build took the screenshot's INK as the brand colour, from the day the
+   screenshot path was written, with white hard coded on top of it. Ink here
+   means the most common dark colour, which is the text, or on a product grid
+   whatever dark photograph covers the most pixels. It was never a brand colour
+   and nothing said why it was used as one.
+
+   What it produced: Queima Diaria in near black, and FirstCry, whose storefront
+   is a bright yellow navigation bar and orange add to basket buttons, in the
+   brown of a pair of children's joggers in the second product photograph.
+
+   THE BRAND IS THE LARGEST VIVID AREA. Accents are already ranked by how much of
+   the screenshot they cover, and a store's own colour is the one it paints
+   across its navigation and its buttons. Vivid means saturated AND bright
+   enough to read as a colour rather than a shadow, which is what keeps a dark
+   brown out of it.
+
+   THE ACCENT HAS TO BE A DIFFERENT COLOUR. The next vivid area is very often a
+   lighter or darker shade of the first, and a demo whose accent is its primary
+   one step over looks like it has only one colour. So it is the next vivid
+   accent at least HUE_APART degrees round the colour wheel.
+
+   INK STAYS THE ANSWER FOR A STORE WITH NO COLOUR IN IT. A black and white
+   storefront has no vivid area at all, and for that store the dark text colour
+   genuinely is the most honest primary there is.
+
+   A KNOWN LIMIT, stated because it will come up. A screenshot cannot tell a deep
+   brand colour from a dark photograph: a navy header and a pair of brown
+   trousers look the same to a pixel count. So a colour darker than the vivid
+   threshold is not taken as the brand. A store whose brand is a deep green gets
+   the brightest green it paints instead, which is the right hue, and a store
+   whose only colour is navy falls back to ink, which is what it got before this
+   existed.
+
+   AND THE LABEL COLOUR IS MEASURED, not assumed. White on yellow is unreadable,
+   and the old line wrote white on everything. */
+const HUE_APART = 25;
+
+function channels(colour) {
+    return [1, 3, 5].map((at) => parseInt(String(colour).slice(at, at + 2), 16));
+}
+
+function vivid(colour) {
+    const [r, g, b] = channels(colour);
+    return saturation(r, g, b) >= 0.35 && Math.max(r, g, b) >= 128;
+}
+
+function hueOf(colour) {
+    const [r, g, b] = channels(colour).map((value) => value / 255);
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    if (max === min) return 0;
+    const d = max - min;
+    let h;
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    return (h * 60 + 360) % 360;
+}
+
+function hueDistance(a, b) {
+    const d = Math.abs(hueOf(a) - hueOf(b));
+    return Math.min(d, 360 - d);
+}
+
+function luminance(colour) {
+    const [r, g, b] = channels(colour).map((value) => {
+        const c = value / 255;
+        return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastOf(a, b) {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+}
+
+/* The label that reads best on a colour: white, or the store's own dark ink,
+   whichever clears the bar, and failing both whichever comes closer.
+
+   The store's ink is used only when it is NEUTRAL. On a product grid the most
+   common dark colour is often a photograph rather than the text, and a label in
+   the brown of a pair of joggers reads as a mistake. */
+export function labelFor(colour, ink) {
+    const neutral = ink && (() => {
+        const [r, g, b] = channels(ink);
+        return saturation(r, g, b) < 0.25;
+    })();
+    const dark = neutral ? ink : '#14181b';
+    const onWhite = contrastOf('#ffffff', colour);
+    const onDark = contrastOf(dark, colour);
+    if (onWhite >= 4.5) return '#ffffff';
+    if (onDark >= 4.5) return dark;
+    return onWhite >= onDark ? '#ffffff' : dark;
+}
+
+export function brandFromScreenshot(shot) {
+    const accents = (shot && shot.accents) || [];
+    const bright = accents.filter(vivid);
+    const primary = bright[0] || (shot && shot.ink) || null;
+    if (!primary) return null;
+    const accent = bright.find((colour) => colour !== primary &&
+        hueDistance(colour, primary) >= HUE_APART) || null;
+    return {
+        primary,
+        onPrimary: labelFor(primary, shot.ink),
+        accent,
+        fromInk: !bright.length
+    };
+}
+
+/* A SCREENSHOT ON THIS MACHINE, as well as one pasted into an issue.
+
+   Added 23 September 2026 for a store the GitHub runner cannot read at all.
+   FirstCry refuses the runner's datacenter address and renders perfectly for an
+   ordinary browser elsewhere, so the screenshot that would theme it can be taken,
+   and looked at, by the person running the build. It cannot reach the build
+   through an issue without somebody pasting it into GitHub by hand, which is the
+   step the factory exists to remove.
+
+   IT CANNOT WIDEN WHAT AN ISSUE CAN FETCH, and that is the property worth
+   stating. The attachment host rule below is about text written by anybody who
+   can open an issue: an address in that text must never make this build fetch
+   something. A local path is not reachable from there. The request parser only
+   ever returns a GitHub attachment address, so the only way a path arrives here
+   is an operator typing it on the command line, where they could equally have
+   run anything else. It must still be absolute, exist, and be a PNG or JPEG. */
+const LOCAL_IMAGE = /^\/[^\0]+\.(png|jpe?g)$/i;
+
+export async function paletteFromImage(url) {
+    const source = String(url || '');
     let bytes;
     let type;
-    try {
-        const response = await fetch(url, { redirect: 'follow' });
-        if (!response.ok) return { ok: false, reason: 'http-' + response.status };
-        type = String(response.headers.get('content-type') || 'image/png').split(';')[0];
-        if (!/^image\//.test(type)) return { ok: false, reason: 'not-an-image' };
-        const raw = new Uint8Array(await response.arrayBuffer());
+
+    if (LOCAL_IMAGE.test(source) && existsSync(source)) {
+        const raw = new Uint8Array(readFileSync(source));
         if (raw.length > MAX_BYTES) return { ok: false, reason: 'too-large' };
         bytes = raw;
-    } catch (err) {
-        return { ok: false, reason: 'fetch-failed' };
+        type = /\.png$/i.test(source) ? 'image/png' : 'image/jpeg';
+    } else {
+        if (!ATTACHMENT_HOSTS.test(source)) {
+            return { ok: false, reason: 'not-an-attachment-host' };
+        }
+        try {
+            const response = await fetch(source, { redirect: 'follow' });
+            if (!response.ok) return { ok: false, reason: 'http-' + response.status };
+            type = String(response.headers.get('content-type') || 'image/png').split(';')[0];
+            if (!/^image\//.test(type)) return { ok: false, reason: 'not-an-image' };
+            const raw = new Uint8Array(await response.arrayBuffer());
+            if (raw.length > MAX_BYTES) return { ok: false, reason: 'too-large' };
+            bytes = raw;
+        } catch (err) {
+            return { ok: false, reason: 'fetch-failed' };
+        }
     }
 
     let chromium;

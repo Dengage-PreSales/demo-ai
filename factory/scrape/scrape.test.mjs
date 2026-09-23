@@ -19,7 +19,7 @@ import { fromCsv, categorise, capProducts, collectProducts, dropSentinelPrices,
 import { acceptHeader } from './fetch.mjs';
 import { createServer } from 'node:http';
 import { readFileSync } from 'node:fs';
-import { generatedCatalogue, verticalFor, VERTICAL_IDS } from './fallback.mjs';
+import { generatedCatalogue, verticalFor, VERTICAL_IDS, priceIn, priceCatalogueIn } from './fallback.mjs';
 import { mapFont, contrast, isBrandColour, parseHex, LOADABLE, theme,
          isVendorStylesheet, isFrameworkValue, isFrameworkDefault } from './theme.mjs';
 import { slugFromUrl, currencyFromHost, chooseCurrency } from '../generate-demo.mjs';
@@ -439,6 +439,38 @@ console.log('\n1f. The stand-in catalogue, for a store that answers nothing');
        tables and make up, while the comments beside each index went on naming
        the old five. Nothing failed: they are all real categories, just not the
        ones anybody chose. */
+    /* INVENTED PRICES IN THE CURRENCY THEY ARE SHOWN IN. FirstCry, rupees, and a
+       three pack of baby bodysuits for 7.90, about nine US cents: the bands are
+       written in a pound or dollar sized unit and were printed in whatever
+       currency the demo carried. */
+    is('a rupee price has rupee digits and ends in nine', priceIn(7.9, 'INR'), 629);
+    ok('so a bodysuit pack costs hundreds of rupees, not seven',
+       priceIn(7.9, 'INR') >= 100 && priceIn(7.9, 'INR') < 2000, priceIn(7.9, 'INR'));
+    is('a yen price likewise', priceIn(7.9, 'JPY'), 1199);
+    is('a real price ending survives a small currency', priceIn(7.9, 'BRL'), 39.9);
+    is('a dollar price is untouched', priceIn(7.9, 'USD'), 7.9);
+    is('and so is a pound price', priceIn(7.9, 'GBP'), 7.9);
+    is('a currency nobody listed keeps the band as written', priceIn(7.9, 'XYZ'), 7.9);
+    is('and a missing price is never given one', priceIn(null, 'INR'), null);
+    {
+        const scaled = priceCatalogueIn([{ id: 'a', price: 7.9, discountedPrice: null }], 'INR');
+        is('a whole catalogue is rescaled', scaled[0].price, 629);
+        is('without inventing a discount that was not there', scaled[0].discountedPrice, null);
+    }
+
+    /* AND ONLY EVER AN INVENTED ONE. Converting a real product's price would be
+       inventing a figure for a real product, which CLAUDE.md 3.5 forbids
+       everywhere, and nothing downstream could tell it from the store's own. The
+       generator is the only caller, so its guard is what is pinned. */
+    {
+        const { readFileSync } = await import('node:fs');
+        const generator = readFileSync(new URL('../generate-demo.mjs', import.meta.url), 'utf8');
+        const call = generator.indexOf('priceCatalogueIn(found.products');
+        const guard = generator.lastIndexOf("found.tier === 'generated'", call);
+        ok('the generator rescales prices only inside a check for a generated catalogue',
+           call !== -1 && guard !== -1 && call - guard < 120, { call, guard });
+    }
+
     is('the general range is the five intended categories',
        generatedCatalogue('https://www.example.com Acme').products
            .map((product) => product.category)

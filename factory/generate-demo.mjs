@@ -36,6 +36,7 @@ import { catalogue, PRODUCT_CAP } from './scrape/catalogue.mjs';
 import { downloadImages, stripImageUrls } from './scrape/images.mjs';
 import { theme, LOADABLE } from './scrape/theme.mjs';
 import { belongingsOf } from './purge.mjs';
+import { priceCatalogueIn } from './scrape/fallback.mjs';
 import { rebuild as rebuildNamed } from './named-generators.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -146,6 +147,22 @@ export function clearForRebuild(slug) {
         throw new Error('rebuilding ' + slug + ' could not remove: ' + left.join(', '));
     }
     return owned;
+}
+
+/* The palette committed for a demo, or null. Only colours are accepted, so a
+   file here can never carry anything but six hex values into the build. */
+export function committedPalette(slug) {
+    if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(String(slug || ''))) return null;
+    const path = join(ROOT, 'factory', 'palettes', slug + '.json');
+    if (!existsSync(path)) return null;
+    let raw;
+    try { raw = JSON.parse(readFileSync(path, 'utf8')); } catch (err) { return null; }
+    const colour = (value) => /^#[0-9a-f]{6}$/i.test(String(value || '')) ? String(value).toLowerCase() : null;
+    const accents = (Array.isArray(raw.accents) ? raw.accents : []).map(colour).filter(Boolean).slice(0, 6);
+    const ground = colour(raw.ground);
+    if (!ground) return null;
+    return { ok: true, ground, ink: colour(raw.ink), accents,
+             path: 'factory/palettes/' + slug + '.json' };
 }
 
 export function freeSlug(base, issue) {
@@ -638,9 +655,26 @@ async function main() {
        SUPPLIES one when the scrape found nothing. Unreadable screenshots change
        nothing and say so, because a build must never die over a palette. */
     const screenshotNotes = [];
-    if (options.screenshot && options.screenshot !== true) {
-        const { paletteFromImage, presentIn } = await import('./scrape/screenshot.mjs');
-        const shot = await paletteFromImage(String(options.screenshot));
+    /* A PALETTE COMMITTED FOR THIS DEMO stands in for a screenshot when there is
+       none, and it exists for the store the build machine cannot read.
+
+       FirstCry refuses the GitHub runner's address and renders perfectly for an
+       ordinary browser elsewhere. A screenshot taken there can only reach the
+       build by being pasted into the issue by hand, which is the step the factory
+       exists to remove, and committing the screenshot itself would put the
+       prospect's logo and photography into a public repository to be read for six
+       colours. So what is committed is the six colours: factory/palettes/<slug>.json,
+       the ground, the ink and the accents exactly as paletteFromPixels returns
+       them, with where and when they were read. Anyone retrying that request later
+       gets the same colours, and the diff that adds one is readable at a glance. */
+    const committed = !(options.screenshot && options.screenshot !== true)
+        ? committedPalette(options.slug && options.slug !== true ? String(options.slug) : slugFromUrl(origin))
+        : null;
+    if ((options.screenshot && options.screenshot !== true) || committed) {
+        const { paletteFromImage, presentIn, brandFromScreenshot } =
+            await import('./scrape/screenshot.mjs');
+        const shot = committed || await paletteFromImage(String(options.screenshot));
+        if (committed) console.error('Screenshot: from the palette committed at ' + committed.path);
         if (!shot.ok) {
             console.error('Screenshot: not read (' + shot.reason + '), so it neither helps nor blocks.');
         } else {
@@ -655,8 +689,15 @@ async function main() {
                         + ' screenshot instead. If the demo looks unlike the store,'
                         + ' the screenshot is the thing to re-take.');
                 }
-                extracted.theme.primary = shot.ink || extracted.theme.primary;
-                extracted.theme.onPrimary = '#ffffff';
+                /* The brand is the largest vivid area, not the text colour, and
+                   its label is measured rather than assumed white. See
+                   brandFromScreenshot for why, and for the one kind of store
+                   where the text colour still is the honest answer. */
+                const brand = brandFromScreenshot(shot);
+                if (brand) {
+                    extracted.theme.primary = brand.primary;
+                    extracted.theme.onPrimary = brand.onPrimary;
+                }
                 /* THE ACCENT IS JUDGED ON ITS OWN EVIDENCE, not thrown out with the
                    primary. Corrected 16 September 2026, from a build where the pages
                    painted a framework blue primary, rightly overruled by the
@@ -667,11 +708,17 @@ async function main() {
                    independent reads of the same answer, so it stays. */
                 const accentPresent = extracted.found.accent
                     && presentIn(shot, extracted.theme.accent);
-                if (!accentPresent && shot.accents[0]) {
-                    extracted.theme.accent = shot.accents[0];
+                /* The screenshot's own second colour, which is a DIFFERENT colour
+                   from the primary rather than its largest shade. Taking
+                   accents[0] here once gave the accent the same yellow the
+                   primary had just been set to. */
+                const shotAccent = (brand && brand.accent) ||
+                    shot.accents.find((colour) => colour !== extracted.theme.primary) || null;
+                if (!accentPresent && shotAccent) {
+                    extracted.theme.accent = shotAccent;
                 }
                 extracted.found.primary = true;
-                extracted.found.accent = accentPresent || Boolean(shot.accents[0]);
+                extracted.found.accent = accentPresent || Boolean(shotAccent);
                 extracted.found.primarySource = 'screenshot';
                 console.error('Theme: from the screenshot. primary ' + extracted.theme.primary +
                               ', accent ' + extracted.theme.accent);
@@ -702,6 +749,13 @@ async function main() {
        the issue comment cannot disagree about which currency was used or where it
        came from. */
     const chosenCurrency = chooseCurrency(options.currency, found, origin);
+
+    /* AN INVENTED CATALOGUE IS PRICED IN THE CURRENCY IT WILL BE SHOWN IN, here,
+       once that is decided, rather than in the unit its bands happen to be
+       written in. Never a real catalogue: see priceCatalogueIn. */
+    if (found.tier === 'generated' && Array.isArray(found.products)) {
+        found.products = priceCatalogueIn(found.products, chosenCurrency.code);
+    }
 
     /* build-demo.sh owns the copy and the identity substitution. It refuses to
        overwrite, which is why a free slug is chosen before calling it. */

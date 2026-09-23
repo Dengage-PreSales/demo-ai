@@ -25,7 +25,7 @@ import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { freeSlug, clearForRebuild } from './generate-demo.mjs';
+import { freeSlug, clearForRebuild, committedPalette } from './generate-demo.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -134,6 +134,30 @@ try {
        its folders were removed by hand still has to build. */
     is('clearing a demo that owns nothing removes nothing and does not throw',
        clearForRebuild(PREFIX + 'never-existed').length, 0);
+    console.log('\n7. A palette committed for a demo carries colours and nothing else');
+
+    /* It exists for a store the build machine cannot read, and it is only ever
+       six hex values: the screenshot it came from stays out of a public
+       repository. So everything that is not a colour is dropped, and a slug that
+       is not a slug is never turned into a path. */
+    const paletteDir = join(ROOT, 'factory', 'palettes');
+    mkdirSync(paletteDir, { recursive: true });
+    const probe = join(paletteDir, PREFIX + 'palette.json');
+    writeFileSync(probe, JSON.stringify({
+        ground: '#F8F8F8', ink: '#604040',
+        accents: ['#f8e020', 'not a colour', '#f86020', 'javascript:alert(1)'],
+        extra: 'ignored'
+    }));
+    try {
+        const read = committedPalette(PREFIX + 'palette');
+        is('a committed palette is read', read && read.ok, true);
+        is('its colours are normalised', read && read.ground, '#f8f8f8');
+        is('and only colours survive', JSON.stringify(read && read.accents), '["#f8e020","#f86020"]');
+        is('a slug with a traversal in it is never a path', committedPalette('../etc'), null);
+        is('and a demo with no palette gets none', committedPalette(PREFIX + 'nothing-here'), null);
+    } finally {
+        rmSync(probe, { force: true });
+    }
 } finally {
     for (const slug of made) rmSync(join(ROOT, 'demos', slug), { recursive: true, force: true });
 }

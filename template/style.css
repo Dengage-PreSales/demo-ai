@@ -17,6 +17,15 @@
     --primary:     #125cfa;
     --on-primary:  #ffffff;
     --accent:      #f5a524;
+    /* THE BRAND AS TEXT. js/boot.js derives --brand-text from the brand colour,
+       darkened until it reads at 4.5:1 on both the page and the tinted wash. The
+       popups have used it since they were written; the storefront itself never
+       did, and wrote var(--primary) straight onto white instead. That is only
+       readable while the brand is dark. FirstCry's is a bright yellow, and the
+       active navigation item and the section label came out yellow on pale
+       yellow. Wherever the brand colour is TEXT it is --brand-text; wherever it
+       is a border, a background or a fill it stays --primary, which is the look
+       the store actually paints. */
     --ink:         #14181b;
     --muted:       #667085;
     --surface:     #ffffff;
@@ -72,7 +81,7 @@ body {
 
 h1, h2, h3 { font-family: var(--display-font); font-weight: 650; letter-spacing: -0.015em; margin: 0; }
 
-a { color: var(--primary); text-decoration: none; }
+a { color: var(--brand-text, var(--primary)); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
 img { max-width: 100%; display: block; }
@@ -134,7 +143,7 @@ img { max-width: 100%; display: block; }
 .site-nav:has(a:nth-child(6)) a { padding: 7px 8px; font-size: 13.5px; }
 .site-nav:has(a:nth-child(8)) a { padding: 7px 6px; font-size: 13px; }
 .site-nav a:hover { background: var(--tint); text-decoration: none; }
-.site-nav a[aria-current="true"] { background: var(--tint-strong); color: var(--primary); }
+.site-nav a[aria-current="true"] { background: var(--tint-strong); color: var(--brand-text, var(--primary)); }
 
 .header-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
@@ -181,7 +190,7 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 }
 .hero-kicker {
     display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--primary); background: var(--tint);
+    text-transform: uppercase; color: var(--brand-text, var(--primary)); background: var(--tint);
     padding: 5px 11px; border-radius: 20px; margin-bottom: 14px;
 }
 .hero h1 { font-size: 38px; line-height: 1.15; max-width: 16em; }
@@ -265,7 +274,7 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
     display: grid; place-items: center; box-shadow: var(--shadow-sm); color: var(--ink);
 }
 .card-save svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
-.card-save[aria-pressed="true"] { color: var(--primary); }
+.card-save[aria-pressed="true"] { color: var(--brand-text, var(--primary)); }
 .card-save[aria-pressed="true"] svg { fill: currentColor; }
 
 .card-body { padding: 13px 14px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1; }
@@ -522,7 +531,7 @@ main { padding-top: calc(64px + var(--dn-banner-height, 0px)); }
 
 /* Identified, so the header icon says so at a glance rather than only inside
    the modal. A tint, not a badge: there is no count to show. */
-#account-btn[data-identified="true"] { background: var(--tint); color: var(--primary); }
+#account-btn[data-identified="true"] { background: var(--tint); color: var(--brand-text, var(--primary)); }
 
 /* ---- launcher ------------------------------------------------------------ */
 

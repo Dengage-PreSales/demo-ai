@@ -10,7 +10,8 @@
    boundary and those are proven on the refusing side first.
    ========================================================================== */
 
-import { paletteFromPixels, presentIn, paletteFromImage } from './screenshot.mjs';
+import { paletteFromPixels, presentIn, paletteFromImage, brandFromScreenshot, labelFor }
+    from './screenshot.mjs';
 
 let pass = 0;
 let fail = 0;
@@ -19,6 +20,7 @@ function ok(label, condition, detail) {
     fail++;
     console.log('   FAIL  ' + label + (detail !== undefined ? '  <' + JSON.stringify(detail) + '>' : ''));
 }
+const is = (label, actual, expected) => ok(label, actual === expected, { actual, expected });
 
 console.log('\n1. Counting pixels that were painted on purpose');
 {
@@ -64,6 +66,69 @@ console.log('\n3. Only GitHub attachment hosts are fetched');
        !refused.ok && refused.reason === 'not-an-attachment-host', refused);
     const empty = await paletteFromImage('');
     ok('an empty address is refused', !empty.ok, empty);
+}
+
+console.log('\n3a. A screenshot on this machine, and what that cannot open up');
+
+/* A local file is accepted so a person running the build can supply a
+   screenshot they took and looked at. It must not become a way for ISSUE TEXT
+   to make the build read the filesystem, and it cannot, because the request
+   parser only ever returns a GitHub attachment address. What is asserted here is
+   the local half: only an absolute path to an existing PNG or JPEG. */
+{
+    for (const [label, path] of [
+        ['a relative path', 'shots/listing.png'],
+        ['a file that is not an image', '/etc/passwd'],
+        ['an image that does not exist', '/no/such/listing.png'],
+        ['a path with a traversal in a relative form', '../listing.png']
+    ]) {
+        const refused = await paletteFromImage(path);
+        ok(label + ' is refused', !refused.ok, refused);
+    }
+}
+
+console.log('\n4. Which colours in a screenshot are the brand');
+
+/* THE TWO FAULTS THAT SHIPPED. The build used the screenshot's ink, its most
+   common dark colour, as the brand, and wrote white on top of it. Queima Diaria
+   came out near black, and FirstCry, a bright yellow navigation bar with orange
+   buttons, came out in the brown of a product photograph. */
+{
+    /* FirstCry's listing page, as the palette reader actually returned it on
+       23 September 2026: yellow navigation, shades of it, a dark photo brown,
+       and the orange of the add to basket buttons. */
+    const firstcry = { ground: '#f8f8f8', ink: '#604040',
+        accents: ['#f8e020', '#e0c060', '#f8e040', '#e0c020', '#604020', '#f86020'] };
+    const brand = brandFromScreenshot(firstcry);
+
+    is('the largest vivid area is the brand, not the text colour', brand.primary, '#f8e020');
+    ok('which is not the ink it used to be', brand.primary !== firstcry.ink, brand);
+    is('the accent is a DIFFERENT colour, the orange, not a shade of the yellow',
+       brand.accent, '#f86020');
+    ok('a dark photo brown is never taken as a brand colour',
+       brand.primary !== '#604020' && brand.accent !== '#604020', brand);
+    ok('and no white is written on the yellow',
+       brand.onPrimary !== '#ffffff', brand);
+    is('the label is neutral rather than the photo brown the ink came from',
+       brand.onPrimary, '#14181b');
+
+    /* A store with no colour in it at all. For this one the text colour
+       genuinely is the most honest primary, so the fallback is kept exactly. */
+    const mono = brandFromScreenshot({ ground: '#ffffff', ink: '#202020', accents: ['#202040'] });
+    is('a monochrome store still takes its ink', mono.primary, '#202020');
+    is('with a readable label on it', mono.onPrimary, '#ffffff');
+    ok('and says it came from the ink', mono.fromInk === true, mono);
+
+    ok('a screenshot with nothing in it gives no brand rather than a guess',
+       brandFromScreenshot({ ground: '#ffffff', ink: null, accents: [] }) === null);
+}
+
+console.log('\n5. A label is measured, never assumed');
+{
+    is('white on a dark blue', labelFor('#1f3a93', '#202020'), '#ffffff');
+    ok('not white on a yellow', labelFor('#f8e020', '#202020') !== '#ffffff');
+    is('the store\'s own ink when it is neutral', labelFor('#f8e020', '#202020'), '#202020');
+    is('a neutral dark when the ink is really a photograph', labelFor('#f8e020', '#604040'), '#14181b');
 }
 
 console.log('\n   ' + pass + ' passed, ' + fail + ' failed');
