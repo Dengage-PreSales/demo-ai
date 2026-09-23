@@ -44,7 +44,7 @@ const DEMO_DAYS = 90;
 /* -------------------------------------------------------------------------- */
 /* Arguments                                                                  */
 
-function args(argv) {
+export function args(argv) {
     const out = {};
     for (let i = 0; i < argv.length; i++) {
         const token = argv[i];

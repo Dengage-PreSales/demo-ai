@@ -68,6 +68,12 @@ run "the issue request parser"          node .github/scripts/parse-request.test.
 # here that cannot be run outside GitHub Actions, and both times they have
 # been wrong the symptom was a correct refusal delivered as silence.
 run "the front door"                    node .github/scripts/gate.test.mjs
+# AND THAT A REQUEST REACHES THE BUILD. The seam between what a colleague
+# types and the arguments the build runs with is a string in a YAML file, and
+# nothing read it: three faults this week were a piece that worked perfectly
+# wired to nothing. This runs the real steps, in bash, with the real
+# expressions evaluated.
+run "a request reaches the build"       node .github/scripts/request.test.mjs
 # Which demo a build writes over, and which it must not. A retry is a rebuild
 # and a second request is not, and the only thing separating them is the issue
 # number a demo records.
