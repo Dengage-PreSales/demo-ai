@@ -414,9 +414,41 @@ console.log('\n1f. The stand-in catalogue, for a store that answers nothing');
        verticalFor('https://www.example.com Acme').id, 'general');
     is('and so does an empty hint', verticalFor('').id, 'general');
 
+    /* BABY AND KIDS, and the rule change that makes it reachable.
+
+       FirstCry, 23 September 2026. The colleague answered "what the store sells"
+       with "Baby and kids clothing, toys, nursery and feeding products" and the
+       demo came out full of wool overcoats and Oxford shirts, because the match
+       was decided by the single longest word: clothing is eight letters and
+       nursery is seven. Four matches losing to one is not a judgement anybody
+       would make on purpose. */
+    is('a baby and kids retailer is read',
+       verticalFor('Baby and kids clothing, toys, nursery and feeding products firstcry').id,
+       'kids');
+    is('and a toy shop that never says clothing',
+       verticalFor('toys and prams for babies').id, 'kids');
+    is('a store that only says clothing is still fashion',
+       verticalFor('clothing and apparel boutique').id, 'fashion');
+    is('the evidence adds up rather than the longest word winning',
+       verticalFor('kids toys nursery clothing').id, 'kids');
+
+    /* THE GENERAL RANGE IS PINNED BY NAME, and this is a regression test for a
+       fault committed while adding the vertical above. The five categories it
+       borrows were listed by POSITION in the vertical list, so inserting one in
+       the middle silently changed the department store to toys, shirts, cameras,
+       tables and make up, while the comments beside each index went on naming
+       the old five. Nothing failed: they are all real categories, just not the
+       ones anybody chose. */
+    is('the general range is the five intended categories',
+       generatedCatalogue('https://www.example.com Acme').products
+           .map((product) => product.category)
+           .filter((name, at, all) => all.indexOf(name) === at)
+           .join(', '),
+       'Shirts and Tops, Audio, Kitchen, Body, Accessories');
+
     for (const hint of ['riopneus.com.br', 'citygym.com', 'example.com',
                         'casadecor.com.br', 'bellabeauty.com', 'megaeletronicos.com.br',
-                        'northfield-apparel.com']) {
+                        'northfield-apparel.com', 'babyandkids.com nursery toys']) {
         const made = generatedCatalogue(hint);
         const label = ' [' + made.vertical + ']';
 

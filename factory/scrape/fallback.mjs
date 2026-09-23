@@ -121,6 +121,74 @@ const VERTICALS = [
         ]
     },
     {
+        /* BABY AND KIDS, added 23 September 2026 after a request for a baby and
+           kids retailer. The colleague answered the form's "what the store
+           sells" with "Baby and kids clothing, toys, nursery and feeding
+           products", the word clothing matched fashion, and a nursery store was
+           given a demo full of wool overcoats and Oxford shirts.
+
+           Nothing NAMES A BRAND here, CLAUDE.md 3.5: the whole catalogue
+           announces itself as invented, and the moment one product reads as a
+           real model the distinction that rests on collapses. */
+        id: 'kids',
+        words: ['baby', 'babies', 'kids', 'kid', 'child', 'children', 'childrens',
+                'infant', 'toddler', 'newborn', 'nursery', 'pram', 'stroller',
+                'pushchair', 'nappy', 'diaper', 'toy', 'toys', 'maternity',
+                'bebe', 'crianca', 'infantil', 'juguete', 'enfant'],
+        categories: [
+            { name: 'Baby Clothing', low: 8, high: 45, items: [
+                'Cotton Bodysuit Three Pack',
+                'Ribbed Sleepsuit With Feet',
+                'Organic Cotton Romper',
+                'Knitted Cardigan And Bootie Set',
+                'Muslin Wrap Two Pack',
+                'Pram Suit With Hood',
+                'Long Sleeve Vest Five Pack',
+                'Terry Sleep Bag',
+                'Printed Dungarees'] },
+            { name: 'Kids Clothing', low: 12, high: 70, items: [
+                'Cotton School Polo Two Pack',
+                'Jersey Play Dress',
+                'Fleece Zip Hoodie',
+                'Denim Pull On Jeans',
+                'Waterproof Puddle Suit',
+                'Striped Long Sleeve Top',
+                'Cotton Pyjama Set',
+                'Padded Winter Coat',
+                'Jogger Two Pack'] },
+            { name: 'Toys', low: 10, high: 120, items: [
+                'Wooden Stacking Rings',
+                'Soft Activity Cube',
+                'Shape Sorter Bus',
+                'Wooden Train Set',
+                'Plush Comforter Bunny',
+                'Building Blocks Tub',
+                'Ride On Wooden Balance Bike',
+                'Bath Squirter Set',
+                'Pull Along Wooden Duck'] },
+            { name: 'Nursery', low: 25, high: 420, items: [
+                'Cot Bed Mattress',
+                'Fitted Cot Sheet Two Pack',
+                'Blackout Nursery Curtains',
+                'Changing Mat With Raised Sides',
+                'Moses Basket And Stand',
+                'Nursery Storage Baskets',
+                'Baby Monitor With Night Light',
+                'Cellular Cot Blanket',
+                'Nursing Chair Cushion'] },
+            { name: 'Feeding', low: 6, high: 95, items: [
+                'Anti Colic Bottle Three Pack',
+                'Silicone Weaning Spoon Set',
+                'Suction Base Bowl And Plate',
+                'Insulated Bottle Bag',
+                'Steriliser And Bottle Warmer',
+                'Bibs Five Pack',
+                'Stackable Food Pots',
+                'Soft Spout Training Cup',
+                'Breast Pump Starter Set'] }
+        ]
+    },
+    {
         id: 'fashion',
         words: ['fashion', 'apparel', 'clothing', 'clothes', 'wear', 'style', 'boutique',
                 'moda', 'roupa', 'ropa', 'vetement', 'kleding', 'giyim', 'outfit',
@@ -426,15 +494,34 @@ const VERTICALS = [
    addresses. A spread rather than a guess: one category borrowed from each
    vertical, so the demo browses like a department store and does not quietly claim
    the prospect is a tyre shop. */
+/* BY NAME, NOT BY POSITION. This listed VERTICALS[1].categories[2] and so on,
+   with a comment beside each saying which category it meant. Adding a vertical in
+   the middle on 23 September 2026 shifted every index, and the department store
+   quietly became toys, shirts, cameras, tables and make up while the comments
+   went on naming the old five. Nothing failed and nothing could: they are all
+   real categories, just not the ones anybody chose.
+
+   Named lookups cannot drift, and an unknown name throws here rather than
+   producing a different shop. */
+function borrow(verticalId, categoryName) {
+    const vertical = VERTICALS.find((entry) => entry.id === verticalId);
+    const category = vertical && vertical.categories.find((entry) => entry.name === categoryName);
+    if (!category) {
+        throw new Error('the general catalogue wants ' + verticalId + '/' + categoryName +
+            ', which no vertical offers');
+    }
+    return category;
+}
+
 const GENERAL = {
     id: 'general',
     words: [],
     categories: [
-        VERTICALS[1].categories[2],   /* Shirts and Tops */
-        VERTICALS[2].categories[2],   /* Audio */
-        VERTICALS[3].categories[3],   /* Kitchen */
-        VERTICALS[4].categories[1],   /* Body */
-        VERTICALS[5].categories[4]    /* Accessories */
+        borrow('fashion', 'Shirts and Tops'),
+        borrow('electronics', 'Audio'),
+        borrow('home', 'Kitchen'),
+        borrow('beauty', 'Body'),
+        borrow('sport', 'Accessories')
     ]
 };
 
@@ -446,14 +533,27 @@ export function verticalFor(text) {
     let best = null;
     let bestScore = 0;
     for (const vertical of VERTICALS) {
+        /* THE EVIDENCE ADDS UP, rather than the single longest word deciding.
+
+           A word found as its own token counts for more than one found inside a
+           longer run of characters, and a longer word counts for more than a
+           short one: "pneus" inside "riopneus" still wins over nothing.
+
+           What each word is worth is unchanged. What changed on 23 September
+           2026 is that a vertical's words are now SUMMED, because taking the
+           best single one made length stand in for specificity and they are not
+           the same thing. A baby and kids retailer described as "baby and kids
+           clothing, toys, nursery and feeding products" matched four words in
+           the kids list and one in the fashion list, and lost: nursery is seven
+           letters and clothing is eight. The demo came out full of wool
+           overcoats. Four matches beating one is the answer a person would give
+           without thinking about it. */
+        let score = 0;
         for (const word of vertical.words) {
             if (!haystack.includes(' ' + word + ' ') && !haystack.includes(word)) continue;
-            /* A word found as its own token counts for more than one found inside a
-               longer run of characters, and a longer word counts for more than a
-               short one. "pneus" inside "riopneus" still wins over nothing. */
-            const score = word.length + (haystack.includes(' ' + word + ' ') ? 10 : 0);
-            if (score > bestScore) { bestScore = score; best = vertical; }
+            score += word.length + (haystack.includes(' ' + word + ' ') ? 10 : 0);
         }
+        if (score > bestScore) { bestScore = score; best = vertical; }
     }
     return best || GENERAL;
 }
