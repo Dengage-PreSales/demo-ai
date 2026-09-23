@@ -21,11 +21,11 @@
    older rule rather than to the newer one: overwriting nothing is always safe,
    and overwriting the wrong demo is not.
    ========================================================================== */
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { freeSlug } from './generate-demo.mjs';
+import { freeSlug, clearForRebuild } from './generate-demo.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -93,6 +93,47 @@ try {
     demo('busy-2', '2');
     is('past a slug that is already suffixed',
        freeSlug(first, '9'), { slug: first + '-3', suffixed: true });
+    console.log('\n6. And the rebuild actually clears what it reclaims');
+
+    /* THE HALF THAT WAS NOT TESTED, which is why it shipped broken twice in one
+       afternoon. freeSlug deciding to reclaim a slug is worth nothing if the
+       previous build is still sitting in the folder: build-demo.sh refuses to
+       overwrite, so the request stops one step later saying the demo already
+       exists.
+
+       The first version joined ROOT onto paths that were already absolute. That
+       does not throw, it produces a path that exists nowhere, and rmSync with
+       force succeeds against it. It reported success and removed nothing. */
+    const full = PREFIX + 'full';
+    mkdirSync(join(ROOT, 'demos', full), { recursive: true });
+    writeFileSync(join(ROOT, 'demos', full, 'demo.config.json'),
+        JSON.stringify({ slug: full, issue: '21' }));
+    made.push(full);
+
+    /* The two folders outside demos/ that a demo also owns. A rebuild that clears
+       only the storefront leaves the previous build's message pack behind. */
+    const panel = join(ROOT, 'factory', 'panel', 'content', full);
+    const emails = join(ROOT, 'factory', 'emails', 'content', full);
+    mkdirSync(panel, { recursive: true });
+    mkdirSync(emails, { recursive: true });
+    writeFileSync(join(panel, 'note.txt'), 'from the previous build');
+    writeFileSync(join(emails, 'note.txt'), 'from the previous build');
+
+    try {
+        const cleared = clearForRebuild(full);
+        is('the storefront folder is gone', existsSync(join(ROOT, 'demos', full)), false);
+        is('the panel content is gone', existsSync(panel), false);
+        is('the email content is gone', existsSync(emails), false);
+        is('and all three are reported as cleared', cleared.length, 3);
+    } finally {
+        rmSync(panel, { recursive: true, force: true });
+        rmSync(emails, { recursive: true, force: true });
+    }
+
+    /* Clearing a demo that owns nothing is not an error: a slug reclaimed after
+       its folders were removed by hand still has to build. */
+    is('clearing a demo that owns nothing removes nothing and does not throw',
+       clearForRebuild(PREFIX + 'never-existed').length, 0);
 } finally {
     for (const slug of made) rmSync(join(ROOT, 'demos', slug), { recursive: true, force: true });
 }

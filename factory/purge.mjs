@@ -59,7 +59,16 @@ const today = String(args.today || new Date().toISOString().slice(0, 10));
    without it leaves a message pack for a storefront that is gone. */
 /* Exported because a rebuild has to clear exactly the same set. A demo that owns
    three folders and a routine that knows about one is how a retired demo leaves a
-   message pack behind, and a rebuilt one would leave the previous build's. */
+   message pack behind, and a rebuilt one would leave the previous build's.
+
+   IT RETURNS ABSOLUTE PATHS, and this note is here because that is not what the
+   rest of this file hands around. due() makes them repository relative for
+   printing and for the report, so a caller reading those needs join(ROOT, path)
+   and a caller reading THESE must not. Joining ROOT onto an absolute path does
+   not throw, it silently produces a path that exists nowhere, and rmSync with
+   force succeeds against it. That removed nothing during a rebuild on
+   23 September 2026, and the only reason it was caught at all is that
+   build-demo.sh refuses to overwrite. */
 export function belongingsOf(slug) {
     return [
         join(DEMOS, slug),

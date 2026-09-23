@@ -126,6 +126,27 @@ export function storeNameFromUrl(url) {
    handoff 7.1 is about and it is untouched. A demo built before this existed
    carries no issue number and is never reclaimed, so nothing already published
    can be overwritten by surprise. */
+/* Remove everything the previous build of this demo owns, so build-demo.sh can
+   write it again. It refuses to overwrite, which is the only reason the first
+   version of this was caught: belongingsOf returns ABSOLUTE paths and this joined
+   ROOT onto them again, producing paths that exist nowhere. rmSync with force
+   succeeds against a path that is not there, so it reported nothing, removed
+   nothing, and the build stopped one step later saying the folder already
+   existed.
+
+   So it checks. A clear that silently clears nothing is the shape of fault that
+   costs a request rather than a minute, and force is exactly what hides it. */
+export function clearForRebuild(slug) {
+    const owned = belongingsOf(slug);
+    for (const path of owned) rmSync(path, { recursive: true, force: true });
+
+    const left = owned.filter((path) => existsSync(path));
+    if (left.length) {
+        throw new Error('rebuilding ' + slug + ' could not remove: ' + left.join(', '));
+    }
+    return owned;
+}
+
 export function freeSlug(base, issue) {
     const taken = join(ROOT, 'demos', base);
     if (!existsSync(taken)) return { slug: base, suffixed: false };
@@ -673,9 +694,7 @@ async function main() {
        everything a retirement removes is everything a rebuild replaces. */
     if (rebuilt) {
         console.error('Rebuilding demos/' + slug + ', which this request built before.');
-        for (const path of belongingsOf(slug)) {
-            rmSync(join(ROOT, path), { recursive: true, force: true });
-        }
+        clearForRebuild(slug);
     }
 
     /* Decided before the demo is written and reported afterwards, so the config and
