@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-23T13:54:07.132Z",
+  "generated": "2026-09-23T14:23:23.767Z",
   "demos": [
     {
       "slug": "capodarte",
@@ -48,7 +48,7 @@
     },
     {
       "slug": "queimadiaria",
-      "products": 48,
+      "products": 46,
       "expiresAt": "2026-12-22",
       "displayName": "Dengage eComm Demo",
       "storeName": "Queima Diaria",
@@ -57,14 +57,14 @@
       "language": "pt",
       "currency": "USD",
       "currencySymbol": "$",
-      "brandPrimary": "#125cfa",
+      "brandPrimary": "#202020",
       "brandOnPrimary": "#ffffff",
       "categories": [
-        "Audio",
-        "Kitchen",
-        "Shirts And Tops",
+        "Training Wear",
         "Accessories",
-        "Body"
+        "Cycling",
+        "Footwear",
+        "Weights"
       ]
     },
     {
