@@ -29,11 +29,11 @@
     "scenarioPrefix": "dengage_demo_"
   },
   "categories": [
-    "Shirts And Tops",
-    "Footwear",
-    "Knitwear",
-    "Outerwear",
-    "Trousers"
+    "Baby Clothing",
+    "Feeding",
+    "Kids Clothing",
+    "Nursery",
+    "Toys"
   ],
   "storeName": "FirstCry",
   "relay": {
@@ -41,6 +41,6 @@
     "key": "sb_publishable_HcLAWb6E5Gn_d5vVTjPB_Q_zkjklifK"
   },
   "issue": "22",
-  "productCount": 46,
+  "productCount": 45,
   "catalogueSource": "generated"
 }

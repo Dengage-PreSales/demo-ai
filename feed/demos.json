@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-23T16:56:13.149Z",
+  "generated": "2026-09-23T17:08:46.054Z",
   "demos": [
     {
       "slug": "capodarte",
@@ -48,7 +48,7 @@
     },
     {
       "slug": "firstcry",
-      "products": 46,
+      "products": 45,
       "expiresAt": "2026-12-22",
       "displayName": "Dengage eComm Demo",
       "storeName": "FirstCry",
@@ -60,11 +60,11 @@
       "brandPrimary": "#125cfa",
       "brandOnPrimary": "#ffffff",
       "categories": [
-        "Shirts And Tops",
-        "Footwear",
-        "Knitwear",
-        "Outerwear",
-        "Trousers"
+        "Baby Clothing",
+        "Feeding",
+        "Kids Clothing",
+        "Nursery",
+        "Toys"
       ]
     },
     {
