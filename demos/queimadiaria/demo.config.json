@@ -1,0 +1,45 @@
+{
+  "slug": "queimadiaria",
+  "displayName": "Dengage eComm Demo",
+  "sourceUrl": "https://www.queimadiaria.com",
+  "createdAt": "2026-09-23",
+  "expiresAt": "2026-12-22",
+  "theme": {
+    "primary": "#125cfa",
+    "onPrimary": "#ffffff",
+    "accent": "#f5a524",
+    "ink": "#14181b",
+    "muted": "#667085",
+    "surface": "#ffffff",
+    "page": "#f6f7f8",
+    "line": "#e4e7ec",
+    "radius": "10px",
+    "displayFont": "Sora",
+    "bodyFont": "Inter"
+  },
+  "locale": {
+    "language": "pt",
+    "currency": "USD",
+    "currencySymbol": "$",
+    "numberLocale": "en-US"
+  },
+  "dengage": {
+    "accountId": "28",
+    "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
+    "scenarioPrefix": "dengage_demo_"
+  },
+  "categories": [
+    "Audio",
+    "Kitchen",
+    "Shirts And Tops",
+    "Accessories",
+    "Body"
+  ],
+  "storeName": "Queima Diaria",
+  "relay": {
+    "url": "https://raextqlludkagdntyzwn.supabase.co",
+    "key": "sb_publishable_HcLAWb6E5Gn_d5vVTjPB_Q_zkjklifK"
+  },
+  "productCount": 48,
+  "catalogueSource": "generated"
+}
