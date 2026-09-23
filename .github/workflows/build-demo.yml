@@ -76,35 +76,82 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: write
+    # A DECLINED RETRY IS ANSWERED TOO, added 23 September 2026, and it is the
+    # same defect this job was created for arriving one event type over.
+    #
+    # The refusal above ends by telling the colleague to comment retry once they
+    # have been added. On 23 September one did, sixty six seconds later, before
+    # anybody could have added them. The gate declined it correctly and said
+    # nothing at all, because this job only ever looked at `issues` and
+    # `opened`. So the request sat with a refusal, a retry and silence under it,
+    # which reads exactly like a factory that has stopped working.
     if: >-
-      github.event_name == 'issues' &&
-      github.event.action == 'opened' &&
       (contains(github.event.issue.labels.*.name, 'new-demo') ||
        startsWith(github.event.issue.title, 'Demo:')) &&
-      !(contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
-                 github.event.issue.author_association) ||
-        contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
-                 format(' {0} ', github.event.issue.user.login)))
+      ((github.event_name == 'issues' &&
+        github.event.action == 'opened' &&
+        !(contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                   github.event.issue.author_association) ||
+          contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
+                   format(' {0} ', github.event.issue.user.login)))) ||
+       (github.event_name == 'issue_comment' &&
+        contains(toJSON(github.event.comment.body), 'retry') &&
+        !(contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'),
+                   github.event.comment.author_association) ||
+          contains(format(' {0} ', vars.DEMO_REQUESTERS || ''),
+                   format(' {0} ', github.event.comment.user.login)))))
     steps:
       - uses: actions/github-script@v7
         with:
           script: |
+            const onRetry = context.eventName === 'issue_comment'
+
+            // THE FORMAT IS IN THE MESSAGE, because the person who has to get it
+            // right is reading this comment rather than the workflow file. Names
+            // are matched with a space on each side, so one login can never match
+            // inside another, and a list written with commas or one name per line
+            // matches nothing at all. That failure looks identical to not having
+            // been added, and the owner has no way to tell the two apart.
+            const howToBeAdded = [
+              'Ask the owner of this repository to add your GitHub username to the',
+              'DEMO_REQUESTERS variable, under Settings, then Secrets and variables,',
+              'then Actions, then Variables. That lets you request demos without any',
+              'other access to the repository.',
+              '',
+              'The names in it are separated by SPACES, on one line, like',
+              '`alice bob carol`. Commas or one name per line will not match, and it',
+              'looks exactly the same from here as not being on the list at all.'
+            ]
+
+            const opening = onRetry
+              ? [
+                  'That retry did not start a build, because this account is still not',
+                  'one the factory builds for.',
+                  '',
+                  'If the username was added since the request was declined, it is',
+                  'worth checking how the list is written.'
+                ]
+              : [
+                  'This factory only builds for accounts it knows, and GitHub does not',
+                  'list yours as one of them yet, so nothing was read and nothing was',
+                  'built.'
+                ]
+
             await github.rest.issues.createComment({
               owner: context.repo.owner, repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: [
-                'This factory only builds for accounts it knows, and GitHub does not',
-                'list yours as one of them yet, so nothing was read and nothing was',
-                'built.',
-                '',
-                'To be added, ask the owner of this repository to put your GitHub',
-                'username into the DEMO_REQUESTERS variable, under Settings, then',
-                'Secrets and variables, then Actions, then Variables. That lets you',
-                'request demos without any other access to the repository.',
-                '',
-                'Once that is done, comment retry here and the build starts from',
-                'this same request. Nothing needs to be filled in again.'
-              ].join('\n')
+              body: opening.concat(
+                [''],
+                howToBeAdded,
+                [
+                  '',
+                  'Once that is done, comment retry here and the build starts from',
+                  'this same request. Nothing needs to be filled in again.',
+                  '',
+                  '---',
+                  '_Generated by [Claude Code](https://claude.ai/code)_'
+                ]
+              ).join('\n')
             })
 
   build:
@@ -493,7 +540,24 @@ jobs:
           # build produces lives under demos/ would drop them here, silently: the
           # build would pass, the demo would be live, and the colleague would open
           # the issue to find nothing to paste.
-          git add "demos/$SLUG" "factory/panel/content/$SLUG" feed assets/motifs
+          # AND EVERYTHING THAT NAMES A DEMO, because this build just changed the
+          # set of them. The product feed lists demos and the shared previews
+          # SAMPLE one, showing its real products so a colleague can see what an
+          # email looks like, so adding a demo makes all of them stale.
+          #
+          # Leaving them stale stopped the factory on 23 September 2026.
+          # factory/checks/generated-current.mjs refuses a stale preview and runs
+          # at the START of a build, so the demo committed at 13:05 made the next
+          # request fail before the prospect's site was read, and would have
+          # failed every request after it. Adding a demo had stopped the factory
+          # from adding demos.
+          #
+          # factory/named-generators.mjs is the list, shared with the purge, which
+          # rebuilds the same set when it REMOVES a demo. Two copies of that list
+          # is how this happened.
+          node factory/named-generators.mjs
+          git add "demos/$SLUG" "factory/panel/content/$SLUG" \
+                  factory/panel/content/_shared feed assets/motifs
           git commit -m "Add the $SLUG demo storefront" \
                      -m "Built from ${{ steps.request.outputs.url }} for issue #${{ github.event.issue.number || 0 }}." \
                      -m "Expires $(node -e "console.log(require('/tmp/report.json').expiresAt)")."
@@ -548,20 +612,27 @@ jobs:
               conflicted="$(git diff --name-only --diff-filter=U || true)"
               echo "Rebase conflicted on:"
               printf '  %s\n' $conflicted
-              only_feed=1
-              [ -n "$conflicted" ] || only_feed=0
+              # THE SHARED PREVIEWS CONFLICT FOR THE SAME REASON THE FEED DOES,
+              # and are resolved the same way. Every build regenerates both from
+              # the demos on disk, so two overlapping builds each rewrite them
+              # and the second to arrive conflicts. Neither file is authored, so
+              # merging them line by line is meaningless: rebuilding from what is
+              # now on disk is the only correct answer.
+              only_generated=1
+              [ -n "$conflicted" ] || only_generated=0
               for f in $conflicted; do
                 case "$f" in
                   feed/*) ;;
-                  *) only_feed=0 ;;
+                  factory/panel/content/_shared/*) ;;
+                  *) only_generated=0 ;;
                 esac
               done
 
-              if [ "$only_feed" = 1 ]; then
-                echo "Every conflict is in the generated feed, so it is rebuilt from"
+              if [ "$only_generated" = 1 ]; then
+                echo "Every conflict is in generated content, so it is rebuilt from"
                 echo "the demos now on disk rather than merged."
-                node factory/build-feed.mjs
-                git add feed
+                node factory/named-generators.mjs
+                git add feed factory/panel/content/_shared
                 if GIT_EDITOR=true git rebase --continue \
                    && git push origin HEAD:main; then
                   PUSHED=1

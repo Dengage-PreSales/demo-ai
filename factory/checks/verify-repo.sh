@@ -63,6 +63,11 @@ run "the guardrails"                    ./factory/guard/run.sh
 
 run "generator decisions"               node factory/scrape/scrape.test.mjs
 run "the issue request parser"          node .github/scripts/parse-request.test.mjs
+# The two if: expressions that decide who may start a build, evaluated
+# against the situations that have actually happened. They are the only lines
+# here that cannot be run outside GitHub Actions, and both times they have
+# been wrong the symptom was a correct refusal delivered as silence.
+run "the front door"                    node .github/scripts/gate.test.mjs
 
 # THE SCRAPE PIPELINE, which decides whether a demo has photographs, a theme and
 # a catalogue at all. A regression in any of these ships a demo that is quietly

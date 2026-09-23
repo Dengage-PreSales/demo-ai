@@ -35,17 +35,18 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { SHARED as SHARED_GENERATORS } from '../named-generators.mjs';
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..', '..');
 const SHARED = join(ROOT, 'factory', 'panel', 'content', '_shared');
 
-/* Every generator that writes into the shared folder. A generator missing from
-   here is the whole defect this file exists to stop, so it is a short list kept
-   next to the only thing that reads it. */
-const GENERATORS = [
-    'factory/emails/build-scenarios.mjs',
-    'factory/emails/build-beefree.mjs'
-];
+/* Every generator that writes into the shared folder, from the one list in
+   factory/named-generators.mjs. It was a copy kept here, which was wrong twice
+   over: a generator added there and not here would go unchecked, and this file
+   would have kept asserting against a set the rest of the repository had stopped
+   using. */
+const GENERATORS = SHARED_GENERATORS;
 
 let passed = 0;
 let failed = 0;
