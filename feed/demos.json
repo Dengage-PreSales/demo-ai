@@ -1,6 +1,31 @@
 {
-  "generated": "2026-09-22T17:45:11.548Z",
+  "generated": "2026-09-23T13:07:34.225Z",
   "demos": [
+    {
+      "slug": "capodarte",
+      "products": 60,
+      "expiresAt": "2026-12-22",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "capodarte",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/capodarte/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/capodarte/vendor/assets/dengage-logo.svg",
+      "language": "pt",
+      "currency": "BRL",
+      "currencySymbol": "R$",
+      "brandPrimary": "#d3c9de",
+      "brandOnPrimary": "#000000",
+      "categories": [
+        "Chinelos",
+        "Sapatilhas",
+        "Scarpins",
+        "Shopper",
+        "Shoulder Bag",
+        "Clutch",
+        "Mala",
+        "Sandálias",
+        "More"
+      ]
+    },
     {
       "slug": "disantinni",
       "products": 30,
