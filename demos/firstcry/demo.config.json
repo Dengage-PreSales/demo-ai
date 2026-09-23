@@ -1,0 +1,46 @@
+{
+  "slug": "firstcry",
+  "displayName": "Dengage eComm Demo",
+  "sourceUrl": "https://www.firstcry.com",
+  "createdAt": "2026-09-23",
+  "expiresAt": "2026-12-22",
+  "theme": {
+    "primary": "#125cfa",
+    "onPrimary": "#ffffff",
+    "accent": "#f5a524",
+    "ink": "#14181b",
+    "muted": "#667085",
+    "surface": "#ffffff",
+    "page": "#f6f7f8",
+    "line": "#e4e7ec",
+    "radius": "10px",
+    "displayFont": "Sora",
+    "bodyFont": "Inter"
+  },
+  "locale": {
+    "language": "en",
+    "currency": "INR",
+    "currencySymbol": "₹",
+    "numberLocale": "en-IN"
+  },
+  "dengage": {
+    "accountId": "28",
+    "appGuid": "99d9b8fb-0c62-5a85-3e43-2402554d93a5",
+    "scenarioPrefix": "dengage_demo_"
+  },
+  "categories": [
+    "Shirts And Tops",
+    "Footwear",
+    "Knitwear",
+    "Outerwear",
+    "Trousers"
+  ],
+  "storeName": "FirstCry",
+  "relay": {
+    "url": "https://raextqlludkagdntyzwn.supabase.co",
+    "key": "sb_publishable_HcLAWb6E5Gn_d5vVTjPB_Q_zkjklifK"
+  },
+  "issue": "22",
+  "productCount": 46,
+  "catalogueSource": "generated"
+}

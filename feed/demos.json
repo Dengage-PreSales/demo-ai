@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-23T14:23:23.767Z",
+  "generated": "2026-09-23T16:56:13.149Z",
   "demos": [
     {
       "slug": "capodarte",
@@ -44,6 +44,27 @@
         "Tênis",
         "Chinelo",
         "More"
+      ]
+    },
+    {
+      "slug": "firstcry",
+      "products": 46,
+      "expiresAt": "2026-12-22",
+      "displayName": "Dengage eComm Demo",
+      "storeName": "FirstCry",
+      "homeUrl": "https://dengage-presales.github.io/demo-ai/demos/firstcry/",
+      "logoUrl": "https://dengage-presales.github.io/demo-ai/demos/firstcry/vendor/assets/dengage-logo.svg",
+      "language": "en",
+      "currency": "INR",
+      "currencySymbol": "₹",
+      "brandPrimary": "#125cfa",
+      "brandOnPrimary": "#ffffff",
+      "categories": [
+        "Shirts And Tops",
+        "Footwear",
+        "Knitwear",
+        "Outerwear",
+        "Trousers"
       ]
     },
     {
