@@ -36,6 +36,7 @@ import { catalogue, PRODUCT_CAP } from './scrape/catalogue.mjs';
 import { downloadImages, stripImageUrls } from './scrape/images.mjs';
 import { theme, LOADABLE } from './scrape/theme.mjs';
 import { belongingsOf } from './purge.mjs';
+import { rebuild as rebuildNamed } from './named-generators.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DEMO_DAYS = 90;
@@ -893,14 +894,24 @@ async function main() {
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
             execFileSync('node', [join(ROOT, 'factory', 'emails', 'make-hero.mjs'), '--slug', slug],
                 { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
-            execFileSync('node', [join(ROOT, 'factory', 'build-feed.mjs')],
-                { cwd: ROOT, stdio: ['ignore', 'inherit', 'inherit'] });
+            /* EVERYTHING A NEW DEMO MAKES STALE, not just the feed. This ran
+               build-feed.mjs alone, so the generator knew half of what adding a
+               demo changes: the shared email previews SAMPLE a live demo, and
+               rebuilding them lived in the build workflow's publish step rather
+               than here.
+
+               That split is what stopped the factory on 23 September 2026.
+               Anybody running this by hand left the repository in a state the
+               next build would refuse, the nightly drill did the same and threw
+               the evidence away, and only the workflow got it right. The list
+               belongs with the code that makes it stale. */
+            rebuildNamed();
         } catch (err) {
             console.error('\nThe demo is built, but its banners or the product feed were not' +
                 ' updated: ' + err.message);
             console.error('Run this afterwards:  node factory/make-motif-images.mjs && ' +
                 'node factory/make-push-images.mjs && node factory/emails/make-hero.mjs ' +
-                '--slug <slug> && node factory/build-feed.mjs\n');
+                '--slug <slug> && node factory/named-generators.mjs\n');
         }
     } catch (err) {
         /* A half written demo folder is worse than none: it would publish, and it

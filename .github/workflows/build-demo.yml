@@ -559,9 +559,10 @@ jobs:
           # from adding demos.
           #
           # factory/named-generators.mjs is the list, shared with the purge, which
-          # rebuilds the same set when it REMOVES a demo. Two copies of that list
-          # is how this happened.
-          node factory/named-generators.mjs
+          # rebuilds the same set when it REMOVES a demo. The GENERATOR runs it, so
+          # a demo built by hand or by the drill leaves the same consistent tree a
+          # build does; this step only has to stage what it produced. Running it
+          # here as well would be the second copy that caused this.
           git add "demos/$SLUG" "factory/panel/content/$SLUG" \
                   factory/panel/content/_shared feed assets/motifs
           git commit -m "Add the $SLUG demo storefront" \

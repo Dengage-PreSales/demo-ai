@@ -156,6 +156,28 @@ jobs:
               FAILED=1; keep; tidy; continue
             fi
 
+            # AND THE REPOSITORY IS STILL FIT FOR THE NEXT BUILD, which is the
+            # half this routine never checked and the half that broke.
+            #
+            # It verified the repository before building and the demo after, and
+            # nothing asked what the build LEFT BEHIND. A build changes the set of
+            # demos, the product feed lists them and the shared email previews
+            # sample one, so a build that does not rebuild those leaves a tree the
+            # next build refuses at its first step.
+            #
+            # That happened on 23 September 2026 and it stopped the factory
+            # completely: a demo committed at 13:05 made the next request fail
+            # before the prospect's site was read, and every request after it. The
+            # drill built two stores that night and reported success, because it
+            # threw each demo away without ever asking the question.
+            #
+            # It runs the same shared list as everything else, on the tree as the
+            # build left it, before tidy discards the demo.
+            if ! bash factory/checks/verify-repo.sh; then
+              echo "DRILL FAILED: building $URL left a repository the next build would refuse"
+              FAILED=1; keep; tidy; continue
+            fi
+
             # Discarded on success and on failure alike. The workspace dies with the
             # runner, and nothing here ever reaches a git push. The feed and the
             # shared artwork are regenerated from the tree, so the working copy is
