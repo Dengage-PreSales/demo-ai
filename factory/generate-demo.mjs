@@ -62,7 +62,7 @@ function usage(message) {
     console.error('\nusage: node factory/generate-demo.mjs --url <prospect url> [--slug s]' +
                   ' [--csv file] [--currency USD] [--language en|pt|ru]' +
                   ' [--name "Store Name"] [--screenshot url]' +
-                  ' [--sells "what the store sells"]' +
+                  ' [--sells "what the store sells"] [--issue 21]' +
                   ' [--no-generate] [--no-images] [--no-stock] [--json report.json]');
     process.exit(2);
 }
@@ -664,7 +664,19 @@ async function main() {
     if (!/^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$/.test(base)) {
         usage('A slug must be lowercase letters, digits and hyphens, 3 to 40 characters: ' + base);
     }
-    const { slug, suffixed } = freeSlug(base);
+    const issue = options.issue && options.issue !== true ? String(options.issue) : '';
+    const { slug, suffixed, rebuilt } = freeSlug(base, issue);
+
+    /* A REBUILD CLEARS THE PREVIOUS BUILD FIRST, because build-demo.sh refuses to
+       overwrite and a half replaced demo is worse than either version of it. The
+       set cleared is factory/purge.mjs's, so a demo's folders are listed once:
+       everything a retirement removes is everything a rebuild replaces. */
+    if (rebuilt) {
+        console.error('Rebuilding demos/' + slug + ', which this request built before.');
+        for (const path of belongingsOf(slug)) {
+            rmSync(join(ROOT, path), { recursive: true, force: true });
+        }
+    }
 
     /* Decided before the demo is written and reported afterwards, so the config and
        the issue comment cannot disagree about which currency was used or where it
@@ -689,6 +701,9 @@ async function main() {
         const config = JSON.parse(readFileSync(configPath, 'utf8'));
 
         config.sourceUrl = origin;
+        /* Which request this demo answers, so a retry on it rebuilds in place
+           rather than publishing a second demo beside the first. */
+        if (issue) config.issue = issue;
         config.createdAt = isoDate(0);
         config.expiresAt = isoDate(DEMO_DAYS);
         config.theme = extracted.theme;
