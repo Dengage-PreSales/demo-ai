@@ -427,6 +427,10 @@ jobs:
           # issue title decide where the command ends. Every other argument here is
           # a URL, a slug, a three letter code or a path this workflow chose.
           STORE_NAME: ${{ steps.request.outputs.name }}
+          # Free text a colleague typed, so it goes the same way and for the same
+          # reason. It reaches only a store that refuses every reader, where it is
+          # the hint that picks which kind of catalogue gets invented.
+          SELLS: ${{ steps.request.outputs.sells }}
           # Stock photograph fallback, Salil's call, 8 August 2026: only tiles the
           # store's own photography could not fill, and only when the key exists.
           # An absent secret resolves to an empty string, which the module treats
@@ -436,6 +440,7 @@ jobs:
           set -o pipefail
           named=()
           [ -n "${STORE_NAME:-}" ] && named=(--name "$STORE_NAME")
+          [ -n "${SELLS:-}" ] && named+=(--sells "$SELLS")
           status=0
           node factory/generate-demo.mjs \
             --url "${{ steps.request.outputs.url }}" \

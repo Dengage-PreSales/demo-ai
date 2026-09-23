@@ -232,6 +232,35 @@ console.log('\n7. The parser reads the labels the form actually uses');
        shot.screenshot_url,
        'https://github.com/user-attachments/assets/a-pasted-screenshot');
     is('and the rest of that request still parses', shot.url, 'https://www.queimadiaria.com');
+
+    /* WHAT THE STORE SELLS, which only matters for a store that refuses every
+       reader and then matters completely: it is the hint that decides which kind
+       of catalogue gets invented. The form has asked for it from the beginning
+       and nothing read it, so a fitness brand was given a department store. */
+    const sold = parse({
+        BODY: ['### Prospect website address', '', 'https://www.queimadiaria.com', '',
+               '### What the store sells', '', 'Gym classes'].join('\n'),
+        TITLE: 'Demo: Queima Diaria'
+    });
+    is('what the store sells is read from the form', sold.sells, 'Gym classes');
+
+    const unsaid = parse({
+        BODY: ['### Prospect website address', '', 'https://example.com', '',
+               '### What the store sells', '', '_No response_'].join('\n'),
+        TITLE: 'Demo: Example'
+    });
+    is('and an unanswered field is empty rather than the placeholder', unsaid.sells, '');
+
+    /* It is free text a colleague typed, so it is bounded rather than validated:
+       nothing is executed with it and the vertical matcher ignores what it does
+       not recognise. A runaway paste is not a reason to fail a request. */
+    const long = parse({
+        BODY: ['### Prospect website address', '', 'https://example.com', '',
+               '### What the store sells', '', 'x'.repeat(400)].join('\n'),
+        TITLE: 'Demo: Example'
+    });
+    ok('a very long answer is cut rather than refused',
+       long.sells.length === 80 && long.url === 'https://example.com', long.sells.length);
 }
 
 

@@ -202,13 +202,29 @@ export function parse(env) {
        stay an exception rather than become the normal route. */
     const csvUrl = readCsvUrl(comment);
 
+    /* WHAT THE STORE SELLS, IN THE COLLEAGUE'S OWN WORDS. The form has asked for
+       this from the beginning and nothing has ever read it.
+
+       It matters for exactly one store: the one that refuses every automated
+       reader, where the catalogue has to be invented. The vertical is picked from
+       a hint, and the hint was the web address and the store's name, so a
+       Portuguese fitness brand called Queima Diaria matched no vertical at all and
+       came out as a department store selling Audio and Kitchen goods. The
+       colleague had typed "Gym classes" into the form when they filed it.
+
+       It is a hint rather than an instruction, so it is not validated beyond a
+       length: nothing is executed with it, and the vertical matcher takes what it
+       recognises and ignores the rest. */
+    const sells = String(fieldFromForm(body, 'What the store sells') || '')
+        .replace(/\s+/g, ' ').trim().slice(0, 80);
+
     /* The screenshot is read from the form first and from the retry comment
        second, so a request filed before the field existed can supply one by
        pasting it into the retry comment rather than editing the issue. */
     const screenshotUrl = readImageUrl(fieldFromForm(body, 'Product listing screenshot')) ||
                           readImageUrl(comment);
 
-    return { url, slug, currency, name, language,
+    return { url, slug, currency, name, language, sells,
              csv_url: csvUrl, screenshot_url: screenshotUrl };
 }
 

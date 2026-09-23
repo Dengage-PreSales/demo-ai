@@ -61,6 +61,7 @@ function usage(message) {
     console.error('\nusage: node factory/generate-demo.mjs --url <prospect url> [--slug s]' +
                   ' [--csv file] [--currency USD] [--language en|pt|ru]' +
                   ' [--name "Store Name"] [--screenshot url]' +
+                  ' [--sells "what the store sells"]' +
                   ' [--no-generate] [--no-images] [--no-stock] [--json report.json]');
     process.exit(2);
 }
@@ -481,9 +482,22 @@ async function main() {
        and --no-generate both turn it off: an attached CSV means somebody already
        supplied the real catalogue, and a generated one must never quietly win over
        it. */
+    /* WHAT A COLLEAGUE SAID THE STORE SELLS GOES FIRST, because it is the only
+       part of the hint somebody actually knew. The address and the name are
+       guesses read off the store: riopneus.com.br says tyres loudly and
+       queimadiaria.com says nothing at all, and a request for that store carried
+       the words "Gym classes" in the form while the catalogue came out as Audio
+       and Kitchen goods.
+
+       It only ever reaches a store that refuses every reader, since anything
+       readable yields a real catalogue and this hint is never consulted. */
+    const sells = options.sells && options.sells !== true
+        ? String(options.sells).trim()
+        : '';
+
     const found = await catalogue(origin, csvText, {
         generateIfUnreadable: !csvText && !options['no-generate'],
-        hint: origin + ' ' + storeName
+        hint: (sells ? sells + ' ' : '') + origin + ' ' + storeName
     });
     if (!found.ok) {
         const failure = catalogueFailure(found);
