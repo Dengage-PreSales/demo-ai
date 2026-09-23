@@ -35,7 +35,24 @@ const EMPTY = /^_no response_$/i;
 export function fieldFromForm(body, label) {
     if (!body) return '';
     const lines = String(body).replace(/\r\n/g, '\n').split('\n');
-    const heading = new RegExp('^###\\s+' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*$', 'i');
+    /* A TRAILING PARENTHETICAL IS PART OF THE HEADING AND NOT PART OF THE NAME.
+       The form labels one field "Product listing screenshot (optional)" and this
+       looked for "Product listing screenshot", so the anchored match never fired
+       and that field read as empty every single time.
+
+       It was the worst field to lose. A pasted screenshot is the strongest
+       ground truth the theme reader has and the only way to theme a store that
+       refuses automated readers, so the rescue path for exactly those stores was
+       the one thing that could never run. Queima Diaria, 23 September 2026: the
+       colleague pasted a screenshot with the request, the store blocked every
+       reader, and the demo shipped in the standard palette as though nothing had
+       been offered.
+
+       Only ONE trailing parenthetical is allowed, so a label can still never
+       match a longer heading it is merely the start of. */
+    const heading = new RegExp('^###\\s+' +
+        label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
+        '(?:\\s*\\([^)]*\\))?\\s*$', 'i');
 
     let index = lines.findIndex((line) => heading.test(line.trim()));
     if (index === -1) return '';

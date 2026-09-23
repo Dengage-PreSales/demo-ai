@@ -161,21 +161,77 @@ console.log('\n7. The parser reads the labels the form actually uses');
     const form = readFileSync(new URL('../ISSUE_TEMPLATE/new-demo.yml', import.meta.url), 'utf8');
     const labels = [...form.matchAll(/^\s*label:\s*(.+?)\s*$/gm)].map((match) => match[1]);
 
-    /* Exactly the ones parse() looks up. */
-    const NEEDED = ['Prospect website address', 'Short name for the address', 'Currency'];
-    for (const label of NEEDED) {
-        ok('the form still has a field labelled "' + label + '"',
-           labels.includes(label), labels);
+    /* EVERY LABEL THE PARSER ASKS FOR, READ OUT OF THE PARSER, against a body
+       rendered from the labels the FORM really uses. Both sides come from the
+       file that owns them and neither is written down here.
+
+       This used to hold three label names by hand and render the test body from
+       the form's labels, then look each one up by that same label. Rendering and
+       reading with the same string round trips whatever the string is, so it
+       proved only that fieldFromForm can find a heading it was just handed. The
+       question that matters is the other one: does the name the PARSER passes
+       find the heading the FORM writes?
+
+       It does not, for a label carrying a suffix. The form says "Product listing
+       screenshot (optional)" and the parser asks for "Product listing
+       screenshot", and that field read empty on every request ever filed. It was
+       not in the hand written three, so nothing looked. */
+    const parser = readFileSync(new URL('./parse-request.mjs', import.meta.url), 'utf8');
+    const asked = [...parser.matchAll(/fieldFromForm\(\s*body\s*,\s*'([^']+)'/g)]
+        .map((match) => match[1]);
+    const unique = [...new Set(asked)];
+
+    ok('the parser looks up at least five fields, so this found the call sites',
+       unique.length >= 5, unique);
+
+    /* The body is rendered the way GITHUB renders it, from the form's own labels,
+       suffixes and all. */
+    const rendered = labels.map((label) => '### ' + label + '\n\nvalue-for-' + label).join('\n\n');
+
+    for (const label of unique) {
+        const got = fieldFromForm(rendered, label);
+        ok('the parser\'s "' + label + '" finds the field the form renders',
+           got.startsWith('value-for-'), got);
     }
 
     /* And every label in the form is reachable, so a field cannot be added to the
        form and then be invisible to the build. */
-    const rendered = labels.map((label) => '### ' + label + '\n\nvalue-for-' + label).join('\n\n');
     for (const label of labels) {
         ok('"' + label + '" is readable from a rendered form',
            fieldFromForm(rendered, label) === 'value-for-' + label,
            fieldFromForm(rendered, label));
     }
+
+    /* THE REAL THING, not a rendering of it. GitHub writes a pasted image as an
+       <img src="..."> tag rather than markdown, which is the second half of what
+       went wrong on Queima Diaria: the field has to be found AND the address has
+       to be read out of a tag.
+
+       The attachment id is made up. A real one is a v4 uuid, and the guard's
+       app-guid check refuses a uuid anywhere in this repository that is not the
+       sandbox application's, which is exactly what it is for: an identifier
+       nobody meant to commit reads the same as one somebody did. The shape under
+       test is the img tag on GitHub's asset host, and that survives the id being
+       a word. */
+    const asGitHubWritesIt = [
+        '### Prospect website address',
+        '',
+        'https://www.queimadiaria.com',
+        '',
+        '### Product listing screenshot (optional)',
+        '',
+        '<img width="1613" height="708" alt="Image" ' +
+        'src="https://github.com/user-attachments/assets/a-pasted-screenshot" />',
+        '',
+        '### Language',
+        '',
+        'Portuguese'
+    ].join('\n');
+    const shot = parse({ BODY: asGitHubWritesIt, TITLE: 'Demo: Queima Diaria' });
+    is('a screenshot pasted into the form is read from the img tag',
+       shot.screenshot_url,
+       'https://github.com/user-attachments/assets/a-pasted-screenshot');
+    is('and the rest of that request still parses', shot.url, 'https://www.queimadiaria.com');
 }
 
 
